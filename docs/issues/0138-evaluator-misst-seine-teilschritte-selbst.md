@@ -386,8 +386,40 @@ bestätigt, die Kriterien anschließend freigegeben.
 
 ### Before the PR
 
-- Does this match what was asked?
-- What surprised me?
-- What am I assuming without having verified it?
+**Does this match what was asked?** Ja. Verlangt war, dass der Evaluator die
+Performance seiner Einzelteile selbst misst und als Metadata im Ergebnis
+ausliefert, statt dass ein externes Skript ihn nachbaut. Der Nachbau ist weg:
+`scripts/lib/evaluator-measurement.js` importiert nur noch die Fassade, die
+Drift-Prüfung ist mangels Nachbau gegenstandslos geworden, und die
+depcruise-Ausnahme, die den Nachbau erlaubte, ist ersatzlos gestrichen — was
+`npm run depcruise` mit Exitcode 0 belegt. Die vier Phasen, Runden und
+Knotenzahlen kommen aus der Engine. Die App ist unberührt.
+
+**What surprised me?**
+- Die Drift war keine Möglichkeit, sondern Tatsache. Der wichtigste Messfall
+  lieferte seit unbekannter Zeit gar keine Zahlen mehr, weil der Nachbau an der
+  eigenen Prüfung scheiterte. Er läuft jetzt wieder.
+- Die `__fixtures__`-Ausnahme, die ich angeordnet hatte, war wirkungslos: die
+  Konfiguration wirft `__fixtures__` schon global aus dem Graphen. Ich hatte eine
+  Prämisse als Tatsache in den Datensatz geschrieben, die ein einzelner Lauf
+  widerlegt.
+- Mein eigener Datensatz überzeichnete die erste Review-Runde: „alle zwölf
+  Kriterien bestätigt", obwohl der Reviewer bei Kriterium 9 ausdrücklich einen
+  Vorbehalt angebracht hatte. Der Reviewer hat das gefunden, nicht ich.
+- Beide Beweislücken, die Runde 1 fand, waren Lücken in *Tests*, nicht im Code —
+  die Umsetzung war jedes Mal richtig, nur unbewiesen.
+
+**What am I assuming without having verified it?**
+- Dass der Unterschied zur ADR-0036-Spanne (98.6/98.8 % gegen 99,1–99,5 %)
+  Container-Streuung ist und nicht die Instrumentierung. Belege dafür: die
+  Grundlinie vor dem Diff lag hier schon bei 99.0/99.1 %, und die gemessenen
+  Auswertungsphasen sind gesunken statt gestiegen. Ein Gegenbeweis wäre eine
+  Messung auf anderer Hardware; die habe ich nicht.
+- Dass die `vi.mock`-Kopplung der Phasen-Sonde an die Modulstruktur beim nächsten
+  harmlosen Umbau als Fehlalarm auffällt und nicht als echter Befund
+  missverstanden wird. Der Reviewer hält die Richtung für die sichere; geprüft
+  ist sie nicht.
+- Dass niemand die Metadata künftig doch in der App braucht. Fällt das an, ist
+  Entscheidung 5 neu zu treffen, nicht diese Umsetzung zu reparieren.
 
 ## Retro
