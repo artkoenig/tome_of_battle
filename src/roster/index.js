@@ -19,7 +19,7 @@ export {
   childSelectionsOf, countSelections, findForceContainingSelection,
   findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
-export { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
 export { isListRuleSelection, resolveListRuleGroup } from './listRules.js';
 export { canGroupMaxBeRaisedAboveSingleChoice, getEffectiveModifiers } from './modifierEvaluator.js';
 export { buildModifierEvalContext } from './modifierContext.js';

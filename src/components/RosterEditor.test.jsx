@@ -6,6 +6,9 @@ import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOper
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
+  // Das Auffuell-Panel des Editors (Issue 0135) rendert diese Symbole.
+  Wand2: () => <span data-testid="icon-wand" />,
+  Plus: () => <span data-testid="icon-plus" />,
   Save: () => <span data-testid="icon-save" />,
   Play: () => <span data-testid="icon-play" />,
   Trash2: () => <span data-testid="icon-trash" />,

@@ -1119,7 +1119,9 @@ effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintL
 Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
 „Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`) leiten sich aus
 diesen **effektiven** Werten ab — kein roher Constraint-Wert steuert mehr eine dieser Entscheidungen
-(`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`, `AutoFillSuggestions.jsx`).
+(`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`). Die Auffüll-Vorschläge
+(`AutoFillSuggestions.jsx`) rechnen seit dem Cutover gar nicht mehr selbst: sie lesen die
+**effektiven** Werte fertig aus dem Bericht der Evaluator-Fassade (ADR-0034).
 
 ### 9.9 Armeeweite Pflichteinheit (`min`-Constraint auf einem Wurzeleintrag)
 

@@ -1,5 +1,4 @@
 /* Editor-Vorschlaege "Punkte auffuellen". */
-/* Auto-Fill Suggestions ("Punkte auffüllen") */
 .autofill-panel {
   padding: 20px;
   margin-top: 24px;
@@ -15,59 +14,15 @@
   padding-bottom: 8px;
 }
 
-.autofill-intro {
-  margin-bottom: 16px;
-}
-
-.autofill-section {
-  margin-bottom: 24px;
-}
-
-.autofill-section-title {
-  margin-bottom: 12px;
-}
-
-.autofill-combo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.autofill-combo-row {
-  padding: 12px;
-  background: rgba(226, 183, 66, 0.05);
-  border-radius: 4px;
-  border: 1px solid rgba(226, 183, 66, 0.2);
-}
-
-.autofill-combo-sum {
-  font-weight: bold;
-  color: var(--text-gold);
-  margin-bottom: 4px;
-}
-
-.autofill-combo-items {
-  margin: 0;
-  padding-left: 20px;
-  font-size: var(--fs-body);
-}
-
-.autofill-apply-btn {
-  padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.autofill-upgrades-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+/* Die verbleibende Summe steht rechts neben der Ueberschrift, nicht unter ihr. */
+.autofill-remaining {
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .autofill-toggle-btn {
   padding: 4px 8px;
+  margin-top: 12px;
 }
 
 .autofill-upgrade-list {

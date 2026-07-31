@@ -14,6 +14,9 @@ vi.mock('../hooks/useRuleUrl', () => ({
 }));
 
 vi.mock('lucide-react', () => ({
+  // Das Auffuell-Panel des Editors (Issue 0135) rendert diese Symbole.
+  Wand2: () => <span />,
+  Plus: () => <span />,
   Save: () => <span />,
   Play: () => <span />,
   Trash2: () => <span />,

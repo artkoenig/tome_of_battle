@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { findEntryInSystem } from '../../roster';
+import { findEntryInSystem, foreignCatalogueIdsOf } from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
@@ -17,7 +17,8 @@ import BottomSheet from './BottomSheet';
  * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
  * ADR-0022) ist ersatzlos entfallen (ADR-0035).
  *
- * Dazu der **Herkunftsfilter** (`capability.sourceId`, Task 13): angeboten wird
+ * Dazu der **Herkunftsfilter** (`capability.sourceId`, Task 13;
+ * {@link foreignCatalogueIdsOf}, geteilt mit den Auffüll-Vorschlägen): angeboten wird
  * nur, was aus dem Armeebuch **dieses Kontingents** (`forceCatalogueId`), dem
  * Spielsystem oder einem Bibliothekskatalog stammt — eine Einheit eines fremden
  * Armeebuchs erscheint gar nicht. Maßgeblich ist der Katalog des Kontingents,
@@ -34,28 +35,6 @@ import BottomSheet from './BottomSheet';
 
 /** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
 const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
-
-/**
- * Die Ids der **fremden** Armeebücher: jeder nicht-Bibliotheks-Katalog des
- * Systems außer dem eigenen. Ein Slot, dessen Herkunft (`capability.sourceId`)
- * darin steht, gehört einem anderen Armeebuch und wird gar nicht angeboten —
- * dieselbe Regel wie `creatableForcesOf` in `NewRosterModal.jsx`.
- *
- * Alles andere wird angeboten: das Spielsystem, ein Bibliothekskatalog, der
- * aktive Katalog selbst — und eine **unbekannte** Herkunft. Deshalb kommt eine
- * fehlende Id gar nicht erst in die Menge: sonst gälte ein Slot mit
- * `sourceId: null` als fremd und verschwände still.
- */
-function foreignCatalogueIdsOf(system, ownCatalogueId) {
-  const foreign = new Set();
-  for (const catalogue of system?.catalogues ?? []) {
-    if (catalogue.isLibrary === true) continue;
-    if (catalogue.id === null || catalogue.id === undefined) continue;
-    if (catalogue.id === ownCatalogueId) continue;
-    foreign.add(catalogue.id);
-  }
-  return foreign;
-}
 
 export default function CategoryUnitAdder({
   categoryId = null,

@@ -78,6 +78,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const currentPoints = costTotals[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
   const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster.costLimitType);
+  // Was der Liste zu ihrem eingestellten Punktwert fehlt — die Grundlage der
+  // Auffüll-Vorschläge (Issue 0135). Ohne Limit-Kostenart oder ohne gesetzten
+  // Punktwert gibt es keine Differenz zu füllen: `null`, nicht 0.
+  const remainingPoints = roster.costLimitType && limitPoints > 0
+    ? limitPoints - currentPoints
+    : null;
 
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
   const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
@@ -149,6 +155,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               capabilities={capabilities}
               pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
+              remainingPoints={remainingPoints}
               addUnit={addUnit}
               removeUnit={removeUnit}
               subSelectionOperations={subSelectionOperations}
