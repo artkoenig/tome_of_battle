@@ -95,6 +95,25 @@ Acceptance criteria:
   follow the catalogue's structure, and the alternative would render one group
   two different ways depending on its contents. The maintainer was told and can
   still overturn it.
+- **Criterion 5's "unnested" means "not moved from where the catalogue puts
+  it", not "top-level".** Review round 1 found that `Body Armour`
+  (`3371-dd77-0697-195f`) — two own options, not a container — sits directly
+  inside `Armour` in `Vampire Counts.cat:2447-2464` and is now rendered there
+  instead of beside it, on the Vampire Thrall, Wight Lord and Wraith cards.
+  Criterion 5's letter and criterion 6's letter disagree for a directly nested
+  group. Put to the maintainer with both renderings; they chose the
+  catalogue's structure, so a linked group and a directly nested group are
+  treated alike. Source: maintainer's answer, this session.
+- **The pruning carve-out stays.** `buildSections` prunes an item-less section
+  only when the options collector returned something for the frame; when it
+  returns nothing, every group anchor keeps its section. The reviewer probed
+  every frame of every unit in both full multi-catalogue systems for that
+  state and found **0 occurrences** — it is not reachable from catalogue data,
+  and the only thing that exercises it is a pre-existing test that stubs the
+  collector empty on purpose. Kept as a defensive fallback: without membership
+  the configurator cannot tell "empty" from "unmapped", and dropping the
+  section would take a group's limit off the card with it. Source: default,
+  unanswered.
 - **Criterion 7's "beneath them" means hierarchy, not document order.** The
   `test-author` asked whether a mixed group must put its own rows above its
   nested groups. Left unpinned: the criterion is about what contains what, and
@@ -150,6 +169,65 @@ Acceptance criteria:
 - Final red state before implementation: three test files, 22 tests, 18 red.
   `npx vitest run src/components/editor` → 33 files, 225 tests, 18 failed,
   i.e. all 203 pre-existing tests still pass.
+- Implementation landed in `5101c70` (later `919a8fe` after a committer-email
+  rebase): the options collector carries `groupAncestorIds` on each item, the
+  configurator assembles the flat slot-ordered sections into a tree from those
+  chains and prunes what is left with neither rows nor members, and
+  `OptionGroup` gained two inert-by-default props (`nestedSections`,
+  `hasSelectedDescendant`). Verified by exit code: `npx vitest run
+  src/components/editor` 33 files / 225 tests exit 0; `npm test` 254 files /
+  2644 tests plus the puppeteer app E2E exit 0; `npm run lint`, `npm run
+  typecheck`, `npm run depcruise` all exit 0, depcruise with only the
+  pre-existing `no-circular` warning.
+
+### Review round 1 — fresh context
+
+Five findings. The reviewer proved two things beyond the criteria: the
+collector's output is byte-identical to before across every unit of seven
+catalogues (6327 lines dumped on both revisions), so roster synchronisation is
+untouched; and across 357 rendered unit cards the change removes 62 empty
+sections and adds none, changing no row and no limit text.
+
+| criterion | round 1 |
+| --- | --- |
+| 1 container holds its members | 0 |
+| 2 the budget stays readable | 0 |
+| 3 a nested member behaves as today | 0 |
+| 4 nothing empty survives | 1 |
+| 5 non-containers unchanged | 1 |
+| 6 depth follows the catalogue | 0 |
+| 7 mixed groups | 0 |
+| violates no criterion | 3 |
+| **total** | **5** |
+
+Triage:
+
+- **`holdsSelection` misses the `targetDefId` fallback its two siblings have**
+  (`SelectionConfigurator.jsx:447`). A roster storing an option under its
+  shared entry id rather than its link id leaves the container collapsed, so a
+  chosen item is not in the DOM at all; before this change the member group was
+  top-level and opened itself. Reachable in the window before
+  `syncRosterSelectionsWithSystem` normalises ids — e.g. after a catalogue
+  update — and it persists, because the expanded state is a `useState`
+  initialiser. The reviewer named no criterion. **Named criterion 3 on triage
+  and fixed now:** "behaves exactly as it does today" is the criterion's
+  general clause, and a member group that today opens itself to show its
+  selection does not behave as it does today when it is hidden instead. The
+  two items after the colon are what that clause was spelled out with, not its
+  whole extent. Recorded so the maintainer can overturn the reading.
+- **`hasSelectedDescendant` has no test coverage** — removing it from the
+  initialiser leaves all 225 editor tests green, because every new test expands
+  everything before asserting. Violates no criterion. **Fixed together with
+  the finding above** rather than filed: the untested code is the code the
+  defect sits in, and tests are what turn both into facts.
+- **A non-container is now nested** (`Body Armour` inside `Armour`). Names
+  criterion 5. **Dismissed** — see the Decisions entry; the maintainer settled
+  the reading in favour of the catalogue.
+- **Criterion 4's carve-out.** Names criterion 4. **Dismissed** — see the
+  Decisions entry; 0 occurrences across both full multi-catalogue systems.
+- **The issue's record was not updated by the implementation commit.**
+  Violates no criterion; violates this project's tracker convention. **Fixed
+  now** — this section and the Decisions above are that fix.
 - Baseline on the untouched tree, this branch: `npx vitest run
   src/components/editor` 30 files / 203 tests exit 0; `npx vitest run
   src/evaluator` 68 files / 860 tests exit 0; `npm run lint` exit 0; `npm run
