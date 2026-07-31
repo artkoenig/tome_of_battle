@@ -172,7 +172,7 @@ enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
                       atLeast, atMost, instanceOf, notInstanceOf }
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
                       append, prepend, multiply, set-primary, unset-primary }
-enum ConditionGroupKind { and, or }                               // XSD-SSOT
+enum ConditionGroupKind { and, or, not }   // XSD-SSOT (`not` vendort, Issue 0115)
 enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
                       UNIT,                       // die umschließende Einheit: nächster
                       // Vorfahre (inkl. selbst) mit rohem type="unit" — ein regulärer
@@ -224,7 +224,8 @@ record ModifierDef    { field: string,                    // roher XSD-`field`, 
 record ConditionGroupDef { type: ConditionGroupKind, conditions: ConditionDef[],
                           groups: ConditionGroupDef[] }
 record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
-                          conditions: ConditionDef[], conditionGroups: ConditionGroupDef[] }
+                          conditions: ConditionDef[], conditionGroups: ConditionGroupDef[],
+                          repeats: RepeatDef[] }   // ModifierBase, Issue 0116
 
 // Info-Elemente: sie teilen die `EntryBase` der XSD und tragen deshalb eigene
 // Modifikatoren und ein `hidden`-Kennzeichen — sie sind Modifikator-Träger.
@@ -620,23 +621,35 @@ function applyModifiersOfNodes(nodes, state, index)
 function applyModifier(ctx, state, node, modifier)
   // feuert nur, wenn ALLE direkten Bedingungen UND alle Bedingungsgruppen halten
   if not conditionsAndGroupsHold(ctx, modifier.conditions, modifier.conditionGroups): return
-  times = modifier.repeats.isEmpty ? 1
-                                   : product(repeatCount(ctx, r) for r in modifier.repeats)
+  times = gate.repeatFactor * repeatsFactor(modifier.repeats)   // gate: der Faktor der
+                                   // umschliessenden Modifikatorgruppen (Issue 0116)
   applyOperation(state, node, modifier, times)
 
 function applyModifierGroup(ctx, state, node, group)
   // hält die gemeinsame Gruppen-Bedingung, greifen alle enthaltenen Modifikatoren
   // gemeinsam (jeder weiterhin unter seinen eigenen Bedingungen), sonst gemeinsam keiner
   if not conditionsAndGroupsHold(ctx, group.conditions, group.conditionGroups): return
+  // Auch das `<repeats>` der Klammer wirkt (ModifierBase, Issue 0116): sein Faktor
+  // multipliziert sich in jedem Mitglied auf dessen eigenen.
+  innerGate = gate mit repeatFactor = gate.repeatFactor * repeatsFactor(group.repeats)
   for modifier in group.modifiers:
-    applyModifier(ctx, state, node, modifier)
+    applyModifier(ctx, state, node, modifier, innerGate)
+
+// Mehrere Wiederholungen EINER Liste addieren ihre Anwendungen (Issue 0116, belegt am
+// „Grave markers"-Muster: „+1 je Vampire Count ODER Vampire Lord"); geschachtelte
+// Klammern multiplizieren dagegen, weil eine Wiederholung der Klammer die ganze
+// Wiederholung ihres Mitglieds erneut ausführt.
+function repeatsFactor(repeats): number
+  return repeats.isEmpty ? 1 : sum(repeatCount(ctx, r) for r in repeats)
 
 // Eine `and`-Gruppe hält, wenn ALLE ihre Bedingungen und Untergruppen halten; eine
-// `or`-Gruppe, wenn MINDESTENS EINE hält — rekursiv über beliebige Tiefe.
+// `or`-Gruppe, wenn MINDESTENS EINE hält; eine `not`-Gruppe, wenn KEINE hält
+// (vendorte XSD-Erweiterung, Issue 0115) — rekursiv über beliebige Tiefe. Eine
+// Registry ConditionGroupKind → Verknüpfung, kein Fallunterscheidungs-`if`.
 function conditionGroupHolds(ctx, group): bool
   members = [conditionHolds(ctx, c) for c in group.conditions]
           + [conditionGroupHolds(ctx, g) for g in group.groups]
-  return group.type == and ? all(members) : any(members)
+  return CONDITION_GROUP_COMBINATORS[group.type](members)
 
 // Je Knoten laufen erst seine eigenen Modifikatoren, dann die seiner Info-Elemente —
 // jeder mit seinem Träger, alle im Query-Kontext des Knotens.

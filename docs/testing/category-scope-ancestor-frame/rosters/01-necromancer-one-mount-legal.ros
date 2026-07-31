@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="csaf-01" name="CSAF 01 – Master Necromancer mit einem Reittier: kein Strigoi-Vorfahre, keine Grenze feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored category-scope-ancestor-frame E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Clan Von Carstein (VC-AB)" entryId="b1e4-e1cf-9bd6-2438" catalogueId="8e66-3042-1d6b-fa6b" catalogueRevision="1" catalogueName="Vampire Counts (6th definitive edition)">
+      <selections>
+        <selection id="sel-master-necromancer" name="Master Necromancer" entryId="4ee2-ac3a-3cc6-11af" entryLinkId="" number="1" type="unit">
+          <categories>
+            <category id="4a65-6d41-e28b-5f3f" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="e62c-107d-4043-b294" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Kind (min 1, b1f6-6649-de74-f4d5) und KEIN Mitglied der Gruppe "Mounts" -->
+            <selection id="sel-handweapon" name="Handweapon" entryId="c4a5-f61d-e7da-8d5c" entryLinkId="" number="1" type="upgrade"/>
+            <!-- Pflicht-Kind der Gruppe "Wizard Level" (min 1 / max 1, 4599-666f-72d3-1822 / a73d-88e2-3f75-e335) -->
+            <selection id="sel-wizard-level-3" name="Wizard level 3" entryId="c39e-3f58-0fbd-3a04" entryLinkId="" number="1" type="upgrade"/>
+            <!-- Das eine erlaubte Reittier aus der Gruppe "Mounts" (fe59-4e8b-24e8-3316) -->
+            <selection id="sel-nightmare" name="Nightmare" entryId="1c56-48e6-7c01-5ae9" entryLinkId="ba19-24a1-412f-569e" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -16,8 +16,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { ConditionKind, ModifierKind, ModifierTargetKind } from './model.js';
-import { COMPARATORS, MODIFIER_HANDLERS } from './modifiers.js';
+import { ConditionKind, ConditionGroupKind, ModifierKind, ModifierTargetKind } from './model.js';
+import { COMPARATORS, CONDITION_GROUP_COMBINATORS, MODIFIER_HANDLERS } from './modifiers.js';
 
 /** Deckungsgleich = identische Schluesselmengen (jede Seite genau einmal). */
 function expectExactCoverage(handlerKeys, enumValues) {
@@ -33,6 +33,19 @@ describe('COMPARATORS deckt ConditionKind zweiseitig vollstaendig ab', () => {
   it('haelt jeden Handler-Wert als aufrufbares Praedikat', () => {
     for (const comparator of Object.values(COMPARATORS)) {
       expect(typeof comparator).toBe('function');
+    }
+  });
+});
+
+describe('CONDITION_GROUP_COMBINATORS deckt ConditionGroupKind zweiseitig vollstaendig ab', () => {
+  it('hat genau eine Verknuepfung je ConditionGroupKind-Wert und keinen verwaisten Schluessel', () => {
+    expectExactCoverage(Object.keys(CONDITION_GROUP_COMBINATORS), Object.values(ConditionGroupKind));
+  });
+
+  it('haelt jede Verknuepfung als aufrufbare Funktion ueber Mitglieds-Thunks', () => {
+    for (const combinator of Object.values(CONDITION_GROUP_COMBINATORS)) {
+      expect(typeof combinator).toBe('function');
+      expect(typeof combinator([])).toBe('boolean');
     }
   });
 });

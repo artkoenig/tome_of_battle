@@ -483,7 +483,7 @@ function readConditions(element, diagnostics, carrier, guardHealth) {
 
 /**
  * Liest eine einzelne `<conditionGroup>` **rekursiv** in ihre `ConditionGroupDef`:
- * ihre `type`-Verknuepfung ({@link ConditionGroupKind} `and`/`or`), ihre direkten
+ * ihre `type`-Verknuepfung ({@link ConditionGroupKind} `and`/`or`/`not`), ihre direkten
  * Bedingungen und ihre verschachtelten Untergruppen (beliebige Tiefe). Ein `type`
  * ausserhalb des SSOT-Enums wird als Diagnose gemeldet, nie still verschluckt
  * (`docs/issues/.../design.md`, Kontrakt `ConditionGroupDef`).
@@ -641,15 +641,13 @@ function readModifiers(element, diagnostics, carrier) {
  * sonst entfaellt die Gruppe samt Untergruppen gemeinsam
  * (`docs/issues/.../design.md`, Kontrakt `ModifierGroupDef`).
  *
- * `ModifierGroup` erbt zudem `repeats` von `ModifierBase` (Catalogue.xsd:469-479).
- * Volle Repeat-Semantik fuer eine *ganze* Gruppe ist bewusst **nicht** im Umfang;
- * ein nicht-leeres `<repeats>` wird deshalb als sichtbare Grenze gemeldet, nie
- * still verschluckt (§5, Risiko 4).
+ * `ModifierGroup` erbt zudem `repeats` von `ModifierBase` (Catalogue.xsd:469-479)
+ * und wird hier **wie die Wiederholungen eines einzelnen Modifikators** gelesen
+ * (Issue 0116): der Faktor der Klammer multipliziert sich in jedem Mitglied auf
+ * dessen eigenen. Real genutzt in `Vampire Counts` („Grave markers": +1 Grenze je
+ * gezaehltem Vampir).
  */
 function readModifierGroup(groupEl, diagnostics, carrier) {
-  if (wrappedChildren(groupEl, Tag.REPEATS, Tag.REPEAT).length > 0) {
-    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_GROUP_REPEAT, {}));
-  }
   // Das eigene Waechter-Gate der Gruppe: ist es auch nur teilweise unlesbar,
   // entfaellt die Gruppe samt Untergruppen fail-closed (Issue 0087; Auswertung:
   // `applyModifierGroup` in {@link ./modifiers.js}). Die Waechter der
@@ -658,6 +656,7 @@ function readModifierGroup(groupEl, diagnostics, carrier) {
   return {
     conditions: readConditions(groupEl, diagnostics, carrier, guardHealth),
     conditionGroups: readConditionGroups(groupEl, diagnostics, carrier, guardHealth),
+    repeats: readRepeats(groupEl, diagnostics, carrier, guardHealth),
     modifiers: readModifiers(groupEl, diagnostics, carrier),
     modifierGroups: readModifierGroups(groupEl, diagnostics, carrier),
     hasUnreadableGuard: guardHealth.unreadable,

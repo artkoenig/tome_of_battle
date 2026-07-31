@@ -604,6 +604,14 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="and" />
       <xs:enumeration value="or" />
+      <!-- Vendored divergence from upstream, see ADR 0016 (Revision 2026-07-31):
+           the Definitive-Edition catalogues carry <conditionGroup type="not">
+           (2 Fundstellen in `Vampire Counts`, beide am Pflicht-Modifikator des
+           Sonderheeres "Army of the Lichemaster") that no official
+           BSData/schemas version defines. Semantik: die Gruppe haelt, wenn
+           KEINES ihrer Mitglieder haelt (die De-Morgan-Duale zu `or`);
+           siehe docs/battlescribe-data-format.md §7.7. -->
+      <xs:enumeration value="not" />
     </xs:restriction>
   </xs:simpleType>
 

@@ -14,7 +14,7 @@ Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `cond
 | **scope** | `category` | `category-scope-bug`, `explorer-category-constraints` | ✅ |
 | **scope** | `parent` | `parent-scope-missing-mandatory`, `explorer-nested-constraints`, `army-standard-bearer` | ✅ |
 | **scope** | `primary-catalogue` | *An einem `constraint` **kein** Vorkommen: alle 27 Vorkommen stehen an einer `condition` (Issue 077) — siehe §2* | - |
-| **scope** | (Spezifische ID) | *Bisher kein expliziter E2E-Test gefunden* | ❌ |
+| **scope** | (Spezifische ID) | `category-scope-ancestor-frame` (Kategorie-Id = Vorfahren-Rahmen, nicht armeeweit); Modultest `query.categoryScope` | ✅ |
 | **field** | `selections` (Standard) | Fast alle Tests | ✅ |
 | **field** | `forces` | *Wird in Daten nicht verwendet (laut Suche)* | - |
 | **field** | `pts` (Punkte / Kosten) | `explorer-nested-constraints` | ✅ |

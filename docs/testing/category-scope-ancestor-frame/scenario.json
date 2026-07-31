@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "category-scope-ancestor-frame",
+  "description": "Nennt der scope einer Grenze eine Kategorie-Id, ist der Bezugsrahmen der naechste Vorfahre der tragenden Auswahl (Traeger eingeschlossen), der diese Kategorie traegt — kein armeeweiter Rahmen. Die Strigoi-skopierte Reittier-Sperre 6afc-566e-34d4-d35c des Master Necromancer feuert daher nie: kein Vorfahre seiner Mounts-Gruppe traegt die Kategorie Strigoi, auch dann nicht, wenn im selben Kontingent ein Strigoi-Vampir steht. Die parent-skopierte Gruppengrenze 7e5f-f372-f244-a864 derselben Gruppe belegt im Gegenzug, dass die Gruppe sehr wohl korrekt gezaehlt wird.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-necromancer-one-mount-legal.ros",
+      "description": "Kontingent 'Clan Von Carstein (VC-AB)' mit einem Master Necromancer (Handweapon, Wizard level 3) und genau einem Reittier 'Nightmare' aus seiner Gruppe 'Mounts'. Kein Vorfahre der Gruppe traegt die Kategorie Strigoi, also loest der Kategorie-Rahmen der Grenze 6afc-566e-34d4-d35c nicht auf und sie darf nicht feuern. Die parent-skopierte Gruppengrenze 7e5f-f372-f244-a864 (max 1) zaehlt nur die Mitglieder der Gruppe — ein Reittier — und darf ebenfalls nicht feuern, obwohl der Master Necromancer insgesamt drei direkte Auswahlen traegt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6afc-566e-34d4-d35c",
+          "7e5f-f372-f244-a864",
+          "3a65-e7fe-b50d-e6d9"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-strigoi-in-force-not-ancestor.ros",
+      "description": "Wie 01, zusaetzlich eine 'Bloodlines'-Auswahl mit 'Bloodline of Clan Strigoi' und ein Vampire Count, der dadurch die Kategorie Strigoi traegt. Der Strigoi ist Geschwister, nicht Vorfahre der Mounts-Gruppe des Master Necromancer: 6afc-566e-34d4-d35c darf weiterhin nicht feuern. Eine Engine, die die Kategorie-Id im scope als armeeweiten Rahmen liest, wuerde hier mit Ist 1 / Grenze 0 anschlagen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6afc-566e-34d4-d35c",
+          "7e5f-f372-f244-a864",
+          "3a65-e7fe-b50d-e6d9"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-mounts-parent-limit-fires.ros",
+      "description": "Derselbe Master Necromancer nimmt ZWEI Reittiere aus derselben Gruppe 'Mounts' (Nightmare und Winged Nightmare). Die parent-skopierte Gruppengrenze 7e5f-f372-f244-a864 (max 1) feuert mit Ist 2 / Grenze 1 — das belegt, dass die Gruppe ueberhaupt gezaehlt wird und die Stille in 01/02 nicht 'es wird nichts gezaehlt' bedeutet. Die Eigengrenzen der beiden Reittiere (je max 1, scope=parent) bleiben mit je einer Instanz eingehalten; die Strigoi-skopierte Grenze bleibt still.",
+      "expect": {
+        "firing": [
+          { "limitId": "7e5f-f372-f244-a864", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "6afc-566e-34d4-d35c",
+          "3a65-e7fe-b50d-e6d9",
+          "5c99-666c-d942-6cbf"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-strigoi-in-force-two-mounts.ros",
+      "description": "Die Kombination aus 02 und 03: Strigoi-Bloodline samt Strigoi-Vampire-Count im Kontingent UND zwei Reittiere am Master Necromancer. Der parent-Rahmen zaehlt 2 (7e5f-f372-f244-a864 feuert, Ist 2 / Grenze 1), der Kategorie-Rahmen loest weiterhin nicht auf (6afc-566e-34d4-d35c bleibt still). Eine armeeweite Lesart der Kategorie-Id wuerde hier mit Ist 2 / Grenze 0 anschlagen — der schaerfste Kontrast des Szenarios.",
+      "expect": {
+        "firing": [
+          { "limitId": "7e5f-f372-f244-a864", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "6afc-566e-34d4-d35c",
+          "3a65-e7fe-b50d-e6d9",
+          "5c99-666c-d942-6cbf"
+        ]
+      }
+    }
+  ]
+}

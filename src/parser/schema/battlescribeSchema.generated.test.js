@@ -51,7 +51,9 @@ describe('battlescribe schema module public surface', () => {
       'instanceOf',
       'notInstanceOf',
     ]);
-    expect(Object.values(ConditionGroupKind)).toEqual(['and', 'or']);
+    // `not` ist eine vendorte Erweiterung (ADR 0016, Issue 0115): die
+    // Definitive-Edition-Kataloge nutzen sie, keine offizielle Schema-Version.
+    expect(Object.values(ConditionGroupKind)).toEqual(['and', 'or', 'not']);
   });
 
   it('freezes every exported enum so consumers cannot mutate the closed sets', () => {
