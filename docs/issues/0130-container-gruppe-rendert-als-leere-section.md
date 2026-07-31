@@ -95,6 +95,11 @@ Acceptance criteria:
   follow the catalogue's structure, and the alternative would render one group
   two different ways depending on its contents. The maintainer was told and can
   still overturn it.
+- **Criterion 7's "beneath them" means hierarchy, not document order.** The
+  `test-author` asked whether a mixed group must put its own rows above its
+  nested groups. Left unpinned: the criterion is about what contains what, and
+  an ordering assertion would constrain the implementation past what the
+  criterion decides. Source: default, unanswered.
 
 ## Log
 
@@ -135,6 +140,16 @@ Acceptance criteria:
 - Filed separately, not part of this run: an option held only by a hidden group
   keeps a visible offer anchor and renders as a stray ungrouped row
   (issue 0131).
+- Criterion 7 turned out observable on the real catalogue after all: Vampire
+  Counts `Magic Items` (`040b-d0d0-fe3b-9d13`, max 50) and its four linked
+  groups each carry a constraint and so each produce a report anchor, flat at
+  `0/0/2` … `0/0/6` under the Necromancer. Its own option `Armour of Bone`
+  already renders as a row of that section today — only the nesting of the four
+  linked groups is missing. The other two mixed groups carry no constraint at
+  all, get no anchor, and are therefore unobservable; they are not tested.
+- Final red state before implementation: three test files, 22 tests, 18 red.
+  `npx vitest run src/components/editor` → 33 files, 225 tests, 18 failed,
+  i.e. all 203 pre-existing tests still pass.
 - Baseline on the untouched tree, this branch: `npx vitest run
   src/components/editor` 30 files / 203 tests exit 0; `npx vitest run
   src/evaluator` 68 files / 860 tests exit 0; `npm run lint` exit 0; `npm run
