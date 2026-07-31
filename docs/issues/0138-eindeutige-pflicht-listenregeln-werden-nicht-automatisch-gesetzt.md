@@ -310,6 +310,17 @@ Acceptance criteria:
   Fixture allein dafür erschien unverhältnismäßig zum Auftrag. Verhalten ist
   auf DOM-Ebene durch `ListRuleChecklist.mandatory.test.jsx` belegt.
 
+- 2026-07-31: **Live im Browser verifiziert**, mit den echten
+  Katalogdateien (`Warhammer Fantasy Battles (6th definitive edition).gst` +
+  `Vampire Counts (6th definitive edition).cat`) über den echten
+  Import-Weg der App (`Importer.jsx`, Datei-Upload, keine
+  Test-Hooks). Frisch angelegte Vampire-Counts-Liste zeigt „The Laws of
+  Undeath" in „Special list rules" automatisch angehakt, sichtbar gesperrt
+  (goldene Optik, abweichend von den übrigen — unveränderten — Regeln wie
+  „Bloodlines"/„Allow experimental rules?"), mit Tooltip beim Hover. DOM
+  direkt geprüft: `checked: true, disabled: true`. Screenshots dem Menschen
+  geschickt.
+
 ## Checkpoints
 
 ### Before implementation
