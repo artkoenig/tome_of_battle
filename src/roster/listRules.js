@@ -16,10 +16,11 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
  * @property {import('../types.js').Roster} [roster]
  * @property {import('../types.js').Force} [force]
  */
-import { collectPrimaryCategoryEntries } from './entryVisibility.js';
+import { collectPrimaryCategoryEntries, isSelectionEntryHidden } from './entryVisibility.js';
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { ConstraintScope } from './battlescribeConstants.js';
+import { computeRosterCounts } from './rosterCounter.js';
 
 /**
  * True, wenn ein aufgelöster Entry-Typ eine Listenregel bezeichnet. Nur der
@@ -104,6 +105,35 @@ function isContainerListRule(resolved) {
 }
 
 /**
+ * True, wenn der aufgelöste Eintrag eine **eindeutige Pflicht-Listenregel**
+ * ist (Issue 0138, §9.9 der BSData-Doku): ein eigener `min`-Constraint ≥ 1 mit
+ * `scope="force"` oder `scope="roster"` **direkt** am Eintrag/Link — kein
+ * `!c.scope`-Kulanz-Fallback wie bei {@link isBinaryListRule}, denn ein
+ * ungeschriebener scope meint die eigene Instanzgrenze, nicht die armeeweite
+ * Pflicht aus §9.9 — kombiniert mit Kostenfreiheit über jede Kostenart und
+ * fehlenden eigenen Unterauswahlen (kein Behälter). Der effektive (modifier-
+ * angepasste) `min`-Wert entscheidet, nicht der rohe Katalogwert, ausgewertet
+ * ohne Roster-Kontext (nur unbedingte Modifier greifen).
+ * @param {Object} resolved der aufgelöste Katalog-Eintrag/-Link.
+ * @returns {boolean}
+ */
+export function isUnconditionalMandatoryListRule(resolved) {
+  if (!resolved) return false;
+  if (isContainerListRule(resolved)) return false;
+
+  const costs = resolved.costs || [];
+  if (costs.some((cost) => (cost.value || 0) !== 0)) return false;
+
+  const minConstraint = (resolved.constraints || []).find(
+    (c) => c.type === ConstraintKind.MIN && (c.scope === ConstraintScope.FORCE || c.scope === ConstraintScope.ROSTER)
+  );
+  if (!minConstraint) return false;
+
+  const effectiveMin = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(resolved), {});
+  return effectiveMin >= 1;
+}
+
+/**
  * Findet die vorhandene Selektion einer Force, die auf die aufgelöste Entry-ID
  * `resolvedId` verweist. Abgleich über die *aufgelöste* ID, damit auch importierte
  * Roster, die eine Regel über eine andere Link-/Entry-Repräsentation referenzieren,
@@ -120,6 +150,80 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
 }
 
 /**
+ * @typedef {Object} MissingMandatoryListRuleSelection
+ * @property {Object} entry       der (unaufgelöste) Katalog-Eintrag/-Link der Regel.
+ * @property {Object} resolved    ihr aufgelöster Katalog-Eintrag.
+ * @property {?string} categoryId ihre primäre Kategorie (falls eine deklariert ist).
+ */
+
+/**
+ * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
+ * {@link collectPrimaryCategoryEntries} durchläuft:
+ * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
+ * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
+ * weder ausgeblendet noch bereits in `force.selections` vertreten sind
+ * (Issue 0138, AC1/AC2/AC3/AC7).
+ *
+ * Durchsucht die Wurzel-Pools direkt statt kategorienweise über
+ * {@link resolveListRuleGroup} zu gehen — Kriterium 1 verlangt keine
+ * Kategorie-Zugehörigkeit, nur „nicht ausgeblendet"; eine Bindung an die „reine
+ * Listenregel-Kategorie"-Prüfung würde einen sonst zulässigen Eintrag in einer
+ * gemischten Kategorie stillschweigend übersehen.
+ *
+ * Rein: liest nur, verändert weder `system` noch `force`. Der Sichtbarkeits-
+ * Kontext wird aus `force` selbst hergeleitet (kein separates Roster nötig),
+ * sodass eine soeben hinzugekommene Auswahl im **selben** Aufruf bereits in
+ * die `hidden`-Auswertung einfließt (AC3 — laufendes Nachtriggern).
+ *
+ * @param {Object} system     das geparste Spielsystem.
+ * @param {Object} catalogue  der Katalog, dessen Wurzel-Pools durchsucht werden.
+ * @param {import('../types.js').Force} force  das zu prüfende Kontingent.
+ * @returns {MissingMandatoryListRuleSelection[]}
+ */
+export function findMissingMandatoryListRuleSelections(system, catalogue, force) {
+  const missing = [];
+  if (!system || !catalogue || !force) return missing;
+
+  const catalogueId = catalogue.id;
+  const pools = [
+    ...(catalogue.selectionEntries || []),
+    ...(catalogue.entryLinks || []),
+    ...(catalogue.sharedSelectionEntries || []),
+  ];
+
+  // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche
+  // Hülle nähert die kontingentweite Selektions-/Kategorie-Zählung an, die
+  // `isSelectionEntryHidden` für bedingte `hidden`-Modifier (z. B. „Army of
+  // Sylvania" nach Wahl eines bestimmten Generals) braucht.
+  const { selectionCounts, categoryCounts } = computeRosterCounts({ forces: [force] }, system);
+  const visibilityContext = {
+    system,
+    roster: undefined,
+    force,
+    catalogueId,
+    selectionCounts,
+    forceCategoryCounts: categoryCounts[force.id] || {},
+  };
+
+  const seenResolvedIds = new Set();
+  for (const entry of pools) {
+    const resolved = resolveEntry(system, entry, catalogueId);
+    if (!resolved) continue;
+    if (!isListRuleEntryKind(resolved.type)) continue;
+    if (seenResolvedIds.has(resolved.id)) continue;
+    if (!isUnconditionalMandatoryListRule(resolved)) continue;
+    if (isSelectionEntryHidden(entry, visibilityContext)) continue;
+    seenResolvedIds.add(resolved.id);
+
+    if (findPresentSelection(system, force.selections, resolved.id, catalogueId)) continue;
+
+    const categoryId = resolved.categoryLinks?.find((link) => link.primary)?.targetId ?? null;
+    missing.push({ entry, resolved, categoryId });
+  }
+  return missing;
+}
+
+/**
  * @typedef {Object} ListRuleState Zustand einer einzelnen Listenregel für die
  *   Ankreuzliste.
  * @property {Object} entry       der Katalog-Eintrag/-Link der Regel.
@@ -130,6 +234,8 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  * @property {?Object} selection  die präsente Roster-Selektion (falls `checked`).
  * @property {boolean} isBinary   true ⇔ reiner Schalter (Ankreuzfeld), sonst Mengen-Adder.
  * @property {boolean} isContainer true ⇔ die Regel trägt konfigurierbare Unteroptionen.
+ * @property {boolean} mandatory  true ⇔ eindeutige Pflicht-Listenregel (Issue 0138):
+ *   ihre Checkbox ist gesperrt, solange die Zeile sichtbar ist.
  */
 
 /**
@@ -154,6 +260,7 @@ function buildListRuleStates(system, ruleEntries, selections, catalogueId, categ
       selection: selection || null,
       isBinary: isBinaryListRule(resolved),
       isContainer: isContainerListRule(resolved),
+      mandatory: isUnconditionalMandatoryListRule(resolved),
     });
   }
   return states;

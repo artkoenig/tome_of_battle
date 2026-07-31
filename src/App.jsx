@@ -72,6 +72,7 @@ export default function App() {
     renameRoster,
     importRoster,
     exportRoster,
+    isFreshRoster,
   } = useRosterList({
     systems,
     rosters,
@@ -185,6 +186,7 @@ export default function App() {
                 onPlay={playRoster}
                 onExportRoster={exportRoster}
                 onReportError={reportError}
+                isFreshRoster={isFreshRoster(selectedRoster?.id)}
               />
             )}
 

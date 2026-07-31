@@ -5,7 +5,8 @@ import {
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
-  withAddedInstance, withoutInstance, withChangedOptionCount
+  withAddedInstance, withoutInstance, withChangedOptionCount,
+  findMissingMandatoryListRuleSelections
 } from '../roster';
 import { unresolvedSelectionsOf } from '../evaluation/datasetDiagnostics';
 import { useEvaluation } from '../evaluation/useEvaluation';
@@ -45,8 +46,12 @@ function findTargetForce(forces, targetForceId) {
  * @param {Function} saveRosterCallback
  * @param {(message: string) => void} [reportError] app-wide error channel; a failed
  *   autosave reaches the user through it instead of ending in the console.
+ * @param {boolean} [isFreshRoster] true when `initialRoster` was created in this
+ *   session (Issue 0138): gates the automatic addition of unconditional mandatory
+ *   list rules (§9.9). Omitted or false for every existing caller keeps a
+ *   pre-existing roster untouched (AC4) — the safe default.
  */
-export function useRoster(initialRoster, system, saveRosterCallback, reportError) {
+export function useRoster(initialRoster, system, saveRosterCallback, reportError, isFreshRoster) {
   const {
     state: roster,
     setState: setRoster,
@@ -189,6 +194,41 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
       system, resolveEntry, catalogueId, entry, categoryId,
       evaluationContext: buildFactoryContext(catalogueId)
     });
+
+  // Automatisches Setzen eindeutiger Pflicht-Listenregeln (Issue 0138, §9.9):
+  // gated auf `isFreshRoster`, damit ein bereits bestehendes Roster nie
+  // rückwirkend verändert wird (AC4). Läuft — wie der Katalog-Sync-Effekt —
+  // über `replaceRoster`, also ohne eigenen Undo-Schritt: der Nutzer hat
+  // diesen Eintrag nie selbst angeklickt (siehe Plan, "Nicht-offensichtliche
+  // Entscheidungen"). Kein Endlosschleifen-Risiko: ein einmal hinzugefügter
+  // Eintrag gilt im nächsten Durchlauf von `findMissingMandatoryListRuleSelections`
+  // nicht mehr als fehlend, wodurch der Effekt beim nächsten Aufruf keine
+  // Änderung mehr produziert. Läuft je Force erneut bei jeder Roster-Änderung
+  // in derselben Sitzung, sodass eine erst durch eine andere Wahl sichtbar
+  // gewordene Pflichtregel im selben Zug ergänzt wird (AC3).
+  useEffect(() => {
+    if (!roster || !system || !isFreshRoster) return;
+
+    let anyAdded = false;
+    const updatedForces = (roster.forces || []).map(force => {
+      const catalogueId = catalogueIdOfForce(force);
+      const catalogue = system.catalogues?.find(c => c.id === catalogueId);
+      const missing = findMissingMandatoryListRuleSelections(system, catalogue, force);
+      if (missing.length === 0) return force;
+
+      const newSelections = missing
+        .map(({ entry, categoryId }) => createSelectionFromDef(entry, categoryId, catalogueId))
+        .filter(Boolean);
+      if (newSelections.length === 0) return force;
+
+      anyAdded = true;
+      return { ...force, selections: [...childSelectionsOf(force), ...newSelections] };
+    });
+
+    if (anyAdded) {
+      replaceRoster({ ...roster, forces: updatedForces });
+    }
+  }, [roster, system, isFreshRoster, replaceRoster]);
 
   /**
    * Hebt `entry` in genau ein Kontingent aus.

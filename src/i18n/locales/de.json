@@ -166,6 +166,7 @@
   "editor.section.uncategorized": "Sonstiges",
   "editor.listRules.expand": "Listenregeln ausklappen",
   "editor.listRules.collapse": "Listenregeln einklappen",
+  "editor.listRules.mandatoryTooltip": "Pflichtregel dieser Liste — automatisch gesetzt und nicht abwählbar.",
   "editor.subOptions.expand": "Unteroptionen ausklappen",
   "editor.subOptions.collapse": "Unteroptionen einklappen",
   "editor.alreadyTaken": "(Bereits vergeben)",
