@@ -266,6 +266,28 @@ describe('Kriterium 6 — eine Pflichtzeile in einer begrenzten Gruppe schreibt 
     },
   );
 
+  test.each(CARDS_WITH_MANDATORY_LORE)(
+    `auf "$name" ist "${LORE_OF_NECROMANCY}" als genommen angezeigt: der Schalter ist angehakt`,
+    ({ id }) => {
+      const { container, capabilities, pathBySelectionId, selection } = renderCard(id);
+
+      // Vorbedingung am echten Bericht: eine Pflichtwahl, nicht versteckt.
+      const unitPath = pathBySelectionId.get(selection.id);
+      expect(capabilityNamed(capabilities, unitPath, LORE_OF_NECROMANCY), 'der Bericht kennt den Slot')
+        .toMatchObject({ anchorKind: 'mandatoryPhantom', effectiveMin: 1, isHidden: false });
+
+      const rows = rowsNamed(container, LORE_OF_NECROMANCY);
+      expect(rows, `"${LORE_OF_NECROMANCY}" steht genau einmal auf der Karte`).toHaveLength(1);
+      const control = controlOf(rows[0]);
+      expect(control, `"${LORE_OF_NECROMANCY}" hat einen Wahlschalter`).toBeTruthy();
+
+      // Vor der Aenderung: `<input disabled type="checkbox" checked>`. Welcher
+      // Schaltertyp die Pflichtwahl traegt, ist offen — dass sie genommen
+      // aussieht, nicht.
+      expect(control.checked, `"${LORE_OF_NECROMANCY}" ist als genommen angehakt`).toBe(true);
+    },
+  );
+
   test(`Grenzfall: die Pflichtzeile liegt im Abschnitt "${LORES_OF_MAGIC}" und ist dort die einzige Zeile — trotzdem schreibt ihr Schalter nichts`, () => {
     const operations = createSubSelectionOperationsMock();
     const { container } = renderCard(MASTER_NECROMANCER, operations);
