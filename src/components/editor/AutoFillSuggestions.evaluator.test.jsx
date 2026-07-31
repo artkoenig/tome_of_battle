@@ -188,6 +188,35 @@ const NINE_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   </selectionEntries>
 </catalogue>`;
 
+// ── Eigener Datensatz: Lücke ≥ 50, aber nichts passt hinein ─────────────────
+// Ein Kontingent, dessen einzige wählbare Einheit 500 Pkt kostet. Bei 300
+// Restpunkten bleibt kein Vorschlag übrig — das Panel erscheint trotzdem.
+
+const COSTLY_FORCE_DEF_ID = 'force-costly';
+
+const COSTLY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+<catalogue id="cat-costly" name="Costly Catalogue" gameSystemId="${GAME_SYSTEM_ID}">
+  <forceEntries>
+    <forceEntry id="${COSTLY_FORCE_DEF_ID}" name="Costly Force">
+      <categoryLinks><categoryLink id="ccl-troops" name="Truppen" targetId="${CAT_TROOPS}" primary="false"/></categoryLinks>
+    </forceEntry>
+  </forceEntries>
+  <selectionEntries>${unitXml('entry-giant', 'Kriegsriese', 500)}</selectionEntries>
+</catalogue>`;
+
+/** App-Roster des „nichts passt"-Datensatzes: leeres Kontingent, 300 Punkte. */
+function costlyRoster() {
+  return {
+    id: 'roster-costly',
+    name: 'Costly Roster',
+    systemId: 'system-uuid',
+    catalogueId: 'cat-costly',
+    costLimit: 300,
+    costLimitType: PTS,
+    forces: [{ id: 'force-uuid-costly', forceEntryId: COSTLY_FORCE_DEF_ID, catalogueId: 'cat-costly', selections: [] }],
+  };
+}
+
 // ── Eigener Datensatz für Kriterium 10 (Herkunft) ───────────────────────────
 // `.gst` + vier `.cat`: eigenes Armeebuch, fremdes Armeebuch, Bibliothek und
 // ein Katalog ohne Wurzel-Id (→ `sourceId: null`, unbekannte Herkunft).
@@ -348,6 +377,13 @@ let nineEvaluationCache = null;
 function nineEvaluation() {
   nineEvaluationCache ??= evaluationOf(NINE_CATALOGUE_XML, nineRoster());
   return nineEvaluationCache;
+}
+
+let costlyEvaluationCache = null;
+/** Der „nichts passt"-Datensatz (einzige Einheit 500 Pkt). */
+function costlyEvaluation() {
+  costlyEvaluationCache ??= evaluationOf(COSTLY_CATALOGUE_XML, costlyRoster());
+  return costlyEvaluationCache;
 }
 
 let originEvaluationCache = null;
@@ -576,6 +612,42 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       const { container } = renderPanel({ remainingPoints: 137 });
 
       expect(container.textContent).toMatch(/137[^\d]{0,6}Pkt|Pkt[^\d]{0,6}137/);
+    });
+
+    it('Lücke ≥ 50, aber nichts passt hinein: das Panel erscheint trotzdem — mit Restsumme und Hinweis statt Vorschlägen', () => {
+      const { capabilities } = costlyEvaluation();
+      // Vorbedingung: die einzige wählbare Einheit ist zu teuer; die offene
+      // Pflicht („General") ist nach Kriterium 4 ohnehin kein Vorschlag.
+      expect(capabilityOf(capabilities, 'entry-giant')).toMatchObject({
+        name: 'Kriegsriese', anchorKind: 'offerAnchor', isHidden: false, isBlocked: false,
+        costs: { [PTS]: 500 },
+      });
+
+      const { container } = render(
+        <AutoFillSuggestions
+          capabilities={capabilities}
+          pathBySelectionId={new Map()}
+          forcePath={FORCE_PATH}
+          remainingPoints={300}
+          costLimitTypeId={PTS}
+          costTypeLabel="Pkt"
+          system={appSystem(COSTLY_CATALOGUE_XML)}
+          activeCatalogue={{ id: 'cat-costly' }}
+          forceCatalogueId="cat-costly"
+          addUnit={vi.fn()}
+          subSelectionOperations={createSubSelectionOperationsMock()}
+        />
+      );
+
+      // Das Panel steht da und nennt die Restsumme …
+      expect(container.textContent).not.toBe('');
+      expect(container.textContent).toMatch(/300[^\d]{0,6}Pkt|Pkt[^\d]{0,6}300/);
+      // … mit einem Hinweis statt einer Liste (`editor.autofill.nothingFits`).
+      expect(container.textContent).toMatch(/Nichts passt/);
+      // … und ohne jeden Vorschlag und ohne „+"-Knopf.
+      expect(isShown(container, 'Kriegsriese')).toBe(false);
+      expect(isShown(container, 'General')).toBe(false);
+      expect(container.querySelectorAll('button')).toHaveLength(0);
     });
   });
 
