@@ -636,3 +636,19 @@ Roster sind bis auf das Kontingent identisch.
 | :--- | :--- | :--- |
 | 01 | Grave Guard (10 Modelle, Handweapon, Heavy Armour) im Kontingent „Army of the Lichemaster" | Die Bedingung hält: die Einheit heißt „Barrow Guardians", der Modell-Slot und das Profil-Vorkommen „Barrow Guard" |
 | 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: alle drei behalten den Basisnamen „Grave Guard" |
+
+## `set-hidden-force-gate`
+
+Prüft den `set hidden`-Modifikator (§7.7/§8 der Formatdoku): er ersetzt das
+`hidden`-Attribut des Trägers genau solange seine Bedingung hält; sonst gilt
+der geschriebene Basiswert. Beleg: Scouts (`ff2c-a7c6-4cab-b0fd`, Basis
+`hidden="true"`) unter der Wurzeleinheit Dire Wolves (Vampire Counts) trägt
+`set hidden=false`, gegatet per `instanceOf scope="force"` auf das ForceEntry
+„Army of Sylvania (SoC)" (`4072-c3b8-84c4-a097`). Beide Roster sind bis auf
+das Kontingent identisch; Scouts ist nicht gewählt und erscheint als
+Angebots-Slot.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Dire Wolves (5 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: der Scouts-Angebots-Slot ist sichtbar (`isHidden` false) |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: der Basiswert `hidden="true"` steht — der Slot ist versteckt |

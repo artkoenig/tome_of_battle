@@ -11,6 +11,11 @@
       "key": "condition|instanceOf|force|selectionCount|child=id",
       "evidence": ["docs/testing/force-instance-gated-rename"],
       "rationale": "Roster pair differing only in the force: the instanceOf(scope=force, childId=forceEntry f37a-a93e-fa22-61a8 'Army of the Lichemaster') gate on three set-name modifiers of Grave Guard (Vampire Counts) holds in roster 01 (capabilities assert the renamed unit/model/profile) and does not hold in roster 02 (base names asserted). Scenario is green."
+    },
+    {
+      "key": "modifier|set|hidden",
+      "evidence": ["docs/testing/set-hidden-force-gate"],
+      "rationale": "Roster pair differing only in the force: Scouts (ff2c-a7c6-4cab-b0fd, base hidden=true) under Dire Wolves (Vampire Counts) carries set hidden=false gated on the Army of Sylvania force; roster 01 asserts the offer slot visible (isHidden false), roster 02 asserts it hidden (isHidden true). Scenario is green."
     }
   ]
 }
