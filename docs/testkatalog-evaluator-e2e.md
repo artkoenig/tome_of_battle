@@ -704,3 +704,20 @@ gepinnt als Phase-B-Aufgabe in `docs/testing/campaign-state.json`.
 | :--- | :--- | :--- |
 | 01 | Greasus gewählt, kein Toggle im Kontingent | Die Bedingung hält nicht: das Basis-Maximum 0 steht und feuert (Ist 1 gegen 0), `effectiveMax` 0 |
 | 02 | Identisch, zusätzlich „Allow special characters?" gewählt | Die Bedingung hält (Ist 1): der `set 1` hebt die Grenze — sie feuert nicht mehr, `effectiveMax` 1 |
+
+## `at-least-roster-border-patrols-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="roster"` und Eintrags-`childId`
+(§7.7 der Formatdoku): sie zählt rosterweit (mit `includeChildForces="true"`
+über alle Kontingente) und schaltet den gegateten Modifikator genau ab dem
+Schwellwert. Beleg: die Wurzeleinheit „0-1 Black Coach" (`dd09-e6e8-38ea-c6f4`,
+Vampire Counts) trägt `set hidden=true`, gegatet auf `atLeast 1` der
+Roster-Selektion „Border Patrols rules" (`4e15-0353-165f-5528`, `.gst`);
+dieselbe Bedingung setzt in der `.gst` die Core-Pflicht von 2 auf 1. Beide
+Roster: „Standard (VC-AB)", costLimit 500 (hält den Toggle legal sichtbar),
+eine voll besetzte Black-Coach-Einheit; Unterschied nur der Toggle.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ohne Border-Patrols-Selektion | Zählung 0 < 1: Black Coach bleibt sichtbar (`isHidden` false), die Core-Pflicht feuert unmodifiziert mit Ist 0 gegen 2 |
+| 02 | Mit einer Border-Patrols-Selektion | Zählung 1 ≥ 1: Black Coach wird versteckt (`isHidden` true), die Core-Pflicht feuert mit Grenze 1 statt 2 — beide Wirkungen derselben Bedingung |
