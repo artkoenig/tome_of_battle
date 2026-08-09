@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "_comment": "Manual record of covered evaluator rule-construct cells, the second source of coverage next to the one derived automatically from every docs/testing/*/scenario.json on each run. Add an entry when a cell is exercised by something no manifest limitId can attest (a condition, modifier, repeat or group cell pinned by a scenario, or a module test), or when a cell is deliberately waived. Keys are the pipe-delimited cell keys of scripts/lib/evaluator-coverage-cells.js; docs/testing/worklist.json is regenerated from this file by scripts/evaluator-coverage-inventory.js.",
+  "cells": [
+    {
+      "key": "condition|greaterThanOrEqualTo|parent|selectionCount|child=id",
+      "evidence": ["waived"],
+      "rationale": "greaterThanOrEqualTo is not one of the condition types the format defines (docs/battlescribe-data-format.md 13.1). The single occurrence in the corpus (src/__fixtures__/whfb6/Orcs and Goblins.cat, infoLink e564-9cf9-e4ef-e625 'Fast Cavalry') is catalogue data outside the schema, reported as an unsupported condition and evaluated fail-closed. There is no catalogue-derivable semantics for a scenario to pin, so no test can be authored for it."
+    }
+  ]
+}
