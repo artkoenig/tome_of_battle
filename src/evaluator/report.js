@@ -69,6 +69,13 @@ const NO_DECLARED_COST_TYPES = Object.freeze([]);
 const NO_DEFINITION_SOURCES = new Map();
 
 /**
+ * Ohne Belegungs-Sonde bleibt ein Slot ohne Grenz-Ergebnis bei 0 — das Verhalten
+ * vor Issue 0147. Der Bericht zaehlt selbst nichts: die Sonde reicht ihm die
+ * Zahl, die Zaehlmaschinerie bleibt ausserhalb dieser Schicht (ADR-0030).
+ */
+const NO_OCCUPANCY = () => 0;
+
+/**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
  * sprachfreie Einordnung (Herkunft, Schweregrad, Anker, Art der Grenze,
  * Bezugsrahmen) plus das Ergebnis-Tripel, die **Herleitung** des Grenzwerts und —
@@ -362,8 +369,12 @@ function headroomOf(maxResult) {
 
 /**
  * Baut den Faehigkeitsdatensatz eines Slots aus seinen MIN-/MAX-Ergebnissen und
- * dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der MAX-, sonst
- * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
+ * dem effektiven Zustand. Der aktuelle Stand ist die **Belegung** des Slots: er
+ * kommt bevorzugt aus der MAX-, sonst der MIN-Grenze — deren Rahmen der
+ * Katalogautor gewaehlt hat und der damit massgeblich bleibt. Traegt der Slot
+ * kein Grenz-Ergebnis (keine Grenze, eine unbegrenzte oder eine suspendierte),
+ * zaehlt ihn die Belegungs-Sonde in seinem eigenen Rahmen (`occupancy.js`,
+ * Issue 0147): eine fehlende Grenze ist kein Beleg fuer einen leeren Slot.
  *
  * `anchorKind` sagt, **woher** der Slot stammt (belegt, Pflicht-Phantom,
  * Gruppen-, Kategorie- oder Angebots-Anker) — die einzige Stelle, an der die
@@ -405,7 +416,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId, occupancy }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -428,7 +439,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
-    current: maxResult?.actual ?? minResult?.actual ?? 0,
+    current: maxResult?.actual ?? minResult?.actual ?? occupancy(node),
     headroom: headroomOf(maxResult),
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
@@ -449,7 +460,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, occupancy?: (node: object) => number }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -469,6 +480,12 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   `sourceIdByDefId`: der Herkunftsindex der Definitionen
  *   (`catalogSet.js`) — je Slot das Dokument, das seine Definition deklariert
  *   (`sourceId`). Fehlt er, bleibt die Herkunft jedes Slots `null`.
+ *   `occupancy`: die **Belegungs-Sonde** (`occupancy.js`) — je Slot dessen
+ *   Belegung im eigenen Rahmen. Gelesen wird sie nur, wo keine Grenze ein
+ *   Ergebnis geliefert hat; eine fehlende Grenze ist kein Beleg fuer einen
+ *   leeren Slot (Issue 0147). Sie kommt als Verschluss und nicht als Zaehlindex
+ *   herein: die Zaehlmaschinerie gehoert nicht in die Berichtsschicht
+ *   (ADR-0030). Fehlt sie, bleibt ein solcher Slot bei 0 — das Verhalten davor.
  * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
@@ -479,6 +496,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     categoryIds = NO_CATEGORY_IDS,
     declaredCostTypeIds = NO_DECLARED_COST_TYPES,
     sourceIdByDefId = NO_DEFINITION_SOURCES,
+    occupancy = NO_OCCUPANCY,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -490,6 +508,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
     costProjection,
     sourceIdByDefId,
+    occupancy,
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

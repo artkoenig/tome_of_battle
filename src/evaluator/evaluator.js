@@ -60,6 +60,7 @@ import { buildIndex } from './countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
 import { evaluateConstraints } from './constraints.js';
 import { evaluateRosterBudget } from './budget.js';
+import { buildOccupancyProbe } from './occupancy.js';
 import { buildReport } from './report.js';
 import { createRosterBudget } from './rosterBudget.js';
 import { MeasuredPhase, measurementFor } from './measurement.js';
@@ -322,6 +323,23 @@ export function evaluate(prepared, roster, options) {
     // dieselbe eine `violations`-Liste des Berichts.
     const budgetViolations = evaluateRosterBudget(index, budget);
 
+    // Die Belegungs-Sonde ueber demselben fertigen Index und demselben
+    // konvergierten Zustand, mit denen die Grenzen ausgewertet wurden: sie
+    // liefert dem Bericht den aktuellen Stand eines Slots, an dem keine Grenze
+    // ein Ergebnis lieferte (`occupancy.js`, Issue 0147). Gebaut wird sie hier
+    // und nicht im Bericht, weil sie den Zaehlindex braucht — den Index selbst
+    // in die Berichtsschicht zu reichen, gaebe ihr die Zaehlmaschinerie
+    // (ADR-0030). Sie ist traege: nur die Slots ohne Grenz-Ergebnis rufen sie.
+    const occupancy = buildOccupancyProbe({
+      root,
+      index,
+      effective,
+      categoryIds: resolved.categoryIds,
+      diagnostics: constraintDiagnostics,
+      budget,
+      primaryCatalogueByForceDefId,
+    });
+
     const diagnostics = [
       ...datasetDiagnostics,
       ...joinDiagnostics,
@@ -348,6 +366,7 @@ export function evaluate(prepared, roster, options) {
       categoryIds: resolved.categoryIds,
       declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
       sourceIdByDefId,
+      occupancy,
     });
   });
 
