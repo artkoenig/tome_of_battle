@@ -41,6 +41,11 @@
       "key": "modifier|increment|costValue",
       "evidence": ["docs/testing/unit-scope-per-model-cost"],
       "rationale": "The Barding link of Heavy Cavalry (Mercenaries) carries increment 2 on the pts cost type repeated per model of the enclosing unit; roster 01 asserts the budget fires with actual 105 = 95 base + 5x2 increments against limit 100 (a zero-fold application would stay silent), roster 02 asserts silence at limit 110 (an over-application would fire). Pre-existing green scenario, credited without a new authoring pass."
+    },
+    {
+      "key": "modifier|set|name",
+      "evidence": ["docs/testing/force-instance-gated-rename"],
+      "rationale": "Three set-name modifiers of Grave Guard (Vampire Counts) are asserted through effective names in both directions: roster 01 (Lichemaster force) pins the replaced names 'Barrow Guardians'/'Barrow Guard' on unit, model slot and profile info occurrence, roster 02 (Standard force) pins the base name 'Grave Guard' on all three. Green campaign scenario of run 1, credited without a new authoring pass."
     }
   ]
 }

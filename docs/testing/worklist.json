@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 23,
-    "uncovered": 82
+    "covered": 24,
+    "uncovered": 81
   },
   "cells": [
     {
@@ -97,102 +97,6 @@
           ],
           "raw": {
             "type": "or"
-          }
-        }
-      ]
-    },
-    {
-      "key": "modifier|set|name",
-      "kind": "modifier",
-      "axes": {
-        "type": "set",
-        "targetField": "name"
-      },
-      "occurrences": 122,
-      "files": {
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 12,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 5,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 10,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 22,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 73
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "4288-2e40-701a-b5ac",
-            "name": "Anakonda's Amazon"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "name"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "cc45-7f67-1cbd-3b1a",
-            "name": "Anakonda's Amazon"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "name"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "8ce4-f9da-a2ec-ba16",
-            "name": "Anakonda's Amazon"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "name"
           }
         }
       ]
