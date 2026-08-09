@@ -26,6 +26,11 @@
       "key": "repeatList|n=1|on=modifier",
       "evidence": ["docs/testing/dispel-scroll-repeat-group-max"],
       "rationale": "The Arcane Items (VC) group max 1 (fa59-e6b8-9523-3510, Vampire Counts) carries an increment +1 whose single repeat counts Dispel Scroll copies; roster 01 with 2 scrolls asserts effectiveMax 3 (two applications), roster 02 without asserts the base effectiveMax 1. Scenario is green."
+    },
+    {
+      "key": "condition|atLeast|force|selectionCount|child=id",
+      "evidence": ["docs/testing/at-least-force-toggle-gate"],
+      "rationale": "RED scenario, pinned gap (see pinnedGaps in campaign-state.json): Greasus Goldtooth's force max 0 (cef8-c3b1-7850-85bc, Ogre Kingdoms) is set to 1 by an atLeast(scope=force) condition counting the 'Allow special characters?' toggle; roster 01 without the toggle passes (max 0 fires), roster 02 with the toggle fails because the engine does not credit the toggle selection carrying the target id against the condition's link childId."
     }
   ]
 }

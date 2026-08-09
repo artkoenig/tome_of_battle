@@ -7,102 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 20,
-    "uncovered": 85
+    "covered": 21,
+    "uncovered": 84
   },
   "cells": [
-    {
-      "key": "condition|atLeast|force|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "atLeast",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 182,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 33,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 13,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 61,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 61,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 14
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ebf9-c112-3cb4-1f02",
-            "name": "Anakonda's Amazons"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8b76-92c4-23f9-54b1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9e4d-c653-35ec-1d09",
-            "name": "Amazon Cold One Outriders"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8b76-92c4-23f9-54b1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9e4d-c653-35ec-1d09",
-            "name": "Amazon Cold One Outriders"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "force",
-            "childId": "7d87-7436-5341-bbc0"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|roster|selectionCount|child=id",
       "kind": "condition",

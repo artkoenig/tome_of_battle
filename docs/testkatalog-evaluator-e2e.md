@@ -684,3 +684,23 @@ Kontingent „Standard (VC-AB)" in beiden Rostern.
 | :--- | :--- | :--- |
 | 01 | Master Necromancer mit ZWEI Dispel Scrolls | Zwei Anwendungen des +1: effektives Gruppen-Maximum 1+2=3; keine Grenze feuert (2×25 = 50 von 100 Punkten Budget) |
 | 02 | Derselbe Aufbau ohne Arcane Item | Kein Treffer: das Basis-Maximum 1 der Gruppe steht |
+
+## `at-least-force-toggle-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7/§9.7 der Formatdoku): sie zählt die Auswahlen des Kontingents, die auf
+die benannte Id auflösen — über die Link-Id **oder** deren Ziel-Id. Beleg:
+Greasus Goldtooth (`47f3-befb-e32e-0b4a`, Ogre Kingdoms, Wurzeleinheit) trägt
+`max 0 scope="force"` (`cef8-c3b1-7850-85bc`) und `set 1` darauf, gegatet auf
+`atLeast 1` des Wurzel-entryLinks „Allow special characters?"
+(`9e50-7486-65ab-c449`, Ziel `8923-5946-7b10-8957` in der `.gst`). Beide
+Roster nutzen „Standard (OK-AB)" und unterscheiden sich nur im Toggle.
+
+**Stand beim Pinnen: rot** — Roster 02 schlägt fehl (die Engine kreditiert die
+Toggle-Auswahl mit Ziel-Id nicht gegen die Link-`childId` der Bedingung);
+gepinnt als Phase-B-Aufgabe in `docs/testing/campaign-state.json`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Greasus gewählt, kein Toggle im Kontingent | Die Bedingung hält nicht: das Basis-Maximum 0 steht und feuert (Ist 1 gegen 0), `effectiveMax` 0 |
+| 02 | Identisch, zusätzlich „Allow special characters?" gewählt | Die Bedingung hält (Ist 1): der `set 1` hebt die Grenze — sie feuert nicht mehr, `effectiveMax` 1 |

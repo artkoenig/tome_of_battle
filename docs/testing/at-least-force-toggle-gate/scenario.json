@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-force-toggle-gate",
+  "description": "Eine condition type=atLeast mit scope=force und childId auf einen Eintrag zaehlt die Selektionen des umschliessenden Kontingents, die sich auf diese Id aufloesen (ueber die Link-Id ODER deren aufgeloestes Ziel), und haelt, sobald die Zahl den value der Bedingung erreicht - ein damit gegateter Modifier wirkt genau dann. Konkret: Greasus Goldtooth (47f3-befb-e32e-0b4a, Ogre Kingdoms) traegt max 0 selections scope=force (Constraint cef8-c3b1-7850-85bc) und einen set-1-Modifier auf genau diese Constraint-Id, bedingt per atLeast 1 selections scope=force childId=9e50-7486-65ab-c449 (Wurzel-entryLink 'Allow special characters?' des Katalogs, Ziel 8923-5946-7b10-8957 im Spielsystem). Zwei Roster, die sich NUR in der Toggle-Selektion unterscheiden, pinnen das effektive Maximum des Greasus-Slots: 0 ohne Toggle (die max-0-Grenze feuert bei Ist 1), 1 mit Toggle (keine Verletzung). Die Toggle-Selektion steht mit dem ZIEL-entryId 8923-... im Roster, die Bedingung nennt die LINK-Id 9e50-... - die Link/Ziel-Aufloesung ist Teil des Pins.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-greasus-without-toggle-max0.ros",
+      "description": "Ogre-Kontingent Standard (OK-AB) mit Greasus Goldtooth, aber OHNE die Auswahl 'Allow special characters?'. Die atLeast-Bedingung des set-1-Modifiers haelt bei Ist 0 nicht: der Constraint cef8-c3b1-7850-85bc behaelt seinen geschriebenen Basiswert max 0 und feuert bei einem Greasus im Kontingent (Ist 1, Grenze 0). Der Greasus-Slot meldet effectiveMax=0.",
+      "expect": {
+        "firing": [
+          { "limitId": "cef8-c3b1-7850-85bc", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "47f3-befb-e32e-0b4a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Greasus Goldtooth, Overtyrant of the Ogre Kingdoms",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-greasus-with-toggle-max1.ros",
+      "description": "Identischer Aufbau, zusaetzlich mit der Auswahl 'Allow special characters?' (entryId 8923-5946-7b10-8957, aufgeloest ueber den Wurzel-entryLink 9e50-7486-65ab-c449). Die atLeast-Bedingung haelt bei Ist 1: der set-Modifier ersetzt den Constraint-Wert durch 1, der Greasus-Slot meldet effectiveMax=1, und die Grenze cef8-c3b1-7850-85bc feuert bei Ist 1 nicht mehr. Die Roster-Obergrenze des Toggles selbst (max 1, 5036-e10c-2fd8-f135) ist mit einer Selektion erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["cef8-c3b1-7850-85bc", "5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "47f3-befb-e32e-0b4a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Greasus Goldtooth, Overtyrant of the Ogre Kingdoms",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}
