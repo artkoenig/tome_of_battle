@@ -7,100 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 24,
-    "uncovered": 81
+    "covered": 25,
+    "uncovered": 80
   },
   "cells": [
-    {
-      "key": "conditionGroup|or|top",
-      "kind": "conditionGroup",
-      "axes": {
-        "type": "or",
-        "nesting": "top"
-      },
-      "occurrences": 134,
-      "files": {
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 6,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 8,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 64,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 47,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 8
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "ee09-9a50-ad78-9c32",
-            "name": "Regiment of Renown"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup"
-          ],
-          "raw": {
-            "type": "or"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "7f6e-67e0-2c1a-97ef",
-            "name": "Fenbeast"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup"
-          ],
-          "raw": {
-            "type": "or"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "0132-a7c0-8366-be6e",
-            "name": "Magic Banners (Common)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup"
-          ],
-          "raw": {
-            "type": "or"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|remove|category",
       "kind": "modifier",

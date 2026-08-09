@@ -721,3 +721,19 @@ eine voll besetzte Black-Coach-Einheit; Unterschied nur der Toggle.
 | :--- | :--- | :--- |
 | 01 | Ohne Border-Patrols-Selektion | Zählung 0 < 1: Black Coach bleibt sichtbar (`isHidden` false), die Core-Pflicht feuert unmodifiziert mit Ist 0 gegen 2 |
 | 02 | Mit einer Border-Patrols-Selektion | Zählung 1 ≥ 1: Black Coach wird versteckt (`isHidden` true), die Core-Pflicht feuert mit Grenze 1 statt 2 — beide Wirkungen derselben Bedingung |
+
+## `condition-group-or-force-gate`
+
+Prüft die `conditionGroup type="or"` auf oberster Ebene eines Modifikators
+(§7.7 der Formatdoku): die Gruppe hält, wenn **mindestens eines** ihrer
+Mitglieder hält — ein einziges wahres Mitglied genügt. Beleg: die
+Wurzeleinheit „0-1 Bat Swarm" (`3161-6d02-8903-b0c4`, Vampire Counts, Basis
+`hidden="false"`) trägt `set hidden=true`, gegatet durch eine einzelne
+or-Gruppe mit fünf `instanceOf(scope=force)`-Mitgliedern (Necromancer's Army,
+Clan Necrarch, Clan Blood Dragons, Lichemaster, Vampire Coast). Beide Roster
+sind bis auf das Kontingent identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Bat-Swarm-Einheit im Kontingent „Clan Necrarch (VC-AB)" — genau das zweite Gruppenmitglied hält | Die or-Gruppe hält: die Einheit ist versteckt (`isHidden` true); ihre roster-max-1-Grenze bleibt trotzdem geprüft und still |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" — kein Mitglied hält | Die Gruppe hält nicht: die Einheit bleibt sichtbar (`isHidden` false) |

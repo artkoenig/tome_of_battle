@@ -46,6 +46,11 @@
       "key": "modifier|set|name",
       "evidence": ["docs/testing/force-instance-gated-rename"],
       "rationale": "Three set-name modifiers of Grave Guard (Vampire Counts) are asserted through effective names in both directions: roster 01 (Lichemaster force) pins the replaced names 'Barrow Guardians'/'Barrow Guard' on unit, model slot and profile info occurrence, roster 02 (Standard force) pins the base name 'Grave Guard' on all three. Green campaign scenario of run 1, credited without a new authoring pass."
+    },
+    {
+      "key": "conditionGroup|or|top",
+      "evidence": ["docs/testing/condition-group-or-force-gate"],
+      "rationale": "The 0-1 Bat Swarm root unit (Vampire Counts) is hidden by a set-hidden modifier gated by a lone top-level or-group of five instanceOf(scope=force) members; roster 01 (Clan Necrarch force, exactly the second member true) asserts isHidden true — one true member suffices — and roster 02 (Standard force, no member true) asserts isHidden false. Scenario is green."
     }
   ]
 }
