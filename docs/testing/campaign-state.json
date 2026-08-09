@@ -52,6 +52,24 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/set-characteristic-force-gate": {
+        "cellKey": "modifier|set|characteristic",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/set-primary-category-membership": {
+        "cellKey": "modifier|set-primary|category",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     }
   }
