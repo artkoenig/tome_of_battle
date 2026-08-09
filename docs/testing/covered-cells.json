@@ -91,6 +91,11 @@
       "key": "condition|lessThan|force|selectionCount|child=id",
       "evidence": ["docs/testing/less-than-force-min-drop"],
       "rationale": "Neferata's 'Seduction, Domination, Transfix and Beguile.' power carries min 1 (10a1-ac7b-4b9c-0e12) set to 0 while the force counts fewer than one Lahmia bloodline; roster 01 (Lahmia, power missing) asserts the min fires 0/1, roster 02 (Necrarch twin) asserts it absent while the unconditional link min 330a-d0d9-2177-a87f proves the slot is validated, roster 03 (Lahmia, power selected) asserts all silent. Scenario is green."
+    },
+    {
+      "key": "condition|atLeast|unit|selectionCount|child=id",
+      "evidence": ["docs/testing/at-least-unit-upgrade-gate"],
+      "rationale": "The Vampire Lord's Magic Level 4 (revealed) and Magic Level 2 (hidden) are both gated on atLeast 1 of Nehekhara's Noble Blood counted in unit scope; roster 02 with the nested upgrade asserts ML4 visible and the occupied ML2 hidden (threshold exactly reached), roster 01 without asserts the base values. Scenario is green."
     }
   ]
 }

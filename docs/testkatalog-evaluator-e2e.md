@@ -838,3 +838,21 @@ Unterschied nur Blutlinie bzw. Kraft-Auswahl.
 | 01 | Lahmia-Blutlinie, Kraft nicht gewählt | Die Bedingung hält nicht (1 ist nicht < 1): die Basis-Pflicht feuert (Ist 0 gegen 1), ebenso die unbedingte Link-Pflicht (Kontrolle) |
 | 02 | Necrarch-Zwilling, Kraft nicht gewählt | Die Bedingung hält (0 < 1): die gegatete Pflicht ist still; die unbedingte Link-Pflicht feuert weiter und beweist, dass der Slot geprüft wird |
 | 03 | Lahmia-Blutlinie, Kraft gewählt | Alles still: die Pflicht ist erfüllt (Ist 1) |
+
+## `at-least-unit-upgrade-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="unit"` und Eintrags-`childId`
+(§7.7 der Formatdoku, Kasten `scope="unit"`): gezählt wird in der
+umschließenden Einheit, verschachtelte Auswahlen eingeschlossen. Beleg: in
+der „Wizard Level"-Gruppe des „0-1 Vampire Lord" (`b77b-88d5-5e80-e178`,
+Vampire Counts) wird „Magic Level 4" (`c5d1-…`, Basis versteckt) per
+`set hidden=false` aufgedeckt und „Magic Level 2" (`54fc-…`, Basis sichtbar)
+per `set hidden=true` versteckt — beide gegatet auf `atLeast 1` von
+„Nehekhara's Noble Blood" (`32d0-a151-94a3-aa54`) im unit-Rahmen. Beide
+Roster: Standard (VC-AB), Necrarch-Blutlinie, Vampire Lord mit Pflichtkindern
+und Magic Level 2; Unterschied nur die Noble-Blood-Auswahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord ohne Noble Blood | Zählung 0 < 1: Basiswerte stehen — Magic Level 4 verborgen, Magic Level 2 sichtbar |
+| 02 | Derselbe Aufbau mit Noble Blood (verschachtelt unter dem Lord) | Zählung 1 ≥ 1 (Schwelle exakt erreicht): Magic Level 4 aufgedeckt und der **gewählte** Magic-Level-2-Slot versteckt |
