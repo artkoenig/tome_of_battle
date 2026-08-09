@@ -1,11 +1,13 @@
 /**
- * Issue 0147 (Increment 1): `childId` einer Bedingung/Wiederholung, die einen
- * WURZEL-`entryLink` benennt, wird auf die aufgeloeste Ziel-Id normalisiert
- * (`targetChildId`), samt `witnessDefinition` auf die Ziel-Definition. Ohne
- * diese Normalisierung zaehlt eine `atLeast(scope=force)`-Bedingung, deren
- * `childId` einen Wurzel-Link benennt, keine Roster-Auswahl, die nur die Ziel-Id
- * des Links traegt (`entryLinkId` leer) — genau der Fall aus dem gepinnten
- * Szenario `at-least-force-toggle-gate`.
+ * Issue 0147 (Increment 1): `childId` einer BEDINGUNG, die einen `entryLink`
+ * benennt — gleich welcher Tiefe, an der Katalogwurzel wie verschachtelt —,
+ * wird auf die aufgeloeste Ziel-Id normalisiert (`targetChildId`), samt
+ * `witnessDefinition` auf die Ziel-Definition. Bewusst ausgenommen bleibt
+ * `<repeat>`: dessen `childId` bleibt unveraendert die Link-Id. Ohne diese
+ * Normalisierung zaehlt eine `atLeast(scope=force)`-Bedingung, deren `childId`
+ * einen Link benennt, keine Roster-Auswahl, die nur die Ziel-Id des Links
+ * traegt (`entryLinkId` leer) — genau der Fall aus dem gepinnten Szenario
+ * `at-least-force-toggle-gate`.
  *
  * Block 1 (statisch, `parseCatalogue` + `resolveCatalogue`, kein Roster) pinnt
  * die Umschreibung selbst und ihre bewusste Reichweite. Block 2 (Verhalten,
