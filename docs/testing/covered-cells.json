@@ -66,6 +66,11 @@
       "key": "modifier|remove|category",
       "evidence": ["docs/testing/remove-category-force-gate"],
       "rationale": "Grave Guard (Vampire Counts) is recategorized Special->Core by a modifierGroup gated on the Clan Blood Dragons force; roster 01 (Standard force, 4 units) asserts the raw categories count (Special max fires 4>3, Core min fires 0<2), roster 02 (Blood Dragons force, same build) asserts both silent — the absent Special-max is the removal pin, the absent Core-min co-pins the added membership. Scenario is green."
+    },
+    {
+      "key": "modifier|add|category",
+      "evidence": ["docs/testing/remove-category-force-gate"],
+      "rationale": "The same Grave Guard recategorization pins the add side: in roster 02 (Blood Dragons force) the Core-min limit 35c2-d478-392a-aeb1 is asserted absent, which holds only if the add category 64bf (Core) makes the four Grave Guard units count toward Core (otherwise 0 < 2 fires, as roster 01 proves on the raw links). Green scenario, credited without a new authoring pass."
     }
   ]
 }
