@@ -16,10 +16,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-coverage-campaign",
     "campaignIssue": null,
-    "runs": 1,
-    "lastRunAt": "2026-08-09T13:44:08Z",
+    "runs": 2,
+    "lastRunAt": "2026-08-09T15:22:43Z",
     "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-09T15:22:55Z",
+    "reArmedFor": null,
     "gaps": {}
   }
 }
