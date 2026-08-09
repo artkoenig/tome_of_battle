@@ -121,9 +121,9 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId, kn
  * jeweiligen Synthese-Schritt gestellt, statt spaeter aus Elternschaft und
  * Definitionsart erraten zu werden.
  *
- * `limitScopeFilter` schneidet den Anker optional auf **einen** Bezugsrahmen zu
- * (siehe {@link evaluableLimitsOf}): die Constraint-Schicht wertet an ihm dann
- * nur die Grenzen mit genau diesem `scope` aus. Gestellt wird er ausschliesslich
+ * `limitScopeFilter` schneidet den Anker optional auf einen Bezugsrahmen **oder
+ * eine Liste davon** zu (siehe {@link evaluableLimitsOf}): die Constraint-Schicht
+ * wertet an ihm dann nur die Grenzen mit einem dieser `scope`s aus. Gestellt wird er ausschliesslich
  * von {@link synthesizeUnlinkedCategoryAnchors}, wo **mehrere** Anker derselben
  * Definition (je Rahmen einer) haengen koennen — ohne Zuschnitt meldete jeder
  * Anker jede Grenze, also jede Grenze mehrfach. Alle anderen Anker bleiben
@@ -241,8 +241,14 @@ export function limitsOf(def) {
  */
 export function evaluableLimitsOf(node) {
   const limits = node.ownLimitsOnly === true ? (node.def.limits ?? []) : limitsOf(node.def);
-  if (node.limitScopeFilter === null || node.limitScopeFilter === undefined) return limits;
-  return limits.filter(limit => limit.scope === node.limitScopeFilter);
+  const filter = node.limitScopeFilter;
+  if (filter === null || filter === undefined) return limits;
+  // Der Zuschnitt darf **mehrere** Rahmen nennen: unter einem Kontingent loesen
+  // `force` und `parent` beide auf, und beide gehoeren an denselben einen Anker
+  // (sonst stuende die Kategorie doppelt im Bericht, siehe
+  // {@link synthesizeUnlinkedCategoryAnchors}).
+  const frames = Array.isArray(filter) ? filter : [filter];
+  return limits.filter(limit => frames.includes(limit.scope));
 }
 
 /**
@@ -322,9 +328,22 @@ function hasAnyLimitInFrame(def, scope) {
   return limitsOf(def).some(limit => limit.scope === scope);
 }
 
-/** True, wenn unter `parent` schon ein synthetischer Anker dieser Definition haengt. */
-function hasPhantomFor(parent, defId) {
-  return parent.children.some(child => child.isPhantom && child.def.id === defId);
+/**
+ * True, wenn unter `parent` ein **ungefilterter** synthetischer Anker dieser
+ * Definition haengt — einer ohne `limitScopeFilter`, der also *alle* Grenzen
+ * seiner Definition auswertet (typisch: das Pflicht-Phantom, das MAX-Grenzen
+ * huckepack mitnimmt).
+ *
+ * Die Unterscheidung traegt (Issue 0147): ein rahmen-**zugeschnittener**
+ * Geschwister-Anker deckt nur seinen eigenen Rahmen ab. Wer ihn wie einen
+ * ungefilterten behandelt, laesst die Grenzen des anderen Rahmens ungeprueft —
+ * genau der Fall der Kategorie „Battle standard bearer", die eine force- **und**
+ * eine parent-skopierte Grenze traegt.
+ */
+function hasUnfilteredPhantomFor(parent, defId) {
+  return parent.children.some(child => child.isPhantom
+    && child.def.id === defId
+    && (child.limitScopeFilter === null || child.limitScopeFilter === undefined));
 }
 
 /**
@@ -622,10 +641,38 @@ function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catal
     if (hasAnyLimitInFrame(def, ScopeKeyword.ROSTER) && !hasUnfilteredPhantomAnywhereFor(root, def.id)) {
       attachPhantom(root, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.ROSTER);
     }
-    if (hasAnyLimitInFrame(def, ScopeKeyword.FORCE)
-        && forceNodeList.length > 0
-        && !forceNodeList.some(forceNode => hasPhantomFor(forceNode, def.id))) {
-      attachPhantom(forceNodeList[0], def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, ScopeKeyword.FORCE);
+    // Kontingent-Ebene: **ein** Anker je Kontingent, dessen Zuschnitt beide dort
+    // aufloesenden Rahmen tragen kann.
+    //
+    // - `force`: die Ziel-Typ-Regel (§7.7, `query.js`) zaehlt ein Kategorie-Ziel
+    //   ohnehin armeeweit — welcher Kontingent-Knoten den Anker traegt, aendert
+    //   das Ergebnis nicht. **Ein** Anker am ersten Kontingent genuegt; je einer
+    //   pro Kontingent meldete dieselbe armeeweite Verletzung mehrfach.
+    // - `parent`: loest am Anker auf dessen Elternknoten auf, also auf genau
+    //   dieses Kontingent, und die Ziel-Typ-Regel weitet ihn **nicht** auf. Zwei
+    //   Kontingente zaehlen getrennt — der Anker haengt deshalb an **jedem**
+    //   (Issue 0147). Real getragen vom Border-Patrols-Muster der `.gst`: die
+    //   Kategorien „Chariot", „War Machine" und „Magical Standard" tragen
+    //   ausschliesslich eine parent-skopierte MAX-Grenze mit Rohwert -1
+    //   (unbegrenzt), die ein bedingter `set` auf 1 bzw. 0 zieht — und **kein**
+    //   `forceEntry` fuehrt diese drei per `categoryLink`. Ohne diesen Anker
+    //   blieben die drei Regeln still unausgewertet.
+    //
+    // Beide Rahmen an **einem** Knoten zu buendeln (statt je Rahmen einen) ist
+    // kein Detail: zwei Anker derselben Kategorie unter demselben Kontingent
+    // waeren zwei Slots im Bericht, und jede Oberflaeche, die Kategorie-Slots
+    // eines Kontingents auflistet, zeigte die Kategorie doppelt.
+    const forceLevelFrames = [];
+    if (hasAnyLimitInFrame(def, ScopeKeyword.FORCE)) forceLevelFrames.push(ScopeKeyword.FORCE);
+    if (hasAnyLimitInFrame(def, ScopeKeyword.PARENT)) forceLevelFrames.push(ScopeKeyword.PARENT);
+    if (forceLevelFrames.length > 0) {
+      for (const [index, forceNode] of forceNodeList.entries()) {
+        if (hasUnfilteredPhantomFor(forceNode, def.id)) continue;
+        // Der armeeweit zaehlende `force`-Rahmen nur am ersten Kontingent.
+        const frames = index === 0 ? forceLevelFrames : forceLevelFrames.filter(frame => frame !== ScopeKeyword.FORCE);
+        if (frames.length === 0) continue;
+        attachPhantom(forceNode, def, nextFrameId, AnchorKind.CATEGORY_ANCHOR, frames);
+      }
     }
   }
 }
@@ -663,17 +710,58 @@ function linkedGroupTargetOf(def) {
  * eigentlichen Auswahlpunkte. Der `visited`-Satz haelt eine zyklische
  * Verweiskette endlich (wie `collectGroupMemberIds` im Resolver).
  */
-function* selectionDefinitionsUnder(ownerDef, visited = new Set()) {
+function* selectionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
   for (const child of ownerDef.children ?? []) {
     const linkedGroup = linkedGroupTargetOf(child);
     if (linkedGroup !== null) {
       if (visited.has(linkedGroup.id)) continue;
       visited.add(linkedGroup.id);
-      yield* selectionDefinitionsUnder(linkedGroup, visited);
+      yield* selectionDefinitionsUnder(linkedGroup, visited, [...gates, child]);
     } else if (child.kind === DefinitionKind.ENTRY_LINK || child.kind === DefinitionKind.ENTRY || child.kind === DefinitionKind.CATEGORY_LINK) {
-      yield child;
+      yield { def: child, gates };
     } else if (child.kind === DefinitionKind.GROUP) {
-      yield* selectionDefinitionsUnder(child, visited);
+      yield* selectionDefinitionsUnder(child, visited, [...gates, child]);
+    }
+  }
+}
+
+/**
+ * Die **Sichtbarkeits-Klammern** je Definitions-Id unter einem Eigentuemer: die
+ * durchschrittenen `selectionEntryGroup`s bzw. Gruppen-Verweise, aeusserste
+ * zuerst ({@link selectionDefinitionsUnder}).
+ *
+ * Eine versteckte Gruppe versteckt, **was sie haelt**
+ * (`docs/battlescribe-data-format.md` §8) — und das gilt fuer jeden Knoten, der
+ * an ihrer Stelle steht, nicht nur fuer das Angebot: fuer die belegte Auswahl
+ * ebenso wie fuer das Pflicht-Phantom einer nicht gewaehlten Option. Ohne diese
+ * Kette meldete die Engine die Min-Grenze eines Members einer dauerhaft
+ * versteckten Gruppe als offene Pflicht, die der Nutzer nicht erfuellen kann:
+ * real z. B. „Lore of Necromancy" (`min 1`) in der Gruppe „Lores of Magic"
+ * (`hidden="true"`) des Master Necromancer (Vampire Counts).
+ */
+function visibilityGatesUnder(ownerDef) {
+  const gatesByDefId = new Map();
+  for (const { def, gates } of selectionDefinitionsUnder(ownerDef)) {
+    if (gates.length > 0 && !gatesByDefId.has(def.id)) gatesByDefId.set(def.id, gates);
+  }
+  return gatesByDefId;
+}
+
+/**
+ * Traegt die Sichtbarkeits-Klammern der Definitionsgruppen an die **belegten**
+ * Kind-Knoten jedes realen Rahmens nach ({@link visibilityGatesUnder}). Der
+ * Instanzbaum kennt die Gruppen nicht — die `.ros` verwirft ihr `entryGroupId`
+ * (§3.2) —, also muss die Zugehoerigkeit hier aus dem Definitionsbaum kommen,
+ * wie schon die Gruppen-Mitgliedschaft der Zaehl-Schicht.
+ */
+function annotateOccupiedVisibilityGates(root) {
+  for (const owner of realNodes(root)) {
+    const gatesByDefId = visibilityGatesUnder(ownerDefinitionOf(owner));
+    if (gatesByDefId.size === 0) continue;
+    for (const child of owner.children) {
+      if (child.isPhantom) continue;
+      const gates = gatesByDefId.get(child.def.id);
+      if (gates !== undefined) child.visibilityGates = gates;
     }
   }
 }
@@ -691,12 +779,16 @@ function* selectionDefinitionsUnder(ownerDef, visited = new Set()) {
 function synthesizeParentScopePhantoms(root, nextFrameId) {
   for (const owner of [...realNodes(root)]) {
     const ownerDef = ownerDefinitionOf(owner);
-    for (const childDef of selectionDefinitionsUnder(ownerDef)) {
+    for (const { def: childDef, gates } of selectionDefinitionsUnder(ownerDef)) {
       if (owner.isForce && childDef.kind === DefinitionKind.CATEGORY_LINK) continue;
       if (hasMinLimitInFrame(childDef, ScopeKeyword.PARENT) && countInstances(owner, childDef.id) === 0) {
         const alreadyHasPhantom = owner.children.some(c => c.isPhantom && c.def.id === childDef.id);
         if (!alreadyHasPhantom) {
-          attachPhantom(owner, childDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+          // Die durchschrittenen Gruppen tragen ihre Sichtbarkeit an das Phantom
+          // weiter: eine versteckte Gruppe versteckt, was sie haelt (§8), und
+          // eine Min-Grenze an einem versteckten Anker wird nicht validiert.
+          const phantom = attachPhantom(owner, childDef, nextFrameId, AnchorKind.MANDATORY_PHANTOM);
+          if (gates.length > 0) phantom.visibilityGates = gates;
         }
       }
     }
@@ -915,6 +1007,10 @@ export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogue
   for (const forceInstance of roster.forces ?? []) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId, knownCatalogueIds);
   }
+  // Direkt nach dem Instanzbaum: die Sichtbarkeits-Klammern der belegten Knoten.
+  // Sie stammen aus dem Definitionsbaum, nicht aus der Instanz — die `.ros`
+  // verwirft die Gruppen-Zugehoerigkeit (§3.2).
+  annotateOccupiedVisibilityGates(root);
   synthesizeMandatoryPhantoms(root, resolved.definitions ?? [], nextFrameId, catalogueScope, primaryCatalogueByForceDefId);
   synthesizeParentScopePhantoms(root, nextFrameId);
   synthesizeForceCategoryAnchors(root, nextFrameId);

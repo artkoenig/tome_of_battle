@@ -204,104 +204,66 @@ const controlOf = (row) => row.querySelector('input[type="radio"], input[type="c
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Kriterium 6 — eine Pflichtzeile in einer begrenzten Gruppe schreibt weiterhin nichts', () => {
-  test(`"${LORE_OF_NECROMANCY}" auf dem Master Necromancer: der Klick auf den Schalter loest keine Schreiboperation aus`, () => {
-    const operations = createSubSelectionOperationsMock();
-    const { container, capabilities, pathBySelectionId, selection } = renderCard(MASTER_NECROMANCER, operations);
+describe('Eine Pflichtzeile in einer VERSTECKTEN Gruppe wird weder gefordert noch gezeigt', () => {
+  // Umgeschrieben mit Issue 0147. Die Vorgaengerfassung nahm an, der Slot sei
+  // sichtbar (`isHidden: false`) — das war die Folge einer Luecke der Engine:
+  // die Sichtbarkeits-Klammer einer `selectionEntryGroup` erreichte nur den
+  // Angebots-Anker, nicht die belegte Auswahl und nicht das Pflicht-Phantom.
+  //
+  // Der Katalog sagt es deutlich: alle acht `Lores of Magic`-Gruppen der
+  // Vampire Counts definitive edition tragen `hidden="true"` **ohne**
+  // Aufdeck-Modifikator (z. B. `3e50-5f62-a177-304d`, `.cat:2041`). Nach
+  // `docs/battlescribe-data-format.md` §8 versteckt eine versteckte Gruppe,
+  // was sie haelt — und die Min-Grenze einer effektiv versteckten Entitaet
+  // wird nicht validiert. Die Zeile gehoert also gar nicht auf die Karte, und
+  // die Pflicht darf nicht als offen gemeldet werden.
+  //
+  // Kriterium 6 aus Issue 0143 („die Wahl schreibt dieselbe Operation wie
+  // zuvor — also keine") bleibt damit erfuellt, und zwar strenger: es gibt
+  // nichts zu klicken. Genau das haelt dieser Test fest.
 
-    // Vorbedingung am echten Bericht: eine Pflichtwahl, nicht versteckt.
-    const unitPath = pathBySelectionId.get(selection.id);
-    expect(capabilityNamed(capabilities, unitPath, LORE_OF_NECROMANCY), 'der Bericht kennt den Slot')
-      .toMatchObject({
-        anchorKind: 'mandatoryPhantom',
-        effectiveMin: 1,
-        effectiveMax: 1,
-        isHidden: false,
-        defId: NECROMANCY_LINK_ID,
-      });
-
-    // Vorbedingung am DOM: genau eine Zeile, mit einem Schalter.
-    const rows = rowsNamed(container, LORE_OF_NECROMANCY);
-    expect(rows, `"${LORE_OF_NECROMANCY}" steht genau einmal auf der Karte`).toHaveLength(1);
-    const control = controlOf(rows[0]);
-    expect(control, `"${LORE_OF_NECROMANCY}" hat einen Wahlschalter`).toBeTruthy();
-
-    fireEvent.click(control);
-
-    // Vor der Aenderung schrieb dieser Klick nichts — dabei muss es bleiben.
-    expect(writesOf(operations), 'Schreiboperationen nach dem Klick auf die Pflichtzeile').toEqual([]);
-  });
-
-  test(`Wiederholung: zweimal auf "${LORE_OF_NECROMANCY}" geklickt schreibt immer noch nichts`, () => {
-    const operations = createSubSelectionOperationsMock();
-    const { container } = renderCard(MASTER_NECROMANCER, operations);
-
-    const control = controlOf(rowsNamed(container, LORE_OF_NECROMANCY)[0]);
-    expect(control, `"${LORE_OF_NECROMANCY}" hat einen Wahlschalter`).toBeTruthy();
-
-    fireEvent.click(control);
-    fireEvent.click(control);
-
-    expect(writesOf(operations), 'Schreiboperationen nach zwei Klicks').toEqual([]);
-  });
-
-  test.each(CARDS_WITH_MANDATORY_LORE.filter(c => c.id !== MASTER_NECROMANCER))(
-    'dieselbe Gestalt auf "$name": der Klick auf die Pflichtzeile loest keine Schreiboperation aus',
+  test.each(CARDS_WITH_MANDATORY_LORE)(
+    `auf "$name" fuehrt der Bericht "${LORE_OF_NECROMANCY}" als verstecktes Pflicht-Phantom`,
     ({ id }) => {
-      const operations = createSubSelectionOperationsMock();
-      const { container, capabilities, pathBySelectionId, selection } = renderCard(id, operations);
+      const { capabilities, pathBySelectionId, selection } = renderCard(id);
 
       const unitPath = pathBySelectionId.get(selection.id);
       expect(capabilityNamed(capabilities, unitPath, LORE_OF_NECROMANCY), 'der Bericht kennt den Slot')
-        .toMatchObject({ anchorKind: 'mandatoryPhantom', effectiveMin: 1, isHidden: false });
-
-      const rows = rowsNamed(container, LORE_OF_NECROMANCY);
-      expect(rows, `"${LORE_OF_NECROMANCY}" steht genau einmal auf der Karte`).toHaveLength(1);
-      const control = controlOf(rows[0]);
-      expect(control, `"${LORE_OF_NECROMANCY}" hat einen Wahlschalter`).toBeTruthy();
-
-      fireEvent.click(control);
-
-      expect(writesOf(operations), 'Schreiboperationen nach dem Klick auf die Pflichtzeile').toEqual([]);
+        .toMatchObject({ anchorKind: 'mandatoryPhantom', effectiveMin: 1, isHidden: true });
     },
   );
 
   test.each(CARDS_WITH_MANDATORY_LORE)(
-    `auf "$name" ist "${LORE_OF_NECROMANCY}" als genommen angezeigt: der Schalter ist angehakt`,
+    `auf "$name" steht "${LORE_OF_NECROMANCY}" nicht auf der Karte`,
     ({ id }) => {
-      const { container, capabilities, pathBySelectionId, selection } = renderCard(id);
+      const { container } = renderCard(id);
 
-      // Vorbedingung am echten Bericht: eine Pflichtwahl, nicht versteckt.
-      const unitPath = pathBySelectionId.get(selection.id);
-      expect(capabilityNamed(capabilities, unitPath, LORE_OF_NECROMANCY), 'der Bericht kennt den Slot')
-        .toMatchObject({ anchorKind: 'mandatoryPhantom', effectiveMin: 1, isHidden: false });
-
-      const rows = rowsNamed(container, LORE_OF_NECROMANCY);
-      expect(rows, `"${LORE_OF_NECROMANCY}" steht genau einmal auf der Karte`).toHaveLength(1);
-      const control = controlOf(rows[0]);
-      expect(control, `"${LORE_OF_NECROMANCY}" hat einen Wahlschalter`).toBeTruthy();
-
-      // Vor der Aenderung: `<input disabled type="checkbox" checked>`. Welcher
-      // Schaltertyp die Pflichtwahl traegt, ist offen — dass sie genommen
-      // aussieht, nicht.
-      expect(control.checked, `"${LORE_OF_NECROMANCY}" ist als genommen angehakt`).toBe(true);
+      expect(rowsNamed(container, LORE_OF_NECROMANCY), `"${LORE_OF_NECROMANCY}" bleibt draussen`).toHaveLength(0);
     },
   );
 
-  test(`Grenzfall: die Pflichtzeile liegt im Abschnitt "${LORES_OF_MAGIC}" und ist dort die einzige Zeile — trotzdem schreibt ihr Schalter nichts`, () => {
+  test(`weder die Gruppe "${LORES_OF_MAGIC}" noch ihre Zeile erzeugt eine Schreiboperation`, () => {
     const operations = createSubSelectionOperationsMock();
     const { container } = renderCard(MASTER_NECROMANCER, operations);
 
-    // Die Gruppe mit `max 1` ist der Grund, aus dem die Zeile ueberhaupt zum
-    // Radio wird: erst ihre Grenze fuehrt in den Radio-Zweig.
-    const row = rowsNamed(container, LORE_OF_NECROMANCY)[0];
-    expect(row, `"${LORE_OF_NECROMANCY}" steht auf der Karte`).toBeTruthy();
-    const holder = row.closest('.option-group');
-    expect(holder, `"${LORE_OF_NECROMANCY}" steht in einem Abschnitt`).toBeTruthy();
-    expect(labelOf(holder)).toBe(LORES_OF_MAGIC);
+    // Das Aufklappen aller Abschnitte (in `renderCard`) hat bereits jede
+    // sichtbare Kopfzeile angeklickt; geschrieben werden darf dabei nichts.
+    expect(sectionsOf(container).map(labelOf), `"${LORES_OF_MAGIC}" ist kein Abschnitt der Karte`)
+      .not.toContain(LORES_OF_MAGIC);
+    expect(writesOf(operations), 'Schreiboperationen beim Aufbau der Karte').toEqual([]);
+  });
 
-    fireEvent.click(controlOf(row));
+  test('der Slot bleibt mit seiner Grenze im Bericht — versteckt heisst nicht abwesend', () => {
+    // ADR-0035: Verstecktes wird materialisiert und markiert, nicht weggelassen.
+    // Nur die Pflicht wird nicht mehr eingefordert.
+    const { capabilities, pathBySelectionId, selection } = renderCard(MASTER_NECROMANCER);
+    const unitPath = pathBySelectionId.get(selection.id);
 
-    expect(writesOf(operations), `Schreiboperationen nach dem Klick in "${LORES_OF_MAGIC}"`).toEqual([]);
+    expect(capabilityNamed(capabilities, unitPath, LORE_OF_NECROMANCY)).toMatchObject({
+      defId: NECROMANCY_LINK_ID,
+      effectiveMin: 1,
+      effectiveMax: 1,
+      isHidden: true,
+    });
   });
 });

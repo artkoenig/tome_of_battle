@@ -92,6 +92,9 @@ const UNCONDITIONAL_GATE = Object.freeze({
   isConditional: false,
   conditions: Object.freeze([]),
   conditionGroups: Object.freeze([]),
+  // Der geerbte Wiederholungsfaktor der umschliessenden Modifikatorgruppen
+  // (Issue 0116): 1 heisst „keine Klammer wiederholt mich".
+  repeatFactor: SINGLE_APPLICATION,
 });
 
 /**
@@ -124,6 +127,22 @@ function compare(type, actual, expected, diagnostics) {
   }
   return comparator(actual, expected);
 }
+
+/**
+ * Registry `ConditionGroupKind → Verknuepfung der Mitglieder`
+ * (`docs/evaluator-architecture.md` §4.6). Wie {@link COMPARATORS} eine
+ * Tabelle statt einer Fallunterscheidung: waechst die XSD-SSOT um einen
+ * Gruppen-Typ, faellt der fehlende Eintrag im Deckungstest auf
+ * (`enumHandlerCoverage.test.js`) statt still als „oder" durchzurutschen.
+ *
+ * Die Mitglieder kommen als **Thunks**, damit `or` (und die Negation) weiterhin
+ * kurzschliessen und nicht ausgewertete Zweige keine Diagnose melden.
+ */
+export const CONDITION_GROUP_COMBINATORS = Object.freeze({
+  [ConditionGroupKind.AND]: memberHolds => memberHolds.every(holds => holds()),
+  [ConditionGroupKind.OR]: memberHolds => memberHolds.some(holds => holds()),
+  [ConditionGroupKind.NOT]: memberHolds => !memberHolds.some(holds => holds()),
+});
 
 /**
  * Die Vergleichstypen, deren Praedikat den `value` ignoriert (Mitgliedschaft
@@ -214,34 +233,62 @@ function repeatCount(ctx, repeat) {
 }
 
 /**
- * Der Wiederholungsfaktor eines Modifikators: 1 ohne Wiederholungen, sonst das
- * **Produkt** der einzelnen Wiederholungszahlen (eine 0 macht das Produkt 0 und
- * damit den Modifikator inaktiv).
+ * Der Wiederholungsfaktor einer `<repeats>`-Liste: 1 ohne Wiederholungen, sonst
+ * die **Summe** der einzelnen Wiederholungszahlen.
+ *
+ * **Summe, nicht Produkt** (Issue 0116, Korrektur des Entwurfs in
+ * `docs/evaluator-architecture.md` §4.6): Das Wiki sagt zum `repeat` nur, er
+ * lasse den Modifikator „multiple times" greifen — jede Wiederholung steuert
+ * also **eigene** Anwendungen bei, statt die der anderen zu vervielfachen. Die
+ * einzige Mehrfach-`<repeats>`-Fundstelle aller Fixture-Kataloge belegt es und
+ * schreibt ihre Regel sogar im Klartext daneben: „Grave markers" (Vampire
+ * Counts) erhoeht seine Grenze je einmal pro *Vampire Count* und pro *Vampire
+ * Lord*, und der Regeltext lautet „two Grave markers, **plus an additional
+ * Grave marker for each** Vampire Count **or** Vampire Lord in the army". Als
+ * Produkt gelesen faellt der Aufschlag auf 0, sobald eine der beiden Einheiten
+ * fehlt — genau der haeufigste Fall.
+ *
+ * Dieselbe eine Regel fuer beide Traeger der `ModifierBase`: einen einzelnen
+ * Modifikator **und** eine Modifikatorgruppe (Catalogue.xsd:469-479). Eine
+ * Gruppe ist die Kurzform fuer „dasselbe an mehreren Modifikatoren" — das gilt
+ * fuer ihre Wiederholungen wie fuer ihre Bedingungen.
  */
-function modifierTimes(ctx, modifier) {
-  if (modifier.repeats.length === 0) return SINGLE_APPLICATION;
-  let product = SINGLE_APPLICATION;
-  for (const repeat of modifier.repeats) {
-    product *= repeatCount(ctx, repeat);
+function repeatsFactor(ctx, repeats) {
+  if (repeats === undefined || repeats.length === 0) return SINGLE_APPLICATION;
+  let sum = 0;
+  for (const repeat of repeats) {
+    sum += repeatCount(ctx, repeat);
   }
-  return product;
+  return sum;
 }
 
 /**
  * Wertet eine Bedingungsgruppe **rekursiv** zu einem Wahrheitswert aus: eine
  * `and`-Gruppe haelt genau dann, wenn **alle** ihre Bedingungen und Untergruppen
- * halten; eine `or`-Gruppe genau dann, wenn **mindestens eine** haelt. Die
- * Untergruppen werden ueber dieselbe Funktion aufgeloest — beliebige
- * Verschachtelungstiefe (`design.md`, Kontrakt `ConditionGroupDef`).
+ * halten; eine `or`-Gruppe genau dann, wenn **mindestens eine** haelt; eine
+ * `not`-Gruppe genau dann, wenn **keine** haelt. Die Untergruppen werden ueber
+ * dieselbe Funktion aufgeloest — beliebige Verschachtelungstiefe (`design.md`,
+ * Kontrakt `ConditionGroupDef`).
+ *
+ * `not` ist eine **vendorte Erweiterung** (ADR-0016, `Catalogue.xsd`): keine
+ * offizielle Schema-Version kennt sie, die Definitive-Edition-Kataloge nutzen
+ * sie (Issue 0115). Als exakte De-Morgan-Duale zu `or` gewaehlt — und damit die
+ * strengere der beiden denkbaren Lesarten (`NOT(OR(…))` gegen `NOT(AND(…))`),
+ * passend zur fail-closed-Richtung der uebrigen Engine. Auf den realen Daten
+ * ist die Wahl nicht beobachtbar: beide Fundstellen tragen genau **ein**
+ * Mitglied, wo jede Lesart dieselbe schlichte Negation ergibt.
  */
 function conditionGroupHolds(ctx, group) {
   const memberHolds = [
     ...group.conditions.map(condition => () => conditionHolds(ctx, condition)),
     ...group.groups.map(subGroup => () => conditionGroupHolds(ctx, subGroup)),
   ];
-  return group.type === ConditionGroupKind.AND
-    ? memberHolds.every(holds => holds())
-    : memberHolds.some(holds => holds());
+  const combinator = CONDITION_GROUP_COMBINATORS[group.type];
+  if (combinator === undefined) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONDITION_GROUP, { type: group.type }));
+    return false;
+  }
+  return combinator(memberHolds);
 }
 
 /**
@@ -594,7 +641,7 @@ function applyModifier(scope, modifier, gate) {
   if (scope.hiddenOnly && modifier.target?.kind !== ModifierTargetKind.HIDDEN) return;
   const conditionGroups = modifier.conditionGroups ?? [];
   if (!conditionsAndGroupsHold(scope.ctx, modifier.conditions, conditionGroups)) return;
-  const times = modifierTimes(scope.ctx, modifier);
+  const times = gate.repeatFactor * repeatsFactor(scope.ctx, modifier.repeats);
   if (times === 0 || modifier.target === null) return;
 
   const isConditional = gate.isConditional || modifier.conditions.length > 0 || conditionGroups.length > 0;
@@ -609,13 +656,22 @@ function applyModifier(scope, modifier, gate) {
   applyOperation(scope, modifier, times, isConditional, witness);
 }
 
-/** Das Gate einer Modifikatorgruppe: das des Aufrufers, erweitert um ihre eigenen Bedingungen und Bedingungsgruppen. */
-function gateWithin(gate, group) {
-  if (group.conditions.length === 0 && group.conditionGroups.length === 0) return gate;
+/**
+ * Das Gate einer Modifikatorgruppe: das des Aufrufers, erweitert um ihre eigenen
+ * Bedingungen und Bedingungsgruppen — und um ihren **Wiederholungsfaktor**
+ * (Issue 0116), der sich mit dem der aeusseren Klammern multipliziert und in
+ * jedem Mitglied auf dessen eigenen Faktor trifft.
+ */
+function gateWithin(ctx, gate, group) {
+  const repeatFactor = gate.repeatFactor * repeatsFactor(ctx, group.repeats);
+  if (group.conditions.length === 0 && group.conditionGroups.length === 0) {
+    return repeatFactor === gate.repeatFactor ? gate : { ...gate, repeatFactor };
+  }
   return {
     isConditional: true,
     conditions: [...gate.conditions, ...group.conditions],
     conditionGroups: [...gate.conditionGroups, ...group.conditionGroups],
+    repeatFactor,
   };
 }
 
@@ -637,7 +693,7 @@ function gateWithin(gate, group) {
 function applyModifierGroup(scope, group, gate) {
   if (group.hasUnreadableGuard) return;
   if (!conditionsAndGroupsHold(scope.ctx, group.conditions, group.conditionGroups)) return;
-  const innerGate = gateWithin(gate, group);
+  const innerGate = gateWithin(scope.ctx, gate, group);
   for (const modifier of group.modifiers) {
     applyModifier(scope, modifier, innerGate);
   }

@@ -140,6 +140,68 @@ describe('Eine `or`-Bedingungsgruppe haelt genau dann, wenn mindestens eine Bedi
   });
 });
 
+describe('Eine `not`-Bedingungsgruppe haelt genau dann, wenn keine Bedingung haelt (Issue 0115)', () => {
+  // `not` ist eine vendorte Erweiterung der XSD (ADR-0016): die
+  // Definitive-Edition-Kataloge nutzen sie (Pflichteinheiten des Sonderheeres
+  // "Army of the Lichemaster"), keine offizielle Schema-Version kennt sie. Als
+  // De-Morgan-Duale zu `or` gewaehlt: die Gruppe haelt, wenn KEIN Mitglied haelt.
+  // +5 Punkte, solange weder Archer noch Token im Roster stehen.
+  const CATALOGUE = warriorCatalogue(`
+    <modifiers>
+      <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
+        <conditionGroups>
+          <conditionGroup type="not">
+            <conditions>
+              ${atLeastOne(ARCHER_ID)}
+              ${atLeastOne(TOKEN_ID)}
+            </conditions>
+          </conditionGroup>
+        </conditionGroups>
+      </modifier>
+    </modifiers>`);
+
+  it('liest den Gruppen-Typ ohne Diagnose', () => {
+    expect(parseCatalogue(CATALOGUE).diagnostics).toHaveLength(0);
+  });
+
+  it('feuert, wenn keine Bedingung haelt', () => {
+    const report = evaluate(CATALOGUE, roster([selection(WARRIOR_ID, 1)]));
+    expect(effectivePoints(report)).toBe(WARRIOR_BASE_POINTS + MODIFIER_POINTS);
+  });
+
+  it('feuert nicht, sobald eine der Bedingungen haelt', () => {
+    const report = evaluate(CATALOGUE, roster([selection(WARRIOR_ID, 1), selection(TOKEN_ID, 1)]));
+    expect(effectivePoints(report)).toBe(WARRIOR_BASE_POINTS);
+  });
+
+  it('negiert auch eine verschachtelte Untergruppe (die reale Form der Kataloge)', () => {
+    // not( and(Archer, Token) ): feuert, solange NICHT beide zugleich stehen.
+    const NESTED = warriorCatalogue(`
+      <modifiers>
+        <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
+          <conditionGroups>
+            <conditionGroup type="not">
+              <conditionGroups>
+                <conditionGroup type="and">
+                  <conditions>
+                    ${atLeastOne(ARCHER_ID)}
+                    ${atLeastOne(TOKEN_ID)}
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+      </modifiers>`);
+
+    expect(effectivePoints(evaluate(NESTED, roster([selection(WARRIOR_ID, 1), selection(TOKEN_ID, 1)]))))
+      .toBe(WARRIOR_BASE_POINTS + MODIFIER_POINTS);
+    expect(effectivePoints(evaluate(NESTED, roster([
+      selection(WARRIOR_ID, 1), selection(TOKEN_ID, 1), selection(ARCHER_ID, 1),
+    ])))).toBe(WARRIOR_BASE_POINTS);
+  });
+});
+
 describe('Verschachtelte Bedingungsgruppen loesen sich ueber Tiefe korrekt auf', () => {
   // +5 Punkte, wenn ein Archer UND (ein Token ODER ein Banner) im Roster steht.
   const CATALOGUE = warriorCatalogue(`
@@ -276,15 +338,16 @@ describe('Eine verschachtelte Modifikatorgruppe greift nur bei innerem UND aeuss
   });
 });
 
-describe('Ein `repeats` auf einer ganzen Modifikatorgruppe wird als Diagnose sichtbar (nie still verschluckt)', () => {
-  // ModifierGroup erbt `repeats` von ModifierBase; volle Gruppen-Repeat-Semantik
-  // ist bewusst nicht im Umfang. Ein nicht-leeres `<repeats>` muss sichtbar
-  // gemeldet werden statt still verworfen.
+describe('Ein `repeats` auf einer ganzen Modifikatorgruppe wiederholt ihre Mitglieder (Issue 0116)', () => {
+  // `ModifierGroup` erbt `repeats` von `ModifierBase` (Catalogue.xsd:469-479).
+  // Der Faktor der Klammer gilt fuer jeden Modifikator in ihr — dieselbe eine
+  // Regel wie fuer die Wiederholungen eines einzelnen Modifikators. Realer Fall:
+  // „Grave markers" (Vampire Counts, +1 Grenze je gezaehltem Vampir).
   const CATALOGUE = warriorCatalogue(`
     <modifierGroups>
       <modifierGroup>
         <repeats>
-          <repeat field="selections" scope="self" value="1" repeats="1"/>
+          <repeat field="selections" scope="roster" childId="${TOKEN_ID}" value="1" repeats="1"/>
         </repeats>
         <conditions>
           ${atLeastOne(ARCHER_ID)}
@@ -295,11 +358,80 @@ describe('Ein `repeats` auf einer ganzen Modifikatorgruppe wird als Diagnose sic
       </modifierGroup>
     </modifierGroups>`);
 
-  it('meldet UNSUPPORTED_MODIFIER_GROUP_REPEAT beim Lesen', () => {
+  it('liest die Gruppen-Wiederholung ohne Diagnose', () => {
     const { diagnostics } = parseCatalogue(CATALOGUE);
-    expect(diagnostics).toContainEqual(
-      expect.objectContaining({ kind: DiagnosticKind.UNSUPPORTED_MODIFIER_GROUP_REPEAT })
-    );
+    expect(diagnostics).toHaveLength(0);
+  });
+
+  it('wendet die Mitglieder so oft an, wie die Gruppen-Wiederholung zaehlt', () => {
+    const TOKENS = 3;
+    const report = evaluate(CATALOGUE, roster([
+      selection(WARRIOR_ID, 1), selection(ARCHER_ID, 1), selection(TOKEN_ID, TOKENS),
+    ]));
+
+    expect(effectivePoints(report)).toBe(WARRIOR_BASE_POINTS + TOKENS * MODIFIER_POINTS);
+  });
+
+  it('laesst die Mitglieder ganz aus, wenn die Gruppen-Wiederholung 0 zaehlt', () => {
+    // Kein Token → Faktor 0 → die Klammer ist inaktiv, obwohl ihre Bedingung haelt.
+    const report = evaluate(CATALOGUE, roster([selection(WARRIOR_ID, 1), selection(ARCHER_ID, 1)]));
+
+    expect(effectivePoints(report)).toBe(WARRIOR_BASE_POINTS);
+  });
+
+  it('addiert mehrere Wiederholungen derselben Liste, statt sie zu multiplizieren', () => {
+    // Das reale „Grave markers"-Muster (Vampire Counts): +1 je Vampire Count UND
+    // +1 je Vampire Lord, mit dem Regeltext daneben („plus an additional Grave
+    // marker for each Vampire Count or Vampire Lord in the army"). Als Produkt
+    // gelesen faellt der Aufschlag auf 0, sobald eine der beiden Sorten fehlt.
+    const TWO_REPEATS = warriorCatalogue(`
+      <modifierGroups>
+        <modifierGroup>
+          <repeats>
+            <repeat field="selections" scope="roster" childId="${TOKEN_ID}" value="1" repeats="1"/>
+            <repeat field="selections" scope="roster" childId="${BANNER_ID}" value="1" repeats="1"/>
+          </repeats>
+          <modifiers>
+            <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}"/>
+          </modifiers>
+        </modifierGroup>
+      </modifierGroups>`);
+
+    // 2 Token + 1 Banner → 3 Anwendungen (nicht 2 × 1 = 2).
+    expect(effectivePoints(evaluate(TWO_REPEATS, roster([
+      selection(WARRIOR_ID, 1), selection(TOKEN_ID, 2), selection(BANNER_ID, 1),
+    ])))).toBe(WARRIOR_BASE_POINTS + 3 * MODIFIER_POINTS);
+
+    // 2 Token, kein Banner → 2 Anwendungen (nicht 2 × 0 = 0).
+    expect(effectivePoints(evaluate(TWO_REPEATS, roster([
+      selection(WARRIOR_ID, 1), selection(TOKEN_ID, 2),
+    ])))).toBe(WARRIOR_BASE_POINTS + 2 * MODIFIER_POINTS);
+  });
+
+  it('multipliziert den Faktor der Klammer mit dem eigenen Faktor des Mitglieds', () => {
+    const TOKENS = 2;
+    const nested = warriorCatalogue(`
+      <modifierGroups>
+        <modifierGroup>
+          <repeats>
+            <repeat field="selections" scope="roster" childId="${TOKEN_ID}" value="1" repeats="1"/>
+          </repeats>
+          <modifiers>
+            <modifier type="increment" field="${POINTS_ID}" value="${MODIFIER_POINTS}">
+              <repeats>
+                <repeat field="selections" scope="roster" childId="${ARCHER_ID}" value="1" repeats="1"/>
+              </repeats>
+            </modifier>
+          </modifiers>
+        </modifierGroup>
+      </modifierGroups>`);
+    const ARCHERS = 3;
+
+    const report = evaluate(nested, roster([
+      selection(WARRIOR_ID, 1), selection(ARCHER_ID, ARCHERS), selection(TOKEN_ID, TOKENS),
+    ]));
+
+    expect(effectivePoints(report)).toBe(WARRIOR_BASE_POINTS + TOKENS * ARCHERS * MODIFIER_POINTS);
   });
 });
 

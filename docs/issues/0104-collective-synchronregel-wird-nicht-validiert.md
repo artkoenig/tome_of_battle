@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/evaluator-engine-completion-s5blv9
 pr:
 ---
 
@@ -66,6 +66,20 @@ Acceptance criteria:
   deshalb vor diesem Issue.
 
 ## Log
+
+- **2026-07-31 — entschieden: dokumentierter Verzicht.** Die Synchronregel
+  (Funktion 2) wird **nicht** geprüft, und der Verzicht steht jetzt als
+  eigener Kasten in `docs/battlescribe-data-format.md` §10 — damit ist der
+  stille Zustand beseitigt, der der eigentliche Fehler war.
+- Begründung, beides im Kasten belegt: (a) das Wiki beschreibt die Regel als
+  **Bearbeitungs**-Angleichung beim Wählen, nicht als Prüfung im Nachhinein —
+  eine verletzende Liste entsteht im Editor gar nicht erst; (b) ein
+  Synchron-Befund hätte im Bericht keinen Ort: die Herkunft einer Meldung ist
+  ein geschlossener Vorrat aus *abgeleitet* und *Autor-Meldung* (ADR 0034),
+  und eine dritte Herkunft nur dafür einzuführen wäre unverhältnismäßig — in
+  den Fixture-Katalogen gibt es keine Stelle, an der Geschwister-Instanzen
+  eines `collective`-Kindes divergieren können.
+- Kein Code geändert; das reine Attribut-Lesen bleibt bei Issue 0102.
 
 - 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
   Intent korrigiert — §10 beschreibt die Synchronfunktion des Wikis bereits

@@ -73,7 +73,7 @@ Verheiratet Instanz- und Definitionsbaum: Jeder Instanzknoten erhält seine aufg
 
 Ein Phantomknoten zählt 0 und ist der Auswertungsanker, an dem eine Min-Grenze *gerade beim Fehlen* anschlagen kann. Ohne Phantomknoten hätten diese Regeln keinen Ort im Instanzbaum.
 
-**Unverlinkte Kategorien.** Grenzen können direkt an der `categoryEntry` hängen und gelten auch ohne wiederholenden `categoryLink` (Datenformat §5.5/§5.6). Führt ein Kontingent die Kategorie per `categoryLink`, hängt ihr Anker dort; führt sie **kein** Kontingent, bekommt sie **je Bezugsrahmen mit Grenzen, die dort noch kein Anker abdeckt**, einen eigenen Kategorie-Anker: armeeweit skopierte Grenzen ankern an der Wurzel, kontingent-skopierte **einmal** am ersten Kontingent (die Ziel-Typ-Regel — Datenformat §7.7, ADR-0029 — zählt sie ohnehin armeeweit; je ein Anker pro Kontingent meldete dieselbe Verletzung mehrfach). Trägt die Kategorie eine MIN-Grenze, stellt schon das Pflicht-Phantom einen Anker und wertet — ungefiltert — auch ihre MAX-Grenzen huckepack mit aus; der eigene Anker entfällt dann für jeden Rahmen, den das Phantom von seinem Standort aus auflöst: für den **armeeweiten** Rahmen zählt jedes Phantom im Baum (eine roster-skopierte Grenze löst von jedem Standort aus auf, auch von einem Phantom unter einem Kontingent), für den **Kontingent**-Rahmen nur ein Phantom unter einem Kontingent (an der Wurzel lieferte eine kontingent-skopierte Grenze `unresolvedScope`, keine Auswertung). Die 0–1-Kodierung — MAX ohne MIN — ist der Fall ganz ohne Phantom. Jeder dieser Kategorie-Anker ist auf seinen Rahmen **zugeschnitten** und wertet nur dessen Grenzen aus: bei Grenzen verschiedener Rahmen an einer Definition meldete sonst jeder Anker jede Grenze, und der rahmenfremde Anker hinterließe eine unechte `unresolvedScope`-Diagnose.
+**Unverlinkte Kategorien.** Grenzen können direkt an der `categoryEntry` hängen und gelten auch ohne wiederholenden `categoryLink` (Datenformat §5.5/§5.6). Führt ein Kontingent die Kategorie per `categoryLink`, hängt ihr Anker dort; führt sie **kein** Kontingent, bekommt sie **je Bezugsrahmen mit Grenzen, die dort noch kein Anker abdeckt**, einen eigenen Kategorie-Anker: armeeweit skopierte Grenzen ankern an der Wurzel, kontingent-skopierte **einmal** am ersten Kontingent (die Ziel-Typ-Regel — Datenformat §7.7, ADR-0029 — zählt sie ohnehin armeeweit; je ein Anker pro Kontingent meldete dieselbe Verletzung mehrfach), **parent-skopierte dagegen an jedem Kontingent** (Issue 0147): `parent` löst am Anker auf dessen Elternknoten auf, und die Ziel-Typ-Regel weitet ihn *nicht* auf — zwei Kontingente zählen getrennt, ein einzelner Anker ließe das zweite ungeprüft. Real trägt das die drei Border-Patrols-Regeln der `.gst`, deren Kategorien „Chariot", „War Machine" und „Magical Standard" ausschließlich eine parent-skopierte MAX-Grenze tragen und die kein `forceEntry` führt. Trägt die Kategorie eine MIN-Grenze, stellt schon das Pflicht-Phantom einen Anker und wertet — ungefiltert — auch ihre MAX-Grenzen huckepack mit aus; der eigene Anker entfällt dann für jeden Rahmen, den das Phantom von seinem Standort aus auflöst: für den **armeeweiten** Rahmen zählt jedes Phantom im Baum (eine roster-skopierte Grenze löst von jedem Standort aus auf, auch von einem Phantom unter einem Kontingent), für den **Kontingent**-Rahmen nur ein Phantom unter einem Kontingent (an der Wurzel lieferte eine kontingent-skopierte Grenze `unresolvedScope`, keine Auswertung). Die 0–1-Kodierung — MAX ohne MIN — ist der Fall ganz ohne Phantom. Jeder dieser Kategorie-Anker ist auf seinen Rahmen **zugeschnitten** und wertet nur dessen Grenzen aus: bei Grenzen verschiedener Rahmen an einer Definition meldete sonst jeder Anker jede Grenze, und der rahmenfremde Anker hinterließe eine unechte `unresolvedScope`-Diagnose.
 
 **Gruppen-Anker.** Eine `selectionEntryGroup` ist selbst keine Auswahl, kann aber gruppen-skopierte Zähl-Grenzen (`field=selections`, `scope=parent`) tragen — „genau eine Bloodline je Charakter". Für jede solche Gruppe im Definitionsteilbaum einer realen Eigentümer-Auswahl wird ein **Gruppen-Anker** unter dieser Auswahl synthetisiert: wie ein Phantom synthetisch und nicht mitzählend, aber Träger der Gruppendefinition, sodass die Constraint-Schicht ihre min/max gegen den Eigentümer-Rahmen (`scope=parent`) auswertet. Er ist **immer** präsent, damit `min` (leere Pflichtgruppe → Ist 0) *und* `max` (zu viele Member) anschlagen. Die **Gruppen-Zugehörigkeit** der Member stammt aus dem Definitionsbaum (die Member-IDs einer Gruppe, inkl. Link-Ketten/Untergruppen), nicht aus der Instanz — das `entryGroupId`-Tag der `.ros` wird beim Import verworfen; Member-Knoten werden entsprechend annotiert (§3.3).
 
@@ -172,7 +172,7 @@ enum ConditionKind  { lessThan, greaterThan, equalTo, notEqualTo,  // XSD-SSOT
                       atLeast, atMost, instanceOf, notInstanceOf }
 enum ModifierKind   { set, increment, decrement, add, remove,      // XSD-SSOT (10 Werte)
                       append, prepend, multiply, set-primary, unset-primary }
-enum ConditionGroupKind { and, or }                               // XSD-SSOT
+enum ConditionGroupKind { and, or, not }   // XSD-SSOT (`not` vendort, Issue 0115)
 enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
                       UNIT,                       // die umschließende Einheit: nächster
                       // Vorfahre (inkl. selbst) mit rohem type="unit" — ein regulärer
@@ -224,7 +224,8 @@ record ModifierDef    { field: string,                    // roher XSD-`field`, 
 record ConditionGroupDef { type: ConditionGroupKind, conditions: ConditionDef[],
                           groups: ConditionGroupDef[] }
 record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
-                          conditions: ConditionDef[], conditionGroups: ConditionGroupDef[] }
+                          conditions: ConditionDef[], conditionGroups: ConditionGroupDef[],
+                          repeats: RepeatDef[] }   // ModifierBase, Issue 0116
 
 // Info-Elemente: sie teilen die `EntryBase` der XSD und tragen deshalb eigene
 // Modifikatoren und ein `hidden`-Kennzeichen — sie sind Modifikator-Träger.
@@ -232,8 +233,12 @@ record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGro
 // EntryBase das Tri-State-Rohattribut `hiddenAttribute` (true | false |
 // nicht gesetzt); `baseHiddenOf` (effectiveState.js) liest es. Versteckt ist
 // ein Vorkommen, wenn der Verweis ODER sein (transitiv aufgelöstes) Ziel es
-// ist — und bei einem Angebots-Anker zusätzlich, wenn eine seiner
-// Sichtbarkeits-Klammern es ist (die durchschrittenen Gruppen, siehe offer.js).
+// ist — und zusätzlich, wenn eine seiner Sichtbarkeits-Klammern es ist: die
+// `selectionEntryGroup`s, durch die die Definition erreicht wird. Die Klammer
+// gilt für JEDEN Knoten an dieser Stelle — belegte Auswahl, Pflicht-Phantom und
+// Angebots-Anker gleichermaßen (Datenformat §8: „eine versteckte
+// selectionEntryGroup versteckt, was sie hält"; Issue 0147). Sie stammt aus dem
+// Definitionsbaum, weil die `.ros` die Gruppen-Zugehörigkeit verwirft.
 // Modifikatoren schlagen jeden dieser Basiswerte (Issue 0135; die frühere
 // Vorrangregel „eigenes hidden vor geerbtem" aus Issue 0099 ist damit zurück-
 // genommen, siehe docs/battlescribe-data-format.md §8).
@@ -620,23 +625,35 @@ function applyModifiersOfNodes(nodes, state, index)
 function applyModifier(ctx, state, node, modifier)
   // feuert nur, wenn ALLE direkten Bedingungen UND alle Bedingungsgruppen halten
   if not conditionsAndGroupsHold(ctx, modifier.conditions, modifier.conditionGroups): return
-  times = modifier.repeats.isEmpty ? 1
-                                   : product(repeatCount(ctx, r) for r in modifier.repeats)
+  times = gate.repeatFactor * repeatsFactor(modifier.repeats)   // gate: der Faktor der
+                                   // umschliessenden Modifikatorgruppen (Issue 0116)
   applyOperation(state, node, modifier, times)
 
 function applyModifierGroup(ctx, state, node, group)
   // hält die gemeinsame Gruppen-Bedingung, greifen alle enthaltenen Modifikatoren
   // gemeinsam (jeder weiterhin unter seinen eigenen Bedingungen), sonst gemeinsam keiner
   if not conditionsAndGroupsHold(ctx, group.conditions, group.conditionGroups): return
+  // Auch das `<repeats>` der Klammer wirkt (ModifierBase, Issue 0116): sein Faktor
+  // multipliziert sich in jedem Mitglied auf dessen eigenen.
+  innerGate = gate mit repeatFactor = gate.repeatFactor * repeatsFactor(group.repeats)
   for modifier in group.modifiers:
-    applyModifier(ctx, state, node, modifier)
+    applyModifier(ctx, state, node, modifier, innerGate)
+
+// Mehrere Wiederholungen EINER Liste addieren ihre Anwendungen (Issue 0116, belegt am
+// „Grave markers"-Muster: „+1 je Vampire Count ODER Vampire Lord"); geschachtelte
+// Klammern multiplizieren dagegen, weil eine Wiederholung der Klammer die ganze
+// Wiederholung ihres Mitglieds erneut ausführt.
+function repeatsFactor(repeats): number
+  return repeats.isEmpty ? 1 : sum(repeatCount(ctx, r) for r in repeats)
 
 // Eine `and`-Gruppe hält, wenn ALLE ihre Bedingungen und Untergruppen halten; eine
-// `or`-Gruppe, wenn MINDESTENS EINE hält — rekursiv über beliebige Tiefe.
+// `or`-Gruppe, wenn MINDESTENS EINE hält; eine `not`-Gruppe, wenn KEINE hält
+// (vendorte XSD-Erweiterung, Issue 0115) — rekursiv über beliebige Tiefe. Eine
+// Registry ConditionGroupKind → Verknüpfung, kein Fallunterscheidungs-`if`.
 function conditionGroupHolds(ctx, group): bool
   members = [conditionHolds(ctx, c) for c in group.conditions]
           + [conditionGroupHolds(ctx, g) for g in group.groups]
-  return group.type == and ? all(members) : any(members)
+  return CONDITION_GROUP_COMBINATORS[group.type](members)
 
 // Je Knoten laufen erst seine eigenen Modifikatoren, dann die seiner Info-Elemente —
 // jeder mit seinem Träger, alle im Query-Kontext des Knotens.

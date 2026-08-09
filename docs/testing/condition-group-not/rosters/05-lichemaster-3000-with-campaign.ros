@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="cgn-05" name="CGN 05 – Lichemaster-Kontingent, 3000 Punkte MIT Kampagne: not-Gruppe haelt, beide Pflichtgrenzen feuern" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored condition-group-not E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Die andere Haelfte: die Kampagnen-Auswahl steht im Kontingent, aber limit::pts = 3000
+         ist nicht < 2000. Die innere and-Untergruppe scheitert, die not-Gruppe haelt, der
+         set-Modifikator greift — beide Pflichtgrenzen stehen auf 1 und feuern mit Ist 0.
+         Gegenprobe zu 03: nicht die Kampagnen-Auswahl allein schaltet die Pflicht ab. -->
+    <force id="force-1" name="Army of the Lichemaster (WD#309-UK)" entryId="f37a-a93e-fa22-61a8" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-campaign-rules" name="Campaign/Scenario rules" entryId="4b25-4c70-afd8-5729" entryLinkId="" number="1" type="upgrade">
+          <selections>
+            <selection id="sel-campaign-dark-conspiracy" name="Campaign: A Dark Conspiracy - 30th anniversary" entryId="7d87-7436-5341-bbc0" entryLinkId="14fb-dd39-08e7-cbde" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

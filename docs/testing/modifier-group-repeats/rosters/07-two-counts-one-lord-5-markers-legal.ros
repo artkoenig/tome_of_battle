@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="mgr-07" name="MGR 07 – 2 Vampire Counts + 1 Vampire Lord, 5 Grave markers: Grenzen auf 5 gehoben, legal" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored modifier-group-repeats E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- 2 Counts + 1 Lord => 2 + 1 = 3 Anwendungen => beide Grenzen 2 + 3 = 5.
+         5 Marker sind exakt erlaubt. Multiplizierende Lesart: 2 * 1 = 2 => Grenzen 4,
+         die Obergrenze wuerde hier mit Ist 5 / Grenze 4 anschlagen.
+         Der Vampire Lord ist armeeweit auf 1 begrenzt (a7c9-5fec-592a-3716, max 1,
+         scope=roster) — genau einer, also eingehalten. -->
+    <force id="force-1" name="Army of Sylvania (SoC)" entryId="4072-c3b8-84c4-a097" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-sylvania" name="Army of Sylvania" entryId="b48b-4a69-80f1-5d47" entryLinkId="" number="1" type="upgrade">
+          <selections>
+            <selection id="sel-grave-markers" name="Grave markers" entryId="f899-4fbd-db93-629e" entryLinkId="" number="5" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="sel-count-1" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit"/>
+        <selection id="sel-count-2" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit"/>
+        <selection id="sel-lord-1" name="0-1 Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit"/>
+      </selections>
+    </force>
+  </forces>
+</roster>

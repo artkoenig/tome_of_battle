@@ -858,7 +858,52 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 
 #### `conditionGroup` — Verknüpfung mehrerer Bedingungen
 
-Gruppiert Bedingungen mit `type="and"` oder `type="or"` zu komplexer Logik.
+Gruppiert Bedingungen mit `type="and"` oder `type="or"` zu komplexer Logik. Eine `and`-Gruppe
+hält, wenn **alle** ihre Mitglieder (Bedingungen *und* Untergruppen) halten, eine `or`-Gruppe,
+wenn **mindestens eines** hält.
+
+> **`type="not"` — nicht offiziell spezifiziert.** Weder das Wiki noch eine bekannte
+> `BSData/schemas`-Version kennt diesen Gruppentyp; die vendorte `Catalogue.xsd` dieses Projekts
+> wurde bewusst und dokumentiert um ihn erweitert (wie zuvor um `multiply`/`prepend`/`join`, siehe
+> [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)). Belegt ist er allein
+> durch reale Kataloge: die Definitive Edition nutzt ihn 2× in `Vampire Counts`, beide Male am
+> `set`-Modifier, der die Pflicht-Untergrenze einer Sonderheer-Einheit hebt („Army of the
+> Lichemaster": Heinrich Kemmler `8461-3eab-e5ac-1636`, Krell `60a8-5b49-6b81-7c84`).
+>
+> **Entscheidung dieses Projekts (Issue 0115):** eine `not`-Gruppe hält genau dann, wenn **keines**
+> ihrer Mitglieder hält — die exakte De-Morgan-Duale zu `or`. Damit ist `not` die strengere der
+> beiden denkbaren Lesarten (`NOT(OR(…))` gegen `NOT(AND(…))`) und folgt der fail-closed-Richtung
+> der übrigen Auswertung. Auf den realen Daten ist die Wahl **nicht beobachtbar**: beide
+> Fundstellen tragen genau *ein* Mitglied (eine `and`-Untergruppe), wo jede Lesart dieselbe
+> schlichte Negation ergibt.
+
+```xml
+<!-- Vampire Counts: Kemmler ist Pflicht im Lichemaster-Heer, AUSSER in der
+     Kampagnenvariante unter 2000 Punkten -->
+<modifier type="set" value="1" field="8461-3eab-e5ac-1636">
+  <conditionGroups>
+    <conditionGroup type="and">
+      <conditions>
+        <condition type="instanceOf" field="selections" scope="force"
+                   childId="f37a-a93e-fa22-61a8" … />   <!-- Army of the Lichemaster -->
+      </conditions>
+      <conditionGroups>
+        <conditionGroup type="not">
+          <conditionGroups>
+            <conditionGroup type="and">
+              <conditions>
+                <condition type="lessThan" value="2000" field="limit::…" scope="roster" … />
+                <condition type="atLeast" value="1" field="selections" scope="force"
+                           childId="14fb-dd39-08e7-cbde" … />   <!-- Kampagne -->
+              </conditions>
+            </conditionGroup>
+          </conditionGroups>
+        </conditionGroup>
+      </conditionGroups>
+    </conditionGroup>
+  </conditionGroups>
+</modifier>
+```
 
 #### `repeat` — Modifier mehrfach anwenden
 
@@ -877,6 +922,11 @@ statt eines Feldwerts wieder `<modifiers>` und beliebig tief geschachtelte
 **alle** Modifier darin; die Klammer ist damit die Kurzform für „dieselbe Bedingung an
 mehreren Modifiern" — semantisch gleichwertig dazu, sie an jedem einzelnen zu
 wiederholen.
+
+Dasselbe gilt für ihre **`<repeats>`** (Issue 0116): der Wiederholungsfaktor der Klammer
+multipliziert sich in jedem Modifier darin auf dessen eigenen Faktor. Real genutzt in
+`Vampire Counts` („Grave markers": `+1` auf zwei Grenzen, wiederholt je gezähltem Vampir
+im Kontingent).
 
 ```xml
 <selectionEntry name="Full Plate Armour" hidden="true" id="3869-2f40-dd21-6971" …>
@@ -954,7 +1004,21 @@ abhängig vom Kostenlimit `limit::ecfa-8486-4f6c-c249` (der pts-Kostenart):
 ```
 
 Lesart: „Wenn das Punktelimit zwischen 2000 und 2999 liegt, erhöhe die Core-Obergrenze um 1; ab 5000
-Punkten setze sie auf 6 und erhöhe je weitere 1000 Punkte."
+Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirkungslos**.
+
+> **Ein wiederholter `set` wächst nicht (Issue 0095).** Eine frühere Fassung dieses Absatzes las
+> den zweiten Modifier als „setze auf 6 **und erhöhe je weitere 1000 Punkte**". Das ist eine
+> Über-Lesung des XML: `set` schreibt einen Wert, und denselben Wert ein zweites Mal zu schreiben
+> ändert nichts — genau darin unterscheidet es sich von `increment`/`decrement`/`multiply`, deren
+> Wirkung der Wiederholungsfaktor vervielfacht. Es gibt keine Lesart, in der wiederholtes Setzen
+> eines *konstanten* `value` einen wachsenden Wert ergäbe; wer eine Staffel will, schreibt einen
+> `set` **und** einen wiederholenden `increment`. Die Engine folgt dem
+> (`src/evaluator/modifiers.js`, `setValue` ignoriert den Faktor; gepinnt in
+> `modifiers.test.js`), und die Katalogdaten sind an dieser Stelle schlicht ungenau: die
+> Core-Obergrenze bleibt bei jedem Budget ≥ 5000 exakt 6.
+>
+> Upstream ist die Frage **nicht** entschieden — das Wiki sagt zum `repeat` nur, er lasse den
+> Modifier „multiple times" greifen, ohne einen Fall für `set` zu nennen ([§15](#15-lücken-der-quelle)).
 
 Ein Modifier kann auch `field="hidden"` setzen, um Einträge/Kategorielinks kontextabhängig ein- oder
 auszublenden (in diesem Projekt ausgewertet von `src/roster/entryVisibility.js` fuer die
@@ -995,7 +1059,14 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
 - **Laufzeit-dynamische Kategoriezugehörigkeit.** Die Kategorie-Links eines Eintrags sind nicht
   zwingend statisch: Modifier mit `type="add"`/`type="remove"` und `field="category"` fügen eine
   Kategoriezugehörigkeit bedingt hinzu bzw. entfernen sie, und `type="set-primary"`/`type="unset-primary"`
-  schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. **Sämtliche** kategorie-abhängige
+  schalten das `primary`-Flag eines Kategorie-Links kontextabhängig um. **`set-primary` sichert
+  dabei zugleich die Mitgliedschaft** (Projektentscheidung, Issue 0100): die benannte Kategorie
+  wird Teil der effektiven Kategorien, auch wenn der Eintrag sie nicht per `categoryLink` führt.
+  Andernfalls bliebe der Modifier wirkungslos, sobald er — wie real üblich — eine Kategorie
+  benennt, in die der Eintrag erst umgegliedert werden soll: `'Kathleen' Halftank`
+  (`Ogre Kingdoms`) trägt einen unbedingten `set-primary` auf „Regiment of Renown" **ohne**
+  begleitendes `add category`, und die Einheit *ist* ein Regiment of Renown. `unset-primary`
+  löscht dagegen nur das Flag; die Mitgliedschaft bleibt, denn zählrelevant ist allein sie. **Sämtliche** kategorie-abhängige
   Logik muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht
   die rohen Katalog-Links — sowohl die Zähler-/Validierungs-Logik (via `getEffectiveCategoryLinks` in
   `src/roster/modifierEvaluator.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
@@ -1241,6 +1312,22 @@ Das `collective`-Flag auf einem Eintrag hat **zwei** Funktionen:
 > Instanzen — die Kosten- und Constraint-Mathematik (`child.number * parent.number`) läuft immer
 > durch (siehe [§7.5](#75-cost--cost-type)).
 
+> **Funktion 2 wird bewusst nicht geprüft (Issue 0104).** Die Engine liest `collective` nicht und
+> meldet keinen Befund, wenn zwei Geschwister-Instanzen mit gemeinsamem Elternknoten ein
+> `collective`-Kind verschieden gewählt haben. Zwei Gründe:
+> - **Es ist im Referenzprogramm eine Bearbeitungs-, keine Prüfregel.** Das Wiki beschreibt sie als
+>   Angleichung beim Wählen („wählt ein Ninja sie, müssen alle Ninjas sie nehmen"), nicht als
+>   Verstoß, den ein Validator im Nachhinein feststellt. Eine Liste, die die Regel verletzt, kann im
+>   Editor gar nicht erst entstehen.
+> - **Sie hätte im Bericht keinen Ort.** Jede Meldung trägt eine Herkunft aus einem geschlossenen
+>   Wertevorrat — *aus einer Grenze abgeleitet* oder *Autor-Meldung* ([ADR 0034](adr/0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md)).
+>   Ein Synchron-Befund ist weder das eine noch das andere; ihn aufzunehmen hieße, den Vorrat um
+>   eine dritte Herkunft zu erweitern, für eine Regel, die kein Fixture-Katalog braucht (`collective="true"`
+>   kommt vor, aber an keiner Stelle, an der Geschwister-Instanzen divergieren können).
+>
+> Der Verzicht ist damit ein **dokumentierter Schnitt**, kein Versehen. Fällt ein realer Katalog auf,
+> in dem die Regel greift, ist das der Anlass, ihn erneut zu bewerten.
+
 ---
 
 ## 11. Best Practices
@@ -1346,7 +1433,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
 | `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf` |
-| `conditionGroup` | `type` | `and`, `or` |
+| `conditionGroup` | `type` | `and`, `or`, `not` (`not` ohne offiziellen Schema-Beleg, siehe [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen)) |
 
 ### 13.2 Der `field`-Wert je nach Kontext
 
@@ -1413,6 +1500,9 @@ Lücken, die uns bisher konkret getroffen haben:
 | **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (130× bzw. 10× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
+| **`conditionGroup type="not"`** | Weder Wiki noch eine bekannte `BSData/schemas`-Version kennt den Gruppentyp; die Definitive Edition nutzt ihn (2× in `Vampire Counts`, Pflichteinheiten des Sonderheeres „Army of the Lichemaster"). | [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen) beschreibt die in Issue 0115 getroffene Entscheidung: die Gruppe hält, wenn **keines** ihrer Mitglieder hält (De-Morgan-Duale zu `or`). Die vendorte `Catalogue.xsd` wurde um den Wert erweitert (ADR 0016). |
+| **`<repeats>` an einer `modifierGroup`** | Die XSD gibt der `ModifierGroup` über `ModifierBase` ein `<repeats>` (`Catalogue.xsd:469-479`), sagt aber nichts über seine Wirkung; das Wiki kennt Modifier-Gruppen gar nicht. Reale Kataloge nutzen es (`Vampire Counts`, „Grave markers"). | [§7.7](#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier) beschreibt die in Issue 0116 getroffene Entscheidung: der Faktor der Klammer multipliziert sich in jedem Modifier darin auf dessen eigenen — dieselbe Regel wie für die Wiederholungen eines einzelnen Modifiers. |
+| **`set` mit `<repeat>`** | Das Wiki sagt zum `repeat` nur, er lasse den Modifier „multiple times" greifen; welchen Sinn das für ein *setzendes* Feld hat, sagt es nicht. Das kanonische `.gst`-Beispiel (Core-Slots der Force „Standard") kombiniert beides real. | [§7.7](#77-modifier-condition-condition-group-repeat) beschreibt die in Issue 0095 getroffene Entscheidung: ein wiederholter `set` ist **idempotent** — derselbe Wert zweimal geschrieben ändert nichts. Nur `increment`/`decrement`/`multiply` vervielfacht der Faktor. |
 | **`modifierGroup`** | Das Wiki erwähnt Modifier-Gruppen **an keiner Stelle** (0 Treffer im ganzen Submodul, Stand `f4949c3`, 2026-01-27) — der Abschnitt *Modifier* kennt als Kinder nur Conditions, Condition Groups und Repeats. Die XSD definiert sie dagegen (`Catalogue.xsd:107` und `523-538`), und reale Kataloge nutzen sie gleichberechtigt zu `<modifiers>`. | [§7.7](#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier) dieses Dokuments beschreibt sie aus XSD und Daten. Die Lücke hat konkret Schaden angerichtet: in Issue 0135 wurde ein sauber gegatterter Katalogeintrag für einen Datenfehler gehalten, weil eine Suche nur `<modifiers>` abdeckte. |
 
 Die Seite trägt am Ende selbst den Hinweis `TODO: Update to 2.02` — sie beschreibt einen

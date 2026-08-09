@@ -64,6 +64,7 @@ export const ConditionKind = Object.freeze({
 export const ConditionGroupKind = Object.freeze({
   AND: 'and',
   OR: 'or',
+  NOT: 'not',
 });
 
 export const AttributeName = Object.freeze({

@@ -133,6 +133,31 @@ function nearestUnitAncestor(node) {
 }
 
 /**
+ * Der naechste Vorfahre (den Knoten eingeschlossen), dessen **effektive**
+ * Kategorien `categoryId` enthalten (Issue 0146).
+ *
+ * Der Gegenpart zu {@link nearestAncestorWithDefId} fuer den zweiten ID-Fall:
+ * eine Kategorie-ID als **Bezugsrahmen** benennt — wie jede andere ID — einen
+ * *Vorfahren*, nicht die Wurzel (BSData-Wiki, *Data structure overview*,
+ * Abschnitt *Constraint*: `Scope` ist „one of `parent|roster|force|primary
+ * category` **or any type of ancestor identifier**", und er entscheidet, „which
+ * entity should sum up all `field`'s values of descendant selections").
+ * Gelesen werden die **effektiven** Kategorien, nicht die Basis-Kategorien: die
+ * Kataloge setzen die Bloodline-Kategorien eines Charakters per
+ * `add category`-Modifikator (Definitive Edition, `Vampire Counts`), und genau
+ * diese Zuordnung ist gemeint.
+ *
+ * @returns {object|null} der Rahmenknoten, oder `null`, wenn kein Vorfahre die
+ *   Kategorie traegt (die Query bleibt dann fail-closed unaufgeloest).
+ */
+function nearestAncestorInCategory(ctx, categoryId) {
+  for (let current = ctx.node; current !== null && !current.isRoot; current = current.parent) {
+    if (ctx.effective.categoryIdsOf(current).includes(categoryId)) return current;
+  }
+  return null;
+}
+
+/**
  * Loest ein Scope-Schluesselwort **oder** eine ID (Eintrag/Kategorie) in seinen
  * Rahmenknoten auf — der geteilte Fall fuer `shared="true"`. `parent` und
  * `shared="false"` werden vom Aufrufer vorab behandelt und erreichen diese
@@ -151,10 +176,11 @@ function resolveSharedFrame(ctx, scope) {
     case ScopeKeyword.UNIT:
       return nearestUnitAncestor(ctx.node);
     default:
-      // Eine Kategorie-ID als Scope benennt den armeeweiten Kategorierahmen (die
-      // Wurzel); eine Eintrags-ID den naechsten Vorfahren mit dieser ID.
+      // Beide ID-Faelle benennen einen **Vorfahren**: eine Eintrags-ID den
+      // naechsten mit dieser Definitions-ID, eine Kategorie-ID den naechsten,
+      // der diese Kategorie effektiv traegt ({@link nearestAncestorInCategory}).
       return isCategoryTarget(scope, ctx.categoryIds)
-        ? ctx.root
+        ? nearestAncestorInCategory(ctx, scope)
         : nearestAncestorWithDefId(ctx.node, scope);
   }
 }

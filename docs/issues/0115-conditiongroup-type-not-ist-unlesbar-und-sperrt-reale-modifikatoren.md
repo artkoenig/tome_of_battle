@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/evaluator-engine-completion-s5blv9
 pr:
 ---
 
@@ -47,6 +47,28 @@ Acceptance criteria:
   Issue 0087 (2026-07-29).
 
 ## Log
+
+- **2026-07-31 — umgesetzt.** Semantik entschieden und belegt: eine
+  `not`-Gruppe hält, wenn **keines** ihrer Mitglieder hält — die exakte
+  De-Morgan-Duale zu `or` und damit die strengere der beiden denkbaren
+  Lesarten (`NOT(OR(…))` gegen `NOT(AND(…))`), passend zur fail-closed-
+  Richtung der Engine. Auf den realen Daten ist die Wahl nicht beobachtbar:
+  beide Fundstellen tragen genau ein Mitglied, wo jede Lesart dieselbe
+  schlichte Negation ergibt. Festgehalten in
+  `docs/battlescribe-data-format.md` §7.7 (eigener Kasten) und §15
+  (Lückentabelle).
+- Die vendorte `Catalogue.xsd` kennt den Wert jetzt (ADR 0016, Revision
+  2026-07-31); die SSOT `battlescribeSchema.generated.js` ist neu erzeugt.
+  Die Auswertung liegt als Registry `CONDITION_GROUP_COMBINATORS`
+  (`modifiers.js`) vor statt als Fallunterscheidung — der zweiseitige
+  SSOT-Deckungstest (`enumHandlerCoverage.test.js`) hält sie vollständig.
+- Wirkung an echten Daten: die beiden Pflichteinheiten des Sonderheeres
+  „Army of the Lichemaster" (Heinrich Kemmler `8461-3eab-e5ac-1636`, Krell
+  `60a8-5b49-6b81-7c84`) werden jetzt gefordert; vorher blieb die Pflicht
+  fail-closed bei 0 und keine `unsupportedConditionGroup`-Diagnose mehr.
+- Tests: `groups.test.js` (vier Fälle inkl. der realen Form
+  „not(and(...))"), E2E-Szenario `condition-group-not`. Lauf:
+  `npx vitest run src/evaluator` — grün.
 
 ## Checkpoints
 

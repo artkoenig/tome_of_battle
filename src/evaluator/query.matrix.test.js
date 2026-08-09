@@ -100,8 +100,9 @@ function buildEvaluation() {
   const { root } = buildEvalTree(resolved, ROSTER);
   // Ohne Modifikatoren gleichen die effektiven Werte den Basiswerten; der Index
   // ueber die Basis-Effektiv-Werte prueft daher dieselbe Zaehlsemantik wie zuvor.
-  const index = buildIndex(root, createBaseEffectiveState(root));
-  return { root, index, categoryIds: resolved.categoryIds };
+  const effective = createBaseEffectiveState(root);
+  const index = buildIndex(root, effective);
+  return { root, index, categoryIds: resolved.categoryIds, effective };
 }
 
 /** Die Bezugsinstanz WEAPON_W (die weapon-Auswahl mit count=3): fa → unit → weapon. */
@@ -111,10 +112,10 @@ function bezugsinstanz(root) {
 
 /** Erzeugt einen Query-Kontext an der Bezugsinstanz. */
 function contextAtBezugsinstanz() {
-  const { root, index, categoryIds } = buildEvaluation();
+  const { root, index, categoryIds, effective } = buildEvaluation();
   const diagnostics = [];
   const node = bezugsinstanz(root);
-  return { ctx: createQueryContext({ node, root, index, categoryIds, diagnostics }), diagnostics };
+  return { ctx: createQueryContext({ node, root, index, categoryIds, diagnostics, effective }), diagnostics };
 }
 
 // Die acht Flag-Kombinationen in fester Reihenfolge; jede Erwartungstabelle unten
@@ -176,11 +177,15 @@ const FRAME_MATRIX = [
     expected: [3, 3, 4, 4, 4, 4, 4, 4],
   },
   {
-    // Kategorie-ID als Scope: der armeeweite Kategorierahmen (die Wurzel); zaehlt
-    // unit armeeweit (7). shared=false verengt auf die eigene Instanz (0).
-    name: 'Kategorie-ID-Rahmen zaehlt armeeweit',
+    // Kategorie-ID als Scope: wie jede ID ein **Vorfahren**-Rahmen (BSData-Wiki:
+    // „any type of ancestor identifier"), hier der naechste Vorfahre mit der
+    // effektiven Kategorie cat — die unit. In ihrem Rahmen zaehlt das unit-Ziel
+    // sie selbst (2); die unit des geschachtelten Kontingents fb liegt nicht
+    // unter ihr und zaehlt nie mit, auch nicht mit includeChildForces.
+    // shared=false verengt auf die eigene Instanz (weapon-Teilbaum, 0 units).
+    name: 'Kategorie-ID-Rahmen loest auf den naechsten Vorfahren mit dieser Kategorie auf',
     scope: CAT, target: UNIT,
-    expected: [7, 7, 7, 7, 0, 0, 0, 0],
+    expected: [2, 2, 2, 2, 0, 0, 0, 0],
   },
 ];
 

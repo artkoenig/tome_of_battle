@@ -104,7 +104,8 @@ export const BudgetLimitUnresolvedReason = Object.freeze({
  * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
  * SELF, UNIT, ANCESTOR, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser
  * Woerter ist, wird als **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit
- * dieser ID) oder eine Kategorie-ID (armeeweiter Kategorierahmen).
+ * dieser ID) oder eine Kategorie-ID (naechster Vorfahre, der diese Kategorie
+ * effektiv traegt) — beides Vorfahren-Rahmen.
  *
  * `UNIT` ist ein regulaerer Zaehlrahmen: die **umschliessende Einheit**, also der
  * naechste Vorfahre — den Knoten selbst eingeschlossen — mit rohem `type="unit"`
@@ -416,7 +417,8 @@ export function limitMeasureOfCountedField(field) {
  * Quelle, kein zweiter Wertevorrat); `ENTRY_ID` und `CATEGORY_ID` benennen die
  * beiden ID-Faelle, die das Query-Primitiv unterscheidet: eine Eintrags-ID loest
  * auf den naechsten Vorfahren mit dieser ID auf, eine Kategorie-ID auf den
- * armeeweiten Kategorierahmen (`query.js`, §3.3).
+ * naechsten Vorfahren, der diese Kategorie **effektiv** traegt (`query.js`,
+ * §3.3) — beides Vorfahren-Rahmen, keiner von beiden armeeweit.
  *
  * `PRIMARY_CATALOGUE` und `ANCESTOR` sind dabei die beiden Rahmen, die auf
  * keinen Baumknoten zeigen: der eine benennt das Armeebuch des umschliessenden
@@ -494,16 +496,11 @@ export const DiagnosticKind = Object.freeze({
   ZERO_DENOMINATOR: 'zeroDenominator',
   UNSUPPORTED_MODIFIER: 'unsupportedModifier',
   UNSUPPORTED_CONDITION: 'unsupportedCondition',
-  // Der `type` einer Bedingungsgruppe ist keiner der SSOT-Werte (and/or) —
+  // Der `type` einer Bedingungsgruppe ist keiner der SSOT-Werte (and/or/not) —
   // sichtbar gemacht statt still ignoriert. Gueltige Gruppen erzeugen keine
   // Diagnose (Slice 02).
   UNSUPPORTED_CONDITION_GROUP: 'unsupportedConditionGroup',
   UNSUPPORTED_REPEAT: 'unsupportedRepeat',
-  // Eine Modifikatorgruppe traegt ein nicht-leeres `<repeats>` (von ModifierBase
-  // geerbt, Catalogue.xsd:469-479). Volle Repeat-Semantik fuer eine *ganze*
-  // Gruppe ist bewusst nicht im Umfang — statt sie still zu verschlucken, wird
-  // diese Grenze als Diagnose sichtbar gemacht (§5, Risiko 4).
-  UNSUPPORTED_MODIFIER_GROUP_REPEAT: 'unsupportedModifierGroupRepeat',
   UNSUPPORTED_COMPARATOR: 'unsupportedComparator',
   // Die Fixpunktschleife kam nicht zur Ruhe, weil ein **zaehlrelevanter Zustand
   // wiederkehrt**: der Katalog schwingt. Die Diagnose traegt neben der Rundenzahl

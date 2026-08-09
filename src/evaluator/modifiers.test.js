@@ -18,7 +18,7 @@ import { buildIndex } from './countIndex.js';
 import { createBaseEffectiveState } from './effectiveState.js';
 import { applyAllModifiers } from './modifiers.js';
 import { createQueryContext, query } from './query.js';
-import { SELECTION_COUNT, DiagnosticKind, MessageSeverity } from './model.js';
+import { SELECTION_COUNT, DiagnosticKind, MessageSeverity, ScopeKeyword } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -314,24 +314,28 @@ describe('Die Zaehlung stuetzt sich auf effektive Kategorien, nicht auf Basis-Ka
     </catalogue>`;
   const WARRIOR_COUNT = 3;
 
-  /** Zaehlt die Elite-Kategorie armeeweit gegen den gegebenen Index. */
-  function countElite(root, categoryIds, index) {
-    const ctx = createQueryContext({ node: root.children[0], root, index, categoryIds, diagnostics: [] });
-    return query(ctx, SELECTION_COUNT, ELITE_CAT_ID, ELITE_CAT_ID, { shared: true });
+  /**
+   * Zaehlt die Elite-Kategorie armeeweit gegen den gegebenen Index und
+   * Effektiv-Zustand — Rahmen `roster`, Ziel die Kategorie.
+   */
+  function countElite(root, categoryIds, index, effective) {
+    const ctx = createQueryContext({ node: root.children[0], root, index, categoryIds, diagnostics: [], effective });
+    return query(ctx, SELECTION_COUNT, ScopeKeyword.ROSTER, ELITE_CAT_ID, { shared: true, includeChildSelections: true });
   }
 
   it('zaehlt einen Knoten nach kategorie-aenderndem Modifikator in der neuen Kategorie', () => {
     const { root, categoryIds } = buildTree(CATALOGUE_XML, roster([selection(WARRIOR_ID, WARRIOR_COUNT)]));
-    const baseIndex = buildIndex(root, createBaseEffectiveState(root));
+    const baseState = createBaseEffectiveState(root);
+    const baseIndex = buildIndex(root, baseState);
 
     // Basis-Kategorien: Warrior ist NICHT Elite → 0.
-    expect(countElite(root, categoryIds, baseIndex)).toBe(0);
+    expect(countElite(root, categoryIds, baseIndex, baseState)).toBe(0);
 
     const effective = applyAllModifiers(root, baseIndex, categoryIds, []);
     const effectiveIndex = buildIndex(root, effective);
 
     // Effektive Kategorien: Warrior ist jetzt Elite → zaehlt mit seiner Anzahl.
-    expect(countElite(root, categoryIds, effectiveIndex)).toBe(WARRIOR_COUNT);
+    expect(countElite(root, categoryIds, effectiveIndex, effective)).toBe(WARRIOR_COUNT);
   });
 });
 
