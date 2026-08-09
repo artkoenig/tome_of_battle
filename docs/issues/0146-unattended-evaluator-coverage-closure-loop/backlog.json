@@ -1049,7 +1049,7 @@
       ],
       "status": "todo",
       "note": "Re-cut against inc-2's landed facts: the explorer is invoked by its frontmatter name and does one cell per invocation (the per-run cap is the driver's to count), phase B's task list and the open-question report both read docs/testing/campaign-state.json, and the termination clauses now name their mechanical signals (inventory exit 0, evaluator suite green, no open parkedQuestions). Everything else is unchanged.",
-      "branch": "",
+      "branch": "claude/evaluator-katalog-rules-t6nim4--inc-1--inc-3",
       "steps": [],
       "attempts": []
     }
