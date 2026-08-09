@@ -652,3 +652,19 @@ Angebots-Slot.
 | :--- | :--- | :--- |
 | 01 | Dire Wolves (5 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: der Scouts-Angebots-Slot ist sichtbar (`isHidden` false) |
 | 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: der Basiswert `hidden="true"` steht — der Slot ist versteckt |
+
+## `set-constraint-value-force-gate`
+
+Prüft den `set`-Modifikator auf eine Constraint-`id` (§7.6/§7.7 der
+Formatdoku): er ersetzt den Wert der adressierten Grenze genau solange seine
+Bedingung hält; sonst gilt der geschriebene Basiswert. Beleg: der
+Skeletons-Modellslot (`eaa1-c6a6-9aae-ae9a`, Vampire Counts) trägt
+`max value="40"` (`id 6679-1132-0a76-9ba3`) und `set value="30"` auf genau
+diese Id, gegatet per `instanceOf scope="force"` auf das ForceEntry „Army of
+Sylvania (SoC)" (`4072-c3b8-84c4-a097`). Beide Roster sind bis auf das
+Kontingent identisch (10 Modelle + Handweapon).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Skeletons (10 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: das effektive Maximum des Modellslots ist 30; mit 10 Modellen feuert keine Grenze |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: das Basis-Maximum 40 steht; keine Grenze feuert |

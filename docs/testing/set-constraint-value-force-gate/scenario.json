@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "name": "set-constraint-value-force-gate",
+  "description": "Ein modifier type=set, dessen field die id eines Constraints nennt, ersetzt dessen Wert exakt, solange die Bedingungen halten - und laesst den geschriebenen Basiswert unangetastet, solange sie nicht halten. Konkret: Der Skeletons-Modellslot (eaa1-c6a6-9aae-ae9a) im Skeletons-Regiment der Vampire Counts traegt max 40 (Constraint 6679-1132-0a76-9ba3, scope=parent) und einen set-30-Modifier auf genau diese Constraint-Id, bedingt per instanceOf auf das forceEntry Army of Sylvania (SoC) (4072-c3b8-84c4-a097). Zwei Roster, die sich NUR im Kontingent unterscheiden, pinnen das effektive Maximum des Slots: 30 im Sylvania-Kontingent, 40 im Standard-Kontingent (e989-15b8-7eb6-9668). Die unmodifizierte min-10-Grenze (ad1d-03cf-a16f-ae52) bleibt in beiden Faellen der Basiswert.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-sylvania-effective-max-30.ros",
+      "description": "Kontingent \"Army of Sylvania (SoC)\" (4072-c3b8-84c4-a097) mit einem Skeletons-Regiment aus 10 Modellen + Handweapon. Die instanceOf-Bedingung des set-Modifiers haelt: das effektive Maximum des Modellslots ist 30 (nicht 40). Mit 10 Modellen feuert weder die (modifizierte) max- noch die min-Grenze.",
+      "expect": {
+        "firing": [],
+        "absent": ["6679-1132-0a76-9ba3", "ad1d-03cf-a16f-ae52"],
+        "capabilities": [
+          {
+            "defId": "eaa1-c6a6-9aae-ae9a",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "current": 10,
+            "effectiveMin": 10,
+            "effectiveMax": 30,
+            "headroom": 20,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-standard-base-max-40.ros",
+      "description": "Identischer Aufbau, aber Kontingent \"Standard (VC-AB)\" (e989-15b8-7eb6-9668). Die instanceOf-Bedingung des set-Modifiers haelt NICHT: der Constraint behaelt seinen geschriebenen Basiswert, das effektive Maximum des Modellslots ist 40.",
+      "expect": {
+        "firing": [],
+        "absent": ["6679-1132-0a76-9ba3", "ad1d-03cf-a16f-ae52"],
+        "capabilities": [
+          {
+            "defId": "eaa1-c6a6-9aae-ae9a",
+            "anchorKind": "occupied",
+            "frameDefId": "9ac2-f4c1-bcc3-3aee",
+            "current": 10,
+            "effectiveMin": 10,
+            "effectiveMax": 40,
+            "headroom": 30,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -7,96 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 18,
-    "uncovered": 87
+    "covered": 19,
+    "uncovered": 86
   },
   "cells": [
-    {
-      "key": "modifier|set|constraintValue",
-      "kind": "modifier",
-      "axes": {
-        "type": "set",
-        "targetField": "constraintValue"
-      },
-      "occurrences": 348,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 7,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 15,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 4,
-        "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst": 11,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 61,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 19,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 89,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 87,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 55
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "ee09-9a50-ad78-9c32",
-            "name": "Regiment of Renown"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "0b6f-90dd-93f3-373b"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "5ef4-3b32-f5ca-ae8f",
-            "name": "Rider"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "0d6f-0298-55af-aa40"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "b923-526e-4635-62fe",
-            "name": "Pikemen"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "23c6-140a-23d1-a50c"
-          }
-        }
-      ]
-    },
     {
       "key": "repeatList|n=1|on=modifier",
       "kind": "repeatList",
