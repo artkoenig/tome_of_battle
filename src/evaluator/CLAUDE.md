@@ -7,9 +7,11 @@ scenarios under `docs/testing/`). Run one file alone:
 
 ## Facade under test
 
-Every test drives the PUBLIC facade only — `prepareDataset` + `evaluate` from
-`./evaluator.js` — over a small synthetic catalogue XML string built inline in
-the test file. Never the real WHFB6 fixtures for a unit-level rule; those back
+A test for a rule of the engine's observable behaviour drives the public facade
+— `prepareDataset` + `evaluate` from `./evaluator.js` — over a small synthetic
+catalogue XML string built inline in the test file, while tests that pin one
+module's internal contract (`query.matrix.test.js`, `fixpoint.test.js`,
+`resolver.test.js`, `countIndex.*.test.js`) import that module directly. Never the real WHFB6 fixtures for a unit-level rule; those back
 the E2E scenarios under `docs/testing/` instead. A file-local `evaluate`
 helper wraps the two-stage call:
 
@@ -19,15 +21,18 @@ function evaluate(catalogXml, roster) {
 }
 ```
 
-`globalThis.DOMParser` is installed from jsdom at the top of every file (the
-engine's own XML reader needs this browser primitive under Node):
+`globalThis.DOMParser` is installed from jsdom at the top of every file that
+parses catalogue XML — files that touch no XML (`budget.test.js`,
+`rounding.test.js`, `causes.test.js`) need it not (the engine's own XML reader
+needs this browser primitive under Node):
 
 ```js
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 ```
 
-Every assertion is preceded by `expect(report.diagnostics).toEqual([])`, so a
+A test that evaluates a synthetic catalogue asserts
+`expect(report.diagnostics).toEqual([])` before its own expectations, so a
 broken fixture fails loudly instead of masquerading as a missing-behaviour
 failure.
 
