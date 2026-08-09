@@ -803,3 +803,21 @@ Pflicht-Handweapon und Magic Level 1; Unterschied nur die Full-Plate-Wahl.
 | :--- | :--- | :--- |
 | 01 | Full Plate Armour in der Gruppe gewählt | Die Bedingung hält: effektives Gruppen-Maximum 3 bei Ist 2, Spielraum 1; keine Grenze feuert |
 | 02 | Ohne Full Plate | Basis-Maximum 2 bei Ist 1 — der Shield-increment bleibt in beiden Rostern inert |
+
+## `set-characteristic-force-gate` (ROT — gepinnter Gap)
+
+Prüft `modifier type="set"` auf eine characteristicType-Id (§7.7/§7.3 der
+Formatdoku): der Modifikator ersetzt genau ein Merkmal des effektiven Profils,
+solange die Bedingung hält. Beleg: die Wurzeleinheit „Tomb stalker"
+(`f401a3ed-…`, Vampire Counts, Basis `hidden="true"`) bezieht ihren Statblock
+über den unbedingten infoLink „Tomb Scorpion" (`fe84bf5a-…`) und trägt
+`set Mv=6`, gegatet auf das Lichemaster-Kontingent. Beide Roster sind bis auf
+das Kontingent identisch. **Roster 02 ist rot:** der Bericht führt am Slot der
+versteckten Einheit gar kein Info-Vorkommen des unbedingten infoLink — die
+Basiswerte (Mv 7, „Tomb Scorpion") sind dadurch nicht prüfbar (siehe
+`pinnedGaps` in `campaign-state.json`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Tomb stalker im Lichemaster-Kontingent | Die Bedingung hält: Profil zeigt Mv 6, Name „Tomb stalker", Einheit sichtbar; WS 4 und Sv+ 5 bleiben Basis |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Kein Modifikator greift: Profil-Vorkommen mit Basis Mv 7 und Name „Tomb Scorpion", Einheit versteckt — derzeit fehlt das Vorkommen im Bericht ganz (Gap) |

@@ -81,6 +81,11 @@
       "key": "modifier|increment|constraintValue",
       "evidence": ["docs/testing/group-max-increment-on-choice"],
       "rationale": "The Vampire Count's Weapons-and-Armour group max 2 (b3b5-f872-24df-04dc, Vampire Counts) carries increment +1 gated on the Full Plate Armour choice (section 9.8 armour pattern); roster 01 with Full Plate asserts effectiveMax 3 at current 2, roster 02 without asserts the base effectiveMax 2 at current 1. Scenario is green."
+    },
+    {
+      "key": "modifier|set|characteristic",
+      "evidence": ["docs/testing/set-characteristic-force-gate"],
+      "rationale": "RED scenario, pinned gap (see pinnedGaps in campaign-state.json): the Tomb stalker's Lichemaster-gated set Mv=6 is asserted through the profile info occurrence in both forces; roster 01 (Lichemaster, Mv 6) passes, roster 02 (Standard, base Mv 7) fails because the report carries no info element for the unconditional infoLink on the hidden unit's slot."
     }
   ]
 }
