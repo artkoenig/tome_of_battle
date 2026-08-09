@@ -737,3 +737,20 @@ sind bis auf das Kontingent identisch.
 | :--- | :--- | :--- |
 | 01 | Bat-Swarm-Einheit im Kontingent „Clan Necrarch (VC-AB)" — genau das zweite Gruppenmitglied hält | Die or-Gruppe hält: die Einheit ist versteckt (`isHidden` true); ihre roster-max-1-Grenze bleibt trotzdem geprüft und still |
 | 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" — kein Mitglied hält | Die Gruppe hält nicht: die Einheit bleibt sichtbar (`isHidden` false) |
+
+## `condition-group-and-points-bracket`
+
+Prüft die `conditionGroup type="and"` auf oberster Ebene (§7.7 der
+Formatdoku): sie hält nur, wenn **alle** Mitglieder halten — ein einziges
+falsches Mitglied besiegt die Gruppe. Beleg: die Punktestaffel der
+Core-Pflicht in der `.gst` (categoryEntry „Core", Constraint
+`35c2-d478-392a-aeb1`, Basis min 2): `set 3` gegatet auf die dreigliedrige
+and-Gruppe [keine Border Patrols, Limit ≥ 2000, Limit < 3000], `set 4` analog
+für 3000–3999. Drei identische, leere „Standard (VC-AB)"-Kontingente, nur das
+Punktelimit variiert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent, Limit 1000 | Beide Bracket-Gruppen scheitern je an ihrem atLeast-Mitglied (zwei von drei Mitgliedern sind wahr): Basis-Grenze 2 feuert mit Ist 0 |
+| 02 | Leeres Kontingent, Limit 2500 | Alle drei Mitglieder der 2000er-Gruppe halten: Grenze 3 feuert mit Ist 0 |
+| 03 | Leeres Kontingent, Limit 3000 | Grenzfall: die 2000er-Gruppe scheitert an ihrem lessThan-Mitglied (3000 ist nicht < 3000), die 3000er-Gruppe hält vollständig: Grenze 4 feuert mit Ist 0 |

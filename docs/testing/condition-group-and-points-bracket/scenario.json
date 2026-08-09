@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "condition-group-and-points-bracket",
+  "description": "conditionGroup type=and (Top-Level, ein Gruppe je Modifikator): eine and-Gruppe haelt genau dann, wenn ALLE ihre Mitglieder halten — ein einziges falsches Mitglied besiegt die Gruppe und der gebundene set-Modifikator greift nicht. Getestet an der Punktebracket-Leiter der Core-Pflicht der .gst (Kategorie Core 64bf-efb4-9978-26df, Grenze 35c2-d478-392a-aeb1, Basis min 2, scope=force): drei identisch leere Vampire-Counts-Kontingente, die sich NUR im eingestellten Roster-costLimit unterscheiden. 1000 pts: beide Bracket-Gruppen falsch (das atLeast-2000-Mitglied besiegt die 2000er-Gruppe) -> Grenze bleibt 2. 2500 pts: alle drei Mitglieder der 2000er-Gruppe wahr -> set 3. 3000 pts: das lessThan-3000-Mitglied besiegt die 2000er-Gruppe, waehrend die 3000er-Gruppe vollstaendig haelt -> set 4.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-empty-1000-base-bound-2.ros",
+      "description": "Leeres Standard-(VC-AB)-Kontingent, Budget pts=1000, keine Border-Patrols-Auswahl. Beide Bracket-and-Gruppen scheitern an ihrem atLeast-Mitglied (1000 < 2000 bzw. < 3000), obwohl je zwei Mitglieder wahr sind -> kein set, Core-Grenze bleibt auf Basis 2; Ist 0 -> feuert (Grenze 2).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-empty-2500-bracket-bound-3.ros",
+      "description": "Identisches leeres Kontingent, Budget pts=2500. Alle drei Mitglieder der 2000-2999-and-Gruppe halten (BP<1, 2500>=2000, 2500<3000) -> set 3; die 3000er-Gruppe scheitert an atLeast 3000. Ist 0 -> feuert (Grenze 3).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 3 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/03-empty-3000-boundary-bound-4.ros",
+      "description": "Identisches leeres Kontingent, Budget pts=3000 (Bracket-Kante). Die 2000er-Gruppe wird von ihrem lessThan-3000-Mitglied besiegt (3000 ist nicht < 3000), waehrend die 3000er-Gruppe vollstaendig haelt (BP<1, 3000>=3000, 3000<4000) -> set 4. Ist 0 -> feuert (Grenze 4).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 }
+        ],
+        "absent": []
+      }
+    }
+  ]
+}

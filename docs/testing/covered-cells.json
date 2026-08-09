@@ -51,6 +51,11 @@
       "key": "conditionGroup|or|top",
       "evidence": ["docs/testing/condition-group-or-force-gate"],
       "rationale": "The 0-1 Bat Swarm root unit (Vampire Counts) is hidden by a set-hidden modifier gated by a lone top-level or-group of five instanceOf(scope=force) members; roster 01 (Clan Necrarch force, exactly the second member true) asserts isHidden true — one true member suffices — and roster 02 (Standard force, no member true) asserts isHidden false. Scenario is green."
+    },
+    {
+      "key": "conditionGroup|and|top",
+      "evidence": ["docs/testing/condition-group-and-points-bracket"],
+      "rationale": "Three empty Standard (VC-AB) forces differing only in costLimit (1000/2500/3000) pin the .gst Core-min points ladder: at 1000 both bracket and-groups are defeated by a single false atLeast member (bound 2), at 2500 all three members of the 2000-group hold (bound 3), at 3000 the 2000-group is defeated by its lessThan member while the 3000-group holds (bound 4). Scenario is green."
     }
   ]
 }
