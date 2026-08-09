@@ -86,6 +86,11 @@
       "key": "modifier|set|characteristic",
       "evidence": ["docs/testing/set-characteristic-force-gate"],
       "rationale": "RED scenario, pinned gap (see pinnedGaps in campaign-state.json): the Tomb stalker's Lichemaster-gated set Mv=6 is asserted through the profile info occurrence in both forces; roster 01 (Lichemaster, Mv 6) passes, roster 02 (Standard, base Mv 7) fails because the report carries no info element for the unconditional infoLink on the hidden unit's slot."
+    },
+    {
+      "key": "condition|lessThan|force|selectionCount|child=id",
+      "evidence": ["docs/testing/less-than-force-min-drop"],
+      "rationale": "Neferata's 'Seduction, Domination, Transfix and Beguile.' power carries min 1 (10a1-ac7b-4b9c-0e12) set to 0 while the force counts fewer than one Lahmia bloodline; roster 01 (Lahmia, power missing) asserts the min fires 0/1, roster 02 (Necrarch twin) asserts it absent while the unconditional link min 330a-d0d9-2177-a87f proves the slot is validated, roster 03 (Lahmia, power selected) asserts all silent. Scenario is green."
     }
   ]
 }

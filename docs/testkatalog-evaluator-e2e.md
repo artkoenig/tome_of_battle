@@ -821,3 +821,20 @@ Basiswerte (Mv 7, „Tomb Scorpion") sind dadurch nicht prüfbar (siehe
 | :--- | :--- | :--- |
 | 01 | Tomb stalker im Lichemaster-Kontingent | Die Bedingung hält: Profil zeigt Mv 6, Name „Tomb stalker", Einheit sichtbar; WS 4 und Sv+ 5 bleiben Basis |
 | 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Kein Modifikator greift: Profil-Vorkommen mit Basis Mv 7 und Name „Tomb Scorpion", Einheit versteckt — derzeit fehlt das Vorkommen im Bericht ganz (Gap) |
+
+## `less-than-force-min-drop`
+
+Prüft die `lessThan`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7 der Formatdoku): sie hält genau unterhalb des Schwellwerts. Beleg: die
+Blutlinien-Kraft „Seduction, Domination, Transfix and Beguile."
+(`adfd-d46e-23ff-3d61`, Vampire Counts, an Neferatas „Bloodline
+Powers"-Gruppe) trägt `min 1` (`10a1-ac7b-4b9c-0e12`), per `set 0` gesenkt,
+solange die Force **keine** Lahmia-Blutlinie (`4f07-e982-6665-70b7`) zählt.
+Alle drei Roster: Standard (VC-AB) mit Special-Characters-Toggle und Neferata;
+Unterschied nur Blutlinie bzw. Kraft-Auswahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lahmia-Blutlinie, Kraft nicht gewählt | Die Bedingung hält nicht (1 ist nicht < 1): die Basis-Pflicht feuert (Ist 0 gegen 1), ebenso die unbedingte Link-Pflicht (Kontrolle) |
+| 02 | Necrarch-Zwilling, Kraft nicht gewählt | Die Bedingung hält (0 < 1): die gegatete Pflicht ist still; die unbedingte Link-Pflicht feuert weiter und beweist, dass der Slot geprüft wird |
+| 03 | Lahmia-Blutlinie, Kraft gewählt | Alles still: die Pflicht ist erfüllt (Ist 1) |

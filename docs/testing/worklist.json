@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 32,
-    "uncovered": 73
+    "covered": 33,
+    "uncovered": 72
   },
   "cells": [
     {
@@ -109,101 +109,6 @@
             "field": "selections",
             "scope": "unit",
             "childId": "2ef7-3efe-a448-423f"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|lessThan|force|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "lessThan",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 56,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 17,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 6,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 11,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 16,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 5
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "ee09-9a50-ad78-9c32",
-            "name": "Regiment of Renown"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "3d35-6b18-262f-6503"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "b640-7e9c-3054-c1ce",
-            "name": "Mercenaries"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "fda5-49b9-b74c-aaf4"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9e4d-c653-35ec-1d09",
-            "name": "Amazon Cold One Outriders"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8b76-92c4-23f9-54b1"
           }
         }
       ]
