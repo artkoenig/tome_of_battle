@@ -29,7 +29,7 @@
 import { writeFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 
-import { extractCells, exitCodeFor } from './lib/evaluator-coverage-cells.js';
+import { UnmatchedReason, extractCells, exitCodeFor } from './lib/evaluator-coverage-cells.js';
 import {
   CORPUS_DIRS,
   WORKLIST_PATH,
@@ -109,7 +109,15 @@ function main() {
 
   for (const key of coverage.stale) console.warn(`WARNING stale covered key, no longer in the corpus: ${key}`);
   for (const entry of coverage.unmatched) {
-    console.warn(`WARNING manifest id matches no constraint: ${entry.id} (${entry.evidence})`);
+    if (entry.reason === UnmatchedReason.OUTSIDE_DATASET) {
+      console.warn(
+        `WARNING manifest id names a corpus constraint outside the scenario's dataset: ${entry.id} (${entry.evidence})`,
+      );
+    } else {
+      console.warn(
+        `WARNING manifest id names no constraint in the corpus: ${entry.id} (${entry.evidence})`,
+      );
+    }
   }
 
   console.log('');

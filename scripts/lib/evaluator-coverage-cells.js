@@ -33,8 +33,26 @@
  *   is the file plus the nearest named ancestor the construct hangs on.
  * @typedef {{ key: string, kind: string, axes: Record<string, (string|boolean)>,
  *             occurrences: number, files: Record<string, number>, examples: CellExample[] }} Cell
- * @typedef {{ cells: Cell[], failures: CellFailure[], index: Map<string, string> }} Inventory
+ * @typedef {Map<string, Map<string, string>>} ConstraintIndex
+ *   Constraint ids per file: the outer key is the repo-relative path, the inner
+ *   map takes a constraint id to its cell key. The nesting is what keeps one id
+ *   that occurs in two fixture sets with different attributes distinguishable —
+ *   `id` is unique within a dataset, not across the corpus.
+ * @typedef {{ cells: Cell[], failures: CellFailure[], index: ConstraintIndex }} Inventory
+ * @typedef {{ gameSystem?: (string|null), catalogues?: (string[]|null) }} Dataset
+ *   The files one scenario manifest — or one roster of it — loads, as
+ *   `docs/testing/<scenario>/scenario.json` declares them: repo-relative,
+ *   POSIX-separated paths.
  */
+
+/**
+ * Why a manifest id resolved to no cell — bookkeeping drift (`UNKNOWN_ID`)
+ * against a scenario whose dataset and expectations disagree (`OUTSIDE_DATASET`).
+ */
+export const UnmatchedReason = Object.freeze({
+  UNKNOWN_ID: 'unknown-id',
+  OUTSIDE_DATASET: 'outside-dataset',
+});
 
 /** The seven construct families the inventory distinguishes. */
 export const CellKind = Object.freeze({
@@ -487,9 +505,11 @@ const CELL_BUILDERS = Object.freeze([
  * broken file into an apparently clean one.
  *
  * @param {CellSource[]} sources
- * @returns {Inventory} the cells in first-encounter order, the failures, and
- *   an id→key index of every constraint, which is what lets a scenario
- *   manifest's `limitId` be resolved to the cell it exercises.
+ * @returns {Inventory} the cells in first-encounter order, the failures, and a
+ *   file-keyed id→key index of every constraint, which is what lets a scenario
+ *   manifest's `limitId` be resolved to the cell it exercises in the very files
+ *   that scenario loads. A repeated id inside one file is last-wins; a dataset
+ *   guarantees id uniqueness, and the frozen corpus holds no such case.
  */
 export function extractCells(sources) {
   /** @type {CellFailure[]} */
@@ -505,7 +525,7 @@ export function extractCells(sources) {
   const symbols = collectSymbols(usable);
   /** @type {Map<string, Cell>} */
   const cells = new Map();
-  /** @type {Map<string, string>} */
+  /** @type {ConstraintIndex} */
   const index = new Map();
 
   for (const { doc, file } of usable) {
@@ -513,7 +533,14 @@ export function extractCells(sources) {
       for (const element of doc.getElementsByTagName(tag)) {
         const built = build(element, symbols);
         const elementId = attribute(element, 'id');
-        if (tag === Tag.CONSTRAINT && elementId !== null) index.set(elementId, built.key);
+        if (tag === Tag.CONSTRAINT && elementId !== null) {
+          let fileIndex = index.get(file);
+          if (fileIndex === undefined) {
+            fileIndex = new Map();
+            index.set(file, fileIndex);
+          }
+          fileIndex.set(elementId, built.key);
+        }
 
         let cell = cells.get(built.key);
         if (cell === undefined) {
@@ -559,23 +586,41 @@ function sortObjectKeys(source) {
  * therefore exercised. This is recomputed on every run rather than
  * transcribed, so it can never go stale.
  *
- * An id that names no constraint of the corpus is reported as unmatched
- * evidence, never thrown — deadlocking the loop on bookkeeping is worse than
- * a warning line.
+ * Every roster resolves its own ids against its own dataset —
+ * `roster.dataset ?? manifest.dataset`, the override (never merge) rule the
+ * manifest runner itself applies — so a scenario running against one fixture
+ * set can never credit the other set's cell of the same constraint id.
  *
- * @param {Array<{ dir: string, rosters?: Array<{ expect?: { firing?: Array<{ limitId?: string }>, absent?: Array<string|{ limitId?: string, id?: string }> } }> }>} manifests
- * @param {Map<string, string>} index
- * @returns {{ matched: Array<{ key: string, id: string, evidence: string }>, unmatched: Array<{ id: string, evidence: string }> }}
+ * An id that resolves to no cell is reported as unmatched evidence, never
+ * thrown: deadlocking the loop on bookkeeping is worse than a warning line.
+ * Its `reason` tells the two failure modes apart. `unknown-id` names an id
+ * that is no constraint anywhere in the corpus; `outside-dataset` names one
+ * that is a corpus constraint no file of the roster's dataset holds, the alarm
+ * that a scenario's dataset declaration and its expectations have drifted
+ * apart.
+ *
+ * @param {Array<{ dir: string, dataset?: (Dataset|null), rosters?: Array<{ dataset?: (Dataset|null),
+ *          expect?: { firing?: Array<{ limitId?: string }>, absent?: Array<string|{ limitId?: string, id?: string }> } }> }>} manifests
+ * @param {ConstraintIndex} index
+ * @returns {{ matched: Array<{ key: string, id: string, evidence: string }>,
+ *   unmatched: Array<{ id: string, evidence: string, reason: string }> }}
  */
 export function coveredKeysFromManifests(manifests, index) {
   /** @type {Map<string, { key: string, id: string, evidence: string }>} */
   const matched = new Map();
-  /** @type {Map<string, { id: string, evidence: string }>} */
+  /** @type {Map<string, { id: string, evidence: string, reason: string }>} */
   const unmatched = new Map();
+
+  // Every constraint id the corpus holds in any file: what tells `unknown-id`
+  // from `outside-dataset`.
+  /** @type {Set<string>} */
+  const corpusIds = new Set();
+  for (const fileIndex of index.values()) for (const id of fileIndex.keys()) corpusIds.add(id);
 
   for (const manifest of manifests) {
     const evidence = manifest.dir;
     for (const roster of manifest.rosters ?? []) {
+      const files = datasetFiles(roster?.dataset ?? manifest.dataset ?? null);
       const ids = [
         ...(roster.expect?.firing ?? []).map(entry => entry?.limitId),
         ...(roster.expect?.absent ?? []).map(entry =>
@@ -584,14 +629,41 @@ export function coveredKeysFromManifests(manifests, index) {
       ];
       for (const id of ids) {
         if (typeof id !== 'string' || id === '') continue;
-        const key = index.get(id);
-        if (key === undefined) unmatched.set(`${id} ${evidence}`, { id, evidence });
-        else matched.set(`${key} ${evidence}`, { key, id, evidence });
+        /** @type {Set<string>} */
+        const keys = new Set();
+        for (const file of files) {
+          const key = index.get(file)?.get(id);
+          if (key !== undefined) keys.add(key);
+        }
+        if (keys.size === 0) {
+          unmatched.set(`${id} ${evidence}`, {
+            id,
+            evidence,
+            reason: corpusIds.has(id)
+              ? UnmatchedReason.OUTSIDE_DATASET
+              : UnmatchedReason.UNKNOWN_ID,
+          });
+          continue;
+        }
+        for (const key of keys) matched.set(`${key} ${evidence}`, { key, id, evidence });
       }
     }
   }
 
   return { matched: [...matched.values()], unmatched: [...unmatched.values()] };
+}
+
+/**
+ * Flattens one dataset declaration to the repo-relative files it names. The
+ * paths a manifest carries are byte-identical to the ones the index is keyed
+ * by, so a plain string match resolves them and no normalization is needed.
+ * @param {Dataset|null} dataset
+ * @returns {string[]}
+ */
+function datasetFiles(dataset) {
+  if (dataset === null || typeof dataset !== 'object') return [];
+  const files = [dataset.gameSystem, ...(dataset.catalogues ?? [])];
+  return files.filter(file => typeof file === 'string' && file !== '');
 }
 
 /**

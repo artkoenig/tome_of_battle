@@ -234,10 +234,11 @@ export function loadCoverageRecords({ testingDir = TESTING_DIR, coveredCellsPath
 /**
  * Unions the two coverage sources and reports the split, including the two
  * guards that warn but never fail: keys the corpus no longer holds, and
- * manifest ids that name no constraint.
+ * manifest ids that resolve to no cell.
  *
- * @param {{ cells: any[], index: Map<string, string>, manifests: any[], coveredRecord: any }} input
- * @returns {{ covered: any[], uncovered: any[], stale: string[], unmatched: Array<{ id: string, evidence: string }>,
+ * @param {{ cells: any[], index: Map<string, Map<string, string>>, manifests: any[], coveredRecord: any }} input
+ * @returns {{ covered: any[], uncovered: any[], stale: string[],
+ *             unmatched: Array<{ id: string, evidence: string, reason: string }>,
  *             fromManifests: Array<{ key: string, id: string, evidence: string }>, fromRecord: string[] }}
  */
 export function computeCoverage({ cells, index, manifests, coveredRecord }) {
@@ -262,7 +263,7 @@ export function computeCoverage({ cells, index, manifests, coveredRecord }) {
  * that changed on every run would dirty the working tree forever and make the
  * drift guard impossible.
  *
- * @param {{ cells: any[], index: Map<string, string>, manifests: any[], coveredRecord: any }} input
+ * @param {{ cells: any[], index: Map<string, Map<string, string>>, manifests: any[], coveredRecord: any }} input
  * @returns {{ schemaVersion: number, generatedBy: string, corpus: string[],
  *             totals: { cells: number, covered: number, uncovered: number }, cells: any[] }}
  */

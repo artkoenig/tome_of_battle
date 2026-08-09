@@ -6943,12 +6943,12 @@
       ]
     },
     {
-      "key": "constraint|min|selectionCount|force|s=true|ics=true|icf=true|pct=false",
+      "key": "constraint|min|selectionCount|roster|s=true|ics=true|icf=true|pct=false",
       "kind": "constraint",
       "axes": {
         "type": "min",
         "field": "selectionCount",
-        "scope": "force",
+        "scope": "roster",
         "shared": true,
         "includeChildSelections": true,
         "includeChildForces": true,
@@ -6956,11 +6956,11 @@
       },
       "occurrences": 1,
       "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
+        "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst": 1
       },
       "examples": [
         {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+          "file": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
           "id": "1077-7379-f142-f382",
           "ancestor": {
             "tag": "categoryEntry",
@@ -6977,7 +6977,7 @@
           "raw": {
             "type": "min",
             "field": "selections",
-            "scope": "force"
+            "scope": "roster"
           }
         }
       ]
