@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 29,
-    "uncovered": 76
+    "covered": 30,
+    "uncovered": 75
   },
   "cells": [
     {
@@ -94,80 +94,6 @@
             "type": "increment",
             "field": "a177-82fc-0b76-5b73"
           }
-        }
-      ]
-    },
-    {
-      "key": "modifierGroup|cond=true|repeats=false|nested=false",
-      "kind": "modifierGroup",
-      "axes": {
-        "conditional": true,
-        "repeats": false,
-        "nested": false
-      },
-      "occurrences": 80,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 13,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 14,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 22,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 30,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "6c8d-f6f3-823e-e6a5",
-            "name": "Extra Special choice"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "a97e-5cc9-264b-74f4",
-            "name": "Extra Rare choice"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9ddd-69c8-644d-abc2",
-            "name": "0-1 Amazon Serpent Priestess"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
         }
       ]
     },

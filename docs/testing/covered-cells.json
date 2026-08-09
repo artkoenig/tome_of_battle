@@ -71,6 +71,11 @@
       "key": "modifier|add|category",
       "evidence": ["docs/testing/remove-category-force-gate"],
       "rationale": "The same Grave Guard recategorization pins the add side: in roster 02 (Blood Dragons force) the Core-min limit 35c2-d478-392a-aeb1 is asserted absent, which holds only if the add category 64bf (Core) makes the four Grave Guard units count toward Core (otherwise 0 < 2 fires, as roster 01 proves on the raw links). Green scenario, credited without a new authoring pass."
+    },
+    {
+      "key": "modifierGroup|cond=true|repeats=false|nested=false",
+      "evidence": ["docs/testing/remove-category-force-gate"],
+      "rationale": "The Grave Guard recategorization is carried by a conditioned, non-repeating, non-nested modifierGroup: its single instanceOf(scope=force) condition gates all three contained category modifiers at once. Roster 01 (Standard force) asserts none of them applied (raw categories fire both .gst limits), roster 02 (Blood Dragons force) asserts they all applied (both limits silent) — the group's gate-for-all semantics is exactly what the pair distinguishes. Green scenario, credited without a new authoring pass."
     }
   ]
 }
