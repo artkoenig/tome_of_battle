@@ -16,10 +16,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-coverage-campaign",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 2,
-    "lastRunAt": "2026-08-09T15:22:43Z",
+    "runs": 3,
+    "lastRunAt": "2026-08-09T19:06:28Z",
     "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-09T19:06:00Z",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
