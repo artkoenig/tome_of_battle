@@ -683,7 +683,7 @@
       ],
       "status": "todo",
       "note": "A complete prior attempt lives unmerged on branch `claude/evaluator-katalog-rules-t6nim4--inc-1` (closed as inc-1; its recorded steps sit in inc-1's attempts). It satisfied everything but criteria 4 and 8 of this cut; reuse what it proves useful instead of rediscovering it.",
-      "branch": "",
+      "branch": "claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4",
       "steps": [],
       "attempts": []
     },
