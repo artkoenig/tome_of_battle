@@ -971,7 +971,7 @@
       ],
       "status": "todo",
       "note": "inc-4 fixed the machine record's shape: docs/testing/covered-cells.json distinguishes covered from waived cells (one waived entry exists today), docs/testing/worklist.json opens at 89 uncovered cells, and the inventory CLI warns separately on evidence it cannot match (unknown-id / outside-dataset). The skill text builds on those facts instead of inventing a record format.",
-      "branch": "",
+      "branch": "claude/evaluator-katalog-rules-t6nim4--inc-1--inc-2",
       "steps": [],
       "attempts": []
     },
