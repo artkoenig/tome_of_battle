@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "issue": "",
+  "workflow": "agile-loop",
+  "codemap": "",
+  "increments": [
+    {
+      "id": "inc-1",
+      "title": "Coverage inventory script with covered-cells diff and worklist",
+      "goal": "A static coverage inventory (`scripts/evaluator-coverage-inventory.js`) that parses the whole fixture corpus, extracts every occurring rule-construct combination cell, diffs it against a machine-readable record of covered cells, and writes the uncovered cells to `docs/testing/worklist.json` — so the two skills of the later increments have a mechanical source of truth to work from.",
+      "criteria": [
+        "`scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.",
+        "It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).",
+        "The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.",
+        "The uncovered cells are written to `docs/testing/worklist.json`.",
+        "The script exits non-zero when the worklist is non-empty and zero when every occurring cell is covered.",
+        "The cell extraction is covered by unit tests, and they pass."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "inc-2",
+      "title": "Invert the constraint-explorer skill to data-first",
+      "goal": "`.claude/skills/evaluator-constraint-explorer/SKILL.md` rewritten so the explorer starts from the inventory's worklist instead of from engine-code hypotheses, delegates scenario authorship black-box, and treats red scenarios as pinned implementation work rather than deleting them.",
+      "criteria": [
+        "The rewritten skill works data-first: run the inventory script, take the next uncovered cell from `docs/testing/worklist.json`, delegate the scenario for that cell to the `e2e-testcase-author` subagent, then run the evaluator tests (`npx vitest run src/evaluator`).",
+        "A green scenario is kept and its cell marked covered in the same commit.",
+        "A red scenario stays in place as a pinned gap and is recorded as implementation work for phase B.",
+        "Changing a scenario's expectations to make the engine pass is forbidden by the skill text.",
+        "A cell whose intended semantics cannot be derived from the catalog data, the BSData wiki or the XSD is parked: the open question goes into the campaign state and the loop continues with the next cell.",
+        "The engine-code hypothesis search remains documented as a secondary mode for semantics bugs inside already-covered cells."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "inc-3",
+      "title": "Campaign driver skill evaluator-closure-loop",
+      "goal": "A user-invocable skill `evaluator-closure-loop` under `.claude/skills/` that alternates the data-first search (phase A) with implementation rounds (phase B), keeps all campaign state on disk, re-arms itself with `send_later` until the termination criterion holds, and reports parked questions to the human.",
+      "criteria": [
+        "A user-invocable skill `evaluator-closure-loop` exists under `.claude/skills/` that runs the campaign unattended.",
+        "It alternates phase A (the inverted explorer working through the worklist) with phase B (run `uroboros:agile-loop` on a campaign issue whose task list is the current set of red scenarios), and re-runs phase A after every phase B round.",
+        "It terminates when the worklist is empty, every evaluator E2E scenario is green, and no parked question is open.",
+        "At the end of every unfinished run it re-arms the loop with `send_later` about one hour ahead, and stops re-arming once the termination criterion holds.",
+        "Each run is capped at a fixed number of cells, and a cell is parked after two failed implementation rounds instead of being retried again.",
+        "All campaign state lives in files (worklist, parked questions, campaign issue) so a fresh session resumes from disk alone.",
+        "Parked questions are reported to the human at the end of a run, and their recorded answers are folded back in before the parked cells are retried."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-09T09:41:45.811Z",
+        "return": {
+          "questions": [],
+          "summary": "Cut the issue into three increments mirroring its three acceptance-criteria sections one-to-one: (1) the coverage inventory script with covered-cells diff and worklist, (2) the data-first rewrite of the constraint-explorer skill, (3) the evaluator-closure-loop campaign driver skill. Every criterion of the issue lands in exactly one increment: all of section 1 in inc-1, section 2 in inc-2, section 3 in inc-3. The inventory script comes first because it is the load-bearing risk — the cell taxonomy and the machine-readable covered-cells diff are what both skills consume, and the shape of the covered-cells record (dedicated file vs. derivation from the existing scenario.json manifests) is a code decision the inc-1 researcher answers before the skills depend on it. I rejected a finer cut of section 1 (extraction vs. diff/worklist) because the half without the diff delivers nothing reviewable on its own, and a merge of sections 2 and 3 because the explorer skill is independently testable against the worklist while the driver only orchestrates it. Codemap: seven entries — the new script and its test under scripts/, worklist.json and the covered-cells record plus a stale self-description in constraint-matrix.md under docs/testing/, the rewritten explorer SKILL.md, and the new closure-loop SKILL.md."
+        },
+        "prompt": "Issue directory: docs/issues/0146-unattended-evaluator-coverage-closure-loop\nOpen the run state for docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n\nReturn, as the final part of your reply, one JSON object and nothing after it, with exactly these fields:\n- \"increments\": the cut you just wrote with `init`, finished and dropped increments included, in the order they should be worked — each item an object {\"id\", \"title\", \"goal\", \"criteria\" (array of strings), \"status\" (\"todo\"|\"done\"|\"blocked\"|\"dropped\"), \"note\"}.\n- \"questions\": your return's `questions`, the way your shared brief defines them (array of strings).\n- \"summary\": string.\n"
+      }
+    ],
+    "attempts": []
+  }
+}
