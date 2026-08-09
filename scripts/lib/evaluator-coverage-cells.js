@@ -382,6 +382,9 @@ function repeatCell(element, symbols) {
     scope: classifyScope(rawScope),
     childId: classifyChildId(rawChildId),
     repeats: classifyRepeats(rawRepeats),
+    shared: flag(element, 'shared'),
+    includeChildSelections: flag(element, 'includeChildSelections'),
+    includeChildForces: flag(element, 'includeChildForces'),
     roundUp: flag(element, 'roundUp'),
     percentValue: flag(element, 'percentValue'),
   };
@@ -391,6 +394,9 @@ function repeatCell(element, symbols) {
     axes.scope,
     `child=${axes.childId}`,
     `repeats=${axes.repeats}`,
+    `s=${axes.shared}`,
+    `ics=${axes.includeChildSelections}`,
+    `icf=${axes.includeChildForces}`,
     `roundUp=${axes.roundUp}`,
     `pct=${axes.percentValue}`,
   ].join('|');

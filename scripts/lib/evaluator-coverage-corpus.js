@@ -72,6 +72,18 @@ export function repoRelative(absolutePath) {
 }
 
 /**
+ * The path a failure entry names: repo-relative for anything inside the repo,
+ * and the absolute path for anything outside it — a `../../tmp/...` chain
+ * would name a temp directory worse than the path it was given.
+ * @param {string} absolutePath
+ * @returns {string}
+ */
+function failurePath(absolutePath) {
+  const relativePath = relative(REPO_ROOT, absolutePath);
+  return relativePath.startsWith('..') ? absolutePath : relativePath.split(sep).join('/');
+}
+
+/**
  * @param {string} name
  * @returns {boolean}
  */
@@ -179,6 +191,44 @@ export function loadCoveredRecord(path = COVERED_CELLS_PATH) {
   } catch (error) {
     throw new Error(`unreadable covered-cells record ${repoRelative(path)}: ${String(error)}`);
   }
+}
+
+/**
+ * Reads both coverage records and reports an unreadable one as a failure
+ * instead of throwing, in the same `{ file, message }` shape `loadCorpus`
+ * produces. A caller that folds these into its failure list therefore exits
+ * with the operational code instead of crashing with a stack trace.
+ *
+ * Both loads always run, so one bad run reports both problems at once. A
+ * broken record falls back to "nothing read" rather than "nothing covered":
+ * the failure is what stops the caller from writing a worklist off it.
+ *
+ * @param {{ testingDir?: string, coveredCellsPath?: string }} [options]
+ * @returns {{ manifests: Array<{ dir: string } & Record<string, any>>,
+ *             coveredRecord: { schemaVersion: number, cells: Array<{ key: string, evidence?: any, rationale?: string }> },
+ *             failures: Array<{ file: string, message: string }> }}
+ */
+export function loadCoverageRecords({ testingDir = TESTING_DIR, coveredCellsPath = COVERED_CELLS_PATH } = {}) {
+  /** @type {Array<{ file: string, message: string }>} */
+  const failures = [];
+
+  /** @type {Array<{ dir: string } & Record<string, any>>} */
+  let manifests = [];
+  try {
+    manifests = loadManifests(testingDir);
+  } catch (error) {
+    failures.push({ file: failurePath(testingDir), message: String(error) });
+  }
+
+  /** @type {{ schemaVersion: number, cells: Array<{ key: string, evidence?: any, rationale?: string }> }} */
+  let coveredRecord = { schemaVersion: SCHEMA_VERSION, cells: [] };
+  try {
+    coveredRecord = loadCoveredRecord(coveredCellsPath);
+  } catch (error) {
+    failures.push({ file: failurePath(coveredCellsPath), message: String(error) });
+  }
+
+  return { manifests, coveredRecord, failures };
 }
 
 /**

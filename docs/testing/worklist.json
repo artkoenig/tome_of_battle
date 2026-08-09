@@ -6,9 +6,9 @@
     "src/__fixtures__/whfb6"
   ],
   "totals": {
-    "cells": 101,
+    "cells": 105,
     "covered": 16,
-    "uncovered": 85
+    "uncovered": 89
   },
   "cells": [
     {
@@ -751,111 +751,6 @@
       ]
     },
     {
-      "key": "repeat|selectionCount|parent|child=model|repeats=1|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "model",
-        "repeats": "1",
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 131,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 4,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 35,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 5,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 28,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 45,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 14
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "a3f8-002a-defb-188d",
-            "name": "Shield"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "cc2c-3c61-04fe-3a1a",
-            "name": "Two Hand Weapons"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "311b-bc83-3879-5f60",
-            "name": "Ogre Ironfist"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
-    {
       "key": "modifier|set|name",
       "kind": "modifier",
       "axes": {
@@ -1125,6 +1020,114 @@
           ],
           "raw": {
             "type": "and"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "model",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 115,
+      "files": {
+        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 4,
+        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 31,
+        "src/__fixtures__/whfb6/Vampire Counts.cat": 5,
+        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 28,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 34,
+        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 13
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "a3f8-002a-defb-188d",
+            "name": "Shield"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "cc2c-3c61-04fe-3a1a",
+            "name": "Two Hand Weapons"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "311b-bc83-3879-5f60",
+            "name": "Ogre Ironfist"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
           }
         }
       ]
@@ -2033,105 +2036,6 @@
           "raw": {
             "type": "add",
             "field": "error"
-          }
-        }
-      ]
-    },
-    {
-      "key": "repeat|selectionCount|parent|child=id|repeats=1|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "id",
-        "repeats": "1",
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 47,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 2,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 4,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 10,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 20,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "07b6-6c42-d4d5-16e8",
-            "name": "Kylists (Chaos Centaur Champions)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "5350-812c-57c9-ef45",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "4c3e-febe-6d5d-6912",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "b76c-6bad-4650-dbb0",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "4c3e-febe-6d5d-6912",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "696a-648d-c842-4c6a",
-            "repeats": "1"
           }
         }
       ]
@@ -3282,6 +3186,109 @@
       ]
     },
     {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 24,
+      "files": {
+        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 2,
+        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 4,
+        "src/__fixtures__/whfb6/Vampire Counts.cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 4,
+        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 10
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "07b6-6c42-d4d5-16e8",
+            "name": "Kylists (Chaos Centaur Champions)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "5350-812c-57c9-ef45",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "4c3e-febe-6d5d-6912",
+            "name": "Arcane Items"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "b76c-6bad-4650-dbb0",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "638c-0f7d-3590-75b3",
+            "name": "Netters"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "7b95-cfde-8c59-78c3",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
       "key": "modifierGroup|cond=false|repeats=false|nested=false",
       "kind": "modifierGroup",
       "axes": {
@@ -3653,99 +3660,6 @@
       ]
     },
     {
-      "key": "repeat|selectionCount|roster|child=id|repeats=1|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "roster",
-        "childId": "id",
-        "repeats": "1",
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 18,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 3,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 5,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 7
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "1e26-0d1a-bb3c-f47a",
-            "name": "Gnoblars"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "735e-2da1-6356-2fdb",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "041b-7d95-6ff9-754a",
-            "name": "Gnoblar Trappers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "735e-2da1-6356-2fdb",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ab2c-30b1-9eaa-2306",
-            "name": "Gnoblar Scraplauncher"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "dd12-e469-588f-6b5b",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
-    {
       "key": "modifierGroup|cond=true|repeats=false|nested=true",
       "kind": "modifierGroup",
       "axes": {
@@ -3815,6 +3729,209 @@
             "modifierGroup"
           ],
           "raw": {}
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "model",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 16,
+      "files": {
+        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 4,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 11,
+        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "2099-eac8-a45d-b4b6",
+            "name": "Additional Hand Weapon"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "9942-7b31-d264-1a0e",
+            "name": "Spears"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "3d07-2a6d-eeb3-e1ce",
+            "name": "Additional Hand Weapon"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 15,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 3,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 6,
+        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 4,
+        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 2
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "4c3e-febe-6d5d-6912",
+            "name": "Arcane Items"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "696a-648d-c842-4c6a",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "d502-9cf6-2232-202c",
+            "name": "Arcane Items (OK-AB + Common)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "f969-0b28-b1cf-bb02",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "d502-9cf6-2232-202c",
+            "name": "Arcane Items (OK-AB + Common)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "989e-9d22-7fea-19b5",
+            "repeats": "1"
+          }
         }
       ]
     },
@@ -4005,13 +4122,16 @@
       ]
     },
     {
-      "key": "repeat|limitValue|roster|child=model|repeats=1|roundUp=false|pct=false",
+      "key": "repeat|limitValue|roster|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "kind": "repeat",
       "axes": {
         "field": "limitValue",
         "scope": "roster",
         "childId": "model",
         "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
         "roundUp": false,
         "percentValue": false
       },
@@ -4097,6 +4217,102 @@
             "field": "limit::ecfa-8486-4f6c-c249",
             "scope": "roster",
             "childId": "model",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "roster",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": true,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 12,
+      "files": {
+        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 1,
+        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 4,
+        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 6
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "ab2c-30b1-9eaa-2306",
+            "name": "Gnoblar Scraplauncher"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "dd12-e469-588f-6b5b",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "5678-6ad3-0e79-2233",
+            "name": "Orc Boar Chariot"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "a85e-af08-5fea-41bd",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "eeb1-a6c4-b57e-f08c",
+            "name": "Orc Big 'Uns"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "344f-77ef-7238-f157",
             "repeats": "1"
           }
         }
@@ -4579,6 +4795,100 @@
       ]
     },
     {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": true,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 8,
+      "files": {
+        "src/__fixtures__/whfb6/Vampire Counts.cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 6
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "2f34-a145-911a-fa00",
+            "name": "Arcane Items (VC)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "adb3-9853-d566-e432",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "127fbfcd-4275-4eb2-a9e6-9e860b1df0ba",
+            "name": "Arcane Items"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "b76c-6bad-4650-dbb0",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "c6808f9e-25e5-4364-b002-e88ba9bd7c2c",
+            "name": "Arcane Items"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "87c88aaa-9c67-47d3-bc2d-be55cba66f56",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
       "key": "conditionGroup|and|nested",
       "kind": "conditionGroup",
       "axes": {
@@ -4765,6 +5075,102 @@
             "field": "selections",
             "scope": "bf30-4ff0-a4d8-3909",
             "childId": "model"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "roster",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 6,
+      "files": {
+        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 2,
+        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "1e26-0d1a-bb3c-f47a",
+            "name": "Gnoblars"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "735e-2da1-6356-2fdb",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "041b-7d95-6ff9-754a",
+            "name": "Gnoblar Trappers"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "735e-2da1-6356-2fdb",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "8787-293e-965a-f8c2",
+            "name": "Orc Big 'uns Boar Boyz"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "roster",
+            "childId": "375d-151a-4ba1-a4e6",
+            "repeats": "1"
           }
         }
       ]
@@ -5329,13 +5735,16 @@
       ]
     },
     {
-      "key": "repeat|selectionCount|force|child=id|repeats=1|roundUp=false|pct=false",
+      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
       "kind": "repeat",
       "axes": {
         "field": "selectionCount",
         "scope": "force",
         "childId": "id",
         "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": false,
         "roundUp": false,
         "percentValue": false
       },
@@ -5995,13 +6404,16 @@
       ]
     },
     {
-      "key": "repeat|selectionCount|unit|child=model|repeats=1|roundUp=false|pct=false",
+      "key": "repeat|selectionCount|unit|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "kind": "repeat",
       "axes": {
         "field": "selectionCount",
         "scope": "unit",
         "childId": "model",
         "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
         "roundUp": false,
         "percentValue": false
       },
@@ -6722,13 +7134,16 @@
       ]
     },
     {
-      "key": "repeat|selectionCount|parent|child=any|repeats=1|roundUp=false|pct=false",
+      "key": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "kind": "repeat",
       "axes": {
         "field": "selectionCount",
         "scope": "parent",
         "childId": "any",
         "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
         "roundUp": false,
         "percentValue": false
       },

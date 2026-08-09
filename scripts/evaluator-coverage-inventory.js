@@ -36,8 +36,7 @@ import {
   computeCoverage,
   computeWorklist,
   loadCorpus,
-  loadCoveredRecord,
-  loadManifests,
+  loadCoverageRecords,
   repoRelative,
 } from './lib/evaluator-coverage-corpus.js';
 
@@ -71,15 +70,15 @@ function tallyByKind(cells) {
 function main() {
   const corpus = loadCorpus([...CORPUS_DIRS]);
   const inventory = extractCells(corpus.sources);
-  const failures = [...corpus.failures, ...inventory.failures];
+  const records = loadCoverageRecords();
+  const failures = [...corpus.failures, ...inventory.failures, ...records.failures];
   if (failures.length > 0) {
     for (const failure of failures) console.error(`FAILURE ${failure.file}: ${failure.message}`);
     process.exitCode = OPERATIONAL_FAILURE;
     return;
   }
 
-  const manifests = loadManifests();
-  const coveredRecord = loadCoveredRecord();
+  const { manifests, coveredRecord } = records;
   const coverage = computeCoverage({
     cells: inventory.cells,
     index: inventory.index,
