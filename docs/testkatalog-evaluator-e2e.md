@@ -925,3 +925,21 @@ nur darin, ob der gewählte Charakter einen Kategorie-Link auf „Orc" führt
 | 03 | 500 Punkte, kein Orc | Die Kategorie-Bedingung hält, die Punkte-Bedingung nicht: Höchstmaß 0 — die beiden Glieder der `and`-Gruppe sind unterscheidbar |
 | 04 | 2000 Punkte, kein Orc | Zwei Wiederholungen: Höchstmaß 2, die Grenze feuert nicht |
 | 05 | 2000 Punkte, Orc-Charakter dabei | Höchstmaß 0, die Grenze feuert mit Ist 1 |
+
+## `greater-than-parent-upgrade-gate`
+
+Prüft die `greaterThan`-Bedingung mit `scope="parent"` und Eintrags-`childId`
+(§7.6/§7.7 der Formatdoku): sie hält genau dann, wenn die Zählung im
+Eltern-Rahmen echt über dem `value` liegt. Beleg: der Verweis „Magic Level 1"
+(`86d1-3bd6-6cb2-711d`, Basis `hidden="true"`, eigene Grenze
+`c195-d40a-1c54-f572` mit `min 0`) unter dem Wurzel-Eintrag Vampire Thrall
+(`e37b-c827-99ac-b706`, Vampire Counts) trägt genau zwei Modifikatoren ohne
+`<repeats>` — `set hidden=false` und `set 1` auf die eigene Grenze —, beide
+gegatet auf `greaterThan 0` von „Nehekhara's Noble Blood"
+(`32d0-a151-94a3-aa54`) im Eltern-Rahmen. Beide Roster sind bis auf diese eine
+Auswahl identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Thrall ohne Noble Blood | Zählung 0, nicht > 0: Basiswerte — der Slot bleibt versteckt, seine Untergrenze 0, nichts feuert |
+| 02 | Derselbe Aufbau mit Noble Blood | Zählung 1 > 0: der Slot wird sichtbar **und** seine Untergrenze steigt auf 1 — unerfüllt, also feuert sie mit Ist 0 gegen Grenze 1 |

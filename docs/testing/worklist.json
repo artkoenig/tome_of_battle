@@ -7,103 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 41,
-    "uncovered": 64
+    "covered": 42,
+    "uncovered": 63
   },
   "cells": [
-    {
-      "key": "condition|greaterThan|parent|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "greaterThan",
-        "scope": "parent",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 41,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 1,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 2,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 8,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 24
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "4c3e-febe-6d5d-6912",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "b76c-6bad-4650-dbb0"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "4c3e-febe-6d5d-6912",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "696a-648d-c842-4c6a"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "2eab-0673-0cb1-a5ea",
-            "name": "Arcane Items (Orcs)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "b76c-6bad-4650-dbb0"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|set|costValue",
       "kind": "modifier",

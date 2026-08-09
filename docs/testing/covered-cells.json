@@ -184,6 +184,13 @@
         "docs/testing/condition-group-not"
       ],
       "rationale": "The not-group guarding the Lichemaster mandatory minima holds `condition type=lessThan value=2000 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=any`; rosters 03 (1500 pts, campaign selection present) against 04 (1500 pts, no campaign selection) and 05 (3000 pts, campaign selection present) vary the points limit and the sibling condition independently, so the lessThan member on the roster's cost limit is distinguished on its own."
+    },
+    {
+      "key": "condition|greaterThan|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/greater-than-parent-upgrade-gate"
+      ],
+      "rationale": "GREEN: the two rosters differ only in the Noble-Blood selection inside the Vampire Thrall frame, so the isHidden flip and the effectiveMin 0->1 of the Magic-Level-1 slot (limit c195-d40a-1c54-f572, firing with actual 0 / bound 1) are the parent-scoped greaterThan count itself. This is the only greaterThan/parent site in the corpus without a co-extensive <repeat>."
     }
   ]
 }
