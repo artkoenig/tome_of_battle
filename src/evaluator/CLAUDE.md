@@ -1,4 +1,4 @@
-# src/evaluator — test suite conventions
+# src/evaluator — suite doc
 
 Vitest. Run the whole suite alone: `npx vitest run src/evaluator` (this also
 runs the manifest-driven E2E runner `e2e.testcatalog.test.js` over the
@@ -8,12 +8,10 @@ scenarios under `docs/testing/`). Run one file alone:
 ## Facade under test
 
 A test for a rule of the engine's observable behaviour drives the public facade
-— `prepareDataset` + `evaluate` from `./evaluator.js` — over a small synthetic
-catalogue XML string built inline in the test file, while tests that pin one
+— `prepareDataset` + `evaluate` from `./evaluator.js` — while tests that pin one
 module's internal contract (`query.matrix.test.js`, `fixpoint.test.js`,
-`resolver.test.js`, `countIndex.*.test.js`) import that module directly. Never the real WHFB6 fixtures for a unit-level rule; those back
-the E2E scenarios under `docs/testing/` instead. A file-local `evaluate`
-helper wraps the two-stage call:
+`resolver.test.js`, `countIndex.*.test.js`) import that module directly. A
+file-local `evaluate` helper wraps the two-stage call:
 
 ```js
 function evaluate(catalogXml, roster) {
@@ -21,20 +19,36 @@ function evaluate(catalogXml, roster) {
 }
 ```
 
-`globalThis.DOMParser` is installed from jsdom at the top of every file that
-parses catalogue XML — files that touch no XML (`budget.test.js`,
-`rounding.test.js`, `causes.test.js`) need it not (the engine's own XML reader
-needs this browser primitive under Node):
+Default to a small synthetic catalogue XML string built inline in the test
+file, because it keeps a failure pointing at the one rule under test. Reach for
+the frozen WHFB6 corpus at `src/evaluator/__fixtures__/whfb6-definitive/` when
+the rule under test is about a real catalogue's idiom;
+`modifiers.setWithRepeat.test.js`, `offer.hiddenGate.test.js`,
+`effectiveState.baseHiddenInheritance.test.js`,
+`report.authorMessageAnchors.test.js`,
+`evaluator.primaryCatalogueFixture.test.js`,
+`evaluator.unitAncestorFixture.test.js`,
+`evaluator.ergofangForeignMandates.test.js` and
+`evaluator.describeDataset.test.js` set that precedent. A corpus-backed test is
+integration level and says so in its top comment.
+
+`docs/testing/` holds a different thing: `.ros` rosters plus `scenario.json`,
+driven by the manifest runner `e2e.testcatalog.test.js`.
+
+The jsdom environment configured in `vitest.config.js` provides `DOMParser`,
+the same primitive the engine's own XML reader takes as a global. A new test
+needs no jsdom setup of its own; the header most files here carry predates the
+global config and is not a pattern to copy:
 
 ```js
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 ```
 
-A test that evaluates a synthetic catalogue asserts
-`expect(report.diagnostics).toEqual([])` before its own expectations, so a
-broken fixture fails loudly instead of masquerading as a missing-behaviour
-failure.
+Assert `expect(report.diagnostics).toEqual([])` where a broken fixture would
+otherwise be indistinguishable from the missing behaviour you claim to be
+testing for. Most files here carry no such assertion, so its absence in a
+neighbouring file is not a signal.
 
 ## Reading the report
 
@@ -63,10 +77,22 @@ form, not counting semantics (see `expectFiring` in
 
 ## Fixtures
 
-No shared fixture module: each `describe` block builds its own minimal
-catalogue XML string, isolating the one rule under test. A shared WHFB6-style
-fixture would make a failure ambiguous — which of a dozen categories broke?
-Reuse the `entryLink` + `sharedSelectionEntries`/`sharedSelectionEntryGroups`
+`src/evaluator/__fixtures__/` holds shared modules — import them, and never
+re-implement `.ros` parsing or the report filters in a test file:
+
+- `rosParser.js` — `rosterFromRos`, which translates a Battlescribe `.ros` file
+  into the `{ forces: [{ defId, count, children }] }` instance tree the facade
+  expects, purely structurally (it carries a force's `catalogueId` through as
+  well).
+- `e2eReport.js` — the report readers `violationsOf`, `violationOf` and
+  `diagnosticsMatching`.
+- `whfb6-definitive/` — the frozen WHFB6 corpus: the `.cat` army books plus
+  `Warhammer Fantasy Battles (6th definitive edition).gst`.
+
+The catalogue XML of a rule test is built inline in its own `describe` block,
+isolating the one rule under test. A shared WHFB6-style catalogue would make a
+failure ambiguous — which of a dozen categories broke? Reuse the `entryLink` +
+`sharedSelectionEntries`/`sharedSelectionEntryGroups`
 pattern for "reached through two different carriers" cases (see
 `constraints.carrierDescendants.test.js`, `report.effectiveCategories.test.js`,
 `report.occupancyWithoutLimit.test.js`).
@@ -84,6 +110,6 @@ says so.
 ## What's real, what's faked
 
 The XML reader, resolver, evaluator and report are the real production
-modules — nothing here is mocked. Only `DOMParser` is supplied by jsdom
-because the engine expects the browser primitive and the suite runs under
-Node.
+modules — nothing here is mocked. `DOMParser` comes from the jsdom environment
+configured in `vitest.config.js`, because the engine expects the browser
+primitive and the suite runs under Node.
