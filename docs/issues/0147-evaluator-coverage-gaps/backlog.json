@@ -17,7 +17,7 @@
       ],
       "status": "todo",
       "note": "Load-bearing first: it moves a contract shared by every slot in the report, so the fallout across the suite shows up in the first increment rather than the last.",
-      "branch": "",
+      "branch": "claude/evaluator-abschluss-kampagne-ipuqwm--hidden-slot-info",
       "steps": [],
       "attempts": []
     },
