@@ -1,7 +1,7 @@
 ---
-status: active
+status: waiting
 branch: claude/evaluator-katalog-rules-t6nim4
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/202
 ---
 
 # Unattended coverage-closure loop for the evaluator
