@@ -43,9 +43,8 @@ Four files hold the campaign. A fresh session resumes from these alone: never ke
   "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
   "runs": 0,
   "lastRunAt": "YYYY-MM-DDTHH:MM:SSZ",
-  "lastRunOutcome": "rearmed | terminated | stopped-operational-failure | stood-down",
+  "lastRunOutcome": "rearmed | terminated | stopped-operational-failure",
   "reArmedFor": "YYYY-MM-DDTHH:MM:SSZ | null",
-  "consecutiveOperationalFailures": 0,
   "gaps": {
     "docs/testing/<slug>": {
       "cellKey": "<pipe-delimited cell key>",
@@ -86,7 +85,7 @@ Run these three, in this order.
 2. `npx vitest run src/evaluator` — the evaluator suite including the manifest-driven E2E runner.
 3. Read `parkedQuestions` and `driver.gaps`.
 
-**Exit 2 is a stop, never a termination.** End the run immediately without running any phase, increment `driver.consecutiveOperationalFailures`, set `lastRunOutcome: "stopped-operational-failure"`, report the `FAILURE` lines verbatim to the human, and re-arm as any unfinished run does — the campaign is not closed, and a human may have repaired the corpus by the next run. One bounded exception, and it is a deliberate addition to the criteria: after three consecutive runs that stopped on an operational failure, set `lastRunOutcome: "stood-down"`, do not re-arm, and report that the campaign is standing down until a human restarts it, because an unattended loop that cannot progress must not re-arm forever. Reset `consecutiveOperationalFailures` to 0 on any run that gets past this step.
+**Exit 2 is a stop, never a termination.** End the run immediately without running any phase, set `lastRunOutcome: "stopped-operational-failure"`, report the `FAILURE` lines verbatim to the human, and re-arm as any unfinished run does — the campaign is not closed, and a human may have repaired the corpus by the next run.
 
 **Terminated** when all three hold at once: the inventory exited 0, the evaluator suite passed with no failing case, and nothing is open — no `parkedQuestions` entry with `status: "open"` and no `driver.gaps` entry with `status: "parked"`. Then set `lastRunOutcome: "terminated"` and `reArmedFor: null`, commit and push, report the closure, and **do not call `send_later`**. That is the only condition that stops the re-arming.
 
@@ -193,7 +192,7 @@ List both sources of parked questions: the explorer's `parkedQuestions` entries 
 
 ### Re-arm
 
-At the end of every unfinished run — including a run stopped by inventory exit 2 — call the `send_later` tool with a delay of about one hour and a message that re-invokes this skill, for example: `Continue the evaluator coverage-closure campaign: run the evaluator-closure-loop skill.` Record the scheduled time in `driver.reArmedFor` and set `lastRunOutcome: "rearmed"`. Re-arm exactly once per run. If the tool is unavailable in the session, say so in the report and ask the human to re-invoke the skill in an hour — never substitute a sleep, a background process or a cron entry. Do not re-arm when the run terminated (step 2) or when the driver stood down after three consecutive operational failures.
+At the end of every unfinished run — including a run stopped by inventory exit 2 — call the `send_later` tool with a delay of about one hour and a message that re-invokes this skill, for example: `Continue the evaluator coverage-closure campaign: run the evaluator-closure-loop skill.` Record the scheduled time in `driver.reArmedFor` and set `lastRunOutcome: "rearmed"`. Re-arm exactly once per run. If the tool is unavailable in the session, say so in the report and ask the human to re-invoke the skill in an hour — never substitute a sleep, a background process or a cron entry. Do not re-arm when the run terminated (step 2).
 
 ### Commit and push
 
