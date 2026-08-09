@@ -856,3 +856,28 @@ und Magic Level 2; Unterschied nur die Noble-Blood-Auswahl.
 | :--- | :--- | :--- |
 | 01 | Vampire Lord ohne Noble Blood | Zählung 0 < 1: Basiswerte stehen — Magic Level 4 verborgen, Magic Level 2 sichtbar |
 | 02 | Derselbe Aufbau mit Noble Blood (verschachtelt unter dem Lord) | Zählung 1 ≥ 1 (Schwelle exakt erreicht): Magic Level 4 aufgedeckt und der **gewählte** Magic-Level-2-Slot versteckt |
+
+## `set-primary-category-membership`
+
+Prüft den `set-primary`-Modifikator auf `field="category"` (§8 der Formatdoku,
+Projektentscheidung Issue 0100): er sichert die Mitgliedschaft in der benannten
+Kategorie auch dann, wenn der Eintrag sie nicht per `categoryLink` führt und
+kein begleitendes `add category` danebensteht — und er verschiebt nur das
+`primary`-Flag, entfernt also keine bestehende Mitgliedschaft. Beleg:
+„'Kathleen' Halftank" (`331a-3634-095a-574a`, Ogre Kingdoms) trägt die
+Kategorie-Links Rare (primär), Experimental rules und War Machine sowie einen
+**unbedingten** `set-primary` auf „Regiment of Renown" (`ee09-9a50-ad78-9c32`)
+ohne `add`. Alle Roster stehen im Kontingent „Standard (OK-AB)", das einen
+Kategorie-Link auf Regiment of Renown führt, mit den Schaltern „Allow Regiments
+of Renown" und „Allow experimental rules?"; der Slave Giant (`7ec6-83de-2dc3-82e9`,
+nur ein Rare-Link, kein Kategorie-Modifikator) ist die Nullprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Nur „Kathleen" Halftank | Sie zählt in Regiment of Renown (Ist 1), obwohl sie dorthin keinen Kategorie-Link führt, und weiterhin in Rare (Ist 1) |
+| 02 | Nur Slave Giant, sonst identisch | Regiment of Renown bleibt bei Ist 0 — die 1 aus Roster 01 ist keine Konstante |
+| 03 | Beide Einheiten zusammen | Regiment of Renown zählt weiter nur Kathleen (Ist 1), Rare zählt beide (Ist 2) und die Rare-Obergrenze max 1 feuert — `set-primary` nimmt keine Mitgliedschaft weg |
+
+**Stand: rot.** Das Szenario ist ein festgenagelter Befund der
+Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`): die
+Engine zählt die per `set-primary` gesicherte Mitgliedschaft heute nicht mit.

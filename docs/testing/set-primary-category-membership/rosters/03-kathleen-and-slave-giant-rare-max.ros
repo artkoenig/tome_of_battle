@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="spcm-03" name="SPCM 03 – Kathleen + Slave Giant: Rare zaehlt beide, Regiment of Renown nur Kathleen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored set-primary-category-membership E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <!-- Identisch zu Roster 01/02: 1000 pts -> Rare-Grenze 0a44-2d3f-adfe-f3a1 bleibt max 1.
+         Gesamtkosten 150 + 175 = 325 pts, das Budget ist also nicht die Streitfrage. -->
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms (6th definitive edition)">
+      <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-allow-exp" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="" number="1" type="upgrade" collective="false"/>
+        <!-- Vereinigung von Roster 01 und 02. Kathleen behaelt ihren rohen Rare-Link
+             (kein remove-Modifier auf e94b-6a54-8779-cd60 an diesem Eintrag), der
+             set-primary verschiebt nur das primary-Flag. Damit stehen ZWEI Rare-Mitglieder
+             im Kontingent und die .gst-Grenze 0a44-2d3f-adfe-f3a1 (max 1) feuert mit Ist 2. -->
+        <selection id="sel-kathleen" name="&apos;Kathleen&apos; Halftank" entryId="331a-3634-095a-574a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-kathleen-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+            <category id="cat-kathleen-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+            <category id="cat-kathleen-wm" name="War Machine" entryId="f672-d9d4-a601-479a" primary="false"/>
+          </categories>
+        </selection>
+        <selection id="sel-slave-giant" name="Slave Giant" entryId="7ec6-83de-2dc3-82e9" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-sg-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-sg-manacles" name="Manacles, chains and bad Attitude" entryId="6cb7-d2e4-0e39-f6e4" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

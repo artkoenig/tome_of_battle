@@ -141,6 +141,13 @@
         "docs/testing/modifier-effective-name"
       ],
       "rationale": "rosters/02-blood-dragon-append-join-space.ros pins the append on a selectionEntry name including the verbatim NBSP join ('Vampire Count of Clan Blood Dragon'); rosters/03-lahmia-set-then-append.ros pins set-then-append order on one carrier; rosters/06-infolink-name-not-unit-name.ros pins that an append on an infoLink renames only that info occurrence, not the carrying selection."
+    },
+    {
+      "key": "modifier|set-primary|category",
+      "evidence": [
+        "docs/testing/set-primary-category-membership"
+      ],
+      "rationale": "RED — pinned, not passing: rosters 01/03 assert that the unconditional set-primary on 'Kathleen' Halftank makes her count in the Regiment-of-Renown category anchor (current 1) without a categoryLink or an accompanying add/category, and that Rare keeps counting her (current 2 in roster 03, firing the .gst max 1). See pinnedGaps in docs/testing/campaign-state.json."
     }
   ]
 }

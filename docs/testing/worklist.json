@@ -7,103 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 35,
-    "uncovered": 70
+    "covered": 36,
+    "uncovered": 69
   },
   "cells": [
-    {
-      "key": "modifier|set-primary|category",
-      "kind": "modifier",
-      "axes": {
-        "type": "set-primary",
-        "targetField": "category"
-      },
-      "occurrences": 51,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 3,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 16,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 15,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 12
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "2868-3c87-b47a-d29c",
-            "name": "Rangers"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set-primary",
-            "field": "category"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "2868-3c87-b47a-d29c",
-            "name": "Rangers"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set-primary",
-            "field": "category"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "1e26-0d1a-bb3c-f47a",
-            "name": "Gnoblars"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set-primary",
-            "field": "category"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|instanceOf|unit|selectionCount|child=id",
       "kind": "condition",

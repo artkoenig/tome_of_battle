@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "name": "set-primary-category-membership",
+  "description": "Ein unbedingter modifier type=set-primary field=category sichert die Mitgliedschaft in der benannten Kategorie GANZ ALLEIN - ohne begleitendes add/category und ohne eigenen categoryLink. Beleg-Eintrag: 'Kathleen' Halftank (Ogre Kingdoms, 331a-3634-095a-574a) traegt categoryLinks nur auf Rare (primary=true), Experimental rules und War Machine, dazu einen unbedingten set-primary auf ee09-9a50-ad78-9c32 (Regiment of Renown). Im Kontingent Standard (OK-AB), dessen forceEntry einen categoryLink auf diese Kategorie fuehrt (f78c-c639-4655-0461), muss der Kategorie-Anker Regiment of Renown die Einheit zaehlen (current 1), waehrend die Gegenprobe Slave Giant (7ec6-83de-2dc3-82e9, nur Rare, kein Kategorie-Modifier) dort 0 zaehlt. Die zweite Haelfte: set-primary verschiebt nur das primary-Flag, es entfernt keine Mitgliedschaft - Kathleen zaehlt weiterhin als Rare, weshalb sie zusammen mit dem Slave Giant die .gst-Grenze Rare max 1 (0a44-2d3f-adfe-f3a1) mit Ist 2 reisst. Welche Kategorie der ANZEIGE-Bucket ist, ist kein Manifest-Schluessel und wird bewusst nicht behauptet.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-kathleen-set-primary-regiment-of-renown.ros",
+      "description": "Kontingent Standard (OK-AB), costLimit 1000, Schalter 'Allow Regiments of Renown' + 'Allow experimental rules?' und eine 'Kathleen' Halftank. Der unbedingte set-primary macht sie zum Mitglied von Regiment of Renown (Anker-Ist 1), obwohl sie keinen categoryLink dorthin traegt und kein add/category danebensteht; die .ros-<categories> notieren bewusst nur die rohen Links. Rare zaehlt sie weiterhin (Ist 1), die Rare-Obergrenze max 1 ist damit gerade noch eingehalten. Der Experimental-Schalter hebt ihre Eigengrenze 99ea-c7dd-2a0b-ff10 von max 0 auf max 1.",
+      "expect": {
+        "firing": [],
+        "absent": ["0a44-2d3f-adfe-f3a1", "99ea-c7dd-2a0b-ff10"],
+        "capabilities": [
+          {
+            "targetDefId": "ee09-9a50-ad78-9c32",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Regiment of Renown",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Rare",
+            "current": 1,
+            "effectiveMax": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "331a-3634-095a-574a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "'Kathleen' Halftank",
+            "current": 1,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-slave-giant-no-set-primary.ros",
+      "description": "Identischer Aufbau, einziger Unterschied: statt Kathleen steht ein Slave Giant im Kontingent - eine Rare-Einheit mit genau einem categoryLink (Rare, primary=true) und OHNE jeden Kategorie-Modifier. Der Kategorie-Anker Regiment of Renown zaehlt hier 0. Das Paar 01/02 belegt, dass die 1 in Roster 01 aus dem set-primary stammt und keine Konstante des Ankers ist. Rare zaehlt wie in 01 genau 1, die Obergrenze max 1 bleibt eingehalten.",
+      "expect": {
+        "firing": [],
+        "absent": ["0a44-2d3f-adfe-f3a1"],
+        "capabilities": [
+          {
+            "targetDefId": "ee09-9a50-ad78-9c32",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Regiment of Renown",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Rare",
+            "current": 1,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-kathleen-and-slave-giant-rare-max.ros",
+      "description": "Vereinigung von 01 und 02: Kathleen UND Slave Giant im selben Kontingent. Regiment of Renown zaehlt weiterhin nur Kathleen (Ist 1). Rare zaehlt beide (Ist 2), denn set-primary verschiebt nur das primary-Flag und entfernt keine Mitgliedschaft - an Kathleen steht kein remove auf e94b-6a54-8779-cd60. Die .gst-Grenze Rare max 1 feuert deshalb mit Ist 2 / Grenze 1. Eine Engine, die set-primary als Umzug (add + remove) laese, kaeme auf Ist 1 und bliebe stumm.",
+      "expect": {
+        "firing": [
+          { "limitId": "0a44-2d3f-adfe-f3a1", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["99ea-c7dd-2a0b-ff10"],
+        "capabilities": [
+          {
+            "targetDefId": "ee09-9a50-ad78-9c32",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Regiment of Renown",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Rare",
+            "current": 2,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}
