@@ -27,8 +27,7 @@
       "Artifact",
       "ReportFindings",
       "ScheduleWakeup",
-      "ShowOnboardingRolePicker",
-      "Workflow"
+      "ShowOnboardingRolePicker"
     ]
   }
 }
