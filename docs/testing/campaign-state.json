@@ -18,8 +18,8 @@
     "campaignIssue": null,
     "runs": 1,
     "lastRunAt": "2026-08-09T13:44:08Z",
-    "lastRunOutcome": null,
-    "reArmedFor": null,
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": "2026-08-09T15:22:55Z",
     "gaps": {}
   }
 }
