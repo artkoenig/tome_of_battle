@@ -1,6 +1,47 @@
 {
   "schemaVersion": 1,
   "_comment": "Campaign state of the evaluator coverage-closure loop. `pinnedGaps` are scenarios that are committed and red: the catalog data demands a behaviour the engine does not deliver yet, and each entry is one task for phase B. `parkedQuestions` are cells whose intended semantics could not be derived from the catalog data, the BSData wiki or the XSD, waiting for a human answer. Written by .claude/skills/evaluator-constraint-explorer; read by the campaign driver. docs/testing/worklist.json and docs/testing/covered-cells.json hold the coverage bookkeeping, not this file.",
-  "pinnedGaps": [],
-  "parkedQuestions": []
+  "pinnedGaps": [
+    {
+      "cellKey": "condition|atLeast|force|selectionCount|child=id",
+      "scenario": "docs/testing/at-least-force-toggle-gate",
+      "failingCases": [
+        "Szenario: at-least-force-toggle-gate > rosters/02-greasus-with-toggle-max1.ros"
+      ],
+      "pinnedAt": "2026-08-09",
+      "status": "open",
+      "note": "An atLeast(scope=force) condition whose childId names a root entryLink (9e50-7486-65ab-c449) must also count roster selections that carry only the link's resolved target id (8923-5946-7b10-8957, entryLinkId empty): with the toggle selected, the set-1 modifier must lift Greasus's max-0 constraint (cef8-c3b1-7850-85bc) so it no longer fires and the slot reports effectiveMax 1."
+    },
+    {
+      "cellKey": "modifier|set|characteristic",
+      "scenario": "docs/testing/set-characteristic-force-gate",
+      "failingCases": [
+        "Szenario: set-characteristic-force-gate > rosters/02-standard-force-mv-base-7.ros"
+      ],
+      "pinnedAt": "2026-08-09",
+      "status": "open",
+      "note": "The Tomb stalker's unconditional Tomb-Scorpion infoLink (fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32) must yield a profile info occurrence on the unit slot in EVERY force - in Standard (VC-AB) with the base values (Mv 7, name 'Tomb Scorpion', isHidden true), since no modifier of the infoLink is gated on that force; the report currently carries no info element with that id on the hidden unit's slot."
+    }
+  ],
+  "parkedQuestions": [],
+  "driver": {
+    "schemaVersion": 1,
+    "branch": "claude/evaluator-coverage-campaign",
+    "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
+    "runs": 3,
+    "lastRunAt": "2026-08-09T19:06:28Z",
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": null,
+    "gaps": {
+      "docs/testing/at-least-force-toggle-gate": {
+        "cellKey": "condition|atLeast|force|selectionCount|child=id",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      }
+    }
+  }
 }

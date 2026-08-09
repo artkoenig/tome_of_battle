@@ -382,6 +382,43 @@ function normalizeForceInstanceCondition(condition, byId) {
 }
 
 /**
+ * Schreibt den `childId` einer Bedingung, der einen `entryLink` benennt, auf
+ * dessen **Ziel-Id** um. `docs/battlescribe-data-format.md` §9.7 („Zwei
+ * Fallstricke"): der `childId` einer Bedingung darf die Ziel-Id
+ * (`entryLink.targetId`) *oder* die lokale Link-Id sein — beim Zaehlen sind
+ * beide Faelle gegen die aufgeloeste Definition abzugleichen. Dieselbe Regel
+ * gilt eine Schicht hoeher schon fuer den Anker einer Grenze
+ * (`constraints.js`: `isLinkDefinition(node.def) ? node.def.targetId :
+ * node.def.id`); Bedingungen waren die letzte Abfrageart, die noch die roh
+ * geschriebene Id zaehlte.
+ *
+ * Umschreiben statt Aliasieren genuegt, weil der Zaehlindex einen Link-Knoten
+ * unter **beiden** Ids fuehrt — seiner eigenen und seinem `targetId`
+ * (`countIndex.js`, `targetsOf`). Die Ziel-Id trifft deshalb die
+ * Link-gebundene Auswahl weiterhin und zusaetzlich jede Auswahl, die nur die
+ * aufgeloeste Ziel-Id traegt (etwa ein `.ros`-Eintrag ohne `entryLinkId`);
+ * die Link-Id allein traefe nur die erste Haelfte.
+ *
+ * Aufgeloest wird **ein** Schritt ueber das geparste `targetId`-Attribut, nicht
+ * ueber `link.resolved`: die Modifikator-Aufloesung laeuft vor der
+ * `entryLink`-Aufloesungsschleife, und ein Schritt genuegt, weil `targetsOf`
+ * den Knoten ebenfalls unter seinem unmittelbaren `targetId` fuehrt.
+ *
+ * Bewusste Grenze: nur Bedingungen. `targetChildId` gibt es auch an
+ * `<repeat>`, und §9.7 nennt beide — eine Wiederholung bleibt hier dennoch
+ * unangetastet, weil ihre Zaehlung nichts in dieser Aenderung verlangt.
+ */
+function normalizeLinkChildId(condition, byId) {
+  const childId = condition.targetChildId;
+  if (childId === null || childId === undefined || childId === '') return;
+  const definition = byId.get(childId);
+  if (definition?.kind !== DefinitionKind.ENTRY_LINK) return;
+  const { targetId } = definition;
+  if (targetId === null || targetId === undefined || targetId === '') return;
+  condition.targetChildId = targetId;
+}
+
+/**
  * Die Definitionsarten, die als **Zeuge** einer erfuellten Bedingung taugen: eine
  * anwaehlbare Auswahl (ADR-0027 „nur benennbare Ausloeser"). Eine Kategorie, eine
  * Gruppe oder ein Pseudo-Ziel wie `childId="model"` benennt keine Auswahl, die ein
@@ -409,14 +446,18 @@ function resolveConditionWitness(condition, byId) {
 
 /**
  * Reichert die Bedingungen und — rekursiv — die Bedingungsgruppen eines Elements
- * an. Je Bedingung zuerst die Kodierungs-Normalisierung
- * ({@link normalizeForceInstanceCondition}), dann der Zeuge — so liest die
- * Zeugen-Aufloesung bereits die kanonische Form (eine forceEntry taugt ohnehin
- * nicht als Zeuge, siehe {@link WITNESS_DEFINITION_KINDS}).
+ * an. Je Bedingung zuerst die Kodierungs-Normalisierungen
+ * ({@link normalizeForceInstanceCondition}, dann {@link normalizeLinkChildId}),
+ * zuletzt der Zeuge — so liest die Zeugen-Aufloesung bereits die kanonische
+ * Form (eine forceEntry taugt ohnehin nicht als Zeuge, siehe
+ * {@link WITNESS_DEFINITION_KINDS}; ein normalisierter Link-`childId` benennt
+ * die Ziel-Definition, also die Auswahl, die ein Nutzer tatsaechlich gesetzt
+ * hat).
  */
 function resolveConditionWitnesses(conditions, conditionGroups, byId) {
   for (const condition of conditions) {
     normalizeForceInstanceCondition(condition, byId);
+    normalizeLinkChildId(condition, byId);
     resolveConditionWitness(condition, byId);
   }
   for (const group of conditionGroups) {

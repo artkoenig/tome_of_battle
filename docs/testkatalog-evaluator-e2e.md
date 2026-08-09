@@ -620,3 +620,239 @@ nicht erreichbar ist.
 | 02 | Ogre-Kontingent mit einer Ogre-Bulls-Einheit | Positive Kontrolle: die Pflicht ist erfüllt — keine Verletzung |
 | 03 | Vampire-Counts-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Die eigentlich geprüfte Regel: die nur in Ogre Kingdoms deklarierte Pflicht darf hier **nicht** feuern |
 | 04 | Orcs-and-Goblins-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Wie 03, an einem zweiten unabhängigen Armeebuch — schützt vor einem Fix, der zufällig nur für Vampire Counts wirkt |
+
+## `force-instance-gated-rename`
+
+Prüft die kanonische ForceEntry-Instanzprüfung (`condition type="instanceOf"
+scope="force" childId=<forceEntry-Id>`, §7.7 der Formatdoku): ein per solcher
+Bedingung gegateter `set name`-Modifier greift genau in dem Kontingent, das das
+benannte Sonderheer instanziiert, und in keinem anderen. Beleg: Grave Guard
+(Vampire Counts) trägt drei `set name`-Modifier (Einheit „Barrow Guardians",
+Modell „Barrow Guard", Profil-Info „Barrow Guard"), alle gegatet auf das
+ForceEntry „Army of the Lichemaster (WD#309-UK)" (`f37a-a93e-fa22-61a8`). Beide
+Roster sind bis auf das Kontingent identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Grave Guard (10 Modelle, Handweapon, Heavy Armour) im Kontingent „Army of the Lichemaster" | Die Bedingung hält: die Einheit heißt „Barrow Guardians", der Modell-Slot und das Profil-Vorkommen „Barrow Guard" |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: alle drei behalten den Basisnamen „Grave Guard" |
+
+## `set-hidden-force-gate`
+
+Prüft den `set hidden`-Modifikator (§7.7/§8 der Formatdoku): er ersetzt das
+`hidden`-Attribut des Trägers genau solange seine Bedingung hält; sonst gilt
+der geschriebene Basiswert. Beleg: Scouts (`ff2c-a7c6-4cab-b0fd`, Basis
+`hidden="true"`) unter der Wurzeleinheit Dire Wolves (Vampire Counts) trägt
+`set hidden=false`, gegatet per `instanceOf scope="force"` auf das ForceEntry
+„Army of Sylvania (SoC)" (`4072-c3b8-84c4-a097`). Beide Roster sind bis auf
+das Kontingent identisch; Scouts ist nicht gewählt und erscheint als
+Angebots-Slot.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Dire Wolves (5 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: der Scouts-Angebots-Slot ist sichtbar (`isHidden` false) |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: der Basiswert `hidden="true"` steht — der Slot ist versteckt |
+
+## `set-constraint-value-force-gate`
+
+Prüft den `set`-Modifikator auf eine Constraint-`id` (§7.6/§7.7 der
+Formatdoku): er ersetzt den Wert der adressierten Grenze genau solange seine
+Bedingung hält; sonst gilt der geschriebene Basiswert. Beleg: der
+Skeletons-Modellslot (`eaa1-c6a6-9aae-ae9a`, Vampire Counts) trägt
+`max value="40"` (`id 6679-1132-0a76-9ba3`) und `set value="30"` auf genau
+diese Id, gegatet per `instanceOf scope="force"` auf das ForceEntry „Army of
+Sylvania (SoC)" (`4072-c3b8-84c4-a097`). Beide Roster sind bis auf das
+Kontingent identisch (10 Modelle + Handweapon).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Skeletons (10 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: das effektive Maximum des Modellslots ist 30; mit 10 Modellen feuert keine Grenze |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: das Basis-Maximum 40 steht; keine Grenze feuert |
+
+## `dispel-scroll-repeat-group-max`
+
+Prüft die `<repeats>`-Liste mit genau einem `<repeat>` an einem Modifikator
+(§7.7/§9.7 der Formatdoku, Dispel-Scroll-Muster): der Modifikator wird je
+gezähltem Treffer des Repeats einmal angewendet. Beleg: die Gruppe „Arcane
+Items (VC)" (`2f34-a145-911a-fa00`, Vampire Counts) trägt `max 1`
+(`fa59-e6b8-9523-3510`) und `increment +1` auf genau diese Grenze, wiederholt
+je gewähltem Dispel Scroll (`childId adb3-9853-d566-e432`) — der Scroll
+verbraucht so den einen Arcane-Slot nicht. Träger: Master Necromancer,
+Kontingent „Standard (VC-AB)" in beiden Rostern.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Master Necromancer mit ZWEI Dispel Scrolls | Zwei Anwendungen des +1: effektives Gruppen-Maximum 1+2=3; keine Grenze feuert (2×25 = 50 von 100 Punkten Budget) |
+| 02 | Derselbe Aufbau ohne Arcane Item | Kein Treffer: das Basis-Maximum 1 der Gruppe steht |
+
+## `at-least-force-toggle-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7/§9.7 der Formatdoku): sie zählt die Auswahlen des Kontingents, die auf
+die benannte Id auflösen — über die Link-Id **oder** deren Ziel-Id. Beleg:
+Greasus Goldtooth (`47f3-befb-e32e-0b4a`, Ogre Kingdoms, Wurzeleinheit) trägt
+`max 0 scope="force"` (`cef8-c3b1-7850-85bc`) und `set 1` darauf, gegatet auf
+`atLeast 1` des Wurzel-entryLinks „Allow special characters?"
+(`9e50-7486-65ab-c449`, Ziel `8923-5946-7b10-8957` in der `.gst`). Beide
+Roster nutzen „Standard (OK-AB)" und unterscheiden sich nur im Toggle.
+
+**Stand beim Pinnen: rot** — Roster 02 schlägt fehl (die Engine kreditiert die
+Toggle-Auswahl mit Ziel-Id nicht gegen die Link-`childId` der Bedingung);
+gepinnt als Phase-B-Aufgabe in `docs/testing/campaign-state.json`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Greasus gewählt, kein Toggle im Kontingent | Die Bedingung hält nicht: das Basis-Maximum 0 steht und feuert (Ist 1 gegen 0), `effectiveMax` 0 |
+| 02 | Identisch, zusätzlich „Allow special characters?" gewählt | Die Bedingung hält (Ist 1): der `set 1` hebt die Grenze — sie feuert nicht mehr, `effectiveMax` 1 |
+
+## `at-least-roster-border-patrols-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="roster"` und Eintrags-`childId`
+(§7.7 der Formatdoku): sie zählt rosterweit (mit `includeChildForces="true"`
+über alle Kontingente) und schaltet den gegateten Modifikator genau ab dem
+Schwellwert. Beleg: die Wurzeleinheit „0-1 Black Coach" (`dd09-e6e8-38ea-c6f4`,
+Vampire Counts) trägt `set hidden=true`, gegatet auf `atLeast 1` der
+Roster-Selektion „Border Patrols rules" (`4e15-0353-165f-5528`, `.gst`);
+dieselbe Bedingung setzt in der `.gst` die Core-Pflicht von 2 auf 1. Beide
+Roster: „Standard (VC-AB)", costLimit 500 (hält den Toggle legal sichtbar),
+eine voll besetzte Black-Coach-Einheit; Unterschied nur der Toggle.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ohne Border-Patrols-Selektion | Zählung 0 < 1: Black Coach bleibt sichtbar (`isHidden` false), die Core-Pflicht feuert unmodifiziert mit Ist 0 gegen 2 |
+| 02 | Mit einer Border-Patrols-Selektion | Zählung 1 ≥ 1: Black Coach wird versteckt (`isHidden` true), die Core-Pflicht feuert mit Grenze 1 statt 2 — beide Wirkungen derselben Bedingung |
+
+## `condition-group-or-force-gate`
+
+Prüft die `conditionGroup type="or"` auf oberster Ebene eines Modifikators
+(§7.7 der Formatdoku): die Gruppe hält, wenn **mindestens eines** ihrer
+Mitglieder hält — ein einziges wahres Mitglied genügt. Beleg: die
+Wurzeleinheit „0-1 Bat Swarm" (`3161-6d02-8903-b0c4`, Vampire Counts, Basis
+`hidden="false"`) trägt `set hidden=true`, gegatet durch eine einzelne
+or-Gruppe mit fünf `instanceOf(scope=force)`-Mitgliedern (Necromancer's Army,
+Clan Necrarch, Clan Blood Dragons, Lichemaster, Vampire Coast). Beide Roster
+sind bis auf das Kontingent identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Bat-Swarm-Einheit im Kontingent „Clan Necrarch (VC-AB)" — genau das zweite Gruppenmitglied hält | Die or-Gruppe hält: die Einheit ist versteckt (`isHidden` true); ihre roster-max-1-Grenze bleibt trotzdem geprüft und still |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" — kein Mitglied hält | Die Gruppe hält nicht: die Einheit bleibt sichtbar (`isHidden` false) |
+
+## `condition-group-and-points-bracket`
+
+Prüft die `conditionGroup type="and"` auf oberster Ebene (§7.7 der
+Formatdoku): sie hält nur, wenn **alle** Mitglieder halten — ein einziges
+falsches Mitglied besiegt die Gruppe. Beleg: die Punktestaffel der
+Core-Pflicht in der `.gst` (categoryEntry „Core", Constraint
+`35c2-d478-392a-aeb1`, Basis min 2): `set 3` gegatet auf die dreigliedrige
+and-Gruppe [keine Border Patrols, Limit ≥ 2000, Limit < 3000], `set 4` analog
+für 3000–3999. Drei identische, leere „Standard (VC-AB)"-Kontingente, nur das
+Punktelimit variiert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent, Limit 1000 | Beide Bracket-Gruppen scheitern je an ihrem atLeast-Mitglied (zwei von drei Mitgliedern sind wahr): Basis-Grenze 2 feuert mit Ist 0 |
+| 02 | Leeres Kontingent, Limit 2500 | Alle drei Mitglieder der 2000er-Gruppe halten: Grenze 3 feuert mit Ist 0 |
+| 03 | Leeres Kontingent, Limit 3000 | Grenzfall: die 2000er-Gruppe scheitert an ihrem lessThan-Mitglied (3000 ist nicht < 3000), die 3000er-Gruppe hält vollständig: Grenze 4 feuert mit Ist 0 |
+
+## `parent-scope-per-model-cost`
+
+Prüft `<repeat field="selections" scope="parent" childId="model" repeats="1">`
+an einem Kostenaufschlag (§7.7/§9.3 der Formatdoku): der Modifikator wird je
+Modell-Auswahl der **Eltern**-Einheit einmal angewendet. Beleg: der
+Light-Armour-Verweis (`e5af-d4b8-8f97-9197`, Ziel-Kosten 0) hängt direkt unter
+der Wurzeleinheit „Ogre Bulls" (`7754-8b3d-df99-d2d5`, Mercenaries) und trägt
+`increment 3` auf die pts-Kostenart mit genau diesem Repeat. Beide Roster: 4
+Bulls (je 35 pts, bewusst über dem Minimum 3), Pflicht-Club (0 pts), Light
+Armour — korrekte Summe 152 = 140 + 4×3.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 4 Bulls mit Light Armour, Punktelimit 151 | Das Budget feuert mit Ist 152: jede Unter-Anwendung (0-, 1-, 3-fach oder je Auswahl statt je Modell) bliebe unter dem Limit und stumm |
+| 02 | Derselbe Aufbau, Punktelimit 153 | Kein Feuern — die Klammer nach oben: eine 5-fache Anwendung (155) oder das Zählen aller Kinder statt nur der Modelle (158) feuerte fälschlich |
+
+## `remove-category-force-gate`
+
+Prüft `modifier type="remove" field="category"` (§8 der Formatdoku: alle
+kategorie-abhängige Zählung wertet die **effektiven** Kategorie-Links aus):
+die benannte Kategorie verlässt die effektive Mitgliedschaft, solange das
+Gatter hält. Beleg: Grave Guard (`92ee-2ebf-c6c0-71ff`, Vampire Counts, roh
+nur „Special") trägt eine `modifierGroup`, gegatet auf das ForceEntry „Clan
+Blood Dragons (VC-AB)", mit `set-primary` Core + `remove` Special + `add`
+Core. Beide Roster: costLimit 1000, 4× Grave Guard (je 10 Modelle +
+Handwaffe); die `.ros`-Snapshots führen bewusst in beiden die **rohe**
+Special-Kategorie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 4× Grave Guard im Kontingent „Standard (VC-AB)" | Rohe Kategorien zählen: die Special-Obergrenze feuert (4 > 3) und die Core-Pflicht feuert (0 < 2) |
+| 02 | Derselbe Aufbau im Kontingent „Clan Blood Dragons (VC-AB)" | Beide Grenzen still: das stumme Special-Max pinnt die Entfernung (sonst 4 > 3), die stumme Core-Pflicht die hinzugefügte Mitgliedschaft (sonst 0 < 2) |
+
+## `group-max-increment-on-choice`
+
+Prüft `modifier type="increment"` auf eine Constraint-Id (§9.8 der Formatdoku,
+Rüstungs-Muster): das Gruppen-Maximum steigt, solange die gekoppelte Option
+gewählt ist. Beleg: die Gruppe „Weapons and Armour" (`06c9-c170-adb2-86f5`)
+des Vampire Count (Vampire Counts) trägt `max 2` (`b3b5-f872-24df-04dc`) und
+`increment +1`, gegatet auf `atLeast 1` der eigenen Option „Full Plate Armour"
+(`a4d1-6e85-bee8-55d1`; Ziel per Blood-Dragon-Blutlinie aufgedeckt). Beide
+Roster: Standard (VC-AB), Vampire Count mit Blood-Dragon-Blutlinie,
+Pflicht-Handweapon und Magic Level 1; Unterschied nur die Full-Plate-Wahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Full Plate Armour in der Gruppe gewählt | Die Bedingung hält: effektives Gruppen-Maximum 3 bei Ist 2, Spielraum 1; keine Grenze feuert |
+| 02 | Ohne Full Plate | Basis-Maximum 2 bei Ist 1 — der Shield-increment bleibt in beiden Rostern inert |
+
+## `set-characteristic-force-gate` (ROT — gepinnter Gap)
+
+Prüft `modifier type="set"` auf eine characteristicType-Id (§7.7/§7.3 der
+Formatdoku): der Modifikator ersetzt genau ein Merkmal des effektiven Profils,
+solange die Bedingung hält. Beleg: die Wurzeleinheit „Tomb stalker"
+(`f401a3ed-…`, Vampire Counts, Basis `hidden="true"`) bezieht ihren Statblock
+über den unbedingten infoLink „Tomb Scorpion" (`fe84bf5a-…`) und trägt
+`set Mv=6`, gegatet auf das Lichemaster-Kontingent. Beide Roster sind bis auf
+das Kontingent identisch. **Roster 02 ist rot:** der Bericht führt am Slot der
+versteckten Einheit gar kein Info-Vorkommen des unbedingten infoLink — die
+Basiswerte (Mv 7, „Tomb Scorpion") sind dadurch nicht prüfbar (siehe
+`pinnedGaps` in `campaign-state.json`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Tomb stalker im Lichemaster-Kontingent | Die Bedingung hält: Profil zeigt Mv 6, Name „Tomb stalker", Einheit sichtbar; WS 4 und Sv+ 5 bleiben Basis |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Kein Modifikator greift: Profil-Vorkommen mit Basis Mv 7 und Name „Tomb Scorpion", Einheit versteckt — derzeit fehlt das Vorkommen im Bericht ganz (Gap) |
+
+## `less-than-force-min-drop`
+
+Prüft die `lessThan`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7 der Formatdoku): sie hält genau unterhalb des Schwellwerts. Beleg: die
+Blutlinien-Kraft „Seduction, Domination, Transfix and Beguile."
+(`adfd-d46e-23ff-3d61`, Vampire Counts, an Neferatas „Bloodline
+Powers"-Gruppe) trägt `min 1` (`10a1-ac7b-4b9c-0e12`), per `set 0` gesenkt,
+solange die Force **keine** Lahmia-Blutlinie (`4f07-e982-6665-70b7`) zählt.
+Alle drei Roster: Standard (VC-AB) mit Special-Characters-Toggle und Neferata;
+Unterschied nur Blutlinie bzw. Kraft-Auswahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lahmia-Blutlinie, Kraft nicht gewählt | Die Bedingung hält nicht (1 ist nicht < 1): die Basis-Pflicht feuert (Ist 0 gegen 1), ebenso die unbedingte Link-Pflicht (Kontrolle) |
+| 02 | Necrarch-Zwilling, Kraft nicht gewählt | Die Bedingung hält (0 < 1): die gegatete Pflicht ist still; die unbedingte Link-Pflicht feuert weiter und beweist, dass der Slot geprüft wird |
+| 03 | Lahmia-Blutlinie, Kraft gewählt | Alles still: die Pflicht ist erfüllt (Ist 1) |
+
+## `at-least-unit-upgrade-gate`
+
+Prüft die `atLeast`-Bedingung mit `scope="unit"` und Eintrags-`childId`
+(§7.7 der Formatdoku, Kasten `scope="unit"`): gezählt wird in der
+umschließenden Einheit, verschachtelte Auswahlen eingeschlossen. Beleg: in
+der „Wizard Level"-Gruppe des „0-1 Vampire Lord" (`b77b-88d5-5e80-e178`,
+Vampire Counts) wird „Magic Level 4" (`c5d1-…`, Basis versteckt) per
+`set hidden=false` aufgedeckt und „Magic Level 2" (`54fc-…`, Basis sichtbar)
+per `set hidden=true` versteckt — beide gegatet auf `atLeast 1` von
+„Nehekhara's Noble Blood" (`32d0-a151-94a3-aa54`) im unit-Rahmen. Beide
+Roster: Standard (VC-AB), Necrarch-Blutlinie, Vampire Lord mit Pflichtkindern
+und Magic Level 2; Unterschied nur die Noble-Blood-Auswahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord ohne Noble Blood | Zählung 0 < 1: Basiswerte stehen — Magic Level 4 verborgen, Magic Level 2 sichtbar |
+| 02 | Derselbe Aufbau mit Noble Blood (verschachtelt unter dem Lord) | Zählung 1 ≥ 1 (Schwelle exakt erreicht): Magic Level 4 aufgedeckt und der **gewählte** Magic-Level-2-Slot versteckt |

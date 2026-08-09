@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "name": "set-characteristic-force-gate",
+  "description": "Kontingent-gegatterter Merkmals-set (6th Definitive Edition): Der Profil-infoLink 'Tomb Scorpion' (fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32) der Wurzeleinheit 'Tomb stalker' (f401a3ed-077e-4795-b32d-ee659bd0b37a, Vampire Counts) traegt einen modifier type=\"set\" value=\"6\" field=\"0e92-d038-82bf-fb41\" (characteristicType Mv), dessen einzige Bedingung eine kanonische instanceOf-Pruefung auf das forceEntry 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8, scope=force, Formatreferenz 7.7) ist. Haelt die Bedingung, ersetzt der Modifikator GENAU das Mv-Merkmal des Verweis-Vorkommens durch 6; haelt sie nicht, steht der Basiswert Mv 7 des geteilten Profils 'Tomb Scorpion' (d2b729f3-3d5d-4d5b-84a8-cb1906d4ba77). Zwei bis auf die Kontingent-entryId identische Roster pinnen beide Zweige ueber expect.capabilities[].infoElements[].characteristics; als dokumentierte Begleiteffekte desselben Gates werden der Vorkommens-Name ('Tomb stalker' vs. 'Tomb Scorpion') und die Sichtbarkeit der Einheit (isHidden false vs. true, Basis hidden=\"true\") mitgeprueft. Zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lichemaster-force-mv-6.ros",
+      "description": "Kontingent 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8) mit genau einer Einheit Tomb stalker. Die instanceOf-Bedingung haelt: das Profil-Vorkommen zeigt Mv 6 (set-Modifikator ersetzt den Basiswert 7), heisst 'Tomb stalker', und die Einheit ist eingeblendet (isHidden false). Die uebrigen Merkmale (WS 4, Sv+ 5) bleiben auf Basis — der Modifikator trifft nur Mv.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "f401a3ed-077e-4795-b32d-ee659bd0b37a",
+            "name": "Tomb stalker",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32",
+                "kind": "profile",
+                "name": "Tomb stalker",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-standard-force-mv-base-7.ros",
+      "description": "Bis auf die Kontingent-entryId identisches Roster im Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668). Das Kontingent ist KEINE Instanz von f37a-...: kein Modifikator des infoLink greift, das Profil-Vorkommen behaelt den Basiswert Mv 7 und den Katalognamen 'Tomb Scorpion'; die Einheit bleibt auf ihrem Basiswert hidden=\"true\" (isHidden true). WS 4 und Sv+ 5 unveraendert wie in Roster 01.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "f401a3ed-077e-4795-b32d-ee659bd0b37a",
+            "name": "Tomb stalker",
+            "isHidden": true,
+            "infoElements": [
+              {
+                "id": "fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32",
+                "kind": "profile",
+                "name": "Tomb Scorpion",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

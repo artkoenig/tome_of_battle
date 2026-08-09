@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-roster-border-patrols-gate",
+  "description": "Roster-weites atLeast-Gatter (6th Definitive Edition): Die Wurzel-Einheit \"0-1 Black Coach\" (dd09-e6e8-38ea-c6f4, Basis hidden=\"false\") traegt einen set hidden=true-Modifikator, dessen einzige Bedingung atLeast 1 selections mit scope=\"roster\", includeChildForces=\"true\" auf childId 4e15-0353-165f-5528 (\"Border Patrols rules\", Wurzeleintrag der .gst) ist. Enthaelt das Roster irgendwo eine Border-Patrols-Selektion, haelt die Bedingung und der Black Coach ist verborgen (isHidden true); ohne sie bleibt der Basiswert (isHidden false). Beide Roster tragen costLimit 500 pts, damit der Border-Patrols-Umschalter selbst legitim sichtbar ist (sein eigenes Gatter: equalTo 500 auf limit::pts) — sie unterscheiden sich AUSSCHLIESSLICH in der Anwesenheit dieser einen Selektion. Zweiter Zeuge derselben Bedingungszelle: der set-Modifikator der Core-Pflicht (35c2-d478-392a-aeb1, Basis min 2 -> 1 unter Border Patrols) laesst die feuernde Grenze ihren bound wechseln. Der zitierte Modifikator sitzt auf der EINHEIT, nicht auf der Great-Weapon-Option (11a1-6a7d-bea8-c35e, modifikatorlos) — deren Slot wird als unveraenderte Gegenprobe (isHidden false) im Basisroster gepinnt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-border-patrols-coach-visible.ros",
+      "description": "Kontingent \"Standard (VC-AB)\" (e989-15b8-7eb6-9668), costLimit 500 pts, eine vollstaendig besetzte Einheit 0-1 Black Coach (Modell + 2 Nightmares + Wraith mit Great Weapon), KEINE Border-Patrols-Selektion. Die atLeast/roster-Bedingung zaehlt 0 < 1: der Modifikator greift nicht, der Black Coach behaelt den Basiswert hidden=\"false\". Core-Pflicht unmodifiziert: min 2 feuert mit Ist 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "2274-81fb-2e22-c00c",
+          "9108-5b84-ac06-5581",
+          "26fd-2e7f-fe24-3267",
+          "81d7-e159-0557-56ed",
+          "1ba4-aeb1-9498-e7e6",
+          "fe68-a9f4-b57a-3785",
+          "e9be-aa80-be02-5f0e",
+          "71a3-92d2-888a-e315",
+          "09b6-246f-f2d4-b9c5",
+          "0a44-2d3f-adfe-f3a1",
+          "fbfc-d43f-396d-09cc"
+        ],
+        "capabilities": [
+          {
+            "defId": "dd09-e6e8-38ea-c6f4",
+            "anchorKind": "occupied",
+            "name": "0-1 Black Coach",
+            "isHidden": false
+          },
+          {
+            "defId": "11a1-6a7d-bea8-c35e",
+            "anchorKind": "occupied",
+            "frameDefId": "3f40-b847-1d27-c746",
+            "name": "Great Weapon",
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-border-patrols-coach-hidden.ros",
+      "description": "Derselbe Aufbau plus GENAU EINE Wurzel-Selektion \"Border Patrols rules\" (4e15-0353-165f-5528) im selben Kontingent. Die atLeast/roster-Bedingung zaehlt 1 >= 1: der set-Modifikator ersetzt das hidden-Flag der besetzten Black-Coach-Auswahl durch true (isHidden true). Zweiter Zeuge: dieselbe Bedingung senkt die Core-Pflicht auf min 1 — die Grenze feuert mit Ist 0 gegen den MODIFIZIERTEN bound 1. Die Autor-Fehlermeldungen des Border-Patrols-Eintrags (2-4 Einheiten, Infanterie 10+) und die General-Pflicht duerfen zusaetzlich erscheinen (selektive Erwartung).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "2274-81fb-2e22-c00c",
+          "9108-5b84-ac06-5581",
+          "26fd-2e7f-fe24-3267",
+          "81d7-e159-0557-56ed",
+          "1ba4-aeb1-9498-e7e6",
+          "fe68-a9f4-b57a-3785",
+          "e9be-aa80-be02-5f0e",
+          "71a3-92d2-888a-e315",
+          "09b6-246f-f2d4-b9c5",
+          "0a44-2d3f-adfe-f3a1",
+          "fbfc-d43f-396d-09cc"
+        ],
+        "capabilities": [
+          {
+            "defId": "dd09-e6e8-38ea-c6f4",
+            "anchorKind": "occupied",
+            "name": "0-1 Black Coach",
+            "isHidden": true
+          }
+        ]
+      }
+    }
+  ]
+}

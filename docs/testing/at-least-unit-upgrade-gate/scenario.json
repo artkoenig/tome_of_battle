@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-unit-upgrade-gate",
+  "description": "Eine condition type=atLeast mit scope=unit und childId auf einen Eintrag zaehlt die Selektionen dieses Eintrags innerhalb der umschliessenden Einheit - des naechsten Vorfahren vom Typ unit, den Traeger eingeschlossen (Formatdoku Abschnitt 7.7, Kasten scope=unit) - und der damit gegatete Modifier wirkt genau ab dem Schwellwert. Konkret: Im Vampire-Counts-Katalog traegt die Gruppe 'Wizard Level' (43b8-dacd-f09f-37c3) des Wurzel-Units '0-1 Vampire Lord' (b77b-88d5-5e80-e178) den entryLink 'Magic Level 4' (c5d1-4b7d-c96b-2fb9, Basis hidden=true, Ziel fc28-3af2-d37a-d07e) mit einem set-false-hidden-Modifier und den entryLink 'Magic Level 2' (54fc-2ba6-00ed-76ac, Basis hidden=false, Ziel fbc2-5115-f240-7367) mit dem inversen set-true-hidden-Modifier - beide gegatet per atLeast 1 selections scope=unit childId=32d0-a151-94a3-aa54 ('Nehekhara's Noble Blood', verschachtelt unter demselben Vampire Lord waehlbar, includeChildSelections=true). Zwei bis auf die Noble-Blood-Auswahl identische Roster pinnen beide Zweige ueber expect.capabilities[].isHidden: MIT Noble Blood ist Magic Level 4 sichtbar und Magic Level 2 verborgen, OHNE Noble Blood gilt das Inverse. Die Sichtbarkeit ist Verfuegbarkeit, keine zaehlende Grenze - firing bleibt leer. (Anmerkung: Der inverse Zeuge heisst im Vampire Lord 'Magic Level 2'; ein gleich gebauter 'Magic Level 1'-Link existiert nur im Vampire Count, Gruppe 7ab1-d9dc-6124-443f.)",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-vampire-lord-without-noble-blood.ros",
+      "description": "Standard (VC-AB) mit Bloodlines (Clan Necrarch) und einem Vampire Lord (Lord hero choice, Handweapon, Magic Level 2) OHNE Nehekhara's Noble Blood. Die atLeast-1-Bedingung (scope=unit, childId=32d0-a151-94a3-aa54) zaehlt 0 und haelt nicht: beide gegateten Modifier bleiben aus, die Basiswerte gelten - Magic Level 4 verborgen (hidden=true), Magic Level 2 sichtbar (hidden=false). Wizard-Level-Gruppe min 1/max 1 ist mit genau einem Level erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "769e-ff2d-6795-86cb",
+          "f66f-32f7-5f65-14a7",
+          "0885-9b48-f6d0-241e",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "a7c9-5fec-592a-3716"
+        ],
+        "capabilities": [
+          {
+            "defId": "54fc-2ba6-00ed-76ac",
+            "targetDefId": "fbc2-5115-f240-7367",
+            "anchorKind": "occupied",
+            "name": "Magic Level 2",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "c5d1-4b7d-c96b-2fb9",
+            "targetDefId": "fc28-3af2-d37a-d07e",
+            "anchorKind": "offerAnchor",
+            "name": "Magic Level 4",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-vampire-lord-with-noble-blood.ros",
+      "description": "Identischer Aufbau, zusaetzlich MIT Nehekhara's Noble Blood (entryId 32d0-a151-94a3-aa54 via Link 75e7-b83e-a2b3-13af, Gruppe Vampiric Powers 8627-7a0f-231c-7572) unter dem Vampire Lord. Die atLeast-1-Bedingung zaehlt 1 (Schwellwert genau erreicht) und haelt: der set-false-Modifier blendet Magic Level 4 ein (isHidden false), der inverse set-true-Modifier blendet das gewaehlte Magic Level 2 aus (belegter Slot, isHidden true).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "769e-ff2d-6795-86cb",
+          "f66f-32f7-5f65-14a7",
+          "0885-9b48-f6d0-241e",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "a7c9-5fec-592a-3716"
+        ],
+        "capabilities": [
+          {
+            "defId": "54fc-2ba6-00ed-76ac",
+            "targetDefId": "fbc2-5115-f240-7367",
+            "anchorKind": "occupied",
+            "name": "Magic Level 2",
+            "current": 1,
+            "isHidden": true
+          },
+          {
+            "defId": "c5d1-4b7d-c96b-2fb9",
+            "targetDefId": "fc28-3af2-d37a-d07e",
+            "anchorKind": "offerAnchor",
+            "name": "Magic Level 4",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}

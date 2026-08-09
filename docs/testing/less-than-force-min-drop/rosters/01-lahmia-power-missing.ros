@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ltf-01" name="LTF 01 - Lahmia in der Force, Pflicht-Power fehlt (unzulaessig)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored less-than-force-min-drop E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-allow-special" name="Allow special characters?" entryId="8923-5946-7b10-8957" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-special-list-rules" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+        </selection>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-bloodlines-special-list-rules" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Die Lahmia-Blutlinie steht in der Force: die lessThan-Bedingung (Ist 1 &lt; 1?) haelt NICHT,
+                 der set-0-Modifier bleibt aus, die Basis-Pflicht min 1 (10a1-...) an der Neferata-Power gilt. -->
+            <selection id="sel-lahmia" name="Bloodline of Clan Lahmia" entryId="4f07-e982-6665-70b7" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Neferata OHNE die Power "Seduction, Domination, Transfix and Beguile." (und ohne weitere
+             Unterauswahlen): die gated Pflicht 10a1-... feuert (Ist 0 / Grenze 1), ebenso die
+             unbedingte Link-Pflicht 330a-... (Kontroll-Grenze). -->
+        <selection id="sel-neferata" name="Neferata, the Queen of Mysteries" entryId="bf10-ef49-c0e1-492b" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-neferata-special-characters" name="Special Characters" entryId="0644-bfcd-32c2-21dc" primary="true"/>
+            <category id="cat-neferata-lord" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="false"/>
+            <category id="cat-neferata-characters" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rcf-02" name="RCF 02 – Blood-Dragons-Force: dieselben 4x Grave Guard zaehlen als Core, nicht mehr als Special" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored remove-category-force-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <!-- identisch zu Roster 01: 1000 pts, effektive Grenzen Core min 2 / Special max 3 -->
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <!-- EINZIGER Unterschied zu Roster 01: die Force instanziiert
+         "Clan Blood Dragons (VC-AB)" (5e95-7d57-2b9c-d77d). Damit haelt das Gatter der
+         Grave-Guard-modifierGroup (instanceOf scope=force childId=5e95-...) und deren
+         drei Modifier greifen: set-primary Core, remove Special, add Core.
+         Effektive Kategorien der Einheiten = {Core}, NICHT Special. -->
+    <force id="force-1" name="Clan Blood Dragons (VC-AB)" entryId="5e95-7d57-2b9c-d77d" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts (6th definitive edition)">
+      <selections>
+        <!-- Die <categories> nennen bewusst weiter den ROHEN Katalog-Link (Special):
+             die .ros-Kategorien sind ein denormalisierter Snapshot (ADR 0011), die
+             Zaehlung muss die EFFEKTIVEN Kategorien aus den Katalogdaten ableiten
+             (BSData-Doku par. 8) - nicht den Snapshot lesen. -->
+        <selection id="sel-gg1" name="Grave Guard" entryId="92ee-2ebf-c6c0-71ff" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-gg1-special" name="Special" entryId="43cc-fc3f-35a7-8d03" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-gg1-models" name="Grave Guard" entryId="4d29-67e8-1d93-a404" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-gg1-hw" name="Handweapon" entryId="6cb6-4b58-d77c-4781" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-gg2" name="Grave Guard" entryId="92ee-2ebf-c6c0-71ff" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-gg2-special" name="Special" entryId="43cc-fc3f-35a7-8d03" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-gg2-models" name="Grave Guard" entryId="4d29-67e8-1d93-a404" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-gg2-hw" name="Handweapon" entryId="6cb6-4b58-d77c-4781" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-gg3" name="Grave Guard" entryId="92ee-2ebf-c6c0-71ff" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-gg3-special" name="Special" entryId="43cc-fc3f-35a7-8d03" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-gg3-models" name="Grave Guard" entryId="4d29-67e8-1d93-a404" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-gg3-hw" name="Handweapon" entryId="6cb6-4b58-d77c-4781" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-gg4" name="Grave Guard" entryId="92ee-2ebf-c6c0-71ff" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-gg4-special" name="Special" entryId="43cc-fc3f-35a7-8d03" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-gg4-models" name="Grave Guard" entryId="4d29-67e8-1d93-a404" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-gg4-hw" name="Handweapon" entryId="6cb6-4b58-d77c-4781" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
