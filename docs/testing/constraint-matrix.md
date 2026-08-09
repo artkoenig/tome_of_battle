@@ -2,6 +2,9 @@
 
 Diese Matrix ordnet die im Projekt definierten XSD-Elemente (`constraint`, `condition`, `repeat`) den bestehenden E2E-Tests zu. Sie dient dem `evaluator-constraint-explorer` als Landkarte, um blinde Flecken bei der Testabdeckung aufzudecken.
 
+> **Maschinenlesbar sind seit Issue 0146 `covered-cells.json` (Handeintrag) und `worklist.json` (erzeugt aus `scripts/evaluator-coverage-inventory.js`) in diesem Verzeichnis** — sie allein steuern die Abdeckungsschleife.
+> Diese Matrix ist ausschliesslich menschlicher Kontext: kein Werkzeug und kein Agent liest sie innerhalb der Schleife, und ihre Zeilen sind pro Attribut geschrieben, nicht pro Zelle.
+
 ## 1. Constraints (type: min / max)
 
 | Attribut / Typ | Wert / Spezifikation | Bisher getestet in (Scenario) | Status |
