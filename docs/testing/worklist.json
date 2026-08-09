@@ -7,93 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 34,
-    "uncovered": 71
+    "covered": 35,
+    "uncovered": 70
   },
   "cells": [
-    {
-      "key": "modifier|append|name",
-      "kind": "modifier",
-      "axes": {
-        "type": "append",
-        "targetField": "name"
-      },
-      "occurrences": 55,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 16,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 32
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9ddd-69c8-644d-abc2",
-            "name": "0-1 Amazon Serpent Priestess"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "append",
-            "field": "name"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "4c94-1e43-ac3b-7ed7",
-            "name": "Hatred"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "append",
-            "field": "name"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "8290-e3a0-8fe6-61fa",
-            "name": "Hatred"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "append",
-            "field": "name"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|set-primary|category",
       "kind": "modifier",
