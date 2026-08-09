@@ -754,3 +754,19 @@ Punktelimit variiert.
 | 01 | Leeres Kontingent, Limit 1000 | Beide Bracket-Gruppen scheitern je an ihrem atLeast-Mitglied (zwei von drei Mitgliedern sind wahr): Basis-Grenze 2 feuert mit Ist 0 |
 | 02 | Leeres Kontingent, Limit 2500 | Alle drei Mitglieder der 2000er-Gruppe halten: Grenze 3 feuert mit Ist 0 |
 | 03 | Leeres Kontingent, Limit 3000 | Grenzfall: die 2000er-Gruppe scheitert an ihrem lessThan-Mitglied (3000 ist nicht < 3000), die 3000er-Gruppe hält vollständig: Grenze 4 feuert mit Ist 0 |
+
+## `parent-scope-per-model-cost`
+
+Prüft `<repeat field="selections" scope="parent" childId="model" repeats="1">`
+an einem Kostenaufschlag (§7.7/§9.3 der Formatdoku): der Modifikator wird je
+Modell-Auswahl der **Eltern**-Einheit einmal angewendet. Beleg: der
+Light-Armour-Verweis (`e5af-d4b8-8f97-9197`, Ziel-Kosten 0) hängt direkt unter
+der Wurzeleinheit „Ogre Bulls" (`7754-8b3d-df99-d2d5`, Mercenaries) und trägt
+`increment 3` auf die pts-Kostenart mit genau diesem Repeat. Beide Roster: 4
+Bulls (je 35 pts, bewusst über dem Minimum 3), Pflicht-Club (0 pts), Light
+Armour — korrekte Summe 152 = 140 + 4×3.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 4 Bulls mit Light Armour, Punktelimit 151 | Das Budget feuert mit Ist 152: jede Unter-Anwendung (0-, 1-, 3-fach oder je Auswahl statt je Modell) bliebe unter dem Limit und stumm |
+| 02 | Derselbe Aufbau, Punktelimit 153 | Kein Feuern — die Klammer nach oben: eine 5-fache Anwendung (155) oder das Zählen aller Kinder statt nur der Modelle (158) feuerte fälschlich |

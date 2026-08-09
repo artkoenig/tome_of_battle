@@ -56,6 +56,11 @@
       "key": "conditionGroup|and|top",
       "evidence": ["docs/testing/condition-group-and-points-bracket"],
       "rationale": "Three empty Standard (VC-AB) forces differing only in costLimit (1000/2500/3000) pin the .gst Core-min points ladder: at 1000 both bracket and-groups are defeated by a single false atLeast member (bound 2), at 2500 all three members of the 2000-group hold (bound 3), at 3000 the 2000-group is defeated by its lessThan member while the 3000-group holds (bound 4). Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": ["docs/testing/parent-scope-per-model-cost"],
+      "rationale": "The Light Armour link under the Ogre Bulls root unit (Mercenaries) increments its pts cost by 3 per model-type selection of the parent; roster 01 with 4 Bulls asserts the budget fires with actual 152 = 140 + 4x3 against limit 151 (every under-application stays below), roster 02 asserts silence at limit 153 (any over-application would fire). Scenario is green."
     }
   ]
 }

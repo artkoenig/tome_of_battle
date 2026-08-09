@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 26,
-    "uncovered": 79
+    "covered": 27,
+    "uncovered": 78
   },
   "cells": [
     {
@@ -100,114 +100,6 @@
           "raw": {
             "type": "remove",
             "field": "category"
-          }
-        }
-      ]
-    },
-    {
-      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "model",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 115,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 4,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 31,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 5,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 28,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 34,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 13
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "a3f8-002a-defb-188d",
-            "name": "Shield"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "cc2c-3c61-04fe-3a1a",
-            "name": "Two Hand Weapons"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "311b-bc83-3879-5f60",
-            "name": "Ogre Ironfist"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model",
-            "repeats": "1"
           }
         }
       ]
