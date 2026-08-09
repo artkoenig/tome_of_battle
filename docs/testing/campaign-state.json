@@ -15,7 +15,7 @@
   "driver": {
     "schemaVersion": 1,
     "branch": "claude/evaluator-coverage-campaign",
-    "campaignIssue": null,
+    "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 2,
     "lastRunAt": "2026-08-09T15:22:43Z",
     "lastRunOutcome": "rearmed",
