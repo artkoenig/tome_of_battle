@@ -787,3 +787,19 @@ Special-Kategorie.
 | :--- | :--- | :--- |
 | 01 | 4× Grave Guard im Kontingent „Standard (VC-AB)" | Rohe Kategorien zählen: die Special-Obergrenze feuert (4 > 3) und die Core-Pflicht feuert (0 < 2) |
 | 02 | Derselbe Aufbau im Kontingent „Clan Blood Dragons (VC-AB)" | Beide Grenzen still: das stumme Special-Max pinnt die Entfernung (sonst 4 > 3), die stumme Core-Pflicht die hinzugefügte Mitgliedschaft (sonst 0 < 2) |
+
+## `group-max-increment-on-choice`
+
+Prüft `modifier type="increment"` auf eine Constraint-Id (§9.8 der Formatdoku,
+Rüstungs-Muster): das Gruppen-Maximum steigt, solange die gekoppelte Option
+gewählt ist. Beleg: die Gruppe „Weapons and Armour" (`06c9-c170-adb2-86f5`)
+des Vampire Count (Vampire Counts) trägt `max 2` (`b3b5-f872-24df-04dc`) und
+`increment +1`, gegatet auf `atLeast 1` der eigenen Option „Full Plate Armour"
+(`a4d1-6e85-bee8-55d1`; Ziel per Blood-Dragon-Blutlinie aufgedeckt). Beide
+Roster: Standard (VC-AB), Vampire Count mit Blood-Dragon-Blutlinie,
+Pflicht-Handweapon und Magic Level 1; Unterschied nur die Full-Plate-Wahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Full Plate Armour in der Gruppe gewählt | Die Bedingung hält: effektives Gruppen-Maximum 3 bei Ist 2, Spielraum 1; keine Grenze feuert |
+| 02 | Ohne Full Plate | Basis-Maximum 2 bei Ist 1 — der Shield-increment bleibt in beiden Rostern inert |

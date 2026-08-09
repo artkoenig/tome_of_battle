@@ -7,96 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 30,
-    "uncovered": 75
+    "covered": 31,
+    "uncovered": 74
   },
   "cells": [
-    {
-      "key": "modifier|increment|constraintValue",
-      "kind": "modifier",
-      "axes": {
-        "type": "increment",
-        "targetField": "constraintValue"
-      },
-      "occurrences": 108,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 6,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 17,
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 5,
-        "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst": 5,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 7,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 20,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 44,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "e5fc-7138-3778-150d",
-            "name": "Weapons Selection"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "7404-89b3-7fdc-429c"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "07b6-6c42-d4d5-16e8",
-            "name": "Kylists (Chaos Centaur Champions)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "7200-e796-ecd2-cdaa"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "1e26-0d1a-bb3c-f47a",
-            "name": "Gnoblars"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "a177-82fc-0b76-5b73"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|unit|selectionCount|child=id",
       "kind": "condition",

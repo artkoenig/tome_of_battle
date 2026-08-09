@@ -76,6 +76,11 @@
       "key": "modifierGroup|cond=true|repeats=false|nested=false",
       "evidence": ["docs/testing/remove-category-force-gate"],
       "rationale": "The Grave Guard recategorization is carried by a conditioned, non-repeating, non-nested modifierGroup: its single instanceOf(scope=force) condition gates all three contained category modifiers at once. Roster 01 (Standard force) asserts none of them applied (raw categories fire both .gst limits), roster 02 (Blood Dragons force) asserts they all applied (both limits silent) — the group's gate-for-all semantics is exactly what the pair distinguishes. Green scenario, credited without a new authoring pass."
+    },
+    {
+      "key": "modifier|increment|constraintValue",
+      "evidence": ["docs/testing/group-max-increment-on-choice"],
+      "rationale": "The Vampire Count's Weapons-and-Armour group max 2 (b3b5-f872-24df-04dc, Vampire Counts) carries increment +1 gated on the Full Plate Armour choice (section 9.8 armour pattern); roster 01 with Full Plate asserts effectiveMax 3 at current 2, roster 02 without asserts the base effectiveMax 2 at current 1. Scenario is green."
     }
   ]
 }

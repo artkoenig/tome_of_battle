@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="gmi-01" name="GMI 01 – Standard (VC-AB): Full Plate Armour hebt das Weapons-and-Armour-Maximum auf 3" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored group-max-increment-on-choice E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Vampire Count im Standard-Kontingent, Blood-Dragon-Bloodline in der Force.
+         Die Bloodline blendet den geteilten Eintrag "Full Plate Armour"
+         (3869-2f40-dd21-6971, Basis hidden=true) per modifierGroup ein. In der
+         Gruppe "Weapons and Armour" (06c9-c170-adb2-86f5) sind Handweapon (Pflicht)
+         UND Full Plate Armour gewaehlt: die condition des increment-Modifiers
+         (atLeast 1 des Links a4d1-6e85-bee8-55d1, scope=parent) haelt, das
+         effektive Maximum der max-2-Grenze b3b5-f872-24df-04dc ist 2 + 1 = 3.
+         Mit Ist 2 <= 3 feuert die Gruppen-Grenze nicht. Der baugleiche
+         Shield-increment (childId 071e-7d5a-a22f-3ba7) bleibt inert: kein Schild. -->
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-blood-dragon" name="Bloodline of Clan Blood Dragon" entryId="9fd9-e05c-ffcb-2c4d" entryLinkId="" entryGroupId="5655-13ba-8980-bd1c" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-vampire-count" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-handweapon" name="Handweapon" entryId="9e6c-19ea-19ad-7cbe" entryLinkId="" entryGroupId="06c9-c170-adb2-86f5" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-full-plate" name="Full Plate Armour" entryId="3869-2f40-dd21-6971" entryLinkId="a4d1-6e85-bee8-55d1" entryGroupId="06c9-c170-adb2-86f5" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-magic-level-1" name="Magic Level 1" entryId="158f-d753-59e2-9ad2" entryLinkId="69f7-0112-b50e-c883" entryGroupId="7ab1-d9dc-6124-443f" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
