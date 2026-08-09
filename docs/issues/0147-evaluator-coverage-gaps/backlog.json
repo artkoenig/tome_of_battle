@@ -33,6 +33,88 @@
             "summary": "The gap is that a condition's written childId is never resolved from a link id to its target id, so an atLeast(scope=force) condition naming the root entryLink 9e50 misses the roster selection bound under target 8923; the fix is a static rewrite in src/evaluator/resolver.js beside the existing force-instance normalization, following constraints.js:117, plus one new unit test file pinning both the rewrite and the link-bound direction it must not break."
           },
           "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nThis increment is worked on its own branch: `claude/evaluator-coverage-campaign--inc-1-atleast-force-link-target-alias`, off `claude/evaluator-coverage-campaign`.\nBefore anything else, on `claude/evaluator-coverage-campaign`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias claude/evaluator-coverage-campaign--inc-1-atleast-force-link-target-alias`, commit that state change and push `claude/evaluator-coverage-campaign`. Then create the branch with `git checkout -b claude/evaluator-coverage-campaign--inc-1-atleast-force-link-target-alias`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0147-evaluator-coverage-gaps/issue.md one increment at a time, and increment 1 is yours:\n  Count target-id selections under a root entryLink childId in force-scoped conditions — An atLeast(field=selections, scope=force) condition whose childId names a root entryLink (9e50-7486-65ab-c449) also counts roster selections that carry only the link's resolved target id (entryId 8923-5946-7b10-8957, entryLinkId empty), so the set-1 modifier gated by it lifts Greasus's max-0 constraint (cef8-c3b1-7850-85bc) when the toggle is selected.\nWhat it has to satisfy:\n  - npx vitest run src/evaluator exits 0, including the previously failing case 'Szenario: at-least-force-toggle-gate > rosters/02-greasus-with-toggle-max1.ros' (Greasus slot reports effectiveMax 1, constraint cef8-c3b1-7850-85bc no longer fires) and the still-green sibling case rosters/01-greasus-without-toggle-max0.ros (effectiveMax 0, constraint fires at actual 1, bound 0).\n  - All changes are confined to src/evaluator/ production code and its unit tests; no file under docs/testing/ is changed, weakened or deleted.\n  - The behavior change is covered by an evaluator unit test if the researcher's test plan calls for one beyond the pinned E2E scenario; the E2E scenario itself is the specification and is exercised only through the existing manifest runner.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0147-evaluator-coverage-gaps/backlog.json`, before you research.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias research:inc-1-atleast-force-link-target-alias.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias research:inc-1-atleast-force-link-target-alias.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:inc-1-atleast-force-link-target-alias.0",
+          "at": "2026-08-09T16:16:16.562Z",
+          "return": {
+            "cases": [
+              {
+                "case": "R1 (criterion: the childId of a condition may be the link id): a condition with childId=LINK_ID -> targetChildId equals TARGET_ID and witnessDefinition.id === TARGET_ID",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R1: childId=Wurzel-Link -> targetChildId ist die Ziel-Id, witnessDefinition ist die Ziel-Definition",
+                "demands": "After parseCatalogue+resolveCatalogue, a condition whose raw childId names a root entryLink must expose targetChildId === the link's resolved target id, and witnessDefinition must be the target definition (witnessDefinition.id === targetId).",
+                "got": "AssertionError: expected 'link-root-target' to be 'shared-target' -- targetChildId is currently the raw link id, unchanged."
+              },
+              {
+                "case": "R2 (no over-normalization): a condition with childId=PLAIN_ID (a plain entry) -> targetChildId is unchanged",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R2: childId=gewoehnlicher Eintrag -> targetChildId bleibt unveraendert (keine Uebernormalisierung)",
+                "demands": "A condition naming a plain (non-link) entry must keep targetChildId equal to that entry's own id.",
+                "got": "Passes today (green pin against over-normalization; unaffected by the missing feature)."
+              },
+              {
+                "case": "R3 edges: childId=\"model\" (type keyword, no definition) stays 'model'",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R3a: childId=\"model\" (Typ-Schluesselwort ohne Definition) bleibt \"model\"",
+                "demands": "A childId equal to the type keyword 'model', which names no definition, must leave targetChildId as the literal string 'model'.",
+                "got": "Passes today (unaffected by the missing feature)."
+              },
+              {
+                "case": "R3 edges: childId=\"any\" is already read as null by the reader and stays null",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R3b: childId=\"any\" bleibt null",
+                "demands": "A condition with childId='any' must resolve to targetChildId === null.",
+                "got": "Passes today (unaffected by the missing feature)."
+              },
+              {
+                "case": "R3 edges: a condition with no childId attribute at all stays null/undefined",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R3c: kein childId-Attribut -> bleibt null/undefined, keine Ausnahme",
+                "demands": "A condition without a childId attribute at all must leave targetChildId null or undefined, without throwing.",
+                "got": "Passes today (unaffected by the missing feature)."
+              },
+              {
+                "case": "R4 (the deliberate scope limit): a <repeat childId=LINK_ID> on the same modifier -- its targetChildId is STILL LINK_ID after resolution",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R4 (bewusste Grenze): eine <repeat>, die denselben Wurzel-Link benennt, bleibt bei der Link-Id",
+                "demands": "A <repeat> naming the same root link must NOT be normalized by this increment: targetChildId stays the raw link id.",
+                "got": "Passes today (a negative pin: repeats are out of this increment's scope and must stay unnormalized both before and after the fix)."
+              },
+              {
+                "case": "R5 (the rule is not restricted to root links): a condition with childId=NESTED_LINK_ID -> targetChildId becomes NESTED_TARGET_ID",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "R5: die Normalisierung gilt auch fuer einen GESCHACHTELTEN entryLink, nicht nur fuer Wurzel-Links",
+                "demands": "A condition naming a NESTED entryLink (not at the catalogue root) must also be normalized to its resolved target id.",
+                "got": "AssertionError: expected 'link-nested-target' to be 'shared-nested-target' -- targetChildId is currently the raw nested link id, unchanged."
+              },
+              {
+                "case": "B1 (the pinned behaviour, target-bound): roster with TOGGLE_TARGET_ID (not the link) plus HERO_ID -> no MAX_ID violation, effectiveMax: 1, current: 1",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "B1: Ziel-Id im Roster (kein Link) erfuellt die Bedingung -- die Sperre hebt sich auf effectiveMax 1",
+                "demands": "A miniature of the pinned E2E scenario through the public evaluate facade: a roster selection carrying only the link's resolved target id must satisfy the force-scoped atLeast condition gated on the link's childId, lifting the max-0 constraint to effectiveMax 1 with no violation.",
+                "got": "AssertionError: expected [ { limitId: 'max-hero-force', actual: 1, bound: 0, ... } ] to deeply equal [] -- the constraint still fires; the target-bound selection is not counted."
+              },
+              {
+                "case": "B2 (the gate is real): roster with only HERO_ID -> violation for MAX_ID with actual: 1, bound: 0, effectiveMax: 0",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "B2 (Gegenprobe): ohne die Toggle-Auswahl bleibt die Sperre scharf -- Verletzung bei effectiveMax 0",
+                "demands": "Without the toggle selection, the gate condition must not fire and the max-0 constraint must still block, red-if-inverted against B1/B3.",
+                "got": "Passes today (already-correct baseline behaviour; unaffected by the missing feature)."
+              },
+              {
+                "case": "B3 (the link-bound direction must not regress -- the most important guard): roster with TOGGLE_LINK_ID plus HERO_ID -> same result as B1",
+                "file": "src/evaluator/resolver.conditionLinkChildId.test.js",
+                "testName": "B3 (Rueckfallsicherung): die Link-gebundene Auswahl hebt die Sperre weiterhin -- wie B1",
+                "demands": "A roster selection bound under the link id (what a .ros with entryLinkId produces) must keep satisfying the gate exactly as before the fix -- no regression in the already-correct direction.",
+                "got": "Passes today (green pin against regression; the existing link-bound path already works)."
+              }
+            ],
+            "openQuestions": [],
+            "questions": [],
+            "summary": "Wrote src/evaluator/resolver.conditionLinkChildId.test.js with all 10 planned cases (5 static resolver-level R1-R5, plus 3 behaviour-level B1-B3 mirrored across the two describe blocks the plan asked for) and a new src/evaluator/CLAUDE.md suite doc (none existed). `npx vitest run src/evaluator/resolver.conditionLinkChildId.test.js` exits with 3 failing / 7 passing: R1, R5 and B1 fail on the missing childId-to-target-id normalization exactly as the plan predicts (B1 fails with the max-0 constraint still firing, matching the pinned E2E case), while R2/R3a/R3b/R3c/R4/B2/B3 pass as the plan's negative and no-regression pins."
+          },
+          "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nThis increment is worked on branch `claude/evaluator-coverage-campaign--inc-1-atleast-force-link-target-alias`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-coverage-campaign--inc-1-atleast-force-link-target-alias` and check it out; if the remote does not have it, create it from `claude/evaluator-coverage-campaign` and push it with `-u`.\nThis run works docs/issues/0147-evaluator-coverage-gaps/issue.md one increment at a time, and increment 1 is yours:\n  Count target-id selections under a root entryLink childId in force-scoped conditions — An atLeast(field=selections, scope=force) condition whose childId names a root entryLink (9e50-7486-65ab-c449) also counts roster selections that carry only the link's resolved target id (entryId 8923-5946-7b10-8957, entryLinkId empty), so the set-1 modifier gated by it lifts Greasus's max-0 constraint (cef8-c3b1-7850-85bc) when the toggle is selected.\nWhat it has to satisfy:\n  - npx vitest run src/evaluator exits 0, including the previously failing case 'Szenario: at-least-force-toggle-gate > rosters/02-greasus-with-toggle-max1.ros' (Greasus slot reports effectiveMax 1, constraint cef8-c3b1-7850-85bc no longer fires) and the still-green sibling case rosters/01-greasus-without-toggle-max0.ros (effectiveMax 0, constraint fires at actual 1, bound 0).\n  - All changes are confined to src/evaluator/ production code and its unit tests; no file under docs/testing/ is changed, weakened or deleted.\n  - The behavior change is covered by an evaluator unit test if the researcher's test plan calls for one beyond the pinned E2E scenario; the E2E scenario itself is the specification and is exercised only through the existing manifest runner.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias research:inc-1-atleast-force-link-target-alias.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias tests:inc-1-atleast-force-link-target-alias.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json inc-1-atleast-force-link-target-alias tests:inc-1-atleast-force-link-target-alias.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
