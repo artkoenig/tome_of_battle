@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "issue": "docs/issues/0147-evaluator-coverage-gaps/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap — issue 0147, the two pinned evaluator gaps\n\nEvery file the issue has to change, one line each; the increment a file belongs to is named in its line, and a file without one is on both paths.\n\n- `src/evaluator/infoProjection.js` — Collects the info elements of a slot; today an effectively hidden node contributes nothing at all, which is why the hidden unit's own profile occurrence is missing from the report (increment hidden-slot-info).\n- `src/evaluator/report.js` — Emits `infoElements` per slot and derives an anchor's `current` from a constraint result's `actual` — the reporting end of both increments.\n- `src/evaluator/infoProjection.test.js` — Unit test that pins today's rule that a hidden node's own projection stays empty and that nothing is inherited from it; the scenario contradicts the first half (increment hidden-slot-info).\n- `src/evaluator/infoElements.test.js` — Unit test that pins base-hidden and modifier-hidden info elements end to end through `evaluate`; the neighbouring rule to the one the scenario moves (increment hidden-slot-info).\n- `src/evaluator/modifiers.js` — Holds the `set-primary`/`unset-primary` category handlers and the handler registry that binds them to the category target (increment set-primary-membership).\n- `src/evaluator/effectiveState.js` — Stores effective category membership, the primary flag and the per-(node, carrier) hidden flag that both the counting and the info projection read.\n- `src/evaluator/countIndex.js` — Derives the targets a node is countable under from its effective categories; the path by which a modifier-granted membership reaches a category anchor (increment set-primary-membership).\n- `src/evaluator/evalTree.js` — Synthesizes the force-level category anchors whose `current` the scenario pins, and yields the info carriers of a definition that the projection walks.\n- `src/evaluator/constraints.js` — Computes the `actual` of a limit at each anchor — both the Regiment-of-Renown count and the firing `.gst` Rare limit come from here (increment set-primary-membership).\n- `src/evaluator/fixpoint.js` — Fixes the order in which modifier effects reach a freshly built count index and the anchor post-pass; the rounds decide whether a modifier-granted membership is visible to the anchors (increment set-primary-membership).\n- `src/evaluator/report.effectiveCategories.test.js` — Unit test that pins the current `set-primary`/`unset-primary` contract for membership and the primary flag (increment set-primary-membership).\n- `src/evaluator/countIndex.syntheticAnchors.test.js` — Unit test that pins what the synthetic anchors count (increment set-primary-membership).\n",
+  "increments": [
+    {
+      "id": "hidden-slot-info",
+      "title": "A hidden unit slot still reports its own profile occurrence",
+      "goal": "Close acceptance criterion 1: the Tomb stalker's unconditional Tomb-Scorpion infoLink must yield a profile info occurrence on the unit slot in every force, including the force where the unit stays hidden and every modifier of that infoLink is gated off, so scenario set-characteristic-force-gate is green in both of its forces.",
+      "criteria": [
+        "`npx vitest run src/evaluator` passes the case `Szenario: set-characteristic-force-gate > rosters/02-standard-force-mv-base-7.ros`: the slot of `f401a3ed-077e-4795-b32d-ee659bd0b37a` carries `isHidden` true and an info element `fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32` of kind `profile`, name \"Tomb Scorpion\", with the base characteristics Mv 7 (`0e92-d038-82bf-fb41`), WS 4 (`f95b-da01-0578-3bdc`) and Sv+ 5 (`d4a9-0ed4-d041-e54b`).",
+        "The sibling case `rosters/01-lichemaster-force-mv-6.ros` of the same scenario still passes unchanged (Mv 6, name \"Tomb stalker\", `isHidden` false).",
+        "Every unit test that pinned the superseded rule about what a hidden slot projects is re-pinned to the rule the scenario states, with its reason written down; none is deleted or weakened to reach green.",
+        "`npx vitest run src/evaluator` exits 0 over the whole evaluator suite, with nothing skipped or excluded.",
+        "No file under `docs/testing/` and no file outside `src/evaluator/` is changed."
+      ],
+      "status": "todo",
+      "note": "Load-bearing first: it moves a contract shared by every slot in the report, so the fallout across the suite shows up in the first increment rather than the last.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "set-primary-membership",
+      "title": "`set-primary field=\"category\"` secures membership on its own and removes none",
+      "goal": "Close acceptance criterion 2: an unconditional `set-primary` on a category the entry has no `categoryLink` to must make the entry count in that category's anchor, while leaving every membership it already had intact, so all three rosters of scenario set-primary-category-membership are green.",
+      "criteria": [
+        "`npx vitest run src/evaluator` passes `Szenario: set-primary-category-membership > rosters/01-kathleen-set-primary-regiment-of-renown.ros`: in force frame `729f-9246-5cd3-5044` the category anchor `ee09-9a50-ad78-9c32` (Regiment of Renown) reports `current` 1, the Rare anchor `e94b-6a54-8779-cd60` reports `current` 1 with `effectiveMax` 1, and the limits `0a44-2d3f-adfe-f3a1` and `99ea-c7dd-2a0b-ff10` do not fire.",
+        "It passes `rosters/03-kathleen-and-slave-giant-rare-max.ros`: the Regiment-of-Renown anchor still reports `current` 1, the Rare anchor reports `current` 2, and the limit `0a44-2d3f-adfe-f3a1` fires with actual 2 against bound 1.",
+        "The counter-case `rosters/02-slave-giant-no-set-primary.ros` keeps passing (Regiment of Renown `current` 0, Rare `current` 1, `0a44-2d3f-adfe-f3a1` absent).",
+        "`npx vitest run src/evaluator` exits 0 over the whole evaluator suite, with nothing skipped or excluded.",
+        "No file under `docs/testing/` and no file outside `src/evaluator/` is changed."
+      ],
+      "status": "todo",
+      "note": "Second because it is independent of the first: a different path through the engine, no shared decision, and the report contract the first increment moves does not reach the anchor counts this one pins.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-09T20:22:20.436Z",
+        "return": {
+          "questions": [],
+          "summary": "Issue 0147 is cut into two increments, one per acceptance criterion: `hidden-slot-info` makes a hidden unit slot report its own profile occurrence (criterion 1, scenario set-characteristic-force-gate), and `set-primary-membership` makes an unconditional `set-primary field=\"category\"` secure category membership on its own without removing any (criterion 2, scenario set-primary-category-membership). The codemap in backlog.json names twelve files across `src/evaluator/`, the two pinned gaps kept apart.",
+          "cut": {
+            "why-two": "The two acceptance criteria are two unrelated paths through the engine: the first is the info projection of a slot, the second is the way a modifier-granted category membership reaches an anchor's count. Neither decision constrains the other, each is separately reviewable, and each leaves the suite green on its own. Merging them into one increment would put two independent root causes into one review; splitting either further would produce halves that only make sense together (a projection change nobody reads, a membership change nothing counts).",
+            "why-this-order": "`hidden-slot-info` first because it is the load-bearing one: `src/evaluator/infoProjection.js` drops every info element of an effectively hidden node, and a unit test (`infoProjection.test.js`, 'laesst die eigene Projektion eines versteckten Knotens leer') pins exactly the rule the scenario contradicts. Moving that contract can ripple through every slot in the report, so the run learns its cost in the first increment rather than the last. `set-primary-membership` is independent and cannot be blocked by it.",
+            "criteria-mapping": "Acceptance criterion 1 (docs/testing/set-characteristic-force-gate, failing roster 02) lands wholly in `hidden-slot-info`. Acceptance criterion 2 (docs/testing/set-primary-category-membership, failing rosters 01 and 03) lands wholly in `set-primary-membership`, including the second half of that criterion — the Rare anchor reaching 2 and the `.gst` limit `0a44-2d3f-adfe-f3a1` firing with actual 2 / bound 1 — because it is the same membership rule seen from the other side and would be untestable apart from it. No criterion is in two increments and none is unassigned.",
+            "rejected": "Rejected a cut by engine layer (modifier application, then counting, then reporting): every slice would leave the repository half-migrated and none would make a scenario green. Rejected a separate increment for the firing Rare limit of roster 03: it is the same code change as roster 01's anchor count, and pinning it apart would build the same fix twice."
+          },
+          "open-code-facts": {
+            "hidden-slot-info": "The cause is located and needs no further planning: `src/evaluator/infoProjection.js` returns early for an effectively hidden node, so the hidden Tomb stalker slot projects nothing at all. What the new rule should be — a hidden node's own carriers project, its children still do not inherit upward, or something narrower — is the researcher's to settle against `docs/battlescribe-data-format.md` and the scenario.",
+            "set-primary-membership": "The cause is not located, deliberately. The obvious handlers already look right: `modifiers.js` binds `set-primary` on a category target to `effectiveState.setPrimaryCategory`, which adds the membership before setting the flag, and `countIndex.targetsOf` counts a node under its effective categories. The anchor's `current` is not a count of its own but a constraint result's `actual` (`report.js`, `current: maxResult?.actual ?? minResult?.actual ?? 0`), so the miss may sit anywhere on the path modifier -> effective state -> count index -> constraint at the synthesized force-level category anchor, including the fixpoint round order (`fixpoint.js`) that decides when a modifier effect is visible to a freshly built index. The increment is cut so that the researcher answers this first; it is a code fact, not a human decision."
+          },
+          "scope-notes": "The issue's out-of-scope section settles two things that would otherwise be questions: no file under `docs/testing/` may change (the scenarios are the specification, including `campaign-state.json`'s pinned gaps), and nothing outside `src/evaluator/` and its unit tests may change. Both are written into every increment's criteria. The check command is `npx vitest run src/evaluator` for both increments, per the issue's Decisions."
+        },
+        "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nOpen the run state for docs/issues/0147-evaluator-coverage-gaps/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0147-evaluator-coverage-gaps/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
