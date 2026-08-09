@@ -191,6 +191,13 @@
         "docs/testing/greater-than-parent-upgrade-gate"
       ],
       "rationale": "GREEN: the two rosters differ only in the Noble-Blood selection inside the Vampire Thrall frame, so the isHidden flip and the effectiveMin 0->1 of the Magic-Level-1 slot (limit c195-d40a-1c54-f572, firing with actual 0 / bound 1) are the parent-scoped greaterThan count itself. This is the only greaterThan/parent site in the corpus without a co-extensive <repeat>."
+    },
+    {
+      "key": "modifier|set|costValue",
+      "evidence": [
+        "docs/testing/set-cost-value-force-gate"
+      ],
+      "rationale": "GREEN: four rosters with the same unit and 20 Zombie models differ only in the force (roster 04 also in the budget), so the roster-budget totals 120 / 100 / 160 / 100 are the set-on-cost-type modifier itself — written 6, set 5, set 8 — and roster 04 pins the gated value as exactly 5."
     }
   ]
 }

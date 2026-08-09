@@ -943,3 +943,22 @@ Auswahl identisch.
 | :--- | :--- | :--- |
 | 01 | Vampire Thrall ohne Noble Blood | Zählung 0, nicht > 0: Basiswerte — der Slot bleibt versteckt, seine Untergrenze 0, nichts feuert |
 | 02 | Derselbe Aufbau mit Noble Blood | Zählung 1 > 0: der Slot wird sichtbar **und** seine Untergrenze steigt auf 1 — unerfüllt, also feuert sie mit Ist 0 gegen Grenze 1 |
+
+## `set-cost-value-force-gate`
+
+Prüft den `set`-Modifikator auf eine **Kostenart** (`field` = die pts-Kostenart,
+§7.5/§7.7 der Formatdoku): hält seine Bedingung, ersetzt er die geschriebenen
+Kosten des Trägers, und jede Summe über diese Kostenart rechnet danach mit dem
+ersetzten Wert. Beleg: das Modell „Zombie" (`5c6c-eaf9-2716-6f7e`, Vampire
+Counts) trägt geschriebene 6 Punkte und zwei `set`-Modifikatoren ohne
+`<repeats>` — auf 5 im Kontingent „Necromancer's Army" (`d3af-1add-4e99-b977`)
+und auf 8 in „Army of Sylvania" (`4072-c3b8-84c4-a097`). Alle Roster tragen
+dieselbe Einheit mit 20 Modellen und unterscheiden sich nur im Kontingent
+(Roster 04 zusätzlich im Budget).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standard-Kontingent, Budget 110 | Kein Gatter hält: 6 × 20 = 120 — das Budget ist überschritten |
+| 02 | „Necromancer's Army", Budget 110 | `set 5`: 5 × 20 = 100 — dieselbe Modellzahl bleibt im selben Budget |
+| 03 | „Army of Sylvania", Budget 110 | `set 8`: 8 × 20 = 160 — deutlich überschritten; der Einheitenname belegt zusätzlich, dass genau dieses Gatter hält |
+| 04 | „Necromancer's Army", Budget 90 | 100 > 90 — der gegatete Wert ist exakt 5, nicht bloß „klein genug" |

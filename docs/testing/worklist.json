@@ -7,91 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 42,
-    "uncovered": 63
+    "covered": 43,
+    "uncovered": 62
   },
   "cells": [
-    {
-      "key": "modifier|set|costValue",
-      "kind": "modifier",
-      "axes": {
-        "type": "set",
-        "targetField": "costValue"
-      },
-      "occurrences": 38,
-      "files": {
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 35
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9ddd-69c8-644d-abc2",
-            "name": "0-1 Amazon Serpent Priestess"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "ecfa-8486-4f6c-c249"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "069f-c82f-084a-bbc8",
-            "name": "Effigy of Gork"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "ecfa-8486-4f6c-c249"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "eaa1-c6a6-9aae-ae9a",
-            "name": "Skeletons"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "ecfa-8486-4f6c-c249"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|instanceOf|id|selectionCount|child=any",
       "kind": "condition",
