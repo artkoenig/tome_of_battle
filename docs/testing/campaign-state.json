@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "_comment": "Campaign state of the evaluator coverage-closure loop. `pinnedGaps` are scenarios that are committed and red: the catalog data demands a behaviour the engine does not deliver yet, and each entry is one task for phase B. `parkedQuestions` are cells whose intended semantics could not be derived from the catalog data, the BSData wiki or the XSD, waiting for a human answer. Written by .claude/skills/evaluator-constraint-explorer; read by the campaign driver. docs/testing/worklist.json and docs/testing/covered-cells.json hold the coverage bookkeeping, not this file.",
+  "pinnedGaps": [],
+  "parkedQuestions": []
+}
