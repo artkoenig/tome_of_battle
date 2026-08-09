@@ -904,3 +904,24 @@ Blutlinie; Black Periapt ist die Nullprobe.
 | 02 | Derselbe Aufbau mit der Blutlinie Von Carstein | Die Bedingung hält nicht (`remove` der Blood-Dragon-Kategorie): alle fünf Slots sichtbar |
 | 03 | Beide Blutlinien zugleich | Das spätere `remove` gewinnt: die Slots bleiben sichtbar, und die Gruppengrenze „Vampiric Bloodline" (max 1) feuert mit Ist 2 |
 | 04 | Blutlinie Strigoi | Derselbe Konstrukttyp eine Gruppenebene tiefer: der Great-Weapon-Slot ist versteckt |
+
+## `less-than-roster-category-count`
+
+Prüft die `lessThan`-Bedingung mit `scope="roster"` und Kategorie-`childId`
+(§7.6/§7.7 der Formatdoku): gezählt werden alle Selektionen mit dieser
+Kategorie armeeweit, und die Bedingung hält genau dann, wenn die Zählung echt
+unter dem `value` liegt. Beleg: „Extra Goblin Hero" (`ed97-811b-cdb5-46c3`,
+Orcs and Goblins) trägt die Grenze `186c-6345-5b25-5aa2` mit Basis `max 0`;
+ein `increment 1` mit `repeat` je 1000 Punkten ist auf eine `and`-Gruppe aus
+`greaterThan 999` auf das Punktelimit **und** `lessThan 1` auf die Kategorie
+„Orc" (`d4a7-5999-8207-4efe`) gegatet. Die Zwillingspaare unterscheiden sich
+nur darin, ob der gewählte Charakter einen Kategorie-Link auf „Orc" führt
+(Orc Bigboss `6279-4d0a-6dce-f2f3` gegen Goblin Bigboss `8c8f-3fba-e337-fd2f`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 1000 Punkte, kein Orc | Beide Bedingungen halten: Höchstmaß 1, die Grenze feuert nicht |
+| 02 | 1000 Punkte, Orc-Charakter dabei | Die Zählung ist 1, nicht < 1: Höchstmaß 0, die Grenze feuert mit Ist 1 |
+| 03 | 500 Punkte, kein Orc | Die Kategorie-Bedingung hält, die Punkte-Bedingung nicht: Höchstmaß 0 — die beiden Glieder der `and`-Gruppe sind unterscheidbar |
+| 04 | 2000 Punkte, kein Orc | Zwei Wiederholungen: Höchstmaß 2, die Grenze feuert nicht |
+| 05 | 2000 Punkte, Orc-Charakter dabei | Höchstmaß 0, die Grenze feuert mit Ist 1 |

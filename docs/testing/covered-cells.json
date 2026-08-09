@@ -170,6 +170,13 @@
         "docs/testing/remaining-condition-types"
       ],
       "rationale": "The Skeletons mutual exclusion of Spear Infantry and Halberds (Vampire Counts) is gated by condition type=atLeast value=1 scope=parent childId=104f-5817-4bda-9382; the two rosters differ only in whether the sibling is selected, so the max bound flip from 1 to 0 is the condition's own semantics."
+    },
+    {
+      "key": "condition|lessThan|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "GREEN: rosters 01/02 and 04/05 are single-cause twins — only the chosen character's Orc-category membership differs — so the effectiveMax flip of Extra Goblin Hero (186c-6345-5b25-5aa2) and the firing of that limit are the roster-scoped lessThan count itself; roster 03 separates the two members of the and-group."
     }
   ]
 }
