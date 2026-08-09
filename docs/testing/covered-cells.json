@@ -155,6 +155,21 @@
         "docs/testing/unit-scope-instance-of-category"
       ],
       "rationale": "GREEN: rosters 01/02 differ only in the bloodline, so the isHidden flip on the three familiar slots is the condition's own semantics against the unit's effective categories; roster 03 pins that a later remove wins over an earlier add, roster 04 the same construct one group level deeper."
+    },
+    {
+      "key": "modifier|add|error",
+      "evidence": [
+        "docs/testing/author-message-severity",
+        "docs/testing/author-message-tokens"
+      ],
+      "rationale": "author-message-severity pins the add/error modifier at Skrag and Greasus (Ogre Kingdoms) with a firing and a silent roster and the wording taken verbatim from the value attribute; author-message-tokens pins the same construct's message list entry (origin authorMessage, severity error) including the {this} token rendering at Gnoblars and the untouched plain message at Skrag."
+    },
+    {
+      "key": "condition|atLeast|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/remaining-condition-types"
+      ],
+      "rationale": "The Skeletons mutual exclusion of Spear Infantry and Halberds (Vampire Counts) is gated by condition type=atLeast value=1 scope=parent childId=104f-5817-4bda-9382; the two rosters differ only in whether the sibling is selected, so the max bound flip from 1 to 0 is the condition's own semantics."
     }
   ]
 }
