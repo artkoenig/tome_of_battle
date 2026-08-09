@@ -39,6 +39,205 @@
             "summary": "Researched increment 1: the coverage inventory becomes a pure lib (`scripts/lib/evaluator-coverage-cells.js`) plus a thin CLI, parsing the nine frozen fixture catalogues with jsdom in 1.8 s and yielding 101 distinct rule-construct cells once absent flags are normalized to their XSD defaults. Coverage is derived mechanically from the 38 existing scenario manifests (15 of 22 constraint cells) and unioned with a new machine-readable `docs/testing/covered-cells.json`, leaving an expected worklist of about 85 cells; a run of the script exits 1 by design, so the checks rest on two new test files instead."
           },
           "prompt": "Issue directory: docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on its own branch: `claude/evaluator-katalog-rules-t6nim4--inc-1`, off `claude/evaluator-katalog-rules-t6nim4`.\nBefore anything else, on `claude/evaluator-katalog-rules-t6nim4`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 claude/evaluator-katalog-rules-t6nim4--inc-1`, commit that state change and push `claude/evaluator-katalog-rules-t6nim4`. Then create the branch with `git checkout -b claude/evaluator-katalog-rules-t6nim4--inc-1`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md one increment at a time, and increment 1 is yours:\n  Coverage inventory script with covered-cells diff and worklist — A static coverage inventory (`scripts/evaluator-coverage-inventory.js`) that parses the whole fixture corpus, extracts every occurring rule-construct combination cell, diffs it against a machine-readable record of covered cells, and writes the uncovered cells to `docs/testing/worklist.json` — so the two skills of the later increments have a mechanical source of truth to work from.\nWhat it has to satisfy:\n  - `scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.\n  - It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).\n  - The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.\n  - The uncovered cells are written to `docs/testing/worklist.json`.\n  - The script exits non-zero when the worklist is non-empty and zero when every occurring cell is covered.\n  - The cell extraction is covered by unit tests, and they pass.\nDeliberately not yours, and not a gap — a later increment takes each of these: Invert the constraint-explorer skill to data-first; Campaign driver skill evaluator-closure-loop.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json`, before you research.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 research:inc-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 research:inc-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n\nReturn, as the final part of your reply, one JSON object and nothing after it, with exactly these fields:\n- \"needsTests\": boolean — false only when this increment has nothing a test could check.\n- \"checks\": array of strings — the `checks` you recorded, verbatim. The reviewer reads nothing you wrote, so the list reaches it through here.\n- \"questions\": your return's `questions`, the way your shared brief defines them (array of strings).\n- \"summary\": string.\n"
+        },
+        {
+          "label": "tests:inc-1.0",
+          "at": "2026-08-09T10:33:52.158Z",
+          "return": {
+            "summary": "Wrote scripts/lib/evaluator-coverage-cells.test.js (26 planned cases: extraction key rules over synthetic XML, coveredKeysFromManifests, diffCells, keysFromCoveredRecord, exitCodeFor) and scripts/lib/evaluator-coverage-corpus.test.js (real-corpus totals, landmark cells, worklist.json drift guard); both fail today with module-not-found since neither scripts/lib/evaluator-coverage-cells.js nor scripts/lib/evaluator-coverage-corpus.js exist yet, and a new scripts/lib/CLAUDE.md documents the suite.",
+            "cases": [
+              {
+                "case": "A constraint type=max field=selections scope=parent shared=true includeChildSelections=false includeChildForces=false percentValue=false yields exactly the key constraint|max|selectionCount|parent|s=true|ics=false|icf=false|pct=false, with occurrences 1 and the given file path recorded.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > records a single occurring constraint cell with its key, occurrence count and file",
+                "demands": "extractCells([{doc, file}]) exists, exported from scripts/lib/evaluator-coverage-cells.js, and produces exactly the stated pipe-delimited key with occurrences=1 and files={[file]:1}.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Flag normalization: the same constraint with includeChildForces and percentValue omitted yields the same key, and the two occurrences merge into one cell with occurrences 2 and both files listed.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > normalizes omitted flags to their false default, merging with the explicit-false occurrence",
+                "demands": "Two sources across two files, one with icf/pct spelled out false and one with them omitted, collapse into a single cell with occurrences=2 and both file paths in files.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Explicit non-default flags are not collapsed: shared=\"false\" yields a key distinct from shared=\"true\".",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > does not collapse an explicit shared=\"false\" into shared=\"true\"",
+                "demands": "Two otherwise identical constraints differing only in shared=\"true\" vs \"false\" produce two distinct cells.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "type=\"min\" and type=\"max\" on otherwise identical constraints yield two cells.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > keeps min and max as distinct cells for otherwise identical constraints",
+                "demands": "Two constraints identical except for type=min/max produce two distinct cells.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Counted field classes: selections→selectionCount; forces→forceCount; an id declared as <costType>→costSum; limit::<that id>→limitValue; an id declared nowhere→unresolvedField; the attribute missing→absent.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > classifies the constraint field attribute into its field-class",
+                "demands": "Six constraints, one per field variant (selections/forces/declared costType id/limit::id/undeclared id/missing), yield exactly the six named field-classes as a set.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Scope classes: each of roster, force, parent, self, unit, ancestor, primary-catalogue, category stays literal; a GUID-shaped value→id; missing→absent.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — constraint field-class x scope x flags > classifies the constraint scope attribute into its scope-class",
+                "demands": "Ten constraints (eight literal scopes, one GUID, one missing) yield exactly those ten scope-classes as a set.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Condition cell: condition|<type>|<scopeClass>|<fieldClass>|child=<childIdClass>, checked for at least instanceOf and atLeast; childId model/any stay literal, a GUID→id, missing→absent.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — condition type x scope x field-class > records instanceOf and atLeast condition cells with their scope/field classes; and > classifies childId model/any as literal, a GUID as id, and a missing attribute as absent",
+                "demands": "A modifier's <conditions> with instanceOf and atLeast conditions yield the documented condition|type|scope|field|child= keys, and four childId variants (model/any/GUID/missing) yield the four childId classes.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Repeat cell: field, scope and childId classes as above, plus repeats=\"1\"→repeats=1 and repeats=\"3\"→repeats=gt1, roundUp omitted→roundUp=false, percentValue carried through.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — repeat attributes > classifies repeats=\"1\" as repeats=1 and a higher value as repeats=gt1; and > defaults an omitted roundUp to false and carries percentValue through",
+                "demands": "A <repeats>/<repeat> pair with repeats=1 vs repeats=3 yields repeats=1/repeats=gt1 in the key; roundUp omitted defaults to roundUp=false and an explicit roundUp=true/percentValue=true both surface literally in the key.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Modifier cell: hidden, name, category, error stay literal; a <costType> id→costValue; a <characteristicType> id→characteristic; a <constraint> id declared elsewhere in the same corpus→constraintValue; an id declared nowhere→unresolvedTarget, with the raw id preserved in the cell's examples.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — modifier type x target-field-class > keeps hidden/name/category/error literal and classifies id targets",
+                "demands": "Eight modifiers (hidden/name/category/error literal fields, a costType id, a characteristicType id, a constraint id declared elsewhere in the document, and an undeclared id) yield exactly those eight target-classes, and the unresolvedTarget cell's examples contain the raw undeclared id string.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "conditionGroup cells for and, or and not; a group directly under a modifier's <conditionGroups> is top, a group inside another group's <conditionGroups> is nested.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — conditionGroup nesting (and/or/not, top/nested) > records and/or/not as distinct cells and distinguishes a top group from one nested inside another",
+                "demands": "and/or groups directly under a modifier's <conditionGroups> yield conditionGroup|and|top and conditionGroup|or|top; a not group inside the and group's <conditionGroups> yields conditionGroup|not|nested.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "modifierGroup cells: cond=true when the group carries <conditions>, cond=true when it carries <conditionGroups> instead, cond=false when it carries neither; repeats=true when it carries <repeats>; nested when it sits inside another modifierGroup.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — modifierGroup cells > classifies cond by whether conditions or conditionGroups is present, repeats, and nesting",
+                "demands": "Four modifierGroup shapes (with <conditions>, with <conditionGroups>, with neither, and one nested inside another with its own <repeats>) produce cells covering cond=true, cond=false, repeats=true and nested=true, and the plain group (cond=false|repeats=false|nested=false) is its own cell.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "repeatList cells: a <repeats> with one <repeat>→n=1, with two→n=gt1; on=modifier versus on=modifierGroup.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — repeatList cells > classifies a single <repeat> as n=1 and several as n=gt1, distinguishing modifier from modifierGroup",
+                "demands": "A <repeats> with one <repeat> under a <modifier> yields repeatList|n=1|on=modifier; a <repeats> with two <repeat>s under a <modifierGroup> yields repeatList|n=gt1|on=modifierGroup.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Occurrence counting and locations: the same cell occurring three times across two files reports occurrences 3 and per-file counts; examples is capped at 3 and each example carries the element's own id (or null), the nearest named ancestor's tag/id/name, and the root-to-element tag path.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — occurrence counting and locations > reports total and per-file occurrence counts, with examples capped at 3 and carrying location",
+                "demands": "Three occurrences of the same cell across two files (2+1) yield occurrences=3, files={fileA:2, fileB:1}, exactly 3 capped examples, each with id, ancestor {tag,id,name} and the full root-to-element tag path.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "A document with no rule constructs yields an empty inventory (not a throw).",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — edges > returns an empty inventory for a document with no rule constructs, instead of throwing",
+                "demands": "extractCells on a <catalogue> with an empty <selectionEntries/> returns cells=[] and failures=[] without throwing.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "A constraint with every optional attribute omitted still yields a fully defaulted key.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — edges > still yields a fully defaulted key when every optional constraint attribute is omitted",
+                "demands": "A constraint with only type and value produces constraint|max|absent|absent|s=false|ics=false|icf=false|pct=false.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "A document containing a parsererror element is reported as an operational failure, not counted.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "extractCells — edges > reports a parsererror document as an operational failure instead of counting it",
+                "demands": "Malformed XML parsed by DOMParser (which jsdom turns into a <parsererror> document, confirmed by direct check during research) yields cells=[] and failures=[{file, message}].",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "coveredKeysFromManifests: a manifest whose rosters[].expect.firing[].limitId names a constraint present in the corpus yields that constraint's cell key with the scenario directory as evidence; an id in rosters[].expect.absent[] does the same; an id that names no constraint is returned as unmatched evidence and does not throw.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests > matches an id from expect.firing[].limitId to its cell key, with the scenario directory as evidence; > matches an id from expect.absent[] the same way; > reports an id naming no constraint as unmatched, without throwing",
+                "demands": "coveredKeysFromManifests(manifests, index) resolves a firing[].limitId and an absent[] id to the same cell key with the manifest's dir as evidence in matched[], and a dangling id ends up in unmatched[] instead of throwing.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "diffCells: a covered key removes its cell from the uncovered list; a covered key that occurs nowhere in the inventory comes back as stale without failing; an empty covered record leaves every cell uncovered.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "diffCells > removes a covered key from the uncovered list; > reports a covered key that occurs nowhere in the inventory as stale, without failing; > leaves every cell uncovered for an empty covered record",
+                "demands": "diffCells(cells, coveredKeys) removes a matching key from uncovered, reports a non-existent key in stale without throwing, and returns every cell uncovered when coveredKeys=[].",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "The manual record is parsed from the documented shape (schemaVersion, cells[].key/evidence/rationale) and its keys join the derived ones.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "keysFromCoveredRecord > parses the documented shape and its keys join the derived, manifest-matched ones",
+                "demands": "keysFromCoveredRecord({schemaVersion, cells:[{key,evidence,rationale}]}) returns the key list, and passing it into diffCells covers that cell while leaving an unrelated one uncovered.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "exitCodeFor returns 1 for a worklist with at least one cell and 0 for an empty one. Test it as a pure function; do not spawn the CLI.",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "exitCodeFor > returns 1 for a non-empty worklist and 0 for an empty one, as a pure function",
+                "demands": "exitCodeFor(cells) returns 1 for a non-empty array and 0 for an empty array.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-cells.js\" from \"scripts/lib/evaluator-coverage-cells.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "The corpus walk returns exactly nine files — five under src/evaluator/__fixtures__/whfb6-definitive/ and four under src/__fixtures__/whfb6/ — with the README.md of each directory excluded, and no document reports a parsererror.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "loadCorpus — static walk of both fixture sets > returns exactly nine catalogue/game-system files, excludes each README.md, and reports no parsererror",
+                "demands": "loadCorpus([WHFB6_DEFINITIVE_DIR, WHFB6_DIR]) returns failures=[] and exactly 9 sources (5 + 4), none named README.md (confirmed directly against the fixture directories during research).",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Per-kind occurrence totals match a plain tag count of the corpus: constraint 5290, condition 1739, conditionGroup 261, modifier 1762, modifierGroup 109, repeat 214. If a number disagrees, re-run that grep before touching the extraction.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — occurrence totals match a plain tag count > totals %s occurrences to %i (parametrized over the six kinds)",
+                "demands": "Summing occurrences of every cell whose key starts with each kind prefix reproduces exactly the six totals; re-verified with grep -o '<constraint ' -r <fixture dirs> | wc -l (and the five siblings) against the frozen fixtures during this step and all six matched exactly.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Landmark cells the corpus is known to contain are present: conditionGroup|not|nested (2 occurrences, Vampire Counts), a condition|greaterThanOrEqualTo|… cell (1 occurrence), a modifier|…|unresolvedTarget cell, and at least one cell of each of the seven kinds.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — known landmark cells > (4 its: conditionGroup|not|nested, condition|greaterThanOrEqualTo, modifier unresolvedTarget, all seven kinds present)",
+                "demands": "The corpus inventory contains conditionGroup|not|nested with occurrences=2 (confirmed at Vampire Counts (6th definitive edition).cat lines 10779/12380, both nested under an and group per research), a condition|greaterThanOrEqualTo|... cell with occurrences=1 (confirmed by grep), a modifier|...|unresolvedTarget cell, and at least one cell per kind (constraint/condition/conditionGroup/modifier/modifierGroup/repeat/repeatList).",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet)"
+              },
+              {
+                "case": "Drift guard, modelled on scripts/generate-schema-module.test.js: recompute the worklist from the corpus, the manifests and docs/testing/covered-cells.json, and assert it deep-equals the committed docs/testing/worklist.json.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > deep-equals the worklist recomputed from the corpus, the manifests, and covered-cells.json",
+                "demands": "computeWorklist({cells, index, manifests: loadManifests(TESTING_DIR), coveredRecord: covered-cells.json}) deep-equals the committed docs/testing/worklist.json. Neither docs/testing/covered-cells.json nor docs/testing/worklist.json exist in the repo yet — the implementer creates and commits both as the script's own output.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet; also docs/testing/covered-cells.json and docs/testing/worklist.json do not exist yet)"
+              },
+              {
+                "case": "The committed worklist's totals are internally consistent: covered + uncovered === cells, and cells array length equals totals.uncovered.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered",
+                "demands": "Reading the committed docs/testing/worklist.json, totals.covered + totals.uncovered === totals.cells and cells.length === totals.uncovered.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet; docs/testing/worklist.json also does not exist yet)"
+              },
+              {
+                "case": "The worklist ordering is deterministic: recomputing twice yields identical JSON, and cells are ordered by occurrences descending then key ascending.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > orders cells deterministically by occurrences descending then key ascending, on every recomputation",
+                "demands": "Two calls to computeWorklist with the same inputs produce deep-equal output, and every adjacent pair in cells is ordered by occurrences descending, ties broken by key ascending.",
+                "got": "Error: Failed to resolve import \"./evaluator-coverage-corpus.js\" from \"scripts/lib/evaluator-coverage-corpus.test.js\". Does the file exist? (the module does not exist yet)"
+              }
+            ],
+            "openQuestions": [
+              "The plan defines scope-class and childId-class rules only for their literal enum values, a GUID-shaped id, and a missing attribute — it does not say what class a non-GUID, non-literal string (an unexpected or malformed value) should fall into; left untested pending an answer.",
+              "The plan's constraint field-class rules cover selections/forces (literal), a declared <costType> id, limit::<costType id>, an id declared nowhere (unresolvedField), and a missing attribute (absent) — it does not say what class applies to an id that IS declared elsewhere but not as a <costType> (e.g. a <categoryEntry> id); left untested pending an answer.",
+              "The plan defines conditionGroup 'top' only relative to a modifier's <conditionGroups> and 'nested' only relative to another conditionGroup's <conditionGroups> — it does not say whether a conditionGroup sitting directly under a modifierGroup's own <conditionGroups> (not a modifier's) counts as top or as something else; left untested pending an answer.",
+              "The acceptance criteria name 'modifier type × target-field-class' as a coverage axis, but the plan's modifier-cell case (case 9) only varies the target class, never the modifier type (set/increment/decrement/...) itself on the same target — so no planned case pins that two modifier types on the same field-class yield distinct cells; the test I wrote follows the plan's actual case and leaves that cross unasserted."
+            ],
+            "questions": []
+          },
+          "prompt": "Issue directory: issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on branch `claude/evaluator-katalog-rules-t6nim4--inc-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-katalog-rules-t6nim4--inc-1` and check it out; if the remote does not have it, create it from `claude/evaluator-katalog-rules-t6nim4--inc-1` and push it with `-u`.\nThis run works issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md one increment at a time, and increment 1 is yours:\n  Coverage inventory script with covered-cells diff and worklist — A static coverage inventory (`scripts/evaluator-coverage-inventory.js`) that parses the whole fixture corpus, extracts every occurring rule-construct combination cell, diffs it against a machine-readable record of covered cells, and writes the uncovered cells to `docs/testing/worklist.json` — so the two skills of the later increments have a mechanical source of truth to work from.\nWhat it has to satisfy:\n  - `scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.\n  - It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).\n  - The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.\n  - The uncovered cells are written to `docs/testing/worklist.json`.\n  - The script exits non-zero when the worklist is non-empty and zero when every occurring cell is covered.\n  - The cell extraction is covered by unit tests, and they pass.\nDeliberately not yours, and not a gap — a later increment takes each of these: Invert the constraint-explorer skill to data-first; Campaign driver skill evaluator-closure-loop.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 research:inc-1.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 tests:inc-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 tests:inc-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
