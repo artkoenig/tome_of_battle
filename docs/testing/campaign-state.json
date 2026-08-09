@@ -39,10 +39,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-abschluss-kampagne-ipuqwm",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 4,
-    "lastRunAt": "2026-08-09T19:52:58Z",
+    "runs": 5,
+    "lastRunAt": "2026-08-09T23:41:59Z",
     "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-09T23:41:00Z",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
