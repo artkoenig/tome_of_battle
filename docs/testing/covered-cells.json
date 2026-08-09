@@ -61,6 +61,11 @@
       "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "evidence": ["docs/testing/parent-scope-per-model-cost"],
       "rationale": "The Light Armour link under the Ogre Bulls root unit (Mercenaries) increments its pts cost by 3 per model-type selection of the parent; roster 01 with 4 Bulls asserts the budget fires with actual 152 = 140 + 4x3 against limit 151 (every under-application stays below), roster 02 asserts silence at limit 153 (any over-application would fire). Scenario is green."
+    },
+    {
+      "key": "modifier|remove|category",
+      "evidence": ["docs/testing/remove-category-force-gate"],
+      "rationale": "Grave Guard (Vampire Counts) is recategorized Special->Core by a modifierGroup gated on the Clan Blood Dragons force; roster 01 (Standard force, 4 units) asserts the raw categories count (Special max fires 4>3, Core min fires 0<2), roster 02 (Blood Dragons force, same build) asserts both silent — the absent Special-max is the removal pin, the absent Core-min co-pins the added membership. Scenario is green."
     }
   ]
 }

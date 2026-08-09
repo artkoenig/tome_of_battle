@@ -770,3 +770,20 @@ Armour — korrekte Summe 152 = 140 + 4×3.
 | :--- | :--- | :--- |
 | 01 | 4 Bulls mit Light Armour, Punktelimit 151 | Das Budget feuert mit Ist 152: jede Unter-Anwendung (0-, 1-, 3-fach oder je Auswahl statt je Modell) bliebe unter dem Limit und stumm |
 | 02 | Derselbe Aufbau, Punktelimit 153 | Kein Feuern — die Klammer nach oben: eine 5-fache Anwendung (155) oder das Zählen aller Kinder statt nur der Modelle (158) feuerte fälschlich |
+
+## `remove-category-force-gate`
+
+Prüft `modifier type="remove" field="category"` (§8 der Formatdoku: alle
+kategorie-abhängige Zählung wertet die **effektiven** Kategorie-Links aus):
+die benannte Kategorie verlässt die effektive Mitgliedschaft, solange das
+Gatter hält. Beleg: Grave Guard (`92ee-2ebf-c6c0-71ff`, Vampire Counts, roh
+nur „Special") trägt eine `modifierGroup`, gegatet auf das ForceEntry „Clan
+Blood Dragons (VC-AB)", mit `set-primary` Core + `remove` Special + `add`
+Core. Beide Roster: costLimit 1000, 4× Grave Guard (je 10 Modelle +
+Handwaffe); die `.ros`-Snapshots führen bewusst in beiden die **rohe**
+Special-Kategorie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 4× Grave Guard im Kontingent „Standard (VC-AB)" | Rohe Kategorien zählen: die Special-Obergrenze feuert (4 > 3) und die Core-Pflicht feuert (0 < 2) |
+| 02 | Derselbe Aufbau im Kontingent „Clan Blood Dragons (VC-AB)" | Beide Grenzen still: das stumme Special-Max pinnt die Entfernung (sonst 4 > 3), die stumme Core-Pflicht die hinzugefügte Mitgliedschaft (sonst 0 < 2) |
