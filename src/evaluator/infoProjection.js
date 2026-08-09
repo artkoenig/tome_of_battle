@@ -25,12 +25,25 @@
  * Deklaration die eine Quelle und die Kopie kein zweiter Zustand.
  *
  * ── Was *nicht* enthalten ist ────────────────────────────────────────────────
- * Ein Element, das **selbst** versteckt ist, und alles, was an einem
- * **versteckten Knoten** haengt. „Versteckt" ist dabei die **effektive**
- * Sichtbarkeit: das Basis-`hidden` der Katalogdaten, ueberschrieben von einem
- * `hidden`-Modifikator am selben Traeger. Beide Wege kommen real vor — ein
- * Info-Verweis mit `hidden="true"` und einem bedingten `set hidden=false` darauf
- * ist in den Fixture-Katalogen belegt.
+ * Verstecktheit regelt, was ein Knoten einem **anderen** Slot beisteuert, nicht
+ * was sein **eigener** Datensatz traegt. Also:
+ *
+ * 1. Der eigene Datensatz eines Slots traegt **immer** dessen eigene, effektiv
+ *    sichtbare Traeger — auch wenn der Slot selbst versteckt ist. Der Bericht
+ *    materialisiert versteckte Slots und kennzeichnet sie mit `isHidden`
+ *    (ADR-0035); eine leere Projektion widerspraeche dieser Materialisierung, und
+ *    `docs/battlescribe-data-format.md` §8 nimmt einer versteckten Entitaet nur
+ *    die Anzeige und die Mindestpruefung, nicht ihre Profile. Belegt vom Szenario
+ *    `set-characteristic-force-gate`: die versteckte Einheit „Tomb stalker" traegt
+ *    ihr eigenes Profil mit den Basiswerten.
+ * 2. Ein effektiv versteckter Knoten steuert **nach oben nichts** bei — weder
+ *    seine eigenen Traeger noch irgendetwas aus seinem Teilbaum.
+ * 3. Ein Element, das **selbst** versteckt ist, bleibt ueberall draussen.
+ *
+ * „Versteckt" ist dabei die **effektive** Sichtbarkeit: das Basis-`hidden` der
+ * Katalogdaten, ueberschrieben von einem `hidden`-Modifikator am selben Traeger.
+ * Beide Wege kommen real vor — ein Info-Verweis mit `hidden="true"` und einem
+ * bedingten `set hidden=false` darauf ist in den Fixture-Katalogen belegt.
  */
 
 import { InfoElementKind } from './model.js';
@@ -140,18 +153,13 @@ const INFO_ENTRY_BUILDERS = Object.freeze({
 });
 
 /**
- * Traegt die sichtbaren Info-Elemente eines Knotens und — rekursiv — die seiner
- * **belegten** Unter-Auswahlen in die Ergebnisliste ein.
- *
- * Ein effektiv versteckter Knoten steuert nichts bei: was an ihm haengt, haengt an
- * einem versteckten Knoten. Ein Anker (Pflicht-Phantom, Gruppen-, Kategorie- oder
- * Angebots-Anker) ist keine belegte Unter-Auswahl und vererbt deshalb nichts nach
- * oben; seine eigenen Elemente traegt sein eigener Datensatz.
+ * Traegt die **eigenen** sichtbaren Info-Elemente eines Knotens in die
+ * Ergebnisliste ein — die seines eigenen Datensatzes, ohne die seiner
+ * Unter-Auswahlen. Ob der Knoten selbst versteckt ist, spielt hier keine Rolle;
+ * gefiltert wird allein je Traeger.
  */
-function collectInfoElements(node, context, entries) {
+function collectOwnInfoElements(node, context, entries) {
   const { effective } = context;
-  if (effective.isHidden(node)) return;
-
   for (const carrier of infoCarriersOf(node.def)) {
     if (effective.isHidden(node, carrier)) continue;
     const entryKind = entryKindOf(carrier);
@@ -159,10 +167,25 @@ function collectInfoElements(node, context, entries) {
     const entry = INFO_ENTRY_BUILDERS[entryKind]({ ...context, node, carrier });
     if (entry !== NO_ENTRY) entries.push(entry);
   }
+}
 
+/**
+ * Traegt die Info-Elemente ein, die ein Knoten aus seinen **belegten**
+ * Unter-Auswahlen erbt — rekursiv und in Baumreihenfolge.
+ *
+ * Ein effektiv versteckter Kindknoten steuert nichts bei: weder seine eigenen
+ * Traeger noch irgendetwas aus seinem Teilbaum, denn was an ihm haengt, haengt an
+ * einem versteckten Knoten. Ein Anker (Pflicht-Phantom, Gruppen-, Kategorie- oder
+ * Angebots-Anker) ist keine belegte Unter-Auswahl und vererbt deshalb nichts nach
+ * oben; seine eigenen Elemente traegt sein eigener Datensatz.
+ */
+function collectInheritedInfoElements(node, context, entries) {
+  const { effective } = context;
   for (const child of node.children) {
     if (child.isPhantom) continue;
-    collectInfoElements(child, context, entries);
+    if (effective.isHidden(child)) continue;
+    collectOwnInfoElements(child, context, entries);
+    collectInheritedInfoElements(child, context, entries);
   }
 }
 
@@ -184,6 +207,8 @@ function collectInfoElements(node, context, entries) {
  */
 export function infoElementsOf(node, effective, registry) {
   const entries = [];
-  collectInfoElements(node, { effective, registry }, entries);
+  const context = { effective, registry };
+  collectOwnInfoElements(node, context, entries);
+  collectInheritedInfoElements(node, context, entries);
   return entries;
 }
