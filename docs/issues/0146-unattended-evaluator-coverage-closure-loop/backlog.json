@@ -356,6 +356,39 @@
               "prompt": "Issue directory: issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on branch `claude/evaluator-katalog-rules-t6nim4--inc-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-katalog-rules-t6nim4--inc-1` and check it out; if the remote does not have it, create it from `claude/evaluator-katalog-rules-t6nim4--inc-1` and push it with `-u`.\nReview round 0 of increment 1. The increment's diff is its branch against the merge-base with `claude/evaluator-katalog-rules-t6nim4--inc-1`: judge `git diff claude/evaluator-katalog-rules-t6nim4--inc-1...HEAD` (three dots), whole, and nothing outside it.\nThis run works issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md one increment at a time, and increment 1 is yours:\n  Coverage inventory script with covered-cells diff and worklist — A static coverage inventory (`scripts/evaluator-coverage-inventory.js`) that parses the whole fixture corpus, extracts every occurring rule-construct combination cell, diffs it against a machine-readable record of covered cells, and writes the uncovered cells to `docs/testing/worklist.json` — so the two skills of the later increments have a mechanical source of truth to work from.\nWhat it has to satisfy:\n  - `scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.\n  - It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).\n  - The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.\n  - The uncovered cells are written to `docs/testing/worklist.json`.\n  - The script exits non-zero when the worklist is non-empty and zero when every occurring cell is covered.\n  - The cell extraction is covered by unit tests, and they pass.\nDeliberately not yours, and not a gap — a later increment takes each of these: Invert the constraint-explorer skill to data-first; Campaign driver skill evaluator-closure-loop.\nThe commands that count for this increment:\n  - `npx vitest run scripts/lib/evaluator-coverage-cells.test.js scripts/lib/evaluator-coverage-corpus.test.js`\n  - `npm run typecheck`\n  - `npx oxlint scripts/`\n  - `npm run depcruise`\nRead nothing out of issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json — not with the helper, not by hand.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 review:inc-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 review:inc-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `findings`\n  - `findingCount`\n  - `allDirect`\n  - `reason`\n  - `questions`\n  - `summary`\n"
             }
           ]
+        },
+        {
+          "label": "implement:inc-1.1",
+          "at": "2026-08-09T10:51:30.756Z",
+          "return": {
+            "deviations": [],
+            "commands": [
+              {
+                "command": "npx vitest run scripts/lib/evaluator-coverage-cells.test.js scripts/lib/evaluator-coverage-corpus.test.js",
+                "exit": 0,
+                "note": "2 files, 40 tests, all pass; nothing skipped. The previously red 'totals modifierGroup occurrences to 109' now passes as 121."
+              },
+              {
+                "command": "npm run typecheck",
+                "exit": 0,
+                "note": "tsc --noEmit over the JSDoc-typed production code."
+              },
+              {
+                "command": "npx oxlint scripts/",
+                "exit": 0,
+                "note": "no warnings or errors."
+              },
+              {
+                "command": "npm run depcruise",
+                "exit": 0,
+                "note": "dependency-graph rules pass."
+              }
+            ],
+            "blockers": [],
+            "questions": [],
+            "summary": "Corrected the single review finding: the corpus test's modifierGroup total is now 121 instead of 109, and the comment above the totals table names the correct arbiter grep (`grep -rhoE '<constraint[ />]'`), which also matches attribute-less elements. All four commands that count exit 0."
+          },
+          "prompt": "Issue directory: issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on branch `claude/evaluator-katalog-rules-t6nim4--inc-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-katalog-rules-t6nim4--inc-1` and check it out; if the remote does not have it, create it from `claude/evaluator-katalog-rules-t6nim4--inc-1` and push it with `-u`.\nThis is correction loop 1 of 2 for this increment, and it is a direct-fix round: nobody planned it and nobody wrote a test for it, so the findings are your whole brief. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 review:inc-1.0 --fields findings` — the findings you correct.\nThe commands that count for this increment:\n  - `npx vitest run scripts/lib/evaluator-coverage-cells.test.js scripts/lib/evaluator-coverage-corpus.test.js`\n  - `npm run typecheck`\n  - `npx oxlint scripts/`\n  - `npm run depcruise`\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 implement:inc-1.1 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-1 implement:inc-1.1 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `deviations`\n  - `commands`\n  - `blockers`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []

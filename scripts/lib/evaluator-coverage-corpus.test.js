@@ -47,16 +47,18 @@ describe('loadCorpus — static walk of both fixture sets', () => {
 
 // ── Case 22 ───────────────────────────────────────────────────────────────
 describe('extractCells over the real corpus — occurrence totals match a plain tag count', () => {
-  // These totals come from `grep -o '<constraint ' -r <both fixture dirs> | wc -l`
-  // and friends, run against the frozen fixtures during research. The
-  // fixtures are frozen, so a mismatch is a real extraction bug and the grep
-  // is the arbiter — re-run it before touching the extraction if this fails.
+  // These totals come from `grep -rhoE '<constraint[ />]' <both fixture dirs>
+  // | wc -l` and friends, run against the frozen fixtures during research. The
+  // character class matters: a trailing-space pattern misses attribute-less
+  // elements such as `<modifierGroup>`. The fixtures are frozen, so a mismatch
+  // is a real extraction bug and the grep is the arbiter — re-run it before
+  // touching the extraction if this fails.
   it.each([
     ['constraint', 5290],
     ['condition', 1739],
     ['conditionGroup', 261],
     ['modifier', 1762],
-    ['modifierGroup', 109],
+    ['modifierGroup', 121],
     ['repeat', 214],
   ])('totals %s occurrences to %i', (kind, expected) => {
     expect(totalOccurrencesByKind(inventory.cells, kind)).toBe(expected);
