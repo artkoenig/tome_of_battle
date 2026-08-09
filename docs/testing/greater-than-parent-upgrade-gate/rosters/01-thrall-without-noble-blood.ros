@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="gtpug-01" name="GTPUG 01 – Vampire Thrall OHNE Nehekhara's Noble Blood: Magic Level 1 bleibt verborgen, Mindestmass 0" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored greater-than-parent-upgrade-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Bloodlines + Clan Necrarch: erfuellt die force-weite Pflicht
+             4a0a-b107-e726-da32 (min 1) UND blendet die Necrarch-Gruppe
+             "Vampiric Powers" (fb5e-133e-b364-6b28 -> 8627-7a0f-231c-7572) ein,
+             in der "Nehekhara's Noble Blood" angeboten wird. In BEIDEN Rostern
+             identisch. -->
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-necrarch" name="Bloodline of Clan Necrarch" entryId="5017-296d-edef-4562" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Der Vampire Thrall traegt den entryLink "Magic Level 1"
+             (86d1-3bd6-6cb2-711d, Basis hidden="true", eigene Grenze
+             c195-d40a-1c54-f572 min 0). OHNE eine Noble-Blood-Selektion im
+             Eltern-Rahmen zaehlt die Bedingung
+             greaterThan 0 / selections / scope=parent / childId=32d0-a151-94a3-aa54
+             genau 0 -> 0 > 0 ist falsch -> beide gegateten Modifier bleiben aus:
+             der Slot behaelt hidden=true und das Mindestmass 0. -->
+        <selection id="sel-thrall" name="Vampire Thrall" entryId="e37b-c827-99ac-b706" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-handweapon" name="Handweapon" entryId="9dfd-134c-53c1-7181" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

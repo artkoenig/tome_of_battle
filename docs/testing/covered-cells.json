@@ -177,6 +177,13 @@
         "docs/testing/less-than-roster-category-count"
       ],
       "rationale": "GREEN: rosters 01/02 and 04/05 are single-cause twins — only the chosen character's Orc-category membership differs — so the effectiveMax flip of Extra Goblin Hero (186c-6345-5b25-5aa2) and the firing of that limit are the roster-scoped lessThan count itself; roster 03 separates the two members of the and-group."
+    },
+    {
+      "key": "condition|lessThan|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/condition-group-not"
+      ],
+      "rationale": "The not-group guarding the Lichemaster mandatory minima holds `condition type=lessThan value=2000 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=any`; rosters 03 (1500 pts, campaign selection present) against 04 (1500 pts, no campaign selection) and 05 (3000 pts, campaign selection present) vary the points limit and the sibling condition independently, so the lessThan member on the roster's cost limit is distinguished on its own."
     }
   ]
 }

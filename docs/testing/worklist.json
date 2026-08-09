@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 40,
-    "uncovered": 65
+    "covered": 41,
+    "uncovered": 64
   },
   "cells": [
     {
@@ -100,108 +100,6 @@
             "field": "selections",
             "scope": "parent",
             "childId": "b76c-6bad-4650-dbb0"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|lessThan|roster|limitValue|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "lessThan",
-        "scope": "roster",
-        "field": "limitValue",
-        "childId": "any"
-      },
-      "occurrences": 40,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 35
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "c16a-067c-7b18-a06d",
-            "name": "Extra Hero"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "595f-a4e4-5cbc-dab4",
-            "name": "Heinrich Kemmler (WD#309-UK)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "595f-a4e4-5cbc-dab4",
-            "name": "Heinrich Kemmler (WD#309-UK)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
-            "childId": "any"
           }
         }
       ]

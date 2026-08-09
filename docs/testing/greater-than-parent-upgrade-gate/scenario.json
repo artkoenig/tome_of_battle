@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "name": "greater-than-parent-upgrade-gate",
+  "description": "Eine condition type=greaterThan mit field=selections, scope=parent und einer Eintrags-Id in childId haelt genau dann, wenn die Zahl der Selektionen dieses Eintrags im Eltern-Rahmen der Bedingung ECHT groesser als value ist. Konkret: Im Vampire-Counts-Katalog traegt der Vampire Thrall (e37b-c827-99ac-b706) den entryLink 'Magic Level 1' (86d1-3bd6-6cb2-711d -> .gst-Upgrade 158f-d753-59e2-9ad2) mit Basis hidden=true und der eigenen Grenze c195-d40a-1c54-f572 (min 0, field=selections, scope=parent). Genau zwei Modifier haengen daran, beide gegatet durch dieselbe Bedingung greaterThan value=0 childId=32d0-a151-94a3-aa54 ('Nehekhara's Noble Blood'), keiner mit repeats: set hidden=false und set c195-d40a-1c54-f572=1. Zwei bis auf die Noble-Blood-Auswahl identische Roster pinnen beide Zweige: MIT Noble Blood unter dem Thrall zaehlt der Rahmen 1 (1 > 0 haelt) -> der Slot ist sichtbar (isHidden false) und sein Mindestmass ist 1; da 'Magic Level 1' nicht gewaehlt ist, feuert c195-d40a-1c54-f572 mit actual 0 / bound 1. OHNE Noble Blood zaehlt der Rahmen 0 (0 > 0 haelt nicht) -> Basiswerte: isHidden true, effectiveMin 0, und die Grenze feuert nicht (sie waere bei Ist 0 auch erfuellt, und das Mindestmass einer effektiv versteckten Entitaet wird ohnehin nicht validiert, Formatdoku 5.6/8, Issue 0088).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-thrall-without-noble-blood.ros",
+      "description": "Standard (VC-AB) mit Bloodlines (Clan Necrarch) und einem Vampire Thrall (Pflicht-Handweapon) OHNE Nehekhara's Noble Blood. Die greaterThan-0-Bedingung (scope=parent, childId=32d0-a151-94a3-aa54) zaehlt 0 und haelt nicht: beide gegateten Modifier bleiben aus, der Slot 'Magic Level 1' behaelt seine geschriebenen Basiswerte - hidden=true und Mindestmass 0. Die Grenze c195-d40a-1c54-f572 feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "c195-d40a-1c54-f572",
+          "105e-0c33-0099-b999",
+          "e8e0-d7f1-f9a4-a8c0",
+          "e2bd-1d63-464c-5b6a",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "86d1-3bd6-6cb2-711d",
+            "targetDefId": "158f-d753-59e2-9ad2",
+            "name": "Magic Level 1",
+            "current": 0,
+            "isHidden": true,
+            "effectiveMin": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-thrall-with-noble-blood.ros",
+      "description": "Identischer Aufbau, zusaetzlich MIT Nehekhara's Noble Blood (entryId 32d0-a151-94a3-aa54 via Link 75e7-b83e-a2b3-13af, Gruppe Vampiric Powers 8627-7a0f-231c-7572) unter dem Vampire Thrall - dem Eltern-Rahmen der Bedingung. Der Rahmen zaehlt 1, 1 > 0 haelt: der set-false-Modifier blendet 'Magic Level 1' ein (isHidden false) und der set-1-Modifier hebt dessen eigenes Mindestmass c195-d40a-1c54-f572 von 0 auf 1. 'Magic Level 1' ist nicht gewaehlt (Ist 0), der Slot ist nicht mehr versteckt - die Mindestgrenze wird also validiert und feuert mit actual 0 / bound 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "c195-d40a-1c54-f572", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "105e-0c33-0099-b999",
+          "e8e0-d7f1-f9a4-a8c0",
+          "e2bd-1d63-464c-5b6a",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "86d1-3bd6-6cb2-711d",
+            "targetDefId": "158f-d753-59e2-9ad2",
+            "name": "Magic Level 1",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": 1,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    }
+  ]
+}
