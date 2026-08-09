@@ -43,9 +43,21 @@ strings built inline per test (helper: `source(xml, file)` wraps
 total ever disagrees, since the fixtures are frozen) and against the committed
 `docs/testing/worklist.json` / `docs/testing/covered-cells.json` (drift guard:
 recompute and deep-equal the committed file, the same shape as
-`generate-schema-module.test.js`'s SSOT guard).
+`generate-schema-module.test.js`'s SSOT guard). It also carries the
+`loadCoverageRecords` failure-path tests: temp-directory cases (`mkdtempSync`,
+cleaned up in `afterEach`) that feed it a malformed or missing
+`covered-cells.json` and a malformed or scenario-less manifest sub-directory,
+asserting it reports failures instead of throwing. Those belong here rather
+than in a file of their own because they exercise the same module's
+file-system-facing surface as the drift guard, even though they read
+temp directories instead of the corpus.
+
+`evaluator-coverage-corpus.js` also exports `loadCoverageRecords`, a wrapper
+around `loadManifests` and the covered-cells loader that collects both their
+failures into one list instead of throwing on a malformed JSON file.
 
 Case → file mapping for a new construct or classification rule: synthetic,
 rule-level assertions go in `evaluator-coverage-cells.test.js`; real-corpus
-totals, landmark cells, and the `worklist.json`/`covered-cells.json` drift
-guard go in `evaluator-coverage-corpus.test.js`.
+totals, landmark cells, the `worklist.json`/`covered-cells.json` drift guard,
+and the `loadCoverageRecords` temp-directory failure-path cases go in
+`evaluator-coverage-corpus.test.js`.

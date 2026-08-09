@@ -1,5 +1,7 @@
-import { readFileSync } from 'node:fs';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 
 import {
   WHFB6_DEFINITIVE_DIR,
@@ -10,6 +12,7 @@ import {
   loadCorpus,
   loadManifests,
   computeWorklist,
+  loadCoverageRecords,
 } from './evaluator-coverage-corpus.js';
 import { extractCells } from './evaluator-coverage-cells.js';
 
@@ -127,5 +130,118 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
         (prev.occurrences === curr.occurrences && prev.key <= curr.key);
       expect(orderedCorrectly, `cell ${i} (${curr.key}) is out of order after ${prev.key}`).toBe(true);
     }
+  });
+});
+
+// ── Case 27 (round 2 correction, Finding 1 — repeat flags) ─────────────────
+describe('extractCells over the real corpus — repeat cell count once shared/includeChildSelections/includeChildForces separate cells', () => {
+  it('yields exactly 11 distinct repeat| cells (R7)', () => {
+    const repeatCells = inventory.cells.filter(c => c.key.startsWith('repeat|'));
+    expect(repeatCells).toHaveLength(11);
+  });
+});
+
+// ── Case 28 (round 2 correction, Finding 1) ─────────────────────────────────
+describe('extractCells over the real corpus — landmark flagged repeat cells (R8)', () => {
+  it('contains repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false with 16 occurrences', () => {
+    const cell = inventory.cells.find(
+      c => c.key === 'repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false',
+    );
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(16);
+  });
+
+  it('contains repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false with 12 occurrences', () => {
+    const cell = inventory.cells.find(
+      c => c.key === 'repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false',
+    );
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(12);
+  });
+});
+
+// ── Cases 29–34 (round 2 correction, Finding 2 — exit code for an unreadable
+// JSON record) ───────────────────────────────────────────────────────────
+// No acceptance criterion covers this; it is the script's own documented
+// contract that `main()` reports a broken record instead of crashing or
+// silently ignoring it. Driven entirely against temporary directories so no
+// committed file is ever corrupted by a test run.
+describe('loadCoverageRecords — reports a broken covered-cells.json or scenario.json instead of throwing', () => {
+  let workDir;
+  let testingDir;
+  let coveredCellsPath;
+
+  beforeEach(() => {
+    workDir = mkdtempSync(join(tmpdir(), 'coverage-records-'));
+    testingDir = join(workDir, 'testing');
+    coveredCellsPath = join(workDir, 'covered-cells.json');
+    mkdirSync(testingDir);
+  });
+
+  afterEach(() => {
+    rmSync(workDir, { recursive: true, force: true });
+  });
+
+  // ── Case 29 ──
+  it('reports a malformed covered-cells.json as one failure naming its path, without throwing, and falls back to the empty record (E1)', () => {
+    writeFileSync(coveredCellsPath, '{ not json');
+
+    const records = loadCoverageRecords({ testingDir, coveredCellsPath });
+
+    expect(records.failures).toHaveLength(1);
+    expect(records.failures[0].file).toBe(coveredCellsPath);
+    expect(records.coveredRecord).toEqual({ schemaVersion: 1, cells: [] });
+  });
+
+  // ── Case 30 ──
+  it('reports a malformed scenario.json as one failure, without throwing, and drops that scenario from manifests (E2)', () => {
+    const scenarioDir = join(testingDir, 'broken-scenario');
+    mkdirSync(scenarioDir);
+    writeFileSync(join(scenarioDir, 'scenario.json'), '{ not json');
+
+    const records = loadCoverageRecords({ testingDir, coveredCellsPath });
+
+    expect(records.failures).toHaveLength(1);
+    expect(records.manifests.some(m => m.dir === scenarioDir)).toBe(false);
+  });
+
+  // ── Case 31 ──
+  it('reports two failures when both covered-cells.json and a scenario.json are malformed at once (E3)', () => {
+    writeFileSync(coveredCellsPath, '{ not json');
+    const scenarioDir = join(testingDir, 'broken-scenario');
+    mkdirSync(scenarioDir);
+    writeFileSync(join(scenarioDir, 'scenario.json'), '{ not json');
+
+    const records = loadCoverageRecords({ testingDir, coveredCellsPath });
+
+    expect(records.failures).toHaveLength(2);
+  });
+
+  // ── Case 32 ──
+  it('treats a missing covered-cells.json as no failure, falling back to the empty record (E4)', () => {
+    const records = loadCoverageRecords({ testingDir, coveredCellsPath });
+
+    expect(records.failures).toEqual([]);
+    expect(records.coveredRecord).toEqual({ schemaVersion: 1, cells: [] });
+  });
+
+  // ── Case 33 ──
+  it('skips a manifest sub-directory with no scenario.json without a failure (E5)', () => {
+    const emptyDir = join(testingDir, 'no-scenario-here');
+    mkdirSync(emptyDir);
+    writeFileSync(join(emptyDir, 'README.md'), '# not a scenario');
+
+    const records = loadCoverageRecords({ testingDir, coveredCellsPath });
+
+    expect(records.failures).toEqual([]);
+  });
+
+  // ── Case 34 ──
+  it('reads the real fixture corpus manifests and covered-cells.json without any failure on the happy path (E6)', () => {
+    const records = loadCoverageRecords();
+
+    expect(records.failures).toEqual([]);
+    expect(records.manifests.length).toBeGreaterThan(0);
+    expect(records.coveredRecord.cells.length).toBeGreaterThan(0);
   });
 });

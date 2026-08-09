@@ -303,6 +303,93 @@ describe('extractCells — repeat attributes', () => {
     const withPercent = repeatCells.find(c => c.key.includes('roundUp=true'));
     expect(withPercent.key).toContain('pct=true');
   });
+
+  // ── Case 8c (round 2 correction, Finding 1 — repeat flags) ────────────────
+  it('separates cells by includeChildSelections=true vs. false (R1)', () => {
+    const xml = repeatXml(
+      '<repeat field="selections" scope="parent" childId="model" repeats="1" includeChildSelections="true"/>' +
+        '<repeat field="selections" scope="parent" childId="model" repeats="1" includeChildSelections="false"/>',
+    );
+
+    const { cells } = extractCells([source(xml, 'fixtures/case-8c.cat')]);
+    const repeatCells = cells.filter(c => c.key.startsWith('repeat|'));
+
+    expect(repeatCells).toHaveLength(2);
+    const trueCell = repeatCells.find(c => c.key.includes('ics=true'));
+    const falseCell = repeatCells.find(c => c.key.includes('ics=false'));
+    expect(trueCell).toBeDefined();
+    expect(falseCell).toBeDefined();
+    expect(trueCell.occurrences).toBe(1);
+    expect(falseCell.occurrences).toBe(1);
+  });
+
+  // ── Case 8d (round 2 correction, Finding 1) ────────────────────────────────
+  it('separates cells by includeChildForces=true vs. false (R2)', () => {
+    const xml = repeatXml(
+      '<repeat field="selections" scope="parent" childId="model" repeats="1" includeChildForces="true"/>' +
+        '<repeat field="selections" scope="parent" childId="model" repeats="1" includeChildForces="false"/>',
+    );
+
+    const { cells } = extractCells([source(xml, 'fixtures/case-8d.cat')]);
+    const repeatCells = cells.filter(c => c.key.startsWith('repeat|'));
+
+    expect(repeatCells).toHaveLength(2);
+    const trueCell = repeatCells.find(c => c.key.includes('icf=true'));
+    const falseCell = repeatCells.find(c => c.key.includes('icf=false'));
+    expect(trueCell).toBeDefined();
+    expect(falseCell).toBeDefined();
+    expect(trueCell.occurrences).toBe(1);
+    expect(falseCell.occurrences).toBe(1);
+  });
+
+  // ── Case 8e (round 2 correction, Finding 1) ────────────────────────────────
+  it('separates cells by shared=true vs. false (R3)', () => {
+    const xml = repeatXml(
+      '<repeat field="selections" scope="parent" childId="model" repeats="1" shared="true"/>' +
+        '<repeat field="selections" scope="parent" childId="model" repeats="1" shared="false"/>',
+    );
+
+    const { cells } = extractCells([source(xml, 'fixtures/case-8e.cat')]);
+    const repeatCells = cells.filter(c => c.key.startsWith('repeat|'));
+
+    expect(repeatCells).toHaveLength(2);
+    const trueCell = repeatCells.find(c => c.key.includes('s=true'));
+    const falseCell = repeatCells.find(c => c.key.includes('s=false'));
+    expect(trueCell).toBeDefined();
+    expect(falseCell).toBeDefined();
+    expect(trueCell.occurrences).toBe(1);
+    expect(falseCell.occurrences).toBe(1);
+  });
+
+  // ── Case 8f (round 2 correction, Finding 1) ────────────────────────────────
+  it('folds an omitted includeChildSelections attribute into the same cell as an explicit "false", merging the occurrence count (R4)', () => {
+    const xml = repeatXml(
+      '<repeat field="selections" scope="parent" childId="model" repeats="1"/>' +
+        '<repeat field="selections" scope="parent" childId="model" repeats="1" includeChildSelections="false"/>',
+    );
+
+    const { cells } = extractCells([source(xml, 'fixtures/case-8f.cat')]);
+    const repeatCells = cells.filter(c => c.key.startsWith('repeat|'));
+
+    expect(repeatCells).toHaveLength(1);
+    expect(repeatCells[0].key).toContain('ics=false');
+    expect(repeatCells[0].occurrences).toBe(2);
+  });
+
+  // ── Case 8g (round 2 correction, Finding 1) ────────────────────────────────
+  it('orders all three flags together as s=|ics=|icf=, right after repeats= and before roundUp=, and pins the full key (R5)', () => {
+    const xml = repeatXml(
+      '<repeat field="selections" scope="parent" childId="model" repeats="1" shared="true" includeChildSelections="true" includeChildForces="true"/>',
+    );
+
+    const { cells } = extractCells([source(xml, 'fixtures/case-8g.cat')]);
+    const repeatCells = cells.filter(c => c.key.startsWith('repeat|'));
+
+    expect(repeatCells).toHaveLength(1);
+    expect(repeatCells[0].key).toBe(
+      'repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false',
+    );
+  });
 });
 
 // ── Case 9 ────────────────────────────────────────────────────────────────
