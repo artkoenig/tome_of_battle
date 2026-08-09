@@ -620,3 +620,19 @@ nicht erreichbar ist.
 | 02 | Ogre-Kontingent mit einer Ogre-Bulls-Einheit | Positive Kontrolle: die Pflicht ist erfüllt — keine Verletzung |
 | 03 | Vampire-Counts-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Die eigentlich geprüfte Regel: die nur in Ogre Kingdoms deklarierte Pflicht darf hier **nicht** feuern |
 | 04 | Orcs-and-Goblins-Kontingent ohne Ogre Bulls, ohne jeden Bezug zum Ogre-Kingdoms-`entryLink` | Wie 03, an einem zweiten unabhängigen Armeebuch — schützt vor einem Fix, der zufällig nur für Vampire Counts wirkt |
+
+## `force-instance-gated-rename`
+
+Prüft die kanonische ForceEntry-Instanzprüfung (`condition type="instanceOf"
+scope="force" childId=<forceEntry-Id>`, §7.7 der Formatdoku): ein per solcher
+Bedingung gegateter `set name`-Modifier greift genau in dem Kontingent, das das
+benannte Sonderheer instanziiert, und in keinem anderen. Beleg: Grave Guard
+(Vampire Counts) trägt drei `set name`-Modifier (Einheit „Barrow Guardians",
+Modell „Barrow Guard", Profil-Info „Barrow Guard"), alle gegatet auf das
+ForceEntry „Army of the Lichemaster (WD#309-UK)" (`f37a-a93e-fa22-61a8`). Beide
+Roster sind bis auf das Kontingent identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Grave Guard (10 Modelle, Handweapon, Heavy Armour) im Kontingent „Army of the Lichemaster" | Die Bedingung hält: die Einheit heißt „Barrow Guardians", der Modell-Slot und das Profil-Vorkommen „Barrow Guard" |
+| 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: alle drei behalten den Basisnamen „Grave Guard" |

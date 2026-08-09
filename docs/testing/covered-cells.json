@@ -6,6 +6,11 @@
       "key": "condition|greaterThanOrEqualTo|parent|selectionCount|child=id",
       "evidence": ["waived"],
       "rationale": "greaterThanOrEqualTo is not one of the condition types the format defines (docs/battlescribe-data-format.md 13.1). The single occurrence in the corpus (src/__fixtures__/whfb6/Orcs and Goblins.cat, infoLink e564-9cf9-e4ef-e625 'Fast Cavalry') is catalogue data outside the schema, reported as an unsupported condition and evaluated fail-closed. There is no catalogue-derivable semantics for a scenario to pin, so no test can be authored for it."
+    },
+    {
+      "key": "condition|instanceOf|force|selectionCount|child=id",
+      "evidence": ["docs/testing/force-instance-gated-rename"],
+      "rationale": "Roster pair differing only in the force: the instanceOf(scope=force, childId=forceEntry f37a-a93e-fa22-61a8 'Army of the Lichemaster') gate on three set-name modifiers of Grave Guard (Vampire Counts) holds in roster 01 (capabilities assert the renamed unit/model/profile) and does not hold in roster 02 (base names asserted). Scenario is green."
     }
   ]
 }

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "name": "force-instance-gated-rename",
+  "description": "Kanonische forceEntry-Instanzpruefung (condition type=instanceOf, scope=force, forceEntry-Id in childId, Formatreferenz §7.7): ein so gegateter Namens-Modifikator greift GENAU DANN, wenn das umschliessende Kontingent eine Instanz jenes forceEntry ist. Zwei bis auf die Force identische Roster: im Kontingent 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8) wird die Einheit Grave Guard zu 'Barrow Guardians', ihr Modell-Slot und ihr Profil-infoLink zu 'Barrow Guard'; im Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668) haelt die Bedingung nicht und alle drei behalten den Katalognamen 'Grave Guard'. Alle Erwartungen sind expect.capabilities (effektive Namen); zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lichemaster-force-renames.ros",
+      "description": "Kontingent 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8) mit der Einheit Grave Guard (10 Modelle, Handweapon, Heavy Armour). Die instanceOf-Bedingung (scope=force, childId=f37a-...) haelt: die Einheit heisst 'Barrow Guardians', der Modell-Slot 'Barrow Guard', das Profil-Info-Vorkommen (infoLink f319-...) ebenfalls 'Barrow Guard'.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "92ee-2ebf-c6c0-71ff",
+            "name": "Barrow Guardians",
+            "infoElements": [
+              { "id": "f319-4efb-0f5c-6733", "kind": "profile", "name": "Barrow Guard" }
+            ]
+          },
+          { "defId": "4d29-67e8-1d93-a404", "name": "Barrow Guard" }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-standard-force-base-names.ros",
+      "description": "Bis auf die Force identisches Roster im Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668). Das Kontingent ist KEINE Instanz von f37a-...: kein Namens-Modifikator greift, Einheit, Modell-Slot und Profil-Info-Vorkommen behalten den Katalognamen 'Grave Guard'.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "92ee-2ebf-c6c0-71ff",
+            "name": "Grave Guard",
+            "infoElements": [
+              { "id": "f319-4efb-0f5c-6733", "kind": "profile", "name": "Grave Guard" }
+            ]
+          },
+          { "defId": "4d29-67e8-1d93-a404", "name": "Grave Guard" }
+        ]
+      }
+    }
+  ]
+}
