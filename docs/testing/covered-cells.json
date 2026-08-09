@@ -21,6 +21,11 @@
       "key": "modifier|set|constraintValue",
       "evidence": ["docs/testing/set-constraint-value-force-gate"],
       "rationale": "Roster pair differing only in the force: the Skeletons model slot (eaa1-c6a6-9aae-ae9a, Vampire Counts) carries max 40 (id 6679-1132-0a76-9ba3) and a set 30 modifier gated on the Army of Sylvania force; roster 01 asserts effectiveMax 30, roster 02 asserts the base effectiveMax 40. Scenario is green."
+    },
+    {
+      "key": "repeatList|n=1|on=modifier",
+      "evidence": ["docs/testing/dispel-scroll-repeat-group-max"],
+      "rationale": "The Arcane Items (VC) group max 1 (fa59-e6b8-9523-3510, Vampire Counts) carries an increment +1 whose single repeat counts Dispel Scroll copies; roster 01 with 2 scrolls asserts effectiveMax 3 (two applications), roster 02 without asserts the base effectiveMax 1. Scenario is green."
     }
   ]
 }

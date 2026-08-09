@@ -668,3 +668,19 @@ Kontingent identisch (10 Modelle + Handweapon).
 | :--- | :--- | :--- |
 | 01 | Skeletons (10 Modelle) im Kontingent „Army of Sylvania" | Die Bedingung hält: das effektive Maximum des Modellslots ist 30; mit 10 Modellen feuert keine Grenze |
 | 02 | Derselbe Aufbau im Kontingent „Standard (VC-AB)" | Die Bedingung hält nicht: das Basis-Maximum 40 steht; keine Grenze feuert |
+
+## `dispel-scroll-repeat-group-max`
+
+Prüft die `<repeats>`-Liste mit genau einem `<repeat>` an einem Modifikator
+(§7.7/§9.7 der Formatdoku, Dispel-Scroll-Muster): der Modifikator wird je
+gezähltem Treffer des Repeats einmal angewendet. Beleg: die Gruppe „Arcane
+Items (VC)" (`2f34-a145-911a-fa00`, Vampire Counts) trägt `max 1`
+(`fa59-e6b8-9523-3510`) und `increment +1` auf genau diese Grenze, wiederholt
+je gewähltem Dispel Scroll (`childId adb3-9853-d566-e432`) — der Scroll
+verbraucht so den einen Arcane-Slot nicht. Träger: Master Necromancer,
+Kontingent „Standard (VC-AB)" in beiden Rostern.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Master Necromancer mit ZWEI Dispel Scrolls | Zwei Anwendungen des +1: effektives Gruppen-Maximum 1+2=3; keine Grenze feuert (2×25 = 50 von 100 Punkten Budget) |
+| 02 | Derselbe Aufbau ohne Arcane Item | Kein Treffer: das Basis-Maximum 1 der Gruppe steht |

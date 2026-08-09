@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dsr-01" name="DSR 01 – Standard (VC-AB): 2 Dispel Scrolls heben das Arcane-Items-Maximum auf 3" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored dispel-scroll-repeat-group-max E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Master Necromancer (im Standard-Kontingent sichtbar) mit Pflicht-Handweapon,
+         Pflicht-Wizard-Level (Default: Wizard level 3) und ZWEI Dispel Scrolls in der
+         Gruppe "Arcane Items (VC)". Der repeat des increment-Modifiers zaehlt je
+         gewaehltem Dispel Scroll (childId = Link adb3-9853-d566-e432) eine Anwendung:
+         floor(2/1)*1 = 2 Anwendungen zu je +1 auf die max-1-Grenze fa59-e6b8-9523-3510
+         => effektives Maximum 1 + 2 = 3. Mit Ist 2 <= 3 feuert nichts. -->
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-necromancer" name="Master Necromancer" entryId="4ee2-ac3a-3cc6-11af" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-handweapon" name="Handweapon" entryId="c4a5-f61d-e7da-8d5c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wizard-level-3" name="Wizard level 3" entryId="c39e-3f58-0fbd-3a04" entryLinkId="" entryGroupId="22be-1719-8e8a-96dc" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-dispel-scrolls" name="Dispel Scroll (one use only)" entryId="b76c-6bad-4650-dbb0" entryLinkId="adb3-9853-d566-e432" entryGroupId="2f34-a145-911a-fa00" number="2" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
