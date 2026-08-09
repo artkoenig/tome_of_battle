@@ -151,7 +151,7 @@
       ],
       "status": "todo",
       "note": "Last and independent of the first: a different path through the engine, and the report contract the first increment moved (a slot's info projection) does not reach the anchor counts this one pins — the first increment's run confirmed that, its only remaining failures being exactly these two cases with the same signature they had at the merge base, `Slot undefined: current: expected +0 to deeply equal 1` at e2e.testcatalog.test.js:533. Left uncut: the three rosters are one rule stated three ways, and splitting them would build the same change twice.",
-      "branch": "",
+      "branch": "claude/evaluator-abschluss-kampagne-ipuqwm--set-primary-membership",
       "steps": [],
       "attempts": []
     }
