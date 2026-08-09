@@ -14,7 +14,7 @@ import {
   computeWorklist,
   loadCoverageRecords,
 } from './evaluator-coverage-corpus.js';
-import { extractCells } from './evaluator-coverage-cells.js';
+import { extractCells, coveredKeysFromManifests, diffCells, keysFromCoveredRecord } from './evaluator-coverage-cells.js';
 
 // Integration level: this file parses the real, frozen fixture corpus
 // (about 2s) instead of synthetic XML — the module-level extraction rules
@@ -63,6 +63,12 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
     ['modifier', 1762],
     ['modifierGroup', 121],
     ['repeat', 214],
+    // (C2, round 3 correction) repeatList reads 213 under the corrected
+    // character-class grep (`<repeats[ />]`); a trailing-space pattern misses
+    // the attribute-less `<repeats>` tag the same way it misses
+    // `<modifierGroup>`. totalOccurrencesByKind keys off the cell-key prefix,
+    // so this counts every `repeatList|...` cell, not the `<repeat>` tag.
+    ['repeatList', 213],
   ])('totals %s occurrences to %i', (kind, expected) => {
     expect(totalOccurrencesByKind(inventory.cells, kind)).toBe(expected);
   });
@@ -104,6 +110,11 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     const committed = JSON.parse(readFileSync(WORKLIST_PATH, 'utf-8'));
 
     expect(recomputed).toEqual(committed);
+    // (B3, round 3 correction) pins the exact totals once per-fixture-set
+    // evidence resolution is in place: the force/roster swap of the
+    // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
+    // though the specific covered/uncovered cell each resolves to changes.
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 16, uncovered: 89 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -130,6 +141,70 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
         (prev.occurrences === curr.occurrences && prev.key <= curr.key);
       expect(orderedCorrectly, `cell ${i} (${curr.key}) is out of order after ${prev.key}`).toBe(true);
     }
+  });
+});
+
+// ── Cases B1/B2 (round 3 correction — per-fixture-set evidence resolution) ─
+// The real corpus's landmark case of a duplicated constraint id:
+// 1077-7379-f142-f382 occurs once as scope "force" in the definitive .gst
+// (exercised by three real scenarios' expect.firing[].limitId) and once as
+// scope "roster" in the other fixture set's .gst (exercised by nothing).
+// Evidence for the id must land on the cell the firing scenarios' dataset
+// actually names, not on whichever of the two the flat id-keyed index used
+// to remember.
+describe('worklist — the duplicated-id landmark resolves to the dataset-correct cell', () => {
+  it('does not list the definitive set\'s force-scope cell of 1077-7379-f142-f382 as uncovered (B1)', () => {
+    const manifests = loadManifests(TESTING_DIR);
+    const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
+    const recomputed = computeWorklist({ cells: inventory.cells, index: inventory.index, manifests, coveredRecord });
+
+    const key = 'constraint|min|selectionCount|force|s=true|ics=true|icf=true|pct=false';
+    expect(recomputed.cells.some(c => c.key === key)).toBe(false);
+  });
+
+  it('lists the other set\'s roster-scope cell of the same id as uncovered, with 1 occurrence in that .gst alone (B2)', () => {
+    const manifests = loadManifests(TESTING_DIR);
+    const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
+    const recomputed = computeWorklist({ cells: inventory.cells, index: inventory.index, manifests, coveredRecord });
+
+    const key = 'constraint|min|selectionCount|roster|s=true|ics=true|icf=true|pct=false';
+    const cell = recomputed.cells.find(c => c.key === key);
+
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(1);
+    expect(cell.files).toEqual({ 'src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1 });
+  });
+});
+
+// ── Case B4 (round 3 correction) ────────────────────────────────────────────
+describe('coveredKeysFromManifests / diffCells over the real corpus — covered and uncovered partition every cell exactly once', () => {
+  it('sums covered and uncovered to the full inventory size, with no key in both (B4)', () => {
+    const manifests = loadManifests(TESTING_DIR);
+    const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
+    const { matched } = coveredKeysFromManifests(manifests, inventory.index);
+    const coveredKeys = [...new Set([...matched.map(m => m.key), ...keysFromCoveredRecord(coveredRecord)])];
+
+    const { covered, uncovered } = diffCells(inventory.cells, coveredKeys);
+
+    expect(covered.length + uncovered.length).toBe(inventory.cells.length);
+    const uncoveredKeySet = new Set(uncovered.map(c => c.key));
+    for (const cell of covered) {
+      expect(uncoveredKeySet.has(cell.key)).toBe(false);
+    }
+  });
+});
+
+// ── Case B5 (round 3 correction) ────────────────────────────────────────────
+describe('coveredKeysFromManifests over the real corpus and manifests — resolution failures', () => {
+  it('reports zero outside-dataset entries and exactly the three known unknown-id ids (B5)', () => {
+    const manifests = loadManifests(TESTING_DIR);
+    const { unmatched } = coveredKeysFromManifests(manifests, inventory.index);
+
+    const outsideDataset = unmatched.filter(u => u.reason === 'outside-dataset');
+    const unknownIds = new Set(unmatched.filter(u => u.reason === 'unknown-id').map(u => u.id));
+
+    expect(outsideDataset).toEqual([]);
+    expect(unknownIds).toEqual(new Set(['02cd-cabf-7e25-2b09', 'd96c-c95f-8224-7c87', 'budget::ecfa-8486-4f6c-c249']));
   });
 });
 

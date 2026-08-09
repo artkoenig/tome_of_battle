@@ -38,23 +38,45 @@ per-construct classification rules against tiny synthetic `<catalogue>` XML
 strings built inline per test (helper: `source(xml, file)` wraps
 `new DOMParser().parseFromString(...)` with a fake file path).
 `evaluator-coverage-corpus.test.js` parses the real fixture corpus once in a
-`beforeAll` and checks it against plain-tag-count totals (`grep -o '<constraint '
--r <fixture dirs> | wc -l`, etc. — re-run the grep, not the extraction, if a
-total ever disagrees, since the fixtures are frozen) and against the committed
-`docs/testing/worklist.json` / `docs/testing/covered-cells.json` (drift guard:
-recompute and deep-equal the committed file, the same shape as
-`generate-schema-module.test.js`'s SSOT guard). It also carries the
-`loadCoverageRecords` failure-path tests: temp-directory cases (`mkdtempSync`,
-cleaned up in `afterEach`) that feed it a malformed or missing
-`covered-cells.json` and a malformed or scenario-less manifest sub-directory,
-asserting it reports failures instead of throwing. Those belong here rather
-than in a file of their own because they exercise the same module's
-file-system-facing surface as the drift guard, even though they read
-temp directories instead of the corpus.
+`beforeAll` and checks it against plain-tag-count totals — re-run the grep, not
+the extraction, if a total ever disagrees, since the fixtures are frozen:
+
+```
+grep -rhoE '<modifierGroup[ />]' src/evaluator/__fixtures__/whfb6-definitive src/__fixtures__/whfb6 | wc -l
+```
+
+The character class matters: a trailing-space pattern (`grep -o '<constraint '
+-r <fixture dirs> | wc -l`) undercounts attribute-less elements — measured on
+the frozen corpus, `modifierGroup` reads 109 instead of 121 with the
+trailing-space form, `repeats` reads 0 instead of 213. Use the `[ />]`
+character-class form above (substituting the tag name) for every kind, the
+same form `evaluator-coverage-corpus.test.js` itself uses.
+
+It also checks the corpus against the committed `docs/testing/worklist.json` /
+`docs/testing/covered-cells.json` (drift guard: recompute and deep-equal the
+committed file, the same shape as `generate-schema-module.test.js`'s SSOT
+guard). It also carries the `loadCoverageRecords` failure-path tests:
+temp-directory cases (`mkdtempSync`, cleaned up in `afterEach`) that feed it a
+malformed or missing `covered-cells.json` and a malformed or scenario-less
+manifest sub-directory, asserting it reports failures instead of throwing.
+Those belong here rather than in a file of their own because they exercise the
+same module's file-system-facing surface as the drift guard, even though they
+read temp directories instead of the corpus.
 
 `evaluator-coverage-corpus.js` also exports `loadCoverageRecords`, a wrapper
 around `loadManifests` and the covered-cells loader that collects both their
 failures into one list instead of throwing on a malformed JSON file.
+
+`extractCells`'s `index` is file-keyed (`Map<file, Map<constraintId,
+cellKey>>`), not a flat `constraintId -> cellKey` map: the same constraint id
+can occur in two files with different attributes (e.g. one fixture set's
+`.gst` vs. the other's, at different `scope`s), and the two occurrences must
+stay distinguishable. `coveredKeysFromManifests` resolves each roster's
+evidence against `roster.dataset ?? manifest.dataset` (the
+`{ gameSystem, catalogues }` shape `docs/testing/*/scenario.json` already
+carries) — it looks the id up only in the files that dataset names, never
+across the whole corpus, so a scenario running against one fixture set's file
+can never wrongly credit the other set's cell of the same id.
 
 Case → file mapping for a new construct or classification rule: synthetic,
 rule-level assertions go in `evaluator-coverage-cells.test.js`; real-corpus

@@ -730,6 +730,151 @@
             "questions": []
           },
           "prompt": "Issue directory: issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on its own branch: `claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4`, off `claude/evaluator-katalog-rules-t6nim4--inc-1`.\nBefore anything else, on `claude/evaluator-katalog-rules-t6nim4--inc-1`: record the name with the backlog helper's `branch` subcommand, as `branch issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4`, commit that state change and push `claude/evaluator-katalog-rules-t6nim4--inc-1`. Then create the branch with `git checkout -b claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4`, push it with `-u`, and work on it from there.\nThis run works issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md one increment at a time, and increment 2 is yours:\n  Coverage inventory with per-fixture-set evidence resolution — The static coverage inventory delivered whole and accepted: it parses the fixture corpus, extracts every occurring rule-construct cell, diffs against the machine-readable covered-cells record, and writes the truly uncovered cells to `docs/testing/worklist.json` — closing the two findings that blocked inc-1 (wrong-cell evidence crediting for constraint ids duplicated across fixture sets, and an undercounting arbiter grep in the suite doc).\nWhat it has to satisfy:\n  - `scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.\n  - It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes including the same three query flags alongside `repeats`, `roundUp` and `percentValue`; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).\n  - The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.\n  - Scenario-derived coverage evidence is credited to the cell of the constraint the scenario actually exercises: a constraint id that occurs in both fixture sets with different attributes (the corpus holds two, e.g. `1077-7379-f142-f382` — scope `force` in the definitive `.gst`, scope `roster` in the other) never marks the other set's cell covered.\n  - The uncovered cells are written to `docs/testing/worklist.json`: every cell no scenario or record covers is listed, and no covered cell is.\n  - The script exits zero when every occurring cell is covered, non-zero when the worklist is non-empty, and with a distinct exit code for operational failures (missing corpus directory, XML parse error, unreadable covered-record or manifest JSON), so the campaign can tell open work from a broken run.\n  - The cell extraction and the coverage diff are covered by unit tests, and they pass.\n  - Every corpus-total re-derivation command named in accompanying documentation reproduces the pinned totals, counting attribute-less elements too (121 `modifierGroup` occurrences, not 109).\nDeliberately not yours, and not a gap — a later increment takes each of these: Invert the constraint-explorer skill to data-first; Campaign driver skill evaluator-closure-loop.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json`, before you research.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 research:inc-4.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 research:inc-4.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:inc-4.0",
+          "at": "2026-08-09T11:45:07.645Z",
+          "return": {
+            "summary": "Wrote the 11 A-cases (per-fixture-set evidence resolution, unit level) and the 5 B-cases plus the repeatList C-case (integration level) the researcher's test plan named, replacing the flat-index Case 17 as instructed; ran both files single-file and confirmed 14 genuine failures (11 in evaluator-coverage-cells.test.js, 3 in evaluator-coverage-corpus.test.js) with 53 pre-existing cases staying green, and corrected the suite doc's arbiter grep plus its case-to-file mapping.",
+            "cases": [
+              {
+                "case": "A1 — manifest dataset names only file A: matched holds exactly one entry with the ...|force|... key, none with ...|roster|..., pinned as its own scenario",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > credits evidence to the file-A cell when the manifest dataset names only file A, not to the file-B cell of the same id",
+                "demands": "coveredKeysFromManifests resolves a manifest-level `dataset: { gameSystem: fileA }` to the constraint's file-A cell key only; a control query with `dataset: fileB` in the same test must resolve to the file-B key, so a dataset-blind implementation cannot pass both.",
+                "got": "AssertionError: expected [\"constraint|min|selectionCount|roster|s=false|ics=false|icf=false|pct=false\"] to deeply equal [\"constraint|min|selectionCount|force|s=false|ics=false|icf=false|pct=false\"] — the current flat id-keyed index always resolves to the roster-scope cell regardless of dataset."
+              },
+              {
+                "case": "A2 — mirror of A1 with the file-B dataset: expect the ...|roster|... key and no force key",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > credits evidence to the file-B cell when the manifest dataset names only file B, not to the file-A cell of the same id",
+                "demands": "Same shape as A1 mirrored: dataset=fileB resolves to the roster key, and a control dataset=fileA query in the same test resolves to the force key.",
+                "got": "AssertionError on the control assertion: expected 'constraint|min|selectionCount|roster|...' to be 'constraint|min|selectionCount|force|...' — the fileA-dataset query also returns the roster key, proving dataset is not consulted."
+              },
+              {
+                "case": "A3 — roster-level dataset overrides the manifest-level one: manifest dataset=A, roster dataset=B, expect only the set-B key",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > lets a roster-level dataset override the manifest-level one rather than merge with it",
+                "demands": "A roster.dataset overrides manifest.dataset for that roster's own resolution; checked in both override directions in one test.",
+                "got": "AssertionError: expected [\"constraint|min|selectionCount|roster|...\"] to deeply equal [\"constraint|min|selectionCount|force|...\"] on the reverse-override assertion — override has no effect today since dataset is never read."
+              },
+              {
+                "case": "A4 — a roster with no dataset of its own falls back to the manifest's",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > falls back to the manifest-level dataset for a roster carrying none of its own",
+                "demands": "A roster without its own dataset resolves the id against manifest.dataset (fileA), yielding the force key.",
+                "got": "AssertionError: expected [\"constraint|min|selectionCount|roster|...\"] to deeply equal [\"constraint|min|selectionCount|force|...\"]."
+              },
+              {
+                "case": "A5 — a dataset with catalogues only and no gameSystem still resolves",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > resolves a dataset that carries catalogues only, with no gameSystem",
+                "demands": "`dataset: { catalogues: [fileA] }` (no gameSystem key) resolves the id against fileA, yielding the force key.",
+                "got": "AssertionError: expected [\"constraint|min|selectionCount|roster|...\"] to deeply equal [\"constraint|min|selectionCount|force|...\"]."
+              },
+              {
+                "case": "A6 — an id occurring in two files of the same roster dataset with different attributes yields both keys in matched (documented ambiguity, not present in the real corpus)",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > yields both cell keys when the same id occurs in two files that are both part of the roster dataset",
+                "demands": "A dataset naming both fileA and fileB (via gameSystem + catalogues) yields matched entries for both the force and the roster cell key.",
+                "got": "AssertionError: expected [\"constraint|min|selectionCount|roster|...\"] to deeply equal [\"constraint|min|selectionCount|force|...\", \"constraint|min|selectionCount|roster|...\"] — only one key is ever returned today."
+              },
+              {
+                "case": "A7 — an id naming no constraint anywhere: matched empty, unmatched holds one entry with id, evidence and reason: 'unknown-id'; nothing throws",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > reports an id naming no constraint anywhere as unmatched with reason unknown-id, without throwing",
+                "demands": "An unresolvable id ('no-such-id') lands in unmatched with a `reason: 'unknown-id'` field.",
+                "got": "AssertionError: expected [{ id: 'no-such-id', evidence: '...' }] to deeply equal ArrayContaining[ObjectContaining{ id, evidence, reason: 'unknown-id' }] — the unmatched entry today carries no `reason` field at all."
+              },
+              {
+                "case": "A8 — an id naming a corpus constraint that no file of the roster's dataset holds: matched empty, unmatched entry with reason: 'outside-dataset'",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > reports an id naming a corpus constraint outside the dataset as unmatched with reason outside-dataset",
+                "demands": "An id that is a real constraint in file B (onlyBId) but is requested under a dataset naming only file A lands in unmatched with `reason: 'outside-dataset'`; the same id under a dataset naming file B resolves normally (control, in the same test) — pinning that the test cannot pass by treating every id as outside-dataset.",
+                "got": "AssertionError: expected [{ evidence, id: 'only-b8-2222-3333-4444', key: 'constraint|max|selectionCount|parent|...' }] to deeply equal [] — the id resolves via the flat index regardless of which dataset is asked, so it is never reported as outside-dataset."
+              },
+              {
+                "case": "A9 — a manifest with no dataset and rosters with none: every id lands in unmatched, nothing throws",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > lands every id in unmatched, without throwing, when neither the manifest nor its rosters carry a dataset",
+                "demands": "With no dataset anywhere on the manifest or its roster, an id that does exist in the corpus (constraintId) still lands in unmatched rather than being resolved via the flat index.",
+                "got": "AssertionError: expected [{ evidence, id: 'dup1-2345-6789-abcd', key: 'constraint|min|selectionCount|roster|...' }] to deeply equal [] — the id resolves anyway, since dataset absence is not checked."
+              },
+              {
+                "case": "A10 — expect.absent[] resolves by the same per-roster rule, in all three accepted forms — plain string, {limitId}, {id}",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > resolves expect.absent[] by the same per-roster rule, in its plain-string, {limitId} and {id} forms",
+                "demands": "Three manifests, each naming dataset=fileA and using one of the three accepted absent[] forms, all resolve to the force key.",
+                "got": "AssertionError: expected 'constraint|min|selectionCount|roster|...' to be 'constraint|min|selectionCount|force|...' — none of the three forms are resolved against the dataset today."
+              },
+              {
+                "case": "A11 — extractCells returns the file-keyed index: index.get(file).get(id) exists per source and differs between the two sources",
+                "file": "scripts/lib/evaluator-coverage-cells.test.js",
+                "testName": "coveredKeysFromManifests — per-fixture-set evidence resolution > extractCells indexes constraint ids per file, so the same id maps to a different cell key per source",
+                "demands": "`index` from `extractCells` is `Map<file, Map<constraintId, cellKey>>`; `index.get(fileA).get(id)` and `index.get(fileB).get(id)` both exist and differ.",
+                "got": "TypeError: Cannot read properties of undefined (reading 'get') — `index.get(fileA)` is undefined today, confirming `index` is not file-keyed yet."
+              },
+              {
+                "case": "B1 — constraint|min|selectionCount|force|s=true|ics=true|icf=true|pct=false is covered (three definitive-set scenarios) and does not appear in the recomputed worklist",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "worklist — the duplicated-id landmark resolves to the dataset-correct cell > does not list the definitive set's force-scope cell of 1077-7379-f142-f382 as uncovered (B1)",
+                "demands": "Over the real corpus and manifests, computeWorklist's recomputed cells (the uncovered list) does not contain the force-scope cell key of 1077-7379-f142-f382.",
+                "got": "AssertionError: expected true to be false — the force cell is currently in the recomputed uncovered list, i.e. wrongly treated as uncovered today."
+              },
+              {
+                "case": "B2 — the whfb6-set's roster-scope cell of the same id does appear in the recomputed worklist, with occurrences: 1 and files exactly the one whfb6 .gst file",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "worklist — the duplicated-id landmark resolves to the dataset-correct cell > lists the other set's roster-scope cell of the same id as uncovered, with 1 occurrence in that .gst alone (B2)",
+                "demands": "The roster-scope cell of 1077-7379-f142-f382 is present in the recomputed uncovered cells with occurrences 1 and files == { 'src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1 }.",
+                "got": "AssertionError: expected undefined to be defined — the roster cell is absent from the recomputed uncovered list today (it is wrongly credited as covered by the flat-index bug)."
+              },
+              {
+                "case": "B3 — the existing drift guard stays and must be green after regeneration; extend it to assert totals is exactly { cells: 105, covered: 16, uncovered: 89 }",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > deep-equals the worklist recomputed from the corpus, the manifests, and covered-cells.json",
+                "demands": "The existing deep-equal drift guard keeps passing, extended with an explicit totals assertion { cells: 105, covered: 16, uncovered: 89 } — the force/roster swap of B1/B2 is a wash on the totals.",
+                "got": "Currently green (exit 0 for this test): the committed worklist.json already reflects today's pre-fix buggy resolution, so the recomputed-vs-committed deep-equal and the totals assertion both hold now. This assertion is expected to turn red once the code fix lands and before docs/testing/worklist.json is regenerated (recomputed cells will then differ from the still-old committed file), and green again after the implementer regenerates and commits the new worklist.json — matching the researcher's plan note that B3 stays red only in that intermediate window, not before any code change."
+              },
+              {
+                "case": "B4 — over the real corpus, no cell key appears both in the covered set and in the worklist, and covered.length + uncovered.length === cells.length",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "coveredKeysFromManifests / diffCells over the real corpus — covered and uncovered partition every cell exactly once > sums covered and uncovered to the full inventory size, with no key in both (B4)",
+                "demands": "diffCells partitions the full real-corpus inventory into disjoint covered/uncovered sets whose sizes sum to the inventory size, regardless of which specific keys resolve where.",
+                "got": "Currently green: this is a structural partition invariant of diffCells that holds both before and after the per-fixture-set evidence fix; it guards against a future duplicate-key regression rather than pinning the fix itself."
+              },
+              {
+                "case": "B5 — coveredKeysFromManifests reports zero outside-dataset entries and exactly the three distinct unknown-id ids 02cd-cabf-7e25-2b09, d96c-c95f-8224-7c87 and budget::ecfa-8486-4f6c-c249",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "coveredKeysFromManifests over the real corpus and manifests — resolution failures > reports zero outside-dataset entries and exactly the three known unknown-id ids (B5)",
+                "demands": "Over the real corpus and manifests, unmatched entries split by reason: zero 'outside-dataset', and unknown-id ids exactly the pinned set of three.",
+                "got": "AssertionError: expected Set{} to deeply equal Set{ '02cd-cabf-7e25-2b09', 'd96c-c95f-8224-7c87', 'budget::ecfa-8486-4f6c-c249' } — no unmatched entry carries a `reason` field today, so the unknown-id set is empty."
+              },
+              {
+                "case": "C1 — keep the existing six pinned totals unchanged: constraint 5290, condition 1739, conditionGroup 261, modifier 1762, modifierGroup 121, repeat 214",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — occurrence totals match a plain tag count > totals %s occurrences to %i (unchanged rows)",
+                "demands": "The six pre-existing pinned totals stay as committed.",
+                "got": "Unchanged, already green — no edit was needed beyond adding the new repeatList row alongside them (C2)."
+              },
+              {
+                "case": "C2 — add repeatList to the pinned table at 213 (entry ['repeatList', 213], tag <repeats>)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — occurrence totals match a plain tag count > totals repeatList occurrences to 213",
+                "demands": "totalOccurrencesByKind(inventory.cells, 'repeatList') === 213 over the real corpus.",
+                "got": "Currently green: the extraction code already counts repeatList cells correctly (213); only the suite doc's grep command undercounted attribute-less tags. Verified the doc's corrected command reproduces the pinned totals directly: `grep -rhoE '<modifierGroup[ />]' <both fixture dirs> | wc -l` -> 121, `grep -rhoE '<repeats[ />]' <both fixture dirs> | wc -l` -> 213, `grep -rhoE '<constraint[ />]' <both fixture dirs> | wc -l` -> 5290."
+              },
+              {
+                "case": "Suite doc correction — replace the undercounting arbiter grep (lines 41-42) with the character-class form, name the concrete undercount, and make the doc name the command verbatim; extend the case-to-file mapping with the file-keyed index and the roster.dataset ?? manifest.dataset resolution rule",
+                "file": "scripts/lib/CLAUDE.md",
+                "testName": "",
+                "demands": "Prose-only correction; not a test.",
+                "got": "Not a test case — corrected scripts/lib/CLAUDE.md directly: replaced the trailing-space grep with the `grep -rhoE '<TAG[ />]' <both fixture dirs> | wc -l` form (named verbatim, matching evaluator-coverage-corpus.test.js:53's own comment), stated the concrete undercount (modifierGroup 109 vs. 121, repeats 0 vs. 213), and added the two structural facts (file-keyed index, roster.dataset ?? manifest.dataset resolution) to the module's doc section."
+              }
+            ],
+            "openQuestions": [],
+            "questions": []
+          },
+          "prompt": "Issue directory: issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop\nThis increment is worked on branch `claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-katalog-rules-t6nim4--inc-1--inc-4` and check it out; if the remote does not have it, create it from `claude/evaluator-katalog-rules-t6nim4--inc-1` and push it with `-u`.\nThis run works issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/issue.md one increment at a time, and increment 2 is yours:\n  Coverage inventory with per-fixture-set evidence resolution — The static coverage inventory delivered whole and accepted: it parses the fixture corpus, extracts every occurring rule-construct cell, diffs against the machine-readable covered-cells record, and writes the truly uncovered cells to `docs/testing/worklist.json` — closing the two findings that blocked inc-1 (wrong-cell evidence crediting for constraint ids duplicated across fixture sets, and an undercounting arbiter grep in the suite doc).\nWhat it has to satisfy:\n  - `scripts/evaluator-coverage-inventory.js` exists and parses every `.cat`/`.gst` file of both fixture sets (`src/evaluator/__fixtures__/whfb6-definitive/` and `src/__fixtures__/whfb6/`) statically, without rosters and without running the evaluator.\n  - It records every occurring combination cell with occurrence count and file locations along these axes: constraint field-class x scope x flags (`shared`, `includeChildSelections`, `includeChildForces`, `percentValue`); condition type x scope x field-class; repeat attributes including the same three query flags alongside `repeats`, `roundUp` and `percentValue`; modifier type x target-field-class; and the nesting constructs (`conditionGroup` types including `not`, `modifierGroups`, nested `repeats`).\n  - The record of covered cells is machine-readable and the script diffs the inventory against it automatically; no human or agent has to read `docs/testing/constraint-matrix.md` inside the loop.\n  - Scenario-derived coverage evidence is credited to the cell of the constraint the scenario actually exercises: a constraint id that occurs in both fixture sets with different attributes (the corpus holds two, e.g. `1077-7379-f142-f382` — scope `force` in the definitive `.gst`, scope `roster` in the other) never marks the other set's cell covered.\n  - The uncovered cells are written to `docs/testing/worklist.json`: every cell no scenario or record covers is listed, and no covered cell is.\n  - The script exits zero when every occurring cell is covered, non-zero when the worklist is non-empty, and with a distinct exit code for operational failures (missing corpus directory, XML parse error, unreadable covered-record or manifest JSON), so the campaign can tell open work from a broken run.\n  - The cell extraction and the coverage diff are covered by unit tests, and they pass.\n  - Every corpus-total re-derivation command named in accompanying documentation reproduces the pinned totals, counting attribute-less elements too (121 `modifierGroup` occurrences, not 109).\nDeliberately not yours, and not a gap — a later increment takes each of these: Invert the constraint-explorer skill to data-first; Campaign driver skill evaluator-closure-loop.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 research:inc-4.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 tests:inc-4.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record issueDir=docs/issues/0146-unattended-evaluator-coverage-closure-loop/backlog.json inc-4 tests:inc-4.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []

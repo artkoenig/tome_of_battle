@@ -681,67 +681,173 @@ describe('extractCells — edges', () => {
   });
 });
 
-// ── Case 17 ───────────────────────────────────────────────────────────────
-describe('coveredKeysFromManifests', () => {
-  const constraintId = 'lim1-2345-6789-abcd';
-  const xml = `<?xml version="1.0"?>
-<catalogue id="cat-17" name="Case 17">
+// ── Case 17 (round 3 correction — per-fixture-set evidence resolution) ─────
+// Replaces the flat-index Case 17 of round 1/2: a constraint id duplicated
+// across two fixture-set files, with different attributes on each occurrence
+// — the shape of the real corpus's 1077-7379-f142-f382 (scope "force" in the
+// definitive .gst, scope "roster" in the other). Evidence must resolve to the
+// cell of the file the roster's dataset actually names, never to whichever
+// file the flat id-keyed index happened to remember last.
+describe('coveredKeysFromManifests — per-fixture-set evidence resolution', () => {
+  const constraintId = 'dup1-2345-6789-abcd';
+  const onlyBId = 'only-b8-2222-3333-4444';
+  const fileA = 'fixtures/set-a/gs.gst';
+  const fileB = 'fixtures/set-b/gs.gst';
+  const forceKey = 'constraint|min|selectionCount|force|s=false|ics=false|icf=false|pct=false';
+  const rosterKey = 'constraint|min|selectionCount|roster|s=false|ics=false|icf=false|pct=false';
+  const onlyBKey = 'constraint|max|selectionCount|parent|s=false|ics=false|icf=false|pct=false';
+
+  const xmlA = `<?xml version="1.0"?>
+<catalogue id="cat-17a" name="Case 17 set A">
   <selectionEntries>
     <selectionEntry id="se-1" name="Unit">
       <constraints>
-        <constraint id="${constraintId}" type="max" value="1" field="selections" scope="parent"/>
+        <constraint id="${constraintId}" type="min" value="1" field="selections" scope="force"/>
+      </constraints>
+    </selectionEntry>
+  </selectionEntries>
+</catalogue>`;
+  // xmlB also carries onlyBId, a constraint that occurs in file B alone —
+  // used by A8 to prove an id outside the resolved dataset stays unmatched.
+  const xmlB = `<?xml version="1.0"?>
+<catalogue id="cat-17b" name="Case 17 set B">
+  <selectionEntries>
+    <selectionEntry id="se-1" name="Unit">
+      <constraints>
+        <constraint id="${constraintId}" type="min" value="1" field="selections" scope="roster"/>
+        <constraint id="${onlyBId}" type="max" value="1" field="selections" scope="parent"/>
       </constraints>
     </selectionEntry>
   </selectionEntries>
 </catalogue>`;
 
-  it('matches an id from expect.firing[].limitId to its cell key, with the scenario directory as evidence', () => {
-    const { index } = extractCells([source(xml, 'fixtures/case-17.cat')]);
+  function bothSources() {
+    return extractCells([source(xmlA, fileA), source(xmlB, fileB)]);
+  }
+
+  // Case 17a (A1) — asserts both directions in one test (dataset=A alongside
+  // dataset=B) so a fixed, dataset-blind resolution (whichever single key it
+  // always returns) cannot satisfy both and pass by coincidence.
+  it('credits evidence to the file-A cell when the manifest dataset names only file A, not to the file-B cell of the same id', () => {
+    const { index } = bothSources();
+    const manifestA = {
+      dir: 'docs/testing/some-scenario',
+      dataset: { gameSystem: fileA },
+      rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+    const manifestB = {
+      dir: 'docs/testing/control-scenario',
+      dataset: { gameSystem: fileB },
+      rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+
+    const { matched: matchedA } = coveredKeysFromManifests([manifestA], index);
+    const { matched: matchedB } = coveredKeysFromManifests([manifestB], index);
+
+    expect(matchedA.map(m => m.key)).toEqual([forceKey]);
+    expect(matchedB.map(m => m.key)).toEqual([rosterKey]);
+    expect(matchedA[0].evidence).toBe('docs/testing/some-scenario');
+  });
+
+  // Case 17b (A2) — mirror of A1 with the file-B dataset, same control shape
+  it('credits evidence to the file-B cell when the manifest dataset names only file B, not to the file-A cell of the same id', () => {
+    const { index } = bothSources();
+    const manifestB = {
+      dir: 'docs/testing/some-other-scenario',
+      dataset: { gameSystem: fileB },
+      rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+    const manifestA = {
+      dir: 'docs/testing/control-scenario-2',
+      dataset: { gameSystem: fileA },
+      rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+
+    const { matched: matchedB } = coveredKeysFromManifests([manifestB], index);
+    const { matched: matchedA } = coveredKeysFromManifests([manifestA], index);
+
+    expect(matchedB.map(m => m.key)).toEqual([rosterKey]);
+    expect(matchedA.map(m => m.key)).toEqual([forceKey]);
+  });
+
+  // Case 17c (A3) — the roster-level override must win over BOTH manifest
+  // datasets, checked in both directions in one test for the same reason.
+  it('lets a roster-level dataset override the manifest-level one rather than merge with it', () => {
+    const { index } = bothSources();
+    const overrideToB = {
+      dir: 'docs/testing/override-scenario',
+      dataset: { gameSystem: fileA },
+      rosters: [{ dataset: { gameSystem: fileB }, expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+    const overrideToA = {
+      dir: 'docs/testing/override-scenario-2',
+      dataset: { gameSystem: fileB },
+      rosters: [{ dataset: { gameSystem: fileA }, expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+    };
+
+    const { matched: matchedToB } = coveredKeysFromManifests([overrideToB], index);
+    const { matched: matchedToA } = coveredKeysFromManifests([overrideToA], index);
+
+    expect(matchedToB.map(m => m.key)).toEqual([rosterKey]);
+    expect(matchedToA.map(m => m.key)).toEqual([forceKey]);
+  });
+
+  // Case 17d (A4)
+  it('falls back to the manifest-level dataset for a roster carrying none of its own', () => {
+    const { index } = bothSources();
     const manifests = [
       {
-        dir: 'docs/testing/some-scenario',
+        dir: 'docs/testing/fallback-scenario',
+        dataset: { gameSystem: fileA },
         rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
       },
     ];
 
     const { matched } = coveredKeysFromManifests(manifests, index);
 
-    expect(matched).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: 'constraint|max|selectionCount|parent|s=false|ics=false|icf=false|pct=false',
-          evidence: 'docs/testing/some-scenario',
-        }),
-      ]),
-    );
+    expect(matched.map(m => m.key)).toEqual([forceKey]);
   });
 
-  it('matches an id from expect.absent[] the same way', () => {
-    const { index } = extractCells([source(xml, 'fixtures/case-17.cat')]);
+  // Case 17e (A5)
+  it('resolves a dataset that carries catalogues only, with no gameSystem', () => {
+    const { index } = bothSources();
     const manifests = [
       {
-        dir: 'docs/testing/other-scenario',
-        rosters: [{ expect: { firing: [], absent: [constraintId] } }],
+        dir: 'docs/testing/catalogues-only-scenario',
+        dataset: { catalogues: [fileA] },
+        rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
       },
     ];
 
     const { matched } = coveredKeysFromManifests(manifests, index);
 
-    expect(matched).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: 'constraint|max|selectionCount|parent|s=false|ics=false|icf=false|pct=false',
-          evidence: 'docs/testing/other-scenario',
-        }),
-      ]),
-    );
+    expect(matched.map(m => m.key)).toEqual([forceKey]);
   });
 
-  it('reports an id naming no constraint as unmatched, without throwing', () => {
-    const { index } = extractCells([source(xml, 'fixtures/case-17.cat')]);
+  // Case 17f (A6) — documented ambiguity: the real corpus never puts the same
+  // id in two files of one dataset, but nothing here forbids it.
+  it('yields both cell keys when the same id occurs in two files that are both part of the roster dataset', () => {
+    const { index } = bothSources();
+    const manifests = [
+      {
+        dir: 'docs/testing/ambiguous-scenario',
+        dataset: { gameSystem: fileA, catalogues: [fileB] },
+        rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+      },
+    ];
+
+    const { matched } = coveredKeysFromManifests(manifests, index);
+
+    expect(matched.map(m => m.key).sort()).toEqual([forceKey, rosterKey].sort());
+  });
+
+  // Case 17g (A7)
+  it('reports an id naming no constraint anywhere as unmatched with reason unknown-id, without throwing', () => {
+    const { index } = bothSources();
     const manifests = [
       {
         dir: 'docs/testing/dangling-scenario',
+        dataset: { gameSystem: fileA },
         rosters: [{ expect: { firing: [{ limitId: 'no-such-id' }], absent: [] } }],
       },
     ];
@@ -750,8 +856,102 @@ describe('coveredKeysFromManifests', () => {
 
     expect(matched).toEqual([]);
     expect(unmatched).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'no-such-id', evidence: 'docs/testing/dangling-scenario' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'no-such-id', evidence: 'docs/testing/dangling-scenario', reason: 'unknown-id' }),
+      ]),
     );
+  });
+
+  // Case 17h (A8)
+  it('reports an id naming a corpus constraint outside the dataset as unmatched with reason outside-dataset', () => {
+    const { index } = bothSources();
+    const manifests = [
+      {
+        dir: 'docs/testing/outside-dataset-scenario',
+        dataset: { gameSystem: fileA },
+        rosters: [{ expect: { firing: [{ limitId: onlyBId }], absent: [] } }],
+      },
+    ];
+
+    const { matched, unmatched } = coveredKeysFromManifests(manifests, index);
+
+    expect(matched).toEqual([]);
+    expect(unmatched).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: onlyBId, evidence: 'docs/testing/outside-dataset-scenario', reason: 'outside-dataset' }),
+      ]),
+    );
+    // onlyBId is a real corpus constraint (present in file B's index), so a
+    // dataset that names file B would resolve it — pin that too, so the test
+    // can only pass by consulting the dataset, not by treating every unknown
+    // id as outside-dataset.
+    const manifestsWithB = [
+      {
+        dir: 'docs/testing/outside-dataset-scenario-b',
+        dataset: { gameSystem: fileB },
+        rosters: [{ expect: { firing: [{ limitId: onlyBId }], absent: [] } }],
+      },
+    ];
+    const { matched: matchedB } = coveredKeysFromManifests(manifestsWithB, index);
+    expect(matchedB.map(m => m.key)).toEqual([onlyBKey]);
+  });
+
+  // Case 17i (A9)
+  it('lands every id in unmatched, without throwing, when neither the manifest nor its rosters carry a dataset', () => {
+    const { index } = bothSources();
+    const manifests = [
+      {
+        dir: 'docs/testing/no-dataset-scenario',
+        rosters: [{ expect: { firing: [{ limitId: constraintId }], absent: [] } }],
+      },
+    ];
+
+    const { matched, unmatched } = coveredKeysFromManifests(manifests, index);
+
+    expect(matched).toEqual([]);
+    expect(unmatched).toEqual(expect.arrayContaining([expect.objectContaining({ id: constraintId })]));
+  });
+
+  // Case 17j (A10)
+  it('resolves expect.absent[] by the same per-roster rule, in its plain-string, {limitId} and {id} forms', () => {
+    const { index } = bothSources();
+    const manifests = [
+      {
+        dir: 'docs/testing/absent-plain-string',
+        dataset: { gameSystem: fileA },
+        rosters: [{ expect: { firing: [], absent: [constraintId] } }],
+      },
+      {
+        dir: 'docs/testing/absent-limitid-object',
+        dataset: { gameSystem: fileA },
+        rosters: [{ expect: { firing: [], absent: [{ limitId: constraintId }] } }],
+      },
+      {
+        dir: 'docs/testing/absent-id-object',
+        dataset: { gameSystem: fileA },
+        rosters: [{ expect: { firing: [], absent: [{ id: constraintId }] } }],
+      },
+    ];
+
+    const { matched } = coveredKeysFromManifests(manifests, index);
+
+    expect(matched.map(m => m.evidence).sort()).toEqual([
+      'docs/testing/absent-id-object',
+      'docs/testing/absent-limitid-object',
+      'docs/testing/absent-plain-string',
+    ]);
+    for (const entry of matched) {
+      expect(entry.key).toBe(forceKey);
+    }
+  });
+
+  // Case 17k (A11)
+  it('extractCells indexes constraint ids per file, so the same id maps to a different cell key per source', () => {
+    const { index } = bothSources();
+
+    expect(index.get(fileA).get(constraintId)).toBe(forceKey);
+    expect(index.get(fileB).get(constraintId)).toBe(rosterKey);
+    expect(index.get(fileA).get(constraintId)).not.toBe(index.get(fileB).get(constraintId));
   });
 });
 
