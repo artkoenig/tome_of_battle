@@ -177,12 +177,13 @@ describe('Info-Projektion: Vererbung aus den belegten Unter-Auswahlen', () => {
   });
 });
 
-describe('Info-Projektion: Verstecktes bleibt aussen vor', () => {
+describe('Info-Projektion: Verstecktes bleibt fuer andere aussen vor, am eigenen Slot bleibt es sichtbar', () => {
   const VISIBLE_RULE_ID = 'rule-visible';
   const BASE_HIDDEN_RULE_ID = 'rule-base-hidden';
   const MODIFIER_HIDDEN_RULE_ID = 'rule-modifier-hidden';
   const REVEALED_RULE_ID = 'rule-revealed';
   const OPTION_RULE_ID = 'rule-of-hidden-option';
+  const OPTION_HIDDEN_RULE_ID = 'rule-hidden-of-hidden-option';
   // Dasselbe Muster wie im echten Katalog (Vampire Counts, Info-Verweis
   // „Flammable"): ein basis-verstecktes Element, das ein bedingter Modifikator
   // einblendet, sobald eine bestimmte Auswahl im Kontingent steht.
@@ -214,6 +215,7 @@ describe('Info-Projektion: Verstecktes bleibt aussen vor', () => {
             <selectionEntry id="${OPTION_ID}" name="Verborgene Option" type="upgrade">
               <rules>
                 <rule id="${OPTION_RULE_ID}" name="Regel der verborgenen Option"><description>Haengt am versteckten Knoten.</description></rule>
+                <rule id="${OPTION_HIDDEN_RULE_ID}" name="Basis-versteckt in der verborgenen Option" hidden="true"><description>Bleibt versteckt, auch am eigenen Slot.</description></rule>
               </rules>
               <modifiers>
                 <modifier type="set" field="hidden" value="true"/>
@@ -245,12 +247,35 @@ describe('Info-Projektion: Verstecktes bleibt aussen vor', () => {
 
     expect(occupiedSlot(report, OPTION_ID).isHidden).toBe(true);
     expect(infoElementIdsOfSlot(report, UNIT_ID)).not.toContain(OPTION_RULE_ID);
+    expect(infoElementIdsOfSlot(report, UNIT_ID)).not.toContain(OPTION_HIDDEN_RULE_ID);
   });
 
-  it('laesst die eigene Projektion eines versteckten Knotens leer (sie haengt an ihm selbst)', () => {
+  // Ersetzt die fruehere Erwartung einer leeren eigenen Projektion
+  // ('laesst die eigene Projektion eines versteckten Knotens leer'): Szenario
+  // `set-characteristic-force-gate`, Roster `02-standard-force-mv-base-7.ros`,
+  // verlangt, dass der versteckte Tomb-stalker-Slot sein eigenes
+  // Tomb-Scorpion-Profil-Vorkommen traegt. docs/battlescribe-data-format.md §8
+  // definiert `hidden` als "dem Nutzer nicht angezeigt", ohne der Entitaet ihre
+  // Profile und Regeln zu nehmen; der Bericht materialisiert versteckte Slots
+  // und markiert sie per `isHidden` (ADR-0035). Das Knoten-Gate haelt Verstecktes
+  // nur von *anderen* Slots fern — der eigene Slot behaelt seine sichtbaren
+  // Elemente.
+  it('laesst den eigenen Slot eines versteckten Knotens dessen eigene sichtbare Elemente tragen', () => {
     const report = evaluate(CATALOGUE_XML, rosterWithOption({ withOption: true }));
 
-    expect(infoElementsOfSlot(report, OPTION_ID)).toEqual([]);
+    expect(occupiedSlot(report, OPTION_ID).isHidden).toBe(true);
+    expect(infoElementIdsOfSlot(report, OPTION_ID)).toEqual([OPTION_RULE_ID]);
+  });
+
+  // Beweist, dass sich nur das Knoten-Gate verschoben hat: der Inhalts-Gate je
+  // Element (`hidden="true"` an der Regel selbst) gilt unveraendert weiter, auch
+  // am eigenen Slot des versteckten Knotens.
+  it('haelt eine eigene basis-versteckte Regel eines versteckten Knotens von dessen eigenem Slot fern', () => {
+    const report = evaluate(CATALOGUE_XML, rosterWithOption({ withOption: true }));
+
+    const ids = infoElementIdsOfSlot(report, OPTION_ID);
+    expect(ids).toContain(OPTION_RULE_ID);
+    expect(ids).not.toContain(OPTION_HIDDEN_RULE_ID);
   });
 });
 
