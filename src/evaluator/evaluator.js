@@ -58,7 +58,7 @@ import { attachOfferAnchors } from './offer.js';
 import { extendBaseEffectiveState } from './effectiveState.js';
 import { buildIndex } from './countIndex.js';
 import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
-import { evaluateConstraints } from './constraints.js';
+import { evaluateConstraints, categoryAnchorOccupancies } from './constraints.js';
 import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
 import { createRosterBudget } from './rosterBudget.js';
@@ -316,6 +316,13 @@ export function evaluate(prepared, roster, options) {
       root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
     );
 
+    // Die Belegung je Kategorie-Anker — hier gezaehlt und nicht erst im Bericht,
+    // damit ihre Query-Diagnosen in dieselbe Liste fliessen wie die der Grenzen,
+    // die unten zusammengestellt wird.
+    const anchorOccupancies = categoryAnchorOccupancies(
+      root, index, effective, resolved.categoryIds, constraintDiagnostics, budget, primaryCatalogueByForceDefId,
+    );
+
     // Engine-allgemeine Regel „Armee zu teuer": je eingestellter Kostengrenze die am
     // ROSTER-Rahmen verplante Summe (aus dem schon gebauten Zaehlindex) gegen ihre
     // Grenze. Ueberschreitungen fliessen als roster-weite Budget-Verletzungen in
@@ -348,6 +355,7 @@ export function evaluate(prepared, roster, options) {
       categoryIds: resolved.categoryIds,
       declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
       sourceIdByDefId,
+      categoryAnchorOccupancies: anchorOccupancies,
     });
   });
 
