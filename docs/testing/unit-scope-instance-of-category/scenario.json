@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "name": "unit-scope-instance-of-category",
+  "description": "Eine condition type=\"instanceOf\" scope=\"unit\" mit einer KATEGORIE in childId haelt genau dann, wenn die umschliessende Einheit — der naechste Vorfahre vom Typ unit, den Traeger der Query eingeschlossen (Formatdoku 7.7, Kasten scope=unit) — Mitglied dieser Kategorie ist, und zwar nach den EFFEKTIVEN Kategorien: einschliesslich einer per modifier type=\"add\" field=\"category\" zur Laufzeit erteilten und ausschliesslich einer per type=\"remove\" wieder entzogenen (Formatdoku 8, Laufzeit-dynamische Kategoriezugehoerigkeit). Es ist eine Mitgliedschaftspruefung, keine Zaehlung: die Zaehl-Flags verengen sie nicht. Konkret im Vampire-Counts-Katalog: die Verweis-Slots \"Spell Familiar\" (4561-b83b-6268-9dde), \"Power Familiar\" (0ec8-aa23-e935-59f7) und \"Warrior Familiar\" (67c6-f3bb-803a-0ca3) der geteilten Gruppe \"Arcane Items (VC)\" (2f34-a145-911a-fa00) tragen je einen modifier type=\"set\" value=\"true\" field=\"hidden\", dessen EINZIGE Bedingung instanceOf scope=\"unit\" childId=\"4cae-a20e-8374-b6cb\" (categoryEntry \"Blood Dragon\") ist; der Nachbar-Slot \"Black Periapt\" (787e-19e8-0444-a8c3) derselben Gruppe traegt keinen solchen Modifikator und ist die Kontrolle. Kein Vampir-Eintrag fuehrt einen categoryLink auf 4cae-...; die Mitgliedschaft entsteht allein aus der BLOODLINE-modifierGroup des Vampire Count (6822-0110-a7c9-cbb0), gegatet auf die im Kontingent gewaehlte Blutlinie. Vier Roster, die sich NUR in der gewaehlten Blutlinie unterscheiden, pinnen alle Zweige ueber expect.capabilities[].isHidden; Roster 04 wiederholt dasselbe Konstrukt an einem nur eine Gruppenebene tiefen Traeger (\"Great Weapon\" 4b34-9f0f-38ec-191c, gegatet auf die Kategorie \"Strigoi\" bf30-4ff0-a4d8-3909). Sichtbarkeit ist Verfuegbarkeit, keine zaehlende Grenze — firing bleibt leer ausser in Roster 03, wo die absichtlich doppelte Blutlinienwahl die Gruppengrenze 39c7-f615-17db-7016 reisst.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-blood-dragon-familiars-hidden.ros",
+      "description": "Standard (VC-AB) mit Bloodlines + Bloodline of Clan Blood Dragon (9fd9-e05c-ffcb-2c4d) und einem Vampire Count (Handweapon, Magic Level 2). Die BLOODLINE-modifierGroup des Vampire Count fuegt die Kategorie 4cae-a20e-8374-b6cb hinzu; \"Blood Dragon\" steht ABSICHTLICH nicht in den <categories> des Rosters, die Mitgliedschaft kann also nur aus dem Modifikator stammen. Die umschliessende Einheit aller Magic-Item-Slots ist dieser Vampire Count, die instanceOf-Bedingung haelt: alle drei Familiar-Slots werden auf hidden=true gesetzt. Der Nachbar-Slot Black Periapt (kein solcher Modifikator) und der Great-Weapon-Slot (auf Strigoi gegatet, nicht Blood Dragon) bleiben sichtbar.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6e83-c0ad-a87e-cdb8",
+          "b9f7-fd62-2f07-8ad8",
+          "757a-8839-2f42-2dcd",
+          "7c63-73c7-0112-a7de",
+          "4670-9aed-2209-cda6",
+          "982a-b87d-fa02-0858",
+          "d83b-7706-3d74-dbc8",
+          "47b3-9116-6f74-d142",
+          "fa59-e6b8-9523-3510",
+          "9fc9-938f-6289-e4bb",
+          "b3b5-f872-24df-04dc",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016"
+        ],
+        "capabilities": [
+          {
+            "defId": "4561-b83b-6268-9dde",
+            "targetDefId": "5eb3-43a3-e38f-2402",
+            "anchorKind": "offerAnchor",
+            "name": "Spell Familiar",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "0ec8-aa23-e935-59f7",
+            "targetDefId": "94dc-9b20-f845-34ba",
+            "anchorKind": "offerAnchor",
+            "name": "Power Familiar",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "67c6-f3bb-803a-0ca3",
+            "targetDefId": "218b-5620-2777-2986",
+            "anchorKind": "offerAnchor",
+            "name": "Warrior Familiar",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "787e-19e8-0444-a8c3",
+            "targetDefId": "3013-1494-ee91-1cf8",
+            "anchorKind": "offerAnchor",
+            "name": "Black Periapt",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "4b34-9f0f-38ec-191c",
+            "targetDefId": "1eb7-3f36-8cf7-e0ba",
+            "anchorKind": "offerAnchor",
+            "name": "Great Weapon",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-von-carstein-familiars-visible.ros",
+      "description": "Identischer Aufbau, aber Bloodline of Clan Von Carstein (f557-097a-d26b-9363) statt Blood Dragon. Nur die Von-Carstein-modifierGroup haelt: sie fuegt ff24-ca11-afd5-865b hinzu und entfernt 4cae-a20e-8374-b6cb. Der Vampire Count ist kein Blood Dragon, die instanceOf-Bedingung haelt nicht, kein anderer hidden-Modifikator greift: alle drei Familiar-Slots behalten ihren Basiswert hidden=\"false\" (Verweis wie Ziel). Kontrolle und Great Weapon unveraendert sichtbar.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6e83-c0ad-a87e-cdb8",
+          "b9f7-fd62-2f07-8ad8",
+          "757a-8839-2f42-2dcd",
+          "7c63-73c7-0112-a7de",
+          "4670-9aed-2209-cda6",
+          "982a-b87d-fa02-0858",
+          "d83b-7706-3d74-dbc8",
+          "47b3-9116-6f74-d142",
+          "fa59-e6b8-9523-3510",
+          "9fc9-938f-6289-e4bb",
+          "b3b5-f872-24df-04dc",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016"
+        ],
+        "capabilities": [
+          {
+            "defId": "4561-b83b-6268-9dde",
+            "targetDefId": "5eb3-43a3-e38f-2402",
+            "anchorKind": "offerAnchor",
+            "name": "Spell Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "0ec8-aa23-e935-59f7",
+            "targetDefId": "94dc-9b20-f845-34ba",
+            "anchorKind": "offerAnchor",
+            "name": "Power Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "67c6-f3bb-803a-0ca3",
+            "targetDefId": "218b-5620-2777-2986",
+            "anchorKind": "offerAnchor",
+            "name": "Warrior Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "787e-19e8-0444-a8c3",
+            "targetDefId": "3013-1494-ee91-1cf8",
+            "anchorKind": "offerAnchor",
+            "name": "Black Periapt",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "4b34-9f0f-38ec-191c",
+            "targetDefId": "1eb7-3f36-8cf7-e0ba",
+            "anchorKind": "offerAnchor",
+            "name": "Great Weapon",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-both-bloodlines-remove-wins.ros",
+      "description": "Derselbe Vampire Count, aber BEIDE Blutlinien (Blood Dragon UND Von Carstein) in der Gruppe \"Vampiric Bloodline\". Damit halten beide modifierGroups: erst add 4cae-a20e-8374-b6cb (Blood Dragon), danach — spaeter in Dokumentreihenfolge — remove 4cae-a20e-8374-b6cb (Von Carstein). Die effektiven Kategorien enthalten die Kategorie folglich NICHT, die instanceOf-Bedingung haelt nicht: die Familiar-Slots bleiben sichtbar. Der bewusst regelwidrige Aufbau reisst dabei die Gruppengrenze max 1 (39c7-f615-17db-7016, scope=parent) mit Ist 2.",
+      "expect": {
+        "firing": [
+          { "limitId": "39c7-f615-17db-7016", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "6e83-c0ad-a87e-cdb8",
+          "b9f7-fd62-2f07-8ad8",
+          "757a-8839-2f42-2dcd",
+          "7c63-73c7-0112-a7de",
+          "4670-9aed-2209-cda6",
+          "982a-b87d-fa02-0858",
+          "d83b-7706-3d74-dbc8",
+          "47b3-9116-6f74-d142",
+          "fa59-e6b8-9523-3510",
+          "9fc9-938f-6289-e4bb",
+          "b3b5-f872-24df-04dc",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "4561-b83b-6268-9dde",
+            "targetDefId": "5eb3-43a3-e38f-2402",
+            "anchorKind": "offerAnchor",
+            "name": "Spell Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "0ec8-aa23-e935-59f7",
+            "targetDefId": "94dc-9b20-f845-34ba",
+            "anchorKind": "offerAnchor",
+            "name": "Power Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "67c6-f3bb-803a-0ca3",
+            "targetDefId": "218b-5620-2777-2986",
+            "anchorKind": "offerAnchor",
+            "name": "Warrior Familiar",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "787e-19e8-0444-a8c3",
+            "targetDefId": "3013-1494-ee91-1cf8",
+            "anchorKind": "offerAnchor",
+            "name": "Black Periapt",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-strigoi-great-weapon-hidden.ros",
+      "description": "Derselbe Aufbau mit Bloodline of Clan Strigoi (ddfa-0d72-8557-6906). Die Strigoi-modifierGroup fuegt bf30-4ff0-a4d8-3909 hinzu; der Great-Weapon-Verweis (4b34-9f0f-38ec-191c) der Gruppe \"Weapons and Armour\" — nur EINE Gruppenebene unter der Einheit — traegt dasselbe Konstrukt (set hidden=true, einzige Bedingung instanceOf scope=\"unit\" childId=bf30-4ff0-a4d8-3909) und wird verborgen. Die Arcane-Item-Slots werden hier BEWUSST NICHT behauptet: unter Strigoi verbirgt ein separater Modifikator am Verweis \"Magic Items\" (14d2-cec2-9b1c-418c) die ganze umgebende Gruppe, ihr Zustand waere also mehrdeutig verursacht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "9fc9-938f-6289-e4bb",
+          "b3b5-f872-24df-04dc",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016"
+        ],
+        "capabilities": [
+          {
+            "defId": "4b34-9f0f-38ec-191c",
+            "targetDefId": "1eb7-3f36-8cf7-e0ba",
+            "anchorKind": "offerAnchor",
+            "name": "Great Weapon",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    }
+  ]
+}

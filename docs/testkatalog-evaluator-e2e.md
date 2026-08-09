@@ -881,3 +881,26 @@ nur ein Rare-Link, kein Kategorie-Modifikator) ist die Nullprobe.
 **Stand: rot.** Das Szenario ist ein festgenagelter Befund der
 Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`): die
 Engine zählt die per `set-primary` gesicherte Mitgliedschaft heute nicht mit.
+
+## `unit-scope-instance-of-category`
+
+Prüft die `instanceOf`-Bedingung mit `scope="unit"` und Kategorie-`childId`
+(§7.7 der Formatdoku, Kasten `scope="unit"`): sie hält genau dann, wenn die
+umschließende Einheit — der nächste Vorfahre mit `type="unit"` — Mitglied der
+benannten Kategorie ist, und zwar nach den **effektiven** Kategorien, also
+einschließlich einer per `add category` zur Auswertungszeit gewährten und
+ausschließlich einer per `remove category` genommenen Mitgliedschaft. Beleg:
+die Magic-Item-Verweise Spell Familiar (`4561-b83b-6268-9dde`), Power Familiar
+(`0ec8-aa23-e935-59f7`) und Warrior Familiar (`67c6-f3bb-803a-0ca3`) unter dem
+Vampire Count (Vampire Counts) tragen je einen `set hidden=true`, gegatet auf
+`instanceOf scope="unit" childId="4cae-a20e-8374-b6cb"` („Blood Dragon"); die
+Kategorie steht an keinem `categoryLink`, sondern kommt aus der
+`BLOODLINE`-modifierGroup. Alle Roster unterscheiden sich nur in der gewählten
+Blutlinie; Black Periapt ist die Nullprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Blutlinie Blood Dragon, ein Vampire Count | Die Bedingung hält: alle drei Familiar-Slots sind versteckt, Black Periapt und Great Weapon bleiben sichtbar |
+| 02 | Derselbe Aufbau mit der Blutlinie Von Carstein | Die Bedingung hält nicht (`remove` der Blood-Dragon-Kategorie): alle fünf Slots sichtbar |
+| 03 | Beide Blutlinien zugleich | Das spätere `remove` gewinnt: die Slots bleiben sichtbar, und die Gruppengrenze „Vampiric Bloodline" (max 1) feuert mit Ist 2 |
+| 04 | Blutlinie Strigoi | Derselbe Konstrukttyp eine Gruppenebene tiefer: der Great-Weapon-Slot ist versteckt |

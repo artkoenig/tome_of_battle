@@ -148,6 +148,13 @@
         "docs/testing/set-primary-category-membership"
       ],
       "rationale": "RED — pinned, not passing: rosters 01/03 assert that the unconditional set-primary on 'Kathleen' Halftank makes her count in the Regiment-of-Renown category anchor (current 1) without a categoryLink or an accompanying add/category, and that Rare keeps counting her (current 2 in roster 03, firing the .gst max 1). See pinnedGaps in docs/testing/campaign-state.json."
+    },
+    {
+      "key": "condition|instanceOf|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/unit-scope-instance-of-category"
+      ],
+      "rationale": "GREEN: rosters 01/02 differ only in the bloodline, so the isHidden flip on the three familiar slots is the condition's own semantics against the unit's effective categories; roster 03 pins that a later remove wins over an earlier add, roster 04 the same construct one group level deeper."
     }
   ]
 }
