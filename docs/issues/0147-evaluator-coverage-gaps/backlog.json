@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "issue": "docs/issues/0147-evaluator-coverage-gaps/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap — issue 0147, the Uprising points-limit gap\n\nEvery file the issue has to change, one line each. The issue's only acceptance criterion is the scenario `docs/testing/at-least-roster-points-limit`, so the whole map belongs to the single increment `uprising-points-limit`. Scope is fenced by the issue: only `src/evaluator/` and its unit tests may change, and nothing under `docs/testing/` may be touched at all.\n\nThe map is a first cut from search, not from a diagnosis — the report's three complaints (occupied slot `current` 0, no message for limit `00f6-c1b3-ee85-5c02`, the budget-versus-sum reading) meet the engine in these modules, and the researcher narrows it.\n\n- `src/evaluator/constraints.js` — Evaluates a limit at an anchor against the counted frame, including `scope=\"force\"`; the report carries no result at all for `00f6-c1b3-ee85-5c02`, and a missing result is the direct cause of both the absent violation and the slot's `current` 0.\n- `src/evaluator/report.js` — Projects a slot's `current`, `effectiveMin`, `effectiveMax`, `headroom` and `isBlocked` out of the constraint results, falling back to 0 where no result exists; the manifest asserts exactly these fields on the occupied Uprising slot.\n- `src/evaluator/evalTree.js` — Joins the roster's selections onto the resolved definitions and decides which anchors exist and under which frame; the Uprising selection sits two levels down, below a group and below a `hidden=\"true\"` parent entry, and it has to end up as a counted anchor of the force.\n- `src/evaluator/offer.js` — Builds the offered slots below a carrier and carries the visibility gates of the groups it descends through; the occupied Uprising slot has to be addressable as `defId 4bc4-8781-2091-d9df` with `anchorKind occupied`.\n- `src/evaluator/countIndex.js` — Holds the scope-keyed counts a `field=\"selections\"`, `scope=\"force\"` query reads; the manifest's constant `actual` 1 comes from here.\n- `src/evaluator/modifiers.js` — Applies a `set` whose `field` is a constraint id, gated by an `and` group of two conditions on the same cost limit; roster 01 needs that `set` to raise the bound from 0 to 1 and rosters 02/03 need it to stay off.\n- `src/evaluator/query.js` — Resolves a `limit::<costTypeId>` field, which it takes from the roster budget rather than the count index, and settles the `atLeast` comparison at the threshold itself; roster 03 turns on this reading.\n- `src/evaluator/rosterBudget.js` — Owns the roster's configured cost limit and the roster-wide `budget::<costTypeId>` rule; roster 03 asserts that rule firing with actual 2000 against bound 1999 while the configured limit stays 1999.\n- `src/evaluator/effectiveState.js` — Derives an anchor's effective base state, `hidden` inheritance among it; the carrier's chain is `hidden=\"true\"` entry → visible group → `hidden=\"true\"` entry, and this module decides whether that chain suppresses anything the manifest asserts.\n\nRead-only for this issue, never edited: `docs/testing/at-least-roster-points-limit/scenario.json`, its `rosters/*.ros` and its `README.md` are the specification, and `src/evaluator/e2e.testcatalog.test.js` is the manifest-driven runner that reads them.\n",
+  "increments": [
+    {
+      "id": "uprising-points-limit",
+      "title": "The Uprising points-limit gate reports what the catalog data demands",
+      "goal": "All three rosters of the pinned scenario `docs/testing/at-least-roster-points-limit` match their manifest expectations: the single Uprising selection is counted in its force, its force-scoped `max 0` limit produces a result, the gated `set` raises that bound only at a configured budget of 2000, and `limit::<costTypeId>` reads the roster's configured cost limit instead of the summed cost of its selections.",
+      "criteria": [
+        "`npx vitest run src/evaluator` exits 0, with the three previously failing cases `Szenario: at-least-roster-points-limit > rosters/01-limit-2000-gate-open.ros`, `> rosters/02-limit-1999-gate-closed.ros` and `> rosters/03-limit-1999-spent-2000-gate-closed.ros` green.",
+        "Roster 01 (`costLimit` 2000, 0 spent): no violation is reported for `00f6-c1b3-ee85-5c02` and none for `budget::ecfa-8486-4f6c-c249`; the occupied slot `4bc4-8781-2091-d9df` reports `current` 1, `effectiveMin` null, `effectiveMax` 1, `headroom` 0 and `isMandatoryUnmet` false.",
+        "Roster 02 (`costLimit` 1999, 0 spent): `00f6-c1b3-ee85-5c02` fires with `actual` 1 against `bound` 0, and the occupied slot `4bc4-8781-2091-d9df` reports `current` 1, `effectiveMin` null, `effectiveMax` 0 and `isBlocked` true.",
+        "Roster 03 (`costLimit` 1999, 2000 spent): the gate stays closed exactly as in roster 02 — `00f6-c1b3-ee85-5c02` fires `actual` 1 / `bound` 0 — and `budget::ecfa-8486-4f6c-c249` fires `actual` 2000 / `bound` 1999, so the configured limit and the spent sum are demonstrably two different quantities.",
+        "No file under `docs/testing/` is added, changed or deleted, and no file outside `src/evaluator/` is changed.",
+        "Every other case of `npx vitest run src/evaluator` that passed before still passes: no scenario, unit or cross-catalog test regresses."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-10T01:43:51.842Z",
+        "return": {
+          "questions": [],
+          "summary": "Issue 0147 is cut as a single increment `uprising-points-limit`: its one acceptance criterion is one pinned scenario whose three roster cases share one carrier and one limit, and the report's `current` for a slot is derived from the very constraint result the issue says is missing, so the two visible symptoms are one defect. The codemap in backlog.json names nine `src/evaluator/` modules where the three complaints — the uncounted selection under a hidden parent entry, the missing force-scoped limit result, and the budget-versus-sum reading of `limit::<costTypeId>` — meet the engine."
+        },
+        "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nOpen the run state for docs/issues/0147-evaluator-coverage-gaps/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0147-evaluator-coverage-gaps/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
