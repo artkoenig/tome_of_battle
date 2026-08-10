@@ -296,6 +296,27 @@
         "docs/testing/nested-modifier-group"
       ],
       "rationale": "GREEN: four rosters differing only in the chosen bloodline pick out exactly the inner bracket whose own condition holds — none in roster 01, one each in 02 and 03, two at once in 04 — so a nested conditional bracket is neither suppressed by its enclosing bracket nor applied blanket with it. The 'inner holds, outer fails' case has no carrier in this corpus and is documented in the scenario README."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "The Vampire Lord's profile modifiers are gated by conditions whose scope names the carrying entry id (scope=\"b77b-88d5-5e80-e178\") and whose childId names a clan category; rosters 01-03 differ only in the chosen bloodline and move exactly the characteristics those conditions gate (WS 8 vs 10, A 5 vs 6, Sv+ 7 vs 5+)."
+    },
+    {
+      "key": "modifier|increment|characteristic",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "Roster 02 pins the +2 increment on the Vampire Lord's WS (8 -> 10) and roster 03 the +1 increment on his A (5 -> 6), each against roster 01 where no bloodline holds and the profile keeps its catalogue values."
+    },
+    {
+      "key": "repeat|limitValue|roster|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The increment on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 repeats per 1000 points of the roster's cost limit; rosters 03 (500 pts), 01 (1000 pts) and 04 (2000 pts) walk the applications 0/1/2 and the effectiveMax follows 0/1/2."
     }
   ]
 }
