@@ -7,107 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 64,
-    "uncovered": 41
+    "covered": 65,
+    "uncovered": 40
   },
   "cells": [
-    {
-      "key": "condition|notInstanceOf|primary-catalogue|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "notInstanceOf",
-        "scope": "primary-catalogue",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 9,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 8,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "ee09-9a50-ad78-9c32",
-            "name": "Regiment of Renown"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "primary-catalogue",
-            "childId": "fa9c-5f79-ce12-480c"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ea59-6ea6-b3c9-c34a",
-            "name": "Extra Rare choice"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "primary-catalogue",
-            "childId": "731d-5b13-2a92-5427"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "a97e-5cc9-264b-74f4",
-            "name": "Extra Rare choice"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "primary-catalogue",
-            "childId": "731d-5b13-2a92-5427"
-          }
-        }
-      ]
-    },
     {
       "key": "constraint|min|selectionCount|roster|s=true|ics=false|icf=false|pct=false",
       "kind": "constraint",

@@ -338,6 +338,13 @@
         "docs/testing/roster-repeat-category-count"
       ],
       "rationale": "GREEN: rosters 01-04 walk the counted Orc-Boyz copies 0/1/2/2 against a fixed carrier count and the bound follows 0/1/2/2; roster 05 pins that the stack count and not the number of XML selection elements is counted; roster 06 puts the counted copies in a second force, which only reaches the same bound if includeChildForces=true counts across forces."
+    },
+    {
+      "key": "condition|notInstanceOf|primary-catalogue|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/primary-catalogue-scope"
+      ],
+      "rationale": "Roster pair differing only in the force: the Maneaters upgrade 'Extra Rare choice' (Mercenaries, ea59-6ea6-b3c9-c34a) carries min 0 (9e9f-e78d-6390-accc) and a set 1 modifier gated on notInstanceOf(scope=primary-catalogue, childId=731d-5b13-2a92-5427 'Ogre Kingdoms'). Roster 09 (Vampire Counts force e989-15b8-7eb6-9668) asserts the limit firing with actual 0 against bound 1, roster 08 (Ogre Kingdoms force 729f-9246-5cd3-5044) asserts it absent; both rosters additionally demand the absence of the UNRESOLVED_SCOPE diagnostic, so the notInstanceOf hit is an evaluated one and not a silent fallback to 0. Scenario is green."
     }
   ]
 }
