@@ -152,7 +152,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`condition-group-or-nested`](testing/condition-group-or-nested/) | Definitive O&G + Mercenaries | 6 |
 | [`category-scope-ancestor-frame`](testing/category-scope-ancestor-frame/) | Definitive VC + Mercenaries | 4 |
 | [`condition-group-not`](testing/condition-group-not/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **310** |
+| [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
+| **Summe** | | **314** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1505,3 +1506,31 @@ wird.
 | 04 | 1500 Punkte, **ohne** Kampagnen-Auswahl | Nur eine Hälfte hält: die Negation hält, beide Pflichtgrenzen feuern — das Budget allein schaltet die Pflicht nicht ab |
 | 05 | 3000 Punkte **mit** Kampagnen-Auswahl | Die andere Hälfte: die Negation hält, beide Pflichtgrenzen feuern — auch die Kampagnen-Auswahl allein schaltet sie nicht ab |
 | 06 | Leeres Kontingent „Clan Von Carstein (VC-AB)", 3000 Punkte | Schon das `instanceOf` scheitert: der Modifikator greift unabhängig von der Negation nicht, beide Grenzen schweigen |
+
+## `greater-than-force-unlimited-gate`
+
+Prüft die `greaterThan`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7 der Formatdoku) zusammen mit dem Sentinel `-1` (§7.6): Die Bedingung hält,
+sobald das Kontingent **echt mehr** Auswahlen des benannten Eintrags führt als
+ihr `value`. Beleg: der „Slaughtermaster" (`0ff3-ec4d-1c6b-6d53`, Ogre Kingdoms)
+trägt `max 0` armeeweit (`c70d-c292-36ee-21b5`) — er ist also zunächst gar nicht
+wählbar — und einen `set -1` auf genau diese Grenze, gegated auf
+`greaterThan value="0"` über den „Tyrant" (`2679-58f4-1771-662d`) im Kontingent.
+Ein Tyrant öffnet damit das Tor, und der geschriebene `-1` bedeutet
+**unbegrenzt**, nicht „eins". Alle Roster stehen im Kontingent
+„Standard (OK-AB)", damit die auf das Ironskin-Kontingent gegatterte
+Verbergung nicht dazwischenfunkt; die armeeweite Pflichteinheit ist überall
+erfüllt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein Tyrant, ein Slaughtermaster | Das Tor bleibt zu: die Grenze steht auf 0 und feuert mit Ist 1; der Slot meldet ein Höchstmaß von 0 und ist gesperrt |
+| 02 | Ein Tyrant, ein Slaughtermaster | Das Tor öffnet: die Grenze schweigt, der Slot meldet **eine** Auswahl bei aufgehobenem Höchstmaß |
+| 03 | Ein Tyrant, zwei Slaughtermaster in **einer** Selektion | Trennt „unbegrenzt" von einer still als 1 gelesenen Kappe: die Grenze schweigt weiter, der Slot meldet **zwei** Auswahlen |
+| 04 | Dieselbe Zahl als **zwei** Selektionen | Dieselbe armeeweite Summe in der anderen Kodierung — die Grenze schweigt |
+
+> **Offene Lücke (Kampagne).** Die Roster 02 und 03 sind rot: der belegte Slot
+> meldet dort **null** Auswahlen statt einer bzw. zweier, obwohl Roster 01 mit
+> derselben Behauptung grün ist. Die Zählung geht also genau dann verloren, wenn
+> die Obergrenze auf „unbegrenzt" gehoben wurde. Das Gatter selbst wertet die
+> Engine in allen vier Rostern korrekt aus.

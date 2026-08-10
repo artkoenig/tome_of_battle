@@ -7,99 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 79,
-    "uncovered": 26
+    "covered": 80,
+    "uncovered": 25
   },
   "cells": [
-    {
-      "key": "condition|greaterThan|force|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "greaterThan",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 3,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0ff3-ec4d-1c6b-6d53",
-            "name": "Slaughtermaster"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "2679-58f4-1771-662d"
-          }
-        },
-        {
-          "file": "src/__fixtures__/whfb6/Ogre Kingdoms.cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "aa6a-68b4-a6ae-4abc",
-            "name": "SELECT FOR USING AS DOGS OF WAR ?"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "b67c-07cd-6579-6e87"
-          }
-        },
-        {
-          "file": "src/__fixtures__/whfb6/Ogre Kingdoms.cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0ff3-ec4d-1c6b-6d53",
-            "name": "Slaughtermaster"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "2679-58f4-1771-662d"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|parent|selectionCount|child=any",
       "kind": "condition",

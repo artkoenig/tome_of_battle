@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "name": "greater-than-force-unlimited-gate",
+  "description": "Eine condition type=greaterThan mit field=selections, scope=force und einer Eintrags-Id in childId haelt genau dann, wenn das Kontingent STRIKT mehr Selektionen dieses Eintrags fuehrt als der value der Bedingung - und der damit gegatete set-Modifier ersetzt dann den Wert der adressierten Grenze. Konkret: Slaughtermaster (0ff3-ec4d-1c6b-6d53, Ogre Kingdoms) traegt max 0 selections scope=roster (Constraint c70d-c292-36ee-21b5) und genau einen set--1-Modifier auf diese Constraint-Id, gegatet auf greaterThan 0 selections scope=force childId=2679-58f4-1771-662d (Tyrant). Ohne Tyrant bleibt das Gatter zu, die Grenze behaelt ihren geschriebenen Basiswert 0 und feuert bei einem Slaughtermaster (Ist 1, Grenze 0). Mit mindestens einem Tyrant haelt 1 > 0, der set-Modifier schreibt den Sentinel -1 = UNBEGRENZT (nicht 'eins' und nicht 'keins'): die Grenze feuert weder bei einem noch bei zwei Slaughtermastern, und der belegte Slaughtermaster-Slot meldet effectiveMax=null/headroom=null. Alle Roster nutzen das Kontingent Standard (OK-AB) 729f-9246-5cd3-5044, in dem der Slaughtermaster NICHT per set-hidden-Gatter (instanceOf Ironskin Tribe 8711-ed16-2a44-7251) verborgen ist.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-tyrant-slaughtermaster-max0.ros",
+      "description": "Kontingent Standard (OK-AB), KEIN Tyrant, ein Slaughtermaster (samt Pflicht-Ogre-Club) und eine Ogre-Bulls-Einheit (3 Bulls + Ogre Club) fuer die armeeweite Pflichteinheit. Die greaterThan-Bedingung zaehlt 0 Tyrants im Kontingent, 0 > 0 ist falsch: der set--1-Modifier bleibt inert, c70d-c292-36ee-21b5 behaelt den geschriebenen Basiswert max 0 und feuert (Ist 1, Grenze 0). Der Slaughtermaster-Slot meldet effectiveMax=0 und ist nicht verborgen.",
+      "expect": {
+        "firing": [
+          { "limitId": "c70d-c292-36ee-21b5", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["cb1c-3389-8f55-d6c6"],
+        "capabilities": [
+          {
+            "defId": "0ff3-ec4d-1c6b-6d53",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Slaughtermaster",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-tyrant-one-slaughtermaster-unlimited.ros",
+      "description": "Identischer Aufbau, zusaetzlich EIN Tyrant (samt Pflicht-Ogre-Club und Pflicht-Light-Armour). Die greaterThan-Bedingung zaehlt 1 Tyrant im Kontingent, 1 > 0 haelt: der set-Modifier ersetzt den Wert von c70d-c292-36ee-21b5 durch den Sentinel -1 = unbegrenzt. Die Grenze feuert nicht; der belegte Slaughtermaster-Slot meldet die aufgehobene Obergrenze als effectiveMax=null / headroom=null. Die Tyrant-Obergrenze cb1c-3389-8f55-d6c6 (max 1, scope=roster) ist mit einem Tyrant erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["c70d-c292-36ee-21b5", "cb1c-3389-8f55-d6c6"],
+        "capabilities": [
+          {
+            "defId": "0ff3-ec4d-1c6b-6d53",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Slaughtermaster",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-tyrant-two-slaughtermasters-unlimited.ros",
+      "description": "Ein Tyrant und ZWEI Slaughtermaster in EINER Selektion (number=2, damit genau ein Slot entsteht und die Slot-Aussage eindeutig bleibt). Der Fall trennt 'unbegrenzt' von einer still als 1 gelesenen Kappe: waere der gesetzte -1 als 1 gedeutet, muesste c70d-c292-36ee-21b5 bei Ist 2 feuern. Erwartung: die Grenze bleibt still, der Slot meldet current=2 bei effectiveMax=null / headroom=null.",
+      "expect": {
+        "firing": [],
+        "absent": ["c70d-c292-36ee-21b5", "cb1c-3389-8f55-d6c6"],
+        "capabilities": [
+          {
+            "defId": "0ff3-ec4d-1c6b-6d53",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Slaughtermaster",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-tyrant-two-slaughtermaster-selections-unlimited.ros",
+      "description": "Dieselbe Zaehlung wie Roster 03, aber als ZWEI getrennte Slaughtermaster-Selektionen (je number=1) statt einer Selektion mit number=2. Die roster-skopierte Grenze c70d-c292-36ee-21b5 sieht in beiden Kodierungen dieselbe Summe 2 und bleibt still. Auf eine Slot-Aussage wird hier bewusst verzichtet, weil dieselbe Definition zweimal im Kontingent steht und ein capabilities-Selektor ohne Pfad nicht eindeutig traefe.",
+      "expect": {
+        "firing": [],
+        "absent": ["c70d-c292-36ee-21b5", "cb1c-3389-8f55-d6c6"]
+      }
+    }
+  ]
+}

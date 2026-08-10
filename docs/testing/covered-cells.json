@@ -422,6 +422,13 @@
         "docs/testing/condition-group-not"
       ],
       "rationale": "Beide Vorkommen der not-Gruppe im Korpus stecken verschachtelt in den conditionGroups einer and-Gruppe: am set-Modifikator, der die Pflicht-Untergrenzen von Heinrich Kemmler (Traeger 595f-a4e4-5cbc-dab4, Grenze 8461-3eab-e5ac-1636) und Krell (Traeger 2d17-c7be-5fd6-f1a3, Grenze 60a8-5b49-6b81-7c84) im Kontingent 'Army of the Lichemaster' von 0 auf 1 hebt. Das Szenario variiert Budget, Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart sichtbar wird: Roster 03 laesst beide Mitglieder der inneren and-Untergruppe halten (die Negation faellt, die Grenzen schweigen), 04 und 05 lassen je genau eines halten (die Negation haelt, beide Grenzen feuern mit Ist 0 / Grenze 1), 01 keines, und 06 belegt ueber das scheiternde instanceOf, dass die aeussere Klammer unabhaengig davon greift. Szenario ist gruen."
+    },
+    {
+      "key": "condition|greaterThan|force|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/greater-than-force-unlimited-gate"
+      ],
+      "rationale": "Der set--1-Modifier am 'Slaughtermaster' (0ff3-ec4d-1c6b-6d53, Ogre Kingdoms) ist auf genau diese Bedingung gegated: greaterThan value=0, field=selections, scope=force, childId=2679-58f4-1771-662d (Tyrant). Roster 01 (kein Tyrant) laesst die Basisgrenze max 0 stehen und feuert mit Ist 1 / Grenze 0, Roster 02-04 (ein Tyrant) heben sie auf den geschriebenen Sentinel -1 = unbegrenzt, und die Grenze schweigt in beiden Kodierungen der Stueckzahl. Das Gatter selbst wertet die Engine korrekt aus; rot sind allein die Slot-Zaehlungen der Roster 02 und 03 — siehe den pinnedGaps-Eintrag zu diesem Szenario."
     }
   ]
 }
