@@ -109,11 +109,11 @@
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-6hzwh7",
+    "branch": "claude/evaluator-abschluss-kampagne-uhbxfy",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 13,
-    "lastRunAt": "2026-08-10T15:42:24Z",
-    "lastRunOutcome": "stopped-by-human",
+    "runs": 14,
+    "lastRunAt": "2026-08-10T19:23:47Z",
+    "lastRunOutcome": "running",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -180,6 +180,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 13: the human stopped the campaign; the scheduled re-arm was deleted. The campaign is NOT closed - 8 cells remain uncovered in docs/testing/worklist.json and one parked question waits on an answer. A later run must be started by the human; do not read the missing re-arm as termination."
+    "reArmNote": "Run 14: the previously recorded campaign branch claude/evaluator-abschluss-kampagne-6hzwh7 is merged and gone from the remote; the run continues on this session branch, which is level with main and carries all merged campaign work."
   }
 }
