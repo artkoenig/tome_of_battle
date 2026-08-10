@@ -89,7 +89,7 @@
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 11,
     "lastRunAt": "2026-08-10T09:20:00Z",
-    "lastRunOutcome": "running",
+    "lastRunOutcome": "stopped-by-human",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -127,7 +127,26 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/greater-than-force-unlimited-gate": {
+        "cellKey": "condition|greaterThan|force|selectionCount|child=id",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/at-least-parent-any-reveal": {
+        "cellKey": "condition|atLeast|parent|selectionCount|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
-    }
+    },
+    "reArmNote": "Run 11: the human instructed no re-arming and asked for a pull request instead. The campaign is NOT closed - 23 cells remain uncovered in docs/testing/worklist.json. A later run must be started by the human; do not treat the missing send_later as termination."
   }
 }
