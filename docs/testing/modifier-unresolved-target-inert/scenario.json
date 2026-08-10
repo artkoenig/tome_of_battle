@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 1,
+  "name": "modifier-unresolved-target-inert",
+  "description": "Ein modifier, dessen field eine Id nennt, die der geladene Datensatz NIRGENDS definiert - weder als constraint-id noch als costType noch als characteristicType -, ist wirkungslos: er erzeugt keine eigene Grenze, verschiebt keine fremde Grenze und stoert die Auswertung seines Traegers und seiner Nachbarn nicht. Gepinnt an den vier \"Swedish Comp System\"-Modifikatoren des Orcs-and-Goblins-Katalogs auf ce6e-afde-2ed1-aac2 (ein unbedingter decrement 100 am Upgrade \"Fanatics\" 18f4-ad33-69ca-e327, drei bedingte increment 100 an der Einheit \"Night Goblins\" 79af-55cb-9761-f0be). Die Id kommt im gesamten Fixture-Korpus AUSSCHLIESSLICH als field dieser vier Modifikatoren vor. Gegenprobe im selben Rahmen: der ECHTE Modifikator der \"Netters\" (increment 1 je vier Night-Goblin-Modellen auf die Grenze 445e-c0e4-6784-9097, Basiswert max 0) verschiebt seine Grenze nachweislich - sonst waere \"nichts passiert\" nicht von \"nichts ausgewertet\" zu unterscheiden.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-fanatics-at-max-unconditional-dangling-modifier.ros",
+      "description": "Eine \"Night Goblins\"-Einheit mit 20 Modellen, Pflichtwaffe \"Hand Weapons and Shields\", 5 Netters und 3 Fanatics - alle geschriebenen Grenzen exakt eingehalten. Der UNBEDINGTE decrement 100 auf ce6e-afde-2ed1-aac2 in der nackten modifierGroup der Fanatics ist aktiv (eine Klammer ohne Bedingungen gattert nichts), die drei bedingten increment 100 der Einheit nicht (sie verlangen mindestens 15 Fanatics). Nichts geschieht: keine Grenze dieser Id, alle Nachbargrenzen auf ihren geschriebenen bzw. regulaer modifizierten Werten. Das Punktelimit 124 klemmt die Summe auf exakt 125 pts fest (20x2 + 0 + 5x2 + 3x25) - haette der decrement 100 auf irgendeine Kostenart gewirkt, laege die Summe darunter und das Budget bliebe faelschlich still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 125, "bound": 124 }
+        ],
+        "absent": [
+          "ce6e-afde-2ed1-aac2",
+          "0368-ef7f-01c5-924a",
+          "445e-c0e4-6784-9097",
+          "8cb2-bd82-3725-569e",
+          "8036-c81f-c00c-c4c5",
+          "a19a-18bc-636d-69d3",
+          "b00d-e5a2-c63f-3bd3"
+        ],
+        "capabilities": [
+          {
+            "defId": "18f4-ad33-69ca-e327",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Fanatics",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "638c-0f7d-3590-75b3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Netters",
+            "current": 5,
+            "effectiveMin": null,
+            "effectiveMax": 5,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "7b95-cfde-8c59-78c3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Night Goblin",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-fifteen-fanatics-first-dangling-group-holds.ros",
+      "description": "DER KERNFALL: derselbe Aufbau mit 15 statt 3 Fanatics. Damit haelt die and-Gruppe des Modifikators \"Refund 1\" (atLeast 15 Fanatics UND atLeast 1 Night-Goblin-Modell, beide scope=parent, includeChildSelections=true) - sie haelt sowohl in der Lesart \"parent = die Einheit\" als auch in der Lesart \"parent = das Kontingent\", denn beide Rahmen enthalten dieselben 15 Fanatics. Der Modifikator wuerde also feuern, wenn sein Ziel aufloesbar waere; er tut trotzdem nichts. Der echte Nachbar zeigt zugleich, dass hier ausgewertet wird: die Fanatics-Obergrenze max 3 (0368-ef7f-01c5-924a) wird mit Ist 15 ueberschritten, und die Netters-Grenze steht unveraendert auf ihrem regulaer modifizierten Wert 5 - ein increment/decrement von 100 hat weder die eine noch die andere Zahl beruehrt.",
+      "expect": {
+        "firing": [
+          { "limitId": "0368-ef7f-01c5-924a", "actual": 15, "bound": 3, "count": 1 }
+        ],
+        "absent": [
+          "ce6e-afde-2ed1-aac2",
+          "445e-c0e4-6784-9097",
+          "8cb2-bd82-3725-569e",
+          "8036-c81f-c00c-c4c5",
+          "a19a-18bc-636d-69d3",
+          "b00d-e5a2-c63f-3bd3"
+        ],
+        "capabilities": [
+          {
+            "defId": "18f4-ad33-69ca-e327",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Fanatics",
+            "current": 15,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "638c-0f7d-3590-75b3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Netters",
+            "current": 5,
+            "effectiveMin": null,
+            "effectiveMax": 5,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "7b95-cfde-8c59-78c3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Night Goblin",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-fortyfive-fanatics-all-dangling-groups-hold.ros",
+      "description": "Dieselbe Einheit mit 45 Fanatics: jetzt halten ALLE DREI bedingten Gruppen (Schwellen 45/3, 30/2, 15/1) gleichzeitig, dazu der unbedingte decrement der Fanatics - alle vier haltlosen Modifikatoren sind auf einmal aktiv. Gegen Roster 02 (nur einer der drei bedingten aktiv) darf sich KEINE gemessene Zahl unterscheiden ausser dem Ist der Fanatics-Obergrenze: Netters bleibt bei effectiveMax 5, das Modell bei effectiveMin 20, die Fanatics-Grenze bei bound 3. Eine Engine, die eine Grenze mit der unbekannten Id anlegt oder die 100er auf irgendeine benachbarte Grenze umleitet, liefert hier andere Werte als in Roster 02.",
+      "expect": {
+        "firing": [
+          { "limitId": "0368-ef7f-01c5-924a", "actual": 45, "bound": 3, "count": 1 }
+        ],
+        "absent": [
+          "ce6e-afde-2ed1-aac2",
+          "445e-c0e4-6784-9097",
+          "8cb2-bd82-3725-569e",
+          "8036-c81f-c00c-c4c5",
+          "a19a-18bc-636d-69d3",
+          "b00d-e5a2-c63f-3bd3"
+        ],
+        "capabilities": [
+          {
+            "defId": "18f4-ad33-69ca-e327",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Fanatics",
+            "current": 45,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "638c-0f7d-3590-75b3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Netters",
+            "current": 5,
+            "effectiveMin": null,
+            "effectiveMax": 5,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "7b95-cfde-8c59-78c3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Night Goblin",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-netters-above-modified-max-20-models.ros",
+      "description": "GEGENPROBE, dass in diesem Rahmen ueberhaupt Modifikatoren angewandt werden: 20 Modelle, 6 Netters, keine Fanatics. Die Netters-Grenze 445e-c0e4-6784-9097 ist GESCHRIEBEN max 0 und wird von einem echten Modifikator (increment 1, repeat value=4 childId=7b95-cfde-8c59-78c3 scope=parent roundUp=false) auf 0 + floor(20/4) = 5 gehoben. Sie feuert daher mit Ist 6 / GRENZE 5 - nicht mit Grenze 0. Damit ist \"nichts passiert\" in den Rostern 01-03 messbar von \"nichts ausgewertet\" getrennt.",
+      "expect": {
+        "firing": [
+          { "limitId": "445e-c0e4-6784-9097", "actual": 6, "bound": 5, "count": 1 }
+        ],
+        "absent": [
+          "ce6e-afde-2ed1-aac2",
+          "0368-ef7f-01c5-924a",
+          "8cb2-bd82-3725-569e",
+          "8036-c81f-c00c-c4c5",
+          "a19a-18bc-636d-69d3",
+          "b00d-e5a2-c63f-3bd3"
+        ],
+        "capabilities": [
+          {
+            "defId": "638c-0f7d-3590-75b3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Netters",
+            "current": 6,
+            "effectiveMin": null,
+            "effectiveMax": 5,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "7b95-cfde-8c59-78c3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Night Goblin",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-netters-at-modified-max-24-models-fanatics-15.ros",
+      "description": "Beide Haelften in EINEM Roster: 24 Modelle heben die Netters-Grenze auf 0 + floor(24/4) = 6, die 6 gewaehlten Netters halten sie damit exakt ein (Schrittweite gegen Roster 04 gemessen: vier Modelle mehr = ein Netter mehr erlaubt), waehrend die 15 Fanatics zugleich die Bedingung des haltlosen Modifikators \"Refund 1\" erfuellen. Der echte Modifikator wirkt sichtbar, der haltlose bleibt sichtbar wirkungslos - und die Fanatics-Obergrenze meldet unveraendert bound 3.",
+      "expect": {
+        "firing": [
+          { "limitId": "0368-ef7f-01c5-924a", "actual": 15, "bound": 3, "count": 1 }
+        ],
+        "absent": [
+          "ce6e-afde-2ed1-aac2",
+          "445e-c0e4-6784-9097",
+          "8cb2-bd82-3725-569e",
+          "8036-c81f-c00c-c4c5",
+          "a19a-18bc-636d-69d3",
+          "b00d-e5a2-c63f-3bd3"
+        ],
+        "capabilities": [
+          {
+            "defId": "638c-0f7d-3590-75b3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Netters",
+            "current": 6,
+            "effectiveMin": null,
+            "effectiveMax": 6,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "18f4-ad33-69ca-e327",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Fanatics",
+            "current": 15,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "7b95-cfde-8c59-78c3",
+            "anchorKind": "occupied",
+            "frameDefId": "79af-55cb-9761-f0be",
+            "name": "Night Goblin",
+            "current": 24,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

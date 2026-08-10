@@ -117,7 +117,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`less-than-parent-parry-save`](testing/less-than-parent-parry-save/) | Definitive Ogre + Mercenaries | 5 |
 | [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
 | [`decrement-cost-bloodline-casting-dice`](testing/decrement-cost-bloodline-casting-dice/) | ergofang VC (ohne Mercenaries) | 8 |
-| **Summe** | | **182** |
+| [`modifier-unresolved-target-inert`](testing/modifier-unresolved-target-inert/) | Definitive O&G + Mercenaries | 5 |
+| **Summe** | | **187** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1353,3 +1354,24 @@ den Rahmen auflöst.
 | 06 | Wie 05, Budget 1 | Ist 2 gegen Grenze 1 — dieselbe Klammer ohne Null-Budget |
 | 07 | Zwei Vampire, nur einer Blood Dragon, Budget 1 | Ist 2 — der Rabatt gilt je Auswahl, nicht armeeweit |
 | 08 | Dieselben zwei, beide Blood Dragon, Budget 1 | Still — die Gegenprobe zu 07 |
+
+## `modifier-unresolved-target-inert`
+
+Prüft einen Modifikator, dessen `field` einen Bezeichner nennt, den der geladene
+Datensatz **nirgends** definiert — weder als `constraint`, noch als Kostenart,
+noch als Merkmalstyp. Er bleibt vollständig wirkungslos: er erzeugt keine eigene
+Grenze, verschiebt keine fremde und stört die Auswertung seiner Nachbarn nicht.
+Beleg: die vier mit „Swedish Comp System" kommentierten Modifikatoren des
+Orcs-and-Goblins-Katalogs zeigen auf `ce6e-afde-2ed1-aac2` — einen unbedingten
+`decrement` an den „Fanatics" (`18f4-ad33-69ca-e327`) und drei bedingte
+`increment` an den „Night Goblins" (`79af-55cb-9761-f0be`). Damit „nichts
+passiert" von „nichts wurde ausgewertet" unterscheidbar bleibt, zeigen zwei
+Roster einen **echten** Modifikator derselben Einheit bei der Arbeit.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 20 Modelle, 5 Netter, 3 Fanatics — alle Grenzen exakt eingehalten | Der unbedingte haltlose Modifikator wirkt nicht; nur das Punktebudget meldet sich |
+| 02 | Derselbe Aufbau mit 15 Fanatics | Die erste bedingte Gruppe hält — die Nachbargrenzen bleiben unverändert |
+| 03 | Dieselbe Einheit mit 45 Fanatics | Alle drei bedingten Gruppen halten zugleich — dieselben Werte wie bei 02 |
+| 04 | 20 Modelle, 6 Netter, keine Fanatics | Gegenprobe: die Netter-Grenze **wird** von einem echten Modifikator auf 5 gehoben und meldet Ist 6 |
+| 05 | 24 Modelle, 6 Netter, 15 Fanatics | Beide Hälften in einem Roster: Netter-Grenze 6, exakt eingehalten |

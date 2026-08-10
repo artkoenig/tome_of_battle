@@ -387,6 +387,13 @@
         "docs/testing/decrement-cost-bloodline-casting-dice"
       ],
       "rationale": "Roster pairs differing only in the bloodline: 'Wizard level 2' (42d9-cebe-18d5-cdbd, upstream Vampire Counts, written 2 Casting Dice) carries a decrement 1 on the cost type fcec-2340-6368-a2ba gated on greaterThan 0 of the Blood Dragon category at scope=parent with includeChildSelections=true. The discount is measured through the roster budget budget::fcec-2340-6368-a2ba: rosters 01 vs 02 and 04 vs 05 cross the same budget in opposite directions, rosters 03 and 06 bracket the discounted sum from below so it is pinned exactly rather than only bounded, and rosters 07/08 show two vampires where only the Blood Dragon one is discounted. Scenario is green."
+    },
+    {
+      "key": "modifier|increment|unresolvedTarget",
+      "evidence": [
+        "docs/testing/modifier-unresolved-target-inert"
+      ],
+      "rationale": "The four 'Swedish Comp System' modifiers of the Orcs-and-Goblins book (one unconditional decrement on Fanatics 18f4-ad33-69ca-e327, three gated increments on Night Goblins 79af-55cb-9761-f0be) address ce6e-afde-2ed1-aac2, which the data set defines nowhere. Rosters 02/03 satisfy one and then all three gates and assert the neighbouring bounds unmoved (Fanatics max 3, Netters effectiveMax, model min 20) with ce6e-afde-2ed1-aac2 absent from every report; rosters 04/05 show a real modifier on the same unit does move the Netters bound by floor(models/4), so 'nothing happened' is distinguishable from 'nothing was evaluated'. Whether a dangling field should also raise a diagnostic is left open by the format spec and is asserted neither way. Scenario is green."
     }
   ]
 }

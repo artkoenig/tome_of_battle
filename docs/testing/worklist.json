@@ -7,90 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 74,
-    "uncovered": 31
+    "covered": 75,
+    "uncovered": 30
   },
   "cells": [
-    {
-      "key": "modifier|increment|unresolvedTarget",
-      "kind": "modifier",
-      "axes": {
-        "type": "increment",
-        "targetField": "unresolvedTarget"
-      },
-      "occurrences": 4,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 4
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "79af-55cb-9761-f0be",
-            "name": "Night Goblins"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "ce6e-afde-2ed1-aac2"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "79af-55cb-9761-f0be",
-            "name": "Night Goblins"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "ce6e-afde-2ed1-aac2"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "79af-55cb-9761-f0be",
-            "name": "Night Goblins"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "increment",
-            "field": "ce6e-afde-2ed1-aac2"
-          }
-        }
-      ]
-    },
     {
       "key": "conditionGroup|or|nested",
       "kind": "conditionGroup",
