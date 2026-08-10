@@ -7,104 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 67,
-    "uncovered": 38
+    "covered": 68,
+    "uncovered": 37
   },
   "cells": [
-    {
-      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": true,
-        "includeChildForces": true,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 8,
-      "files": {
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 6
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "2f34-a145-911a-fa00",
-            "name": "Arcane Items (VC)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "adb3-9853-d566-e432",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "127fbfcd-4275-4eb2-a9e6-9e860b1df0ba",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "b76c-6bad-4650-dbb0",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "c6808f9e-25e5-4364-b002-e88ba9bd7c2c",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "87c88aaa-9c67-47d3-bc2d-be55cba66f56",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
     {
       "key": "conditionGroup|and|nested",
       "kind": "conditionGroup",

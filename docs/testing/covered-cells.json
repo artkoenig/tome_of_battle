@@ -345,6 +345,13 @@
         "docs/testing/primary-catalogue-scope"
       ],
       "rationale": "Roster pair differing only in the force: the Maneaters upgrade 'Extra Rare choice' (Mercenaries, ea59-6ea6-b3c9-c34a) carries min 0 (9e9f-e78d-6390-accc) and a set 1 modifier gated on notInstanceOf(scope=primary-catalogue, childId=731d-5b13-2a92-5427 'Ogre Kingdoms'). Roster 09 (Vampire Counts force e989-15b8-7eb6-9668) asserts the limit firing with actual 0 against bound 1, roster 08 (Ogre Kingdoms force 729f-9246-5cd3-5044) asserts it absent; both rosters additionally demand the absence of the UNRESOLVED_SCOPE diagnostic, so the notInstanceOf hit is an evaluated one and not a silent fallback to 0. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/dispel-scroll-repeat-group-max"
+      ],
+      "rationale": "The shared group 'Arcane Items (VC)' (2f34-a145-911a-fa00, Vampire Counts) carries max 1 (fa59-e6b8-9523-3510) and an increment 1 whose single repeat counts the selected copies of the Dispel Scroll link adb3-9853-d566-e432 with scope=parent, shared=true, includeChildSelections=true, includeChildForces=true. Roster 01 (two scrolls under the Master Necromancer 4ee2-ac3a-3cc6-11af) asserts effectiveMax 3, so the repetition applied twice; roster 02 without any arcane item asserts the base effectiveMax 1. The counted copies sit directly under the group, so the two include-flags of this repeat are exercised but not separately discriminated by the pair. Scenario is green."
     }
   ]
 }
