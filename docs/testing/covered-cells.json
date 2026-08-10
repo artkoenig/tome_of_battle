@@ -219,6 +219,20 @@
         "docs/testing/at-least-roster-points-limit"
       ],
       "rationale": "RED — pinned, not passing: all three rosters fail. Roster 01 expects the occupied Uprising slot to report current 1 (report has 0); rosters 02 and 03 expect the force-scoped max 00f6-c1b3-ee85-5c02 to fire with actual 1 / bound 0 (the report carries no such message). See pinnedGaps in docs/testing/campaign-state.json."
+    },
+    {
+      "key": "modifier|decrement|characteristic",
+      "evidence": [
+        "docs/testing/modifier-characteristic-value"
+      ],
+      "rationale": "Rosters 01/02 differ only in the Light-Armour selection under the same Mercenaries Ogres unit, and the conditional decrement on the Sv characteristic is what moves the profile value between them (Sv 11 - 1 - 4 = 6); every other characteristic of the profile is asserted unchanged."
+    },
+    {
+      "key": "condition|greaterThan|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The and-group on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 holds `greaterThan 999 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=model`; rosters 01 (1000 pts) and 03 (500 pts) are identical apart from the configured cost limit and straddle that threshold, so the effectiveMax flip from 1 to 0 isolates this member, while roster 04 (2000 pts) shows it holding across two repeat applications."
     }
   ]
 }
