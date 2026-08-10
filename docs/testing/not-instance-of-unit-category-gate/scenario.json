@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "name": "not-instance-of-unit-category-gate",
+  "description": "Eine condition type=\"notInstanceOf\" field=\"selections\" scope=\"unit\" mit einer KATEGORIE in childId ist eine Mitgliedschaftspruefung mit umgekehrter Polaritaet, keine Zaehlung: sie haelt genau dann, wenn die umschliessende Einheit — der naechste Vorfahre vom Typ unit, den Traeger der Query eingeschlossen (Formatdoku 7.7, Kasten scope=unit) — NICHT Mitglied der genannten Kategorie ist. Im Vampire-Counts-Katalog gibt es genau zwei Vorkommen, beide in der geteilten Gruppe \"Magic Weapons (VC)\" (bf27-6ca6-5c3a-3449): der Verweis \"Blood Drinker\" (8427-3c8d-f4af-8af3 -> ab72-7ce0-8eea-7ea6) traegt einen modifier type=\"set\" value=\"true\" field=\"hidden\", dessen EINZIGE Bedingung notInstanceOf scope=\"unit\" childId=\"017d-3857-a815-782f\" (categoryEntry \"Vampire\") ist, und der Verweis \"Sword of the Kings \" (2749-9013-530a-a980 -> 408c-9cf1-0288-5d87) dasselbe mit childId=\"5c44-3a90-6b26-bc32\" (categoryEntry \"Wight\"). Netto: der Gegenstand ist NUR auf einer Einheit der genannten Kategorie sichtbar und auf jeder anderen verborgen. Zwei Einheiten desselben Katalogs geben ein gekreuztes Paar, weil jede genau eine der beiden Kategorien fuehrt: Wight Lord (b9c6-93fb-ce3c-965a, categoryLink Wight) erreicht die geteilte Gruppe ueber seine eigene Gruppe \"Magic Items\" (deae-815d-c2ef-a607) und den Verweis 3219-3f82-eead-b592, Vampire Count (6822-0110-a7c9-cbb0, categoryLink Vampire) ueber die Kette 2dc4-ffd3-2c99-c560 -> 53e8-0ce2-eaf6-0163 -> 14d2-cec2-9b1c-418c -> 11e6-e9d4-f6e4-c02d -> afe1-9a75-ceba-5949. Sechs Roster pinnen beide Richtungen ueber expect.capabilities[].isHidden — als nicht gewaehlter Angebots-Slot (01/02) und als belegter Slot (03/04) —, dazu drei Kontroll-Slots derselben Gruppe: Frostblade (506f-3f9c-a66a-b9fc, ohne jeden hidden-Modifikator), Black Axe of Krell (07db-c99e-adb7-22ed, umgekehrte Polaritaet: or-Gruppe aus zwei instanceOf) und Asp Bow  (cce6-6082-b5e0-32fe, Basis hidden=\"true\" mit ungehaltenem instanceOf-Aufdecker). Sichtbarkeit ist Verfuegbarkeit, keine zaehlende Grenze — firing bleibt leer ausser in 05/06, wo der jeweils SICHTBARE Gegenstand bewusst doppelt gefuehrt wird und die eigenen max-Grenzen der Verweise reissen.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-wight-lord-sword-visible-blood-drinker-hidden.ros",
+      "description": "Wight Lord (b9c6-93fb-ce3c-965a) mit seinen beiden Pflicht-Handweapons und einer Bloodlines-Selektion ohne Clan-Auswahl; im Magic-Item-Baum ist nichts gewaehlt. Die umschliessende Einheit fuehrt Wight (5c44-3a90-6b26-bc32), aber nicht Vampire (017d-3857-a815-782f): notInstanceOf Wight haelt NICHT -> Sword of the Kings bleibt beim Basiswert sichtbar; notInstanceOf Vampire HAELT -> Blood Drinker wird auf hidden=true gesetzt. Die drei Kontroll-Slots belegen, dass der Rahmen selbst nichts verbirgt (Frostblade, Black Axe) bzw. dass ein Basis-hidden ohne haltenden Aufdecker verborgen bleibt (Asp Bow).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "17dc-3976-7dfc-5700",
+          "8f7d-d49e-d74c-81b3",
+          "ff3a-8103-8351-eba5",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "b012-c96f-128c-0848",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6",
+          "ed42-9091-8bf7-8006",
+          "8c58-8d92-f372-a13d",
+          "d0f2-4ae3-a163-7081"
+        ],
+        "capabilities": [
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "offerAnchor",
+            "name": "Sword of the Kings ",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "offerAnchor",
+            "name": "Blood Drinker",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "506f-3f9c-a66a-b9fc",
+            "targetDefId": "1a6a-193c-1cfa-d730",
+            "anchorKind": "offerAnchor",
+            "name": "Frostblade",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "07db-c99e-adb7-22ed",
+            "targetDefId": "8569-0a6f-3d66-7daf",
+            "anchorKind": "offerAnchor",
+            "name": "Black Axe of Krell",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "cce6-6082-b5e0-32fe",
+            "targetDefId": "b60a-1687-9e54-9291",
+            "anchorKind": "offerAnchor",
+            "name": "Asp Bow ",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-vampire-count-blood-drinker-visible-sword-hidden.ros",
+      "description": "Vampire Count (6822-0110-a7c9-cbb0) mit Handweapon und Magic Level 2, dieselbe Bloodlines-Selektion ohne Clan-Auswahl; im Magic-Item-Baum ist nichts gewaehlt. Gekreuzt zu Roster 01: die Einheit fuehrt Vampire, aber nicht Wight — notInstanceOf Vampire haelt NICHT -> Blood Drinker sichtbar; notInstanceOf Wight HAELT -> Sword of the Kings verborgen. Dieselben drei Kontroll-Slots melden dieselben Werte wie in Roster 01, obwohl der Weg zur geteilten Gruppe ein voellig anderer ist.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "17dc-3976-7dfc-5700",
+          "8f7d-d49e-d74c-81b3",
+          "ff3a-8103-8351-eba5",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "61f5-4991-b5f9-32bd",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "b3b5-f872-24df-04dc"
+        ],
+        "capabilities": [
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "offerAnchor",
+            "name": "Blood Drinker",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "offerAnchor",
+            "name": "Sword of the Kings ",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "506f-3f9c-a66a-b9fc",
+            "targetDefId": "1a6a-193c-1cfa-d730",
+            "anchorKind": "offerAnchor",
+            "name": "Frostblade",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "07db-c99e-adb7-22ed",
+            "targetDefId": "8569-0a6f-3d66-7daf",
+            "anchorKind": "offerAnchor",
+            "name": "Black Axe of Krell",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "cce6-6082-b5e0-32fe",
+            "targetDefId": "b60a-1687-9e54-9291",
+            "anchorKind": "offerAnchor",
+            "name": "Asp Bow ",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-wight-lord-sword-selected.ros",
+      "description": "Wie Roster 01, aber das Sword of the Kings ist am Wight Lord GEWAEHLT (number=1, 25 pts). Der belegte Slot meldet weiterhin isHidden=false — der Gegenstand ist auf dieser Einheit erlaubt —, waehrend der ungewaehlte Blood-Drinker-Angebots-Slot verborgen bleibt. Beide Sword-Hoechstmasse (parent und force) sind mit Ist 1 erfuellt, das Magic-Item-Budget der Gruppe deae-815d-c2ef-a607 (max 50 pts) mit 25 pts ebenfalls.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "17dc-3976-7dfc-5700",
+          "8f7d-d49e-d74c-81b3",
+          "ff3a-8103-8351-eba5",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "b012-c96f-128c-0848",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6",
+          "ed42-9091-8bf7-8006",
+          "8c58-8d92-f372-a13d",
+          "d0f2-4ae3-a163-7081"
+        ],
+        "capabilities": [
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "occupied",
+            "name": "Sword of the Kings ",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "offerAnchor",
+            "name": "Blood Drinker",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-vampire-count-blood-drinker-selected.ros",
+      "description": "Wie Roster 02, aber der Blood Drinker ist am Vampire Count GEWAEHLT (number=1, 50 pts). Der belegte Slot meldet isHidden=false, der ungewaehlte Sword-Angebots-Slot bleibt verborgen. Das Hoechstmass des Blood-Drinker-Verweises (max 1, scope=force) ist mit Ist 1 erfuellt, das Budget des Verweises 2dc4-ffd3-2c99-c560 (max 100 pts) mit 50 pts ebenfalls.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "17dc-3976-7dfc-5700",
+          "8f7d-d49e-d74c-81b3",
+          "ff3a-8103-8351-eba5",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "61f5-4991-b5f9-32bd",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "b3b5-f872-24df-04dc"
+        ],
+        "capabilities": [
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "occupied",
+            "name": "Blood Drinker",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "offerAnchor",
+            "name": "Sword of the Kings ",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-wight-lord-sword-twice-max-fires.ros",
+      "description": "Wie Roster 03, aber number=2. Der sichtbare Gegenstand bleibt sichtbar (isHidden=false) — die Zaehlgrenze ist unabhaengig von der Sichtbarkeit: beide eigenen Hoechstmasse des Sword-Verweises reissen mit Ist 2 gegen Grenze 1 (8f7d-d49e-d74c-81b3 scope=parent, ff3a-8103-8351-eba5 scope=force). Das Magic-Item-Budget b012-c96f-128c-0848 (max 50 pts) wird mit 2 x 25 = 50 pts exakt getroffen und bleibt still; das Hoechstmass des ungewaehlten Blood Drinker (17dc-3976-7dfc-5700) ebenfalls.",
+      "expect": {
+        "firing": [
+          { "limitId": "8f7d-d49e-d74c-81b3", "actual": 2, "bound": 1 },
+          { "limitId": "ff3a-8103-8351-eba5", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "17dc-3976-7dfc-5700",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "b012-c96f-128c-0848",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6",
+          "ed42-9091-8bf7-8006",
+          "8c58-8d92-f372-a13d",
+          "d0f2-4ae3-a163-7081"
+        ],
+        "capabilities": [
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "occupied",
+            "name": "Sword of the Kings ",
+            "current": 2,
+            "isHidden": false
+          },
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "offerAnchor",
+            "name": "Blood Drinker",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-vampire-count-blood-drinker-twice-max-fires.ros",
+      "description": "Wie Roster 04, aber number=2. Der Blood Drinker bleibt sichtbar; sein EINZIGES eigenes Hoechstmass (17dc-3976-7dfc-5700, max 1 scope=force) reisst mit Ist 2. Ein scope=parent-Hoechstmass traegt dieser Verweis nicht — 8f7d-d49e-d74c-81b3 gehoert allein dem Sword-Verweis und bleibt still, ebenso ff3a-8103-8351-eba5. Das Budget 61f5-4991-b5f9-32bd (max 100 pts) wird mit 2 x 50 = 100 pts exakt getroffen und bleibt still.",
+      "expect": {
+        "firing": [
+          { "limitId": "17dc-3976-7dfc-5700", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "4a0a-b107-e726-da32",
+          "39c7-f615-17db-7016",
+          "8f7d-d49e-d74c-81b3",
+          "ff3a-8103-8351-eba5",
+          "8a61-b1e5-d2d4-d7b1",
+          "cc8f-a62f-7578-e56f",
+          "91ca-38e5-e64f-2e3e",
+          "61f5-4991-b5f9-32bd",
+          "3a5f-f22c-f213-581e",
+          "6798-e03b-977d-7506",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "b3b5-f872-24df-04dc"
+        ],
+        "capabilities": [
+          {
+            "defId": "8427-3c8d-f4af-8af3",
+            "targetDefId": "ab72-7ce0-8eea-7ea6",
+            "anchorKind": "occupied",
+            "name": "Blood Drinker",
+            "current": 2,
+            "isHidden": false
+          },
+          {
+            "defId": "2749-9013-530a-a980",
+            "targetDefId": "408c-9cf1-0288-5d87",
+            "anchorKind": "offerAnchor",
+            "name": "Sword of the Kings ",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="niuc-05" name="NIUC 05 – Wight Lord fuehrt das Sword of the Kings zweimal" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-instance-of-unit-category-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+        </selection>
+        <!-- Wie Roster 03, aber number="2": der SICHTBARE Gegenstand wird bewusst
+             ueberzaehlig gefuehrt. Der Verweis 2749-9013-530a-a980 traegt zwei eigene
+             Hoechstmasse (max 1 scope="parent" 8f7d-d49e-d74c-81b3 und max 1
+             scope="force" ff3a-8103-8351-eba5); beide reissen mit Ist 2. Die Summe
+             2 x 25 = 50 pts trifft das Magic-Item-Budget der Gruppe
+             deae-815d-c2ef-a607 (max 50, b012-c96f-128c-0848) exakt und reisst es
+             nicht. Sichtbarkeit und Zaehlgrenze sind damit getrennt beobachtbar. -->
+        <selection id="sel-wight-lord" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="5c44-3a90-6b26-bc32" name="Wight" entryId="5c44-3a90-6b26-bc32" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-handweapon" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-handweapon-grp" name="Handweapon" entryId="c43e-3854-1448-20fc" entryLinkId="" entryGroupId="2e1a-7fe5-3705-33d0" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-sword" name="Sword of the Kings " entryId="408c-9cf1-0288-5d87" entryLinkId="2749-9013-530a-a980" entryGroupId="bf27-6ca6-5c3a-3449" number="2" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

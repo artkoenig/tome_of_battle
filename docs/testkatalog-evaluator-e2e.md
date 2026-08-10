@@ -156,7 +156,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
 | [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
 | [`less-than-unit-wizard-level-gate`](testing/less-than-unit-wizard-level-gate/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **329** |
+| [`not-instance-of-unit-category-gate`](testing/not-instance-of-unit-category-gate/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **335** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1616,3 +1617,33 @@ Auswahl steht in allen Rostern, sodass sich allein das erste Glied ändert.
 > pts-Kosten des Verweises von 50 auf 0) — der Bericht führt Grenzen, keine
 > Stückpreise. Ebenso wenig `unit` gegen `parent`: die Gruppe hängt direkt an
 > der Einheit, beide Rahmen fallen hier zusammen.
+
+## `not-instance-of-unit-category-gate`
+
+Prüft die `notInstanceOf`-Bedingung mit `scope="unit"` und einer
+**Kategorie**-`childId` (§7.7 der Formatdoku): Sie zählt nicht, sondern prüft
+Mitgliedschaft — sie hält genau dann, wenn die umschließende Einheit die
+benannte Kategorie **nicht** führt. Beleg: in der geteilten Gruppe „Magic
+Weapons (VC)" (`bf27-6ca6-5c3a-3449`, Vampire Counts) trägt der „Blood Drinker"
+(`8427-3c8d-f4af-8af3`) einen `set hidden="true"`, allein gegated auf
+`notInstanceOf` gegen die Kategorie „Vampire" (`017d-3857-a815-782f`), und das
+„Sword of the Kings " (`2749-9013-530a-a980`) denselben Modifikator gegen die
+Kategorie „Wight" (`5c44-3a90-6b26-bc32`). Zwei Einheiten derselben Gruppe
+kreuzen die Polarität: der „Wight Lord" führt Wight und nicht Vampire, der
+„Vampire Count" Vampire und nicht Wight.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Wight Lord, im Magic-Baum nichts gewählt | Das Schwert ist sichtbar, der Blood Drinker verborgen; drei Kontroll-Gegenstände zeigen, dass der Rahmen selbst nichts verbirgt |
+| 02 | Vampire Count, im Magic-Baum nichts gewählt | Exakt gespiegelt: Blood Drinker sichtbar, Schwert verborgen |
+| 03 | Wight Lord mit dem Schwert | Am besetzten Slot bleibt das Urteil dasselbe |
+| 04 | Vampire Count mit dem Blood Drinker | Gespiegelt am besetzten Slot |
+| 05 | Wight Lord mit dem Schwert, Stückzahl 2 | Die Sichtbarkeit hängt nicht an der Stückzahl; die beiden eigenen Höchstgrenzen des Verweises feuern mit Ist 2 / Grenze 1 |
+| 06 | Vampire Count mit dem Blood Drinker, Stückzahl 2 | Dasselbe gespiegelt, mit der einen Höchstgrenze dieses Verweises |
+
+> **Nicht abgedeckt:** `notInstanceOf` gegen eine Definitions-Id oder ein
+> Typ-Schlüsselwort und die Zählflaggen — beide Vorkommen der Zelle benennen
+> eine Kategorie und tragen `shared="true"` ohne `includeChildSelections`.
+> Ebenso wenig, ob die Kategorie aus dem Katalog stammt oder in der `.ros`
+> zwischengespeichert ist; das trennt das Nachbarszenario
+> `unit-scope-instance-of-category`.

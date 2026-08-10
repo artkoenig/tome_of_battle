@@ -7,78 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 83,
-    "uncovered": 22
+    "covered": 84,
+    "uncovered": 21
   },
   "cells": [
-    {
-      "key": "condition|notInstanceOf|unit|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "notInstanceOf",
-        "scope": "unit",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "8427-3c8d-f4af-8af3",
-            "name": "Blood Drinker"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "017d-3857-a815-782f"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "2749-9013-530a-a980",
-            "name": "Sword of the Kings "
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "5c44-3a90-6b26-bc32"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|add|info",
       "kind": "modifier",

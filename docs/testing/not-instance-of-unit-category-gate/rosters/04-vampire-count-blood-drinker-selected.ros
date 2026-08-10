@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="niuc-04" name="NIUC 04 – Vampire Count fuehrt den Blood Drinker" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-instance-of-unit-category-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+        </selection>
+        <!-- Wie Roster 02, aber der sichtbare Gegenstand ist auch GEWAEHLT: der
+             Blood Drinker (Verweis 8427-3c8d-f4af-8af3 -> ab72-7ce0-8eea-7ea6, 50 pts)
+             haengt als belegter Slot am Vampire Count. Derselbe geteilte Gruppen-Rahmen
+             bf27-6ca6-5c3a-3449, hier ueber die Kette 2dc4-ffd3-2c99-c560 ->
+             53e8-0ce2-eaf6-0163 -> 14d2-cec2-9b1c-418c -> 11e6-e9d4-f6e4-c02d ->
+             afe1-9a75-ceba-5949 erreicht. Das Sword of the Kings bleibt ungewaehlt. -->
+        <selection id="sel-vc" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="017d-3857-a815-782f" name="Vampire" entryId="017d-3857-a815-782f" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-vc-handweapon" name="Handweapon" entryId="9e6c-19ea-19ad-7cbe" entryLinkId="" entryGroupId="06c9-c170-adb2-86f5" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-vc-magic-level-2" name="Magic Level 2" entryId="fbc2-5115-f240-7367" entryLinkId="5a5f-aaf8-868f-9630" entryGroupId="7ab1-d9dc-6124-443f" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-vc-blood-drinker" name="Blood Drinker" entryId="ab72-7ce0-8eea-7ea6" entryLinkId="8427-3c8d-f4af-8af3" entryGroupId="bf27-6ca6-5c3a-3449" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
