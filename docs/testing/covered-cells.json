@@ -436,6 +436,13 @@
         "docs/testing/at-most-roster-points-limit"
       ],
       "rationale": "Die atMost-Haelfte des and-Gatters am 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins): atMost 2500 auf limit::ecfa-8486-4f6c-c249, scope=roster, childId=any, Geschwister des bereits gepinnten atLeast 2000. Vier Roster mit identischem Inhalt (eine Uprising-Selektion, Ist konstant 1) variieren allein das eingestellte Budget: 2500 ist der Grenzwert selbst und wird eingeschlossen (Gatter offen, 00f6-c1b3-ee85-5c02 still, wirksame Grenze 1), 2501 und 3000 kippen es (Basisgrenze 0 feuert mit Ist 1). Roster 04 haelt das Budget bei 2500 und treibt die verplante Summe auf 3000: die Bedingung liest weiter das Budget, nicht die Summe — das Gatter bleibt offen, waehrend das Roster-Budget selbst ueberschritten meldet. Der atLeast-Partner haelt in allen vier Rostern, sodass der Umschlag allein der atMost-Haelfte zuzurechnen ist. Szenario ist gruen."
+    },
+    {
+      "key": "condition|atLeast|parent|selectionCount|child=any",
+      "evidence": [
+        "docs/testing/at-least-parent-any-reveal"
+      ],
+      "rationale": "Der einzige Modifier des 'Wolf Lord' (66bc-8fc1-81a2-9cd4, Vampire Counts, hidden=true) ist ein set hidden=false, gegated auf genau diese Bedingung: atLeast 1, field=selections, scope=parent, childId=any. Fuenf Roster variieren allein, was der Eltern-Rahmen (die Vampire-Thrall-Auswahl) enthaelt: 0 Selektionen, 1, 2, sowie den Traeger selbst ein- und zweimal. Die Roster 04 und 05 sind gruen und pinnen, dass der Traeger im eigenen Rahmen mitzaehlt und dass seine Obergrenze 06c5-d960-2b4d-399a unabhaengig von der Sichtbarkeit bei Ist 2 / Grenze 1 feuert. Die Roster 01-03 sind rot, weil der Bericht fuer die ungewaehlte Option gar keinen Angebots-Anker fuehrt — siehe den pinnedGaps-Eintrag zu diesem Szenario."
     }
   ]
 }

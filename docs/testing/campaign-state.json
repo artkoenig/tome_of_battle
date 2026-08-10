@@ -55,6 +55,18 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "An occupied slot must keep reporting how many selections it holds when its max limit has been lifted to the written sentinel -1 (unlimited). The Slaughtermaster slot (0ff3-ec4d-1c6b-6d53, frame Standard (OK-AB) 729f-9246-5cd3-5044) reports current 0 in rosters 02 and 03 where the roster holds 1 resp. 2 of them and the set--1 modifier on c70d-c292-36ee-21b5 has opened the cap; roster 01 is the control and passes with current 1 while the same limit still stands at max 0. So the count is lost exactly when the bound becomes unlimited, not in general. The limit's own firing/silence is already correct in all four rosters."
+    },
+    {
+      "cellKey": "condition|atLeast|parent|selectionCount|child=any",
+      "scenario": "docs/testing/at-least-parent-any-reveal",
+      "failingCases": [
+        "Szenario: at-least-parent-any-reveal > rosters/01-empty-frame-wolf-lord-hidden.ros",
+        "Szenario: at-least-parent-any-reveal > rosters/02-one-selection-reveals-wolf-lord.ros",
+        "Szenario: at-least-parent-any-reveal > rosters/03-two-selections-reveal-unchanged.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "An option that exists in the catalogue but is not selected must appear in the report as an offer anchor, so its visibility is observable at all: 'Wolf Lord' (link b8be-a71f-569c-5cdc, target 66bc-8fc1-81a2-9cd4) carries hidden=true plus a single set hidden=false gated on atLeast 1 selection of anything in its parent frame, and rosters 01-03 assert exactly that flip (isHidden true at an empty frame, false once the frame holds one resp. two selections, current 0 throughout). The report carries no anchorKind=offerAnchor slot for that defId/targetDefId pair at all in those three rosters, so the flip cannot be seen; the same pair resolves as anchorKind=occupied in rosters 04 and 05, which pass, and the sibling scenario at-least-unit-upgrade-gate shows an unselected option's offerAnchor being projected in a shallower position. The option sits four selectionEntryGroup levels below the unit; whether the missing projection is the depth, the fact that nothing in that group chain is selected, or something else, is for the implementation round to diagnose. Without the anchor a user is never offered the option at all (ADR 0034: the report is the sole source of the surface)."
     }
   ],
   "parkedQuestions": [

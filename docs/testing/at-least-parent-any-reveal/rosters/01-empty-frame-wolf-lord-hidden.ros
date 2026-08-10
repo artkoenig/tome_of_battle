@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="alpar-01" name="ALPAR 01 – Vampire Thrall ohne jede Auswahl: der Eltern-Rahmen ist leer, Wolf Lord bleibt verborgen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored at-least-parent-any-reveal E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Die Blutlinie "Von Carstein" steht in JEDEM Roster dieses Szenarios.
+             Sie deckt den umschliessenden Gruppen-Verweis "Vampiric Powers"
+             (614f-c7bb-2050-c603, Basis hidden="true") per
+             atLeast 1 / f557-097a-d26b-9363 / scope=force auf. Damit ist die
+             Gruppe in allen Rostern sichtbar und die EINZIGE noch variable
+             Ursache fuer die Sichtbarkeit des Wolf-Lord-Slots ist dessen
+             eigenes hidden-Flag. Sie haengt am Kontingent, NICHT am Thrall -
+             der Eltern-Rahmen der gepinnten Bedingung bleibt davon unberuehrt. -->
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-von-carstein" name="Bloodline of Clan Von Carstein" entryId="f557-097a-d26b-9363" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Der Vampire Thrall traegt BEWUSST keine einzige Auswahl. Der
+             Eltern-Rahmen der Bedingung
+             atLeast 1 / selections / scope=parent / childId=any
+             zaehlt damit 0 -> die Bedingung haelt NICHT -> der Modifier
+             set hidden="false" am Ziel 66bc-8fc1-81a2-9cd4 bleibt aus ->
+             der Wolf-Lord-Slot behaelt sein geschriebenes hidden="true".
+             Dass damit die Pflicht-Handweapon (e2bd-1d63-464c-5b6a) fehlt,
+             ist gewollt und NICHT Gegenstand der Erwartung (siehe README,
+             "Bewusst nicht gepinnte Facetten"). -->
+        <selection id="sel-thrall" name="Vampire Thrall" entryId="e37b-c827-99ac-b706" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

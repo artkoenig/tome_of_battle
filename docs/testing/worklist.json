@@ -7,74 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 81,
-    "uncovered": 24
+    "covered": 82,
+    "uncovered": 23
   },
   "cells": [
-    {
-      "key": "condition|atLeast|parent|selectionCount|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "atLeast",
-        "scope": "parent",
-        "field": "selectionCount",
-        "childId": "any"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "66bc-8fc1-81a2-9cd4",
-            "name": "Wolf Lord"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "c791-87b9-b00a-ddb4",
-            "name": "From Death Awakened"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "any"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|lessThan|unit|selectionCount|child=id",
       "kind": "condition",

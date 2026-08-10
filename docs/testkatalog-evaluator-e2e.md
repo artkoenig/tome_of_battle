@@ -154,7 +154,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`condition-group-not`](testing/condition-group-not/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
 | [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
-| **Summe** | | **318** |
+| [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
+| **Summe** | | **323** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1553,3 +1554,36 @@ konstant 1 —, sodass sich nur das Budget ändert; die `atLeast`-Hälfte hält
 | 02 | Budget 2501 — ein Punkt darüber | Das Tor kippt: die Basisgrenze 0 feuert mit Ist 1, der Slot ist gesperrt |
 | 03 | Budget 3000 | Dasselbe Urteil deutlich außerhalb — kein Ein-Punkt-Artefakt |
 | 04 | Budget 2500, verplante Summe 3000 | Die Bedingung liest das Budget, nicht die Summe: das Tor bleibt offen, während das Roster-Budget selbst als überschritten meldet |
+
+## `at-least-parent-any-reveal`
+
+Prüft die `atLeast`-Bedingung mit `scope="parent"` und `childId="any"` (§7.6/§7.7
+der Formatdoku): Sie zählt im **Eltern-Rahmen** des Trägers die Auswahlen von
+**irgendetwas** und hält, sobald dort mindestens eine steht. Beleg: der „Wolf
+Lord" (`66bc-8fc1-81a2-9cd4`, Vampire Counts) ist `hidden="true"` und trägt
+genau **einen** Modifikator — `set hidden="false"`, allein auf diese Bedingung
+gegated. Er hängt vier Gruppenebenen unter dem Vampir; Gruppen sind in einer
+`.ros` keine Auswahlen, der Rahmen ist also die umschließende Einheiten-Auswahl
+(hier ein Vampire Thrall). Die Blutlinie „Von Carstein" steht in allen Rostern,
+damit das Gatter der umschließenden Gruppe konstant bleibt und sich nur der
+Rahmeninhalt ändert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Thrall ohne jede Unterauswahl | Der Rahmen zählt 0: die Bedingung hält nicht, die Option bleibt verborgen |
+| 02 | Nur die Pflicht-Handwaffe darunter | Der Rahmen zählt 1: die Option wird sichtbar — obwohl in ihrer eigenen Gruppe nichts gewählt ist |
+| 03 | Zusätzlich eine Great Weapon | Der Rahmen zählt 2: `atLeast` heißt „mindestens", mehr verhält sich exakt wie eines |
+| 04 | Wolf Lord selbst gewählt | Der Träger zählt im eigenen Rahmen mit — das Aufdecken trägt sich selbst; seine Obergrenze 1 ist bei Ist 1 exakt eingehalten |
+| 05 | Wolf Lord mit Stückzahl 2 | Die Obergrenze feuert mit Ist 2 / Grenze 1 — Höchstgrenzen gelten unabhängig von der Sichtbarkeit |
+
+> **Offene Lücke (Kampagne).** Die Roster 01–03 sind rot: der Bericht führt für
+> die **ungewählte** Option überhaupt keinen Angebots-Anker, sodass ihre
+> Sichtbarkeit gar nicht beobachtbar ist. Dasselbe Verweis-/Ziel-Paar löst in
+> den Rostern 04 und 05 als belegter Anker auf, und ein Nachbarszenario zeigt
+> den Angebots-Anker einer ungewählten Option an flacherer Stelle. Ohne diesen
+> Anker wird dem Nutzer die Option nie angeboten.
+
+> **Nicht abgedeckt:** das zweite Vorkommen der Zelle, „From Death Awakened"
+> (`c791-87b9-b00a-ddb4`). Kein `entryLink` zeigt darauf und es ist kein
+> Inline-Kind einer Gruppe — kein Roster kann es in einen legalen Eltern-Rahmen
+> stellen.
