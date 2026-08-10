@@ -359,6 +359,13 @@
         "docs/testing/condition-group-and-nested"
       ],
       "rationale": "The first error modifier of the tournament toggle 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins) carries an outer or group whose only member is a nested and group: one plain instanceOf condition on the force Standard (OG-AB) plus its own nested or sub-group of two roster-wide greaterThan 1 counts. Five rosters falsify each half on its own — two Savage Orc Boar Big 'Uns and two Stone Trolls each produce the author message, one of each produces none (the inner or fails), the same two Big 'Uns in the Savage Orc Horde force produce none (the and group's own condition fails while its sub-group holds), and without the toggle nothing fires at all. Scenario is green."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=model",
+      "evidence": [
+        "docs/testing/category-id-scope-instance-of"
+      ],
+      "rationale": "Roster set differing only in the chosen bloodline: the Vampire Lord's profile infoLink (e0f2-8568-15f0-a384, ergofang Vampire Counts) carries three characteristic modifiers whose condition is instanceOf(childId=model) at a category-id scope (Blood Dragon 4cae-a20e-8374-b6cb +2 WS, Necrach fc4b-a86d-5897-9e4c -2 WS, Strigoi bf30-4ff0-a4d8-3909 +1 A), while those categories hang on the bloodline options BELOW the unit. Rosters 02/03/04 select one bloodline each and assert the unmoved characteristics WS 8 / A 5 against roster 01's baseline, so the frame rule (nearest ancestor carrying the category, carrier included) is what the set measures; roster 04 makes a roster-wide misreading fall downwards and roster 05 has both bloodlines at once. First scenario on the upstream src/__fixtures__/whfb6/ set. Scenario is green."
     }
   ]
 }

@@ -112,7 +112,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`roster-scope-mandatory-chariot`](testing/roster-scope-mandatory-chariot/) | Definitive O&G + Mercenaries | 7 |
 | [`parent-min-unshared-unit-size`](testing/parent-min-unshared-unit-size/) | Definitive O&G + Mercenaries | 6 |
 | [`condition-group-and-nested`](testing/condition-group-and-nested/) | Definitive O&G + Mercenaries | 5 |
-| **Summe** | | **152** |
+| [`category-id-scope-instance-of`](testing/category-id-scope-instance-of/) | ergofang VC (ohne Mercenaries) | 5 |
+| **Summe** | | **157** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1243,3 +1244,26 @@ armeeweiten Zählungen (`greaterThan 1`) auf „Savage Orc Boar Big 'Uns" bzw.
 | 03 | Standard-Kontingent, Umschalter, je eines | Keine Meldung — die Untergruppe hält nicht, also hält die `and`-Gruppe nicht |
 | 04 | „Savage Orc Horde", Umschalter, zwei Big 'Uns | Keine Meldung — die Untergruppe hält, die eigene Bedingung nicht: der Beweis der Konjunktion |
 | 05 | Standard-Kontingent **ohne** Umschalter, zwei Big 'Uns | Keine Meldung — der Träger des Modifikators liegt gar nicht in der Liste |
+
+## `category-id-scope-instance-of`
+
+Prüft die **Condition**-Ausprägung des Kategorie-Rahmens: Nennt der `scope`
+einer Bedingung eine **Kategorie-Id**, ist der Bezugsrahmen der nächste
+Vorfahre der tragenden Auswahl — sie eingeschlossen —, der diese Kategorie
+trägt. Eine Kategorie, die nur ein **Nachfahre** trägt, löst den Rahmen nicht
+auf, und ein nicht aufgelöster Rahmen lässt den gegatterten Modifikator nicht
+greifen. Beleg: der `infoLink` `e0f2-8568-15f0-a384` des „Vampire Lord"
+(`b77b-88d5-5e80-e178`, ergofang-Katalog *Vampire Counts*) trägt drei
+Merkmals-Modifikatoren, deren `scope` je eine Blutlinien-Kategorie benennt
+(Blood Dragon `4cae-a20e-8374-b6cb` +2 WS, Necrach `fc4b-a86d-5897-9e4c`
+−2 WS, Strigoi `bf30-4ff0-a4d8-3909` +1 A) — während die Kategorien selbst an
+den Blutlinien-Optionen **unterhalb** der Einheit hängen. Das Szenario ist
+zugleich der erste Fall des Katalogs auf dem ergofang-Fixture-Satz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord ohne Blutlinie | Grundwerte WS 8 / A 5; die unbesetzte Pflicht-Gruppe meldet Ist 0 gegen Grenze 1 |
+| 02 | Mit Blutlinie „Blood Dragon" | WS bleibt 8 — die Kategorie liegt unterhalb der Einheit, nicht darüber |
+| 03 | Mit Blutlinie „Strigoi" | A bleibt 5 — dasselbe an der verschachtelten Modifikator-Klammer |
+| 04 | Mit Blutlinie „Necrach" | WS bleibt 8 statt 6 — die Gegenrichtung, eine Fehl-Lesart fiele hier nach unten aus |
+| 05 | Beide Blutlinien zugleich (regelwidrig) | Die Gruppen-Obergrenze meldet Ist 2 gegen Grenze 1; die Merkmale bleiben WS 8 / A 5 |

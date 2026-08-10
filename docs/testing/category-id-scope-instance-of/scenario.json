@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "name": "category-id-scope-instance-of",
+  "description": "Eine Kategorie-Id im scope einer CONDITION loest den Zaehlrahmen auf den naechsten Vorfahren der tragenden Auswahl auf (Traeger eingeschlossen), der diese Kategorie traegt. Ein Nachfahre loest ihn NICHT auf, und ein nicht aufgeloester Rahmen laesst den gegatteten Modifikator nicht wirken. Gepinnt am Vampire Lord des upstream-Katalogs Vampire Counts.cat (ea4b-9294-3427-1fc1): am infoLink e0f2-8568-15f0-a384 haengen drei auf die Clan-Kategorien 4cae/fc4b/bf30 gegattete Merkmals-Modifikatoren, waehrend diese Kategorien im ganzen Datensatz nur von den Bloodline-Aufwertungen UNTERHALB der Einheit getragen werden (kein einziger modifier field=category im Korpus). Beobachtet ueber expect.capabilities: das Profil-Vorkommen behaelt in jeder Blutlinien-Wahl die geschriebenen Werte WS 8 und A 5. Die Erweiterung der Constraint-Ausprägung derselben Rahmenregel steht in docs/testing/category-scope-ancestor-frame/.",
+  "dataset": {
+    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/__fixtures__/whfb6/Vampire Counts.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-vampire-lord-no-bloodline.ros",
+      "description": "Vampire Lord mit allen Pflicht-Kindern (Handweapon, Lord hero choice extra cost, Wizard level 2), aber OHNE Blutlinie. Keine der drei Clan-Kategorien kommt im Roster vor; der Kategorie-Rahmen der drei Bedingungen loest nicht auf. Grundlinie: WS 8 / A 5. Die unbesetzte Pflicht-Gruppe Bloodline (01b8-338b-6b92-e37f) laesst ihre min-Grenze e251-f353-704b-836a mit Ist 0 / Grenze 1 feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "e251-f353-704b-836a", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "6c3a-e4ae-3667-440f",
+          "a7c9-5fec-592a-3716",
+          "9c66-4f74-2201-82ec",
+          "efbf-d87a-fa58-aa0f",
+          "d830-89e1-7573-92e7",
+          "0780-5a76-9d51-e9ea"
+        ],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "Vampire Lord",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-vampire-lord-blood-dragon.ros",
+      "description": "Derselbe Vampire Lord, jetzt mit der Blutlinie Blood Dragon (0158-ed16-cbbf-6a78) samt deren Pflicht-Kind Full plate armour. Die Kategorie 4cae-a20e-8374-b6cb steht damit im Roster, aber als NACHFAHRE der Einheit. Der scope der WS-Erhoehung (increment 2) benennt genau diese Kategorie: der Rahmen loest trotzdem nicht auf, WS bleibt 8. A bleibt 5 (Strigoi-Gatter stumm).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e251-f353-704b-836a",
+          "6c3a-e4ae-3667-440f",
+          "a7c9-5fec-592a-3716",
+          "5615-adeb-c92c-4022",
+          "616c-b4f1-bd23-8306"
+        ],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "Vampire Lord",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-vampire-lord-strigoi.ros",
+      "description": "Derselbe Vampire Lord, jetzt mit der Blutlinie Strigoi (ef7a-5896-8856-076b). Die Kategorie bf30-4ff0-a4d8-3909 steht als Nachfahre im Roster; sie ist der scope der inneren modifierGroup, deren increment A um 1 erhoehen wuerde. Der Rahmen loest nicht auf: A bleibt 5, WS bleibt 8.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e251-f353-704b-836a",
+          "6c3a-e4ae-3667-440f",
+          "a7c9-5fec-592a-3716"
+        ],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "Vampire Lord",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-vampire-lord-necrach.ros",
+      "description": "Derselbe Vampire Lord, jetzt mit der Blutlinie Necrach (5a11-4f11-3806-c00c). Die Kategorie fc4b-a86d-5897-9e4c steht als Nachfahre im Roster; sie ist der scope der WS-Senkung (decrement 2). Der Rahmen loest nicht auf: WS bleibt 8 (nicht 6), A bleibt 5. Die Gegenrichtung zu Roster 02 - eine armeeweite Fehl-Lesart faellt hier nach UNTEN auf.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e251-f353-704b-836a",
+          "6c3a-e4ae-3667-440f",
+          "a7c9-5fec-592a-3716"
+        ],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "Vampire Lord",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-vampire-lord-blood-dragon-and-strigoi.ros",
+      "description": "Bewusst regelwidrig: BEIDE Blutlinien (Blood Dragon und Strigoi) in derselben Pflicht-Gruppe. Die max-Grenze 6c3a-e4ae-3667-440f der Gruppe feuert mit Ist 2 / Grenze 1. Die Merkmalswerte bleiben trotzdem WS 8 / A 5 - eine armeeweite Fehl-Lesart des Kategorie-scope ergaebe hier gleichzeitig WS 10 und A 6.",
+      "expect": {
+        "firing": [
+          { "limitId": "6c3a-e4ae-3667-440f", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "e251-f353-704b-836a",
+          "a7c9-5fec-592a-3716",
+          "5615-adeb-c92c-4022",
+          "616c-b4f1-bd23-8306"
+        ],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "Vampire Lord",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "name": "A", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

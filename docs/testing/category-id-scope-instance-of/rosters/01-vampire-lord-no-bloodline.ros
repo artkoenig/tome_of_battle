@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="cisi-01" name="CISI 01 - Vampire Lord ohne Blutlinie" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored category-id-scope condition E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Vampire Lord (Vampire Counts.cat:1301). Grundlinie ohne jede
+             Blutlinie: keine der drei Kategorien Blood Dragon / Necrach /
+             Strigoi kommt im ganzen Roster vor. Die Merkmalswerte des
+             Profil-Vorkommens muessen die geschriebenen Katalogwerte sein
+             (WS 8, A 5). -->
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Kinder der Einheit: Handweapon (min 1, d830-89e1-7573-92e7)
+                 und Lord hero choice extra cost (min 1, 0780-5a76-9d51-e9ea). -->
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- Pflicht-Gruppe Wizard Level (min 1, 9c66-4f74-2201-82ec);
+                 gewaehlt ist die im Katalog als defaultSelectionEntryId
+                 hinterlegte Option Wizard level 2. -->
+            <selection id="sel-wiz" name="Wizard level 2" entryId="42d9-cebe-18d5-cdbd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- BEWUSST leer gelassen: die Pflicht-Gruppe Bloodline
+                 (01b8-338b-6b92-e37f) bleibt unbesetzt, damit ihre min-Grenze
+                 e251-f353-704b-836a mit Ist 0 / Grenze 1 feuert. -->
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
