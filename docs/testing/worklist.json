@@ -7,96 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 73,
-    "uncovered": 32
+    "covered": 74,
+    "uncovered": 31
   },
   "cells": [
-    {
-      "key": "modifier|decrement|costValue",
-      "kind": "modifier",
-      "axes": {
-        "type": "decrement",
-        "targetField": "costValue"
-      },
-      "occurrences": 4,
-      "files": {
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 4
-      },
-      "examples": [
-        {
-          "file": "src/__fixtures__/whfb6/Vampire Counts.cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "42d9-cebe-18d5-cdbd",
-            "name": "Wizard level 2"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "decrement",
-            "field": "fcec-2340-6368-a2ba"
-          }
-        },
-        {
-          "file": "src/__fixtures__/whfb6/Vampire Counts.cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "649a-8bc1-fb66-ed73",
-            "name": "Wizard level 3"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "decrement",
-            "field": "fcec-2340-6368-a2ba"
-          }
-        },
-        {
-          "file": "src/__fixtures__/whfb6/Vampire Counts.cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "3c1a-3350-04ae-7a3f",
-            "name": "Wizard level 1"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "decrement",
-            "field": "fcec-2340-6368-a2ba"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|increment|unresolvedTarget",
       "kind": "modifier",

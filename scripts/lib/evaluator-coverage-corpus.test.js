@@ -114,7 +114,7 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // evidence resolution is in place: the force/roster swap of the
     // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
     // though the specific covered/uncovered cell each resolves to changes.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 73, uncovered: 32 });
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 74, uncovered: 31 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -196,7 +196,7 @@ describe('coveredKeysFromManifests / diffCells over the real corpus — covered 
 
 // ── Case B5 (round 3 correction) ────────────────────────────────────────────
 describe('coveredKeysFromManifests over the real corpus and manifests — resolution failures', () => {
-  it('reports zero outside-dataset entries and exactly the three known unknown-id ids (B5)', () => {
+  it('reports zero outside-dataset entries and exactly the four known unknown-id ids (B5)', () => {
     const manifests = loadManifests(TESTING_DIR);
     const { unmatched } = coveredKeysFromManifests(manifests, inventory.index);
 
@@ -204,7 +204,18 @@ describe('coveredKeysFromManifests over the real corpus and manifests — resolu
     const unknownIds = new Set(unmatched.filter(u => u.reason === 'unknown-id').map(u => u.id));
 
     expect(outsideDataset).toEqual([]);
-    expect(unknownIds).toEqual(new Set(['02cd-cabf-7e25-2b09', 'd96c-c95f-8224-7c87', 'budget::ecfa-8486-4f6c-c249']));
+    // The two budget:: ids are the runner's synthetic roster-budget limits, one
+    // per cost type a scenario budgets — they name no corpus constraint by
+    // construction, and a new one appears whenever a scenario budgets a further
+    // cost type (here: Casting Dice).
+    expect(unknownIds).toEqual(
+      new Set([
+        '02cd-cabf-7e25-2b09',
+        'd96c-c95f-8224-7c87',
+        'budget::ecfa-8486-4f6c-c249',
+        'budget::fcec-2340-6368-a2ba',
+      ]),
+    );
   });
 });
 

@@ -380,6 +380,13 @@
         "docs/testing/less-than-parent-parry-save"
       ],
       "rationale": "Roster pairs differing only in whether the great weapon is taken: the Mercenaries Dwarf profile (c69e-8fe4-ad3d-3b7d) writes Sv 6 and carries a decrement 1 gated on an and-group of lessThan(1, scope=parent, childId=1eb7-3f36-8cf7-e0ba 'Great Weapon') and atLeast(1, Shield). Rosters 02 vs 03 assert Sv 5 vs 6 and rosters 04 vs 05 assert Sv 4 vs 5, so the lessThan condition is the only difference in each pair; roster 01 fixes the baseline Sv 7. Scenario is green."
+    },
+    {
+      "key": "modifier|decrement|costValue",
+      "evidence": [
+        "docs/testing/decrement-cost-bloodline-casting-dice"
+      ],
+      "rationale": "Roster pairs differing only in the bloodline: 'Wizard level 2' (42d9-cebe-18d5-cdbd, upstream Vampire Counts, written 2 Casting Dice) carries a decrement 1 on the cost type fcec-2340-6368-a2ba gated on greaterThan 0 of the Blood Dragon category at scope=parent with includeChildSelections=true. The discount is measured through the roster budget budget::fcec-2340-6368-a2ba: rosters 01 vs 02 and 04 vs 05 cross the same budget in opposite directions, rosters 03 and 06 bracket the discounted sum from below so it is pinned exactly rather than only bounded, and rosters 07/08 show two vampires where only the Blood Dragon one is discounted. Scenario is green."
     }
   ]
 }

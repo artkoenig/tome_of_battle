@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dcb-07" name="DCB 07 - zwei Vampire: nur der Blood-Dragon-Vampir bekommt den Abzug" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-cost-bloodline-casting-dice E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Der Trennfall: die Blood-Dragon-Kategorie steht im Kontingent, aber nur
+       unter EINEM der beiden Vampire. Der Rahmen der Bedingung ist
+       scope="parent" - die Elternauswahl des Traegers -, nicht das Kontingent.
+       Rechnung: Lord (Blood Dragon) Wizard level 2 = 2-1 = 1
+                 Count (Strigoi)     Wizard level 1 = 1   (kein Abzug)
+                 Summe 2 > Budget 1  => die Budget-Regel feuert.
+       Eine kontingent- oder rosterweite Fehl-Lesart des Rahmens verbilligte
+       auch den Count (1-1 = 0), ergaebe Summe 1 und liesse die Regel
+       schweigen. pts: 285 + 205 = 490. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+    <costLimit typeId="fcec-2340-6368-a2ba" name=" Casting Dice" value="1"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bloodline" name="Blood Dragon" entryId="0158-ed16-cbbf-6a78" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="4cae-a20e-8374-b6cb" name="Blood Dragon" entryId="4cae-a20e-8374-b6cb" primary="false"/>
+              </categories>
+              <selections>
+                <selection id="sel-fpa" name="Full plate armour" entryId="64f1-879e-d9d4-7d78" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-wiz" name="Wizard level 2" entryId="42d9-cebe-18d5-cdbd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Zweiter Vampir: Vampire Count (6822-0110-a7c9-cbb0) mit seinen
+             eigenen Pflicht-Kindern - Handweapon 7b76-de50-6c9b-60c3 (min 1,
+             4c68-90d8-4b3a-544f), Bloodline-Gruppe 63e7-ac1b-014b-3b28 (min 1,
+             56c1-3e68-6f24-3768) und Wizard-Level-Gruppe 7ab1-d9dc-6124-443f
+             (min 1, 19ba-de18-6ad7-2825). -->
+        <selection id="sel-vc" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-vc-hw" name="Handweapon" entryId="7b76-de50-6c9b-60c3" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-vc-bloodline" name="Strigoi" entryId="30ba-e15f-9acd-7663" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="bf30-4ff0-a4d8-3909" name="Strigoi" entryId="bf30-4ff0-a4d8-3909" primary="false"/>
+              </categories>
+            </selection>
+            <!-- Wizard level 1 (3c1a-3350-04ae-7a3f): geschriebene Kosten
+                 1 Casting Die, derselbe decrement-Modifikator. Unter DIESEM
+                 Vampir steht keine Blood-Dragon-Kategorie. -->
+            <selection id="sel-vc-wiz" name="Wizard level 1" entryId="3c1a-3350-04ae-7a3f" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

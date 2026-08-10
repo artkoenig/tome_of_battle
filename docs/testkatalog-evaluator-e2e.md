@@ -116,7 +116,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`roster-repeat-added-category`](testing/roster-repeat-added-category/) | Definitive Ogre + Mercenaries | 7 |
 | [`less-than-parent-parry-save`](testing/less-than-parent-parry-save/) | Definitive Ogre + Mercenaries | 5 |
 | [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
-| **Summe** | | **174** |
+| [`decrement-cost-bloodline-casting-dice`](testing/decrement-cost-bloodline-casting-dice/) | ergofang VC (ohne Mercenaries) | 8 |
+| **Summe** | | **182** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1329,3 +1330,26 @@ Anzahl der Gegenstände.
 | 03 | Zwei Gegenstände für zusammen 55 Punkte | Eine Meldung: Ist 55 gegen Grenze 50 — erst die Summe reißt sie |
 | 04 | Gegenstand mit drei verschachtelten Steinen, zusammen 65 Punkte | Eine Meldung: Ist 65 — genau das entscheidet `includeChildSelections` |
 | 05 | Derselbe Aufbau mit zwei Steinen, zusammen 50 Punkte | Still — die Gegenprobe klammert den Beitrag der verschachtelten Auswahl ein |
+
+## `decrement-cost-bloodline-casting-dice`
+
+Prüft einen `decrement`-Modifikator, dessen `field` eine **Kostenart-Id** ist:
+er senkt diese Kosten der tragenden Auswahl um seinen Wert, und die gesenkten
+Kosten sind es, die das Roster-Budget dieser Kostenart zählt. Beleg: „Wizard
+level 2" (`42d9-cebe-18d5-cdbd`, ergofang *Vampire Counts*) kostet geschrieben
+2 Zauberwürfel (`fcec-2340-6368-a2ba`) und trägt einen `decrement 1`, dessen
+Bedingung die Blutlinie **Blood Dragon** unterhalb des Vampirs zählt
+(`scope="parent"`, `includeChildSelections="true"`) — dieselbe Kategorie, an der
+die Profil-Modifikatoren derselben Einheit scheitern, hier aber in der Form, die
+den Rahmen auflöst.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zauberstufe 2 unter Strigoi, Würfel-Budget 1 | Kein Rabatt: Ist 2 gegen Grenze 1 |
+| 02 | Dieselbe Stufe unter Blood Dragon, Budget 1 | Rabatt greift — still |
+| 03 | Wie 02, Budget 0 | Ist 1 gegen Grenze 0 — nagelt die verbilligte Summe auf genau 1 |
+| 04 | Zauberstufe 3 unter Strigoi, Budget 2 | Zweiter Zeuge mit anderem Grundwert: Ist 3 gegen Grenze 2 |
+| 05 | Zauberstufe 3 unter Blood Dragon, Budget 2 | Still — ein Abzug, kein Setzen auf 1 |
+| 06 | Wie 05, Budget 1 | Ist 2 gegen Grenze 1 — dieselbe Klammer ohne Null-Budget |
+| 07 | Zwei Vampire, nur einer Blood Dragon, Budget 1 | Ist 2 — der Rabatt gilt je Auswahl, nicht armeeweit |
+| 08 | Dieselben zwei, beide Blood Dragon, Budget 1 | Still — die Gegenprobe zu 07 |
