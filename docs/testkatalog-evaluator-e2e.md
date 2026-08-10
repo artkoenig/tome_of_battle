@@ -165,7 +165,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
 | [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
 | [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **370** |
+| [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
+| **Summe** | | **375** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1856,3 +1857,28 @@ rules" (`4e15-0353-165f-5528`, Basis `hidden="true"`):
 > sind. Ebenso wenig die Wirkung von `includeChildSelections="false"`: kein
 > Roster enthält eine geschachtelte Einheit, beide Lesarten ergäben dieselbe
 > Zahl.
+
+## `greater-than-roster-casting-dice-sum`
+
+Prüft eine Bedingung, deren `field` eine **Kostenart** ist statt `selections`:
+verglichen wird dann die Kostensumme im Rahmen, nicht eine Auswahlzahl (§13.2
+der Formatdoku). Beleg: die Autor-Meldung „No more than 10 power die are
+allowed!" des Eintrags „Tournament rules: Uprising (2026)"
+(`4bc4-8781-2091-d9df`, Orcs and goblins) hängt an `greaterThan 10` auf der
+Kostenart „ Casting Dice" (`fcec-2340-6368-a2ba`), `scope="roster"`,
+`childId="any"`. Die Roster variieren allein die Magic-Level-Wahl der Schamanen,
+also die Summe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Nur der Träger, Summe 0 | Die Meldung schweigt |
+| 02 | Summe exakt 10 | Sie schweigt weiter: `greaterThan` ist strikt |
+| 03 | Summe 11 | Sie liegt an — ein Würfel über der Grenze genügt |
+| 04 | Summe 12 | Kontrolle deutlich außerhalb |
+| 05 | Summe 11, aber ohne den Träger | Die Meldung hängt am Träger: ohne ihn schweigt sie trotz überschrittener Summe |
+
+> **Offen deklariert:** In den Rostern 02–05 feuert konstant die
+> Charaktergrenze des Spielsystems mit Ist 5 / Grenze 4 — in diesem Katalog
+> tragen vier Charaktere zusammen höchstens 10 Würfel, die Elf ist also nur mit
+> einem fünften erreichbar. Weil sie in allen vier Rostern gleich feuert, bleibt
+> der Unterschied allein der Summe zuzurechnen.
