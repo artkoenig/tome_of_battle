@@ -110,7 +110,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`ancestor-scope-instance-of`](testing/ancestor-scope-instance-of/) | Definitive VC + Mercenaries | 2 |
 | [`root-entrylink-mandatory-catalogue-scope`](testing/root-entrylink-mandatory-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 4 |
 | [`roster-scope-mandatory-chariot`](testing/roster-scope-mandatory-chariot/) | Definitive O&G + Mercenaries | 7 |
-| **Summe** | | **141** |
+| [`parent-min-unshared-unit-size`](testing/parent-min-unshared-unit-size/) | Definitive O&G + Mercenaries | 6 |
+| **Summe** | | **147** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1202,3 +1203,22 @@ je Exemplar eine Streitwagen-Einheit zur Pflicht.
 | 05 | Zwei Bigbosse auf „Chariot", keine Einheit | Zwei Wiederholungen: Untergrenze 2 bei Ist 0 |
 | 06 | Wie 05, mit einer Einheit | Untergrenze 2 bei Ist 1 — die Grenze feuert weiter |
 | 07 | Wie 05, mit zwei Einheiten | Pflicht erfüllt (Ist 2) — still |
+
+## `parent-min-unshared-unit-size`
+
+Prüft eine Mindeststärke als `min`-Grenze mit `scope="parent"` und
+`shared="false"`: gezählt wird **nur die eine Einheiten-Instanz**, die die
+Grenze trägt, nie die roster-weite Summe desselben Modell-Eintrags. Beleg: das
+Modell „Goblin" (`ec2d-a00e-8ff8-1dff`, Orcs and Goblins) trägt
+`min 20` (`7156-0a0f-aa05-582a`) unter der Einheit „Goblins"
+(`b403-b7c6-0008-27d9`); dasselbe Muster mit `min 5` trägt der „Goblin Wolf
+rider" (`e603-749c-713c-3d36`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Einheit mit genau 20 Modellen | Mindeststärke erfüllt — still |
+| 02 | Eine Einheit mit 15 Modellen | Eine Meldung: Ist 15 gegen Grenze 20 |
+| 03 | Eine Einheit mit 25 Modellen | Mindeststärke übererfüllt — still |
+| 04 | **Zwei** Einheiten mit je 15 Modellen | **Zwei** Meldungen mit je Ist 15 — die Summe 30 rettet keine der beiden |
+| 05 | Eine Einheit mit 20, eine mit 15 Modellen | Genau eine Meldung — die Instanzen werden getrennt beurteilt |
+| 06 | Zwei Wolfsreiter-Einheiten mit je 3 Modellen | Dasselbe Muster an einer zweiten Einheit: zwei Meldungen, Ist 3 gegen Grenze 5 |

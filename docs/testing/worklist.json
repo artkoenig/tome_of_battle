@@ -7,99 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 66,
-    "uncovered": 39
+    "covered": 67,
+    "uncovered": 38
   },
   "cells": [
-    {
-      "key": "constraint|min|selectionCount|parent|s=false|ics=false|icf=false|pct=false",
-      "kind": "constraint",
-      "axes": {
-        "type": "min",
-        "field": "selectionCount",
-        "scope": "parent",
-        "shared": false,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "percentValue": false
-      },
-      "occurrences": 8,
-      "files": {
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 5
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "7156-0a0f-aa05-582a",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ec2d-a00e-8ff8-1dff",
-            "name": "Goblin"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "parent"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "e603-749c-713c-3d36",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "b94a-ac63-6afa-7a79",
-            "name": "Goblin Wolf rider"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "parent"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "5a60-3286-fcec-1d18",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0447-ccba-01bf-be77",
-            "name": "Goblin Spider rider"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "parent"
-          }
-        }
-      ]
-    },
     {
       "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
       "kind": "repeat",
