@@ -7,96 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 65,
-    "uncovered": 40
+    "covered": 66,
+    "uncovered": 39
   },
   "cells": [
-    {
-      "key": "constraint|min|selectionCount|roster|s=true|ics=false|icf=false|pct=false",
-      "kind": "constraint",
-      "axes": {
-        "type": "min",
-        "field": "selectionCount",
-        "scope": "roster",
-        "shared": true,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "percentValue": false
-      },
-      "occurrences": 9,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 1,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 2,
-        "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "1d06-5b8c-0443-5979",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "5678-6ad3-0e79-2233",
-            "name": "Orc Boar Chariot"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "roster"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "c21a-df75-9aa7-fd31",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "91b0-2e81-0087-8e72",
-            "name": "Savage Orc Boar Chariot"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "roster"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": "065f-9ab7-97df-7791",
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ca2a-ff41-6666-8155",
-            "name": "Orc Boar Chariot"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "constraints",
-            "constraint"
-          ],
-          "raw": {
-            "type": "min",
-            "field": "selections",
-            "scope": "roster"
-          }
-        }
-      ]
-    },
     {
       "key": "constraint|min|selectionCount|parent|s=false|ics=false|icf=false|pct=false",
       "kind": "constraint",

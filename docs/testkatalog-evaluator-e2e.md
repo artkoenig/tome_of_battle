@@ -109,7 +109,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`unit-scope-per-model-cost`](testing/unit-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
 | [`ancestor-scope-instance-of`](testing/ancestor-scope-instance-of/) | Definitive VC + Mercenaries | 2 |
 | [`root-entrylink-mandatory-catalogue-scope`](testing/root-entrylink-mandatory-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 4 |
-| **Summe** | | **134** |
+| [`roster-scope-mandatory-chariot`](testing/roster-scope-mandatory-chariot/) | Definitive O&G + Mercenaries | 7 |
+| **Summe** | | **141** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1179,3 +1180,25 @@ ist die Wurzeleinheit Orc Boyz.
 | 04 | Drei Big 'Uns, zwei Orc Boyz | Höchstmaß 2 bei Ist 3 — die Grenze feuert |
 | 05 | Dieselbe Lage, aber die zwei Orc Boyz als **eine** Auswahl mit Stückzahl 2 | Gleiches Ergebnis: gezählt wird die Stückzahl, nicht die Zahl der XML-Elemente |
 | 06 | Big 'Uns im ersten, Orc Boyz im zweiten Kontingent | Höchstmaß 2 — `includeChildForces="true"` zählt über Kontingente hinweg |
+
+## `roster-scope-mandatory-chariot`
+
+Prüft eine armeeweite Untergrenze (`min`, `scope="roster"`, `shared="true"`,
+`includeChildSelections="false"`, `includeChildForces="false"`), deren
+geschriebener Wert 0 ist und die erst ein wiederholter `increment` hebt: „Orc
+Boar Chariot" (`5678-6ad3-0e79-2233`, Orcs and Goblins) trägt die Grenze
+`1d06-5b8c-0443-5979` und einen `increment 1`, dessen `<repeat>` armeeweit die
+Merkmals-Kategorie „orc needs chariot" (`a85e-af08-5fea-41bd`) zählt. Deren
+einziger Träger ist die Reittier-Option „Chariot" (`5cc1-2650-9e36-3c62`) in
+der Mounts-Gruppe des Orc Bigboss — ein Charakter auf Streitwagen macht also
+je Exemplar eine Streitwagen-Einheit zur Pflicht.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Bigboss ohne Reittier | Untergrenze bleibt 0 — nichts feuert |
+| 02 | Bigboss auf „Boar" | Das Geschwister-Reittier trägt die Kategorie nicht — nichts feuert |
+| 03 | Bigboss auf „Chariot", keine Streitwagen-Einheit | Untergrenze 1 bei Ist 0 — die Grenze feuert |
+| 04 | Wie 03, mit einer Streitwagen-Einheit | Pflicht erfüllt (Ist 1) — still |
+| 05 | Zwei Bigbosse auf „Chariot", keine Einheit | Zwei Wiederholungen: Untergrenze 2 bei Ist 0 |
+| 06 | Wie 05, mit einer Einheit | Untergrenze 2 bei Ist 1 — die Grenze feuert weiter |
+| 07 | Wie 05, mit zwei Einheiten | Pflicht erfüllt (Ist 2) — still |
