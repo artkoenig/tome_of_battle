@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "name": "condition-group-and-nested",
+  "description": "Verschachtelte conditionGroups: eine and-Gruppe INNERHALB einer anderen Gruppe haelt nur, wenn jedes ihrer eigenen Mitglieder haelt - ihre einfache Bedingung UND ihre eigene Untergruppe -, und die umschliessende Gruppe sieht nur dieses eine kombinierte Urteil. Traeger ist der Modifikator modifier type=\"add\" field=\"error\" am Uprising-Toggle 4bc4-8781-2091-d9df der Orcs-and-Goblins-.cat: die aeussere or-Gruppe hat genau EIN Mitglied, eine and-Gruppe aus (a) instanceOf auf das Kontingent Standard (OG-AB) 2bfa-e64a-7123-895f und (b) einer eigenen or-Untergruppe aus zwei greaterThan-1-Zaehlungen auf Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1 bzw. Stone Trolls 4112-026b-500a-b6fd (scope=roster). Die Autor-Meldung ist das Observable (expect.messages mit origin=authorMessage); jede Haelfte der verschachtelten and-Gruppe wird einzeln falsifiziert. Die Bedingungen selbst sind keine zaehlenden Grenzen und erscheinen darum nicht als feuernde limitId.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-standard-two-big-uns-message.ros",
+      "description": "Kontingent Standard (OG-AB) 2bfa-e64a-7123-895f, Uprising-Toggle gewaehlt, ZWEI getrennte Auswahlen von Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1 (je number=1, roster-weite Zaehlung = 2). Damit haelt das erste Mitglied der inneren or-Untergruppe (greaterThan 1 -> 2 > 1) und die eigene Bedingung der verschachtelten and-Gruppe (instanceOf Standard) - die and-Gruppe haelt, die aeussere or-Gruppe reicht dieses eine Urteil durch, der error-Modifikator greift. Budget 2000 pts haelt das Uprising-Gatter offen (atLeast 2000 / atMost 2500), darum feuert die eigene Grenze des Toggles 00f6-c1b3-ee85-5c02 nicht (Ist 1, wirksame Grenze 1).",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "name": "Tournament rules: Uprising (2026)",
+            "authorMessages": [
+              { "severity": "error", "text": "No more than 2 of the same Special Choice are allowed! See [PDF, p.X]" }
+            ]
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 1,
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Tournament rules: Uprising (2026)"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "No more than 2 of the same Special Choice are allowed! See [PDF, p.X]",
+            "count": 1,
+            "severity": "error",
+            "anchorDefId": "4bc4-8781-2091-d9df"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-standard-two-stone-trolls-message.ros",
+      "description": "Derselbe Aufbau, aber ZWEI getrennte Auswahlen von Stone Trolls 4112-026b-500a-b6fd statt der Big 'Uns. Jetzt traegt allein das ZWEITE Mitglied der inneren or-Untergruppe das Urteil (greaterThan 1 -> 2 > 1), waehrend das erste bei Ist 0 nicht haelt. Ergebnis identisch zu Roster 01: die verschachtelte and-Gruppe haelt, die Meldung liegt an. Die Aussage ist hier bewusst textfrei (Anker + Anzahl), damit die Nest-Logik unabhaengig von der Textfrage aus Roster 01 gepinnt ist.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 1,
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Tournament rules: Uprising (2026)"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-standard-one-of-each-silent.ros",
+      "description": "Kontingent Standard (OG-AB), Uprising-Toggle gewaehlt, aber je EINE Auswahl von Savage Orc Boar Big 'Uns und Stone Trolls. Beide Mitglieder der inneren or-Untergruppe zaehlen 1, greaterThan 1 haelt in keinem Fall - die Untergruppe faellt. Die eigene Bedingung der verschachtelten and-Gruppe (instanceOf Standard) haelt weiterhin; da eine and-Gruppe ALLE Mitglieder braucht (einfache Bedingung UND Untergruppe), faellt sie dennoch. Am belegten Toggle-Slot liegt keine einzige Autor-Meldung an.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-savage-orc-horde-two-big-uns-silent.ros",
+      "description": "Die Gegenprobe zur anderen Haelfte: Kontingent Savage Orc Horde (OG-AB) 59e1-efd7-af88-55a1 statt Standard, Uprising-Toggle gewaehlt, ZWEI Savage Orc Boar Big 'Uns. Die innere or-Untergruppe haelt also (2 > 1), die eigene Bedingung der verschachtelten and-Gruppe (instanceOf 2bfa-e64a-7123-895f) haelt nicht. Genau dieses Roster beweist, dass die Verschachtelung KONJUNKTIV ist: eine Lesart, die die Untergruppe an der aeusseren or-Gruppe vorbei durchreicht, wuerde hier faelschlich melden. Am belegten Toggle-Slot liegt keine Autor-Meldung an.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-toggle-absent-two-big-uns-silent.ros",
+      "description": "Kontingent Standard (OG-AB), ZWEI Savage Orc Boar Big 'Uns - beide Haelften der verschachtelten and-Gruppe waeren erfuellt -, aber der Traeger des Modifikators fehlt: weder der Uprising-Toggle 4bc4-8781-2091-d9df noch sein Elterneintrag Army composition rules 6fcf-b33d-3cf5-b56a steht im Roster. Ohne Traeger im Roster gibt es keine Meldung; die Meldung haengt am Traeger, nicht am Kontingent.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

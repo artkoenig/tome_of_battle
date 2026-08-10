@@ -35,8 +35,14 @@ The agent may read **exclusively**:
 2. **The vendored schema and its ADRs** — `src/parser/schema/Catalogue.xsd` and
    the domain ADRs `0003`, `0011`, `0016`, `0031`.
 3. **The real catalog fixtures** — everything under
-   `src/evaluator/__fixtures__/whfb6-definitive/` (the `.gst`/`.cat` XML the
-   runner loads). This is catalog **data**, not engine code.
+   `src/evaluator/__fixtures__/whfb6-definitive/` and everything under
+   `src/__fixtures__/whfb6/` (the `.gst`/`.cat` XML the runner loads). This is
+   catalog **data**, not engine code. Both fixture sets are readable because the
+   coverage inventory counts rule constructs from both, and constructs that occur
+   only in the upstream `whfb6` set would otherwise be unpinnable. A scenario
+   names in its manifest `dataset` the files of **one** set and never mixes the
+   two: the same id can carry different attributes in each, so a mixed dataset
+   would make the expectation ambiguous.
 4. **Existing scenarios** as the format template — everything under
    `docs/testing/**`.
 

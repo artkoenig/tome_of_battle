@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dcb-04" name="DCB 04 - Wizard level 3 unter Strigoi: die geschriebenen 3 Casting Dice bleiben stehen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-cost-bloodline-casting-dice E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Zweiter Zeuge desselben Konstrukts mit einem ANDEREN geschriebenen
+       Wert (3 statt 2). pts: 285 + 50 = 335, weiterhin weit unter 2000.
+       Casting-Dice-Budget 2. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+    <costLimit typeId="fcec-2340-6368-a2ba" name=" Casting Dice" value="2"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bloodline" name="Strigoi" entryId="ef7a-5896-8856-076b" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="bf30-4ff0-a4d8-3909" name="Strigoi" entryId="bf30-4ff0-a4d8-3909" primary="false"/>
+              </categories>
+            </selection>
+            <!-- Wizard level 3 (649a-8bc1-fb66-ed73): geschriebene Kosten
+                 3 Casting Dice (und 50 pts). Sein wortgleicher
+                 decrement-Modifikator greift ohne Blood-Dragon-Kategorie
+                 unterhalb des Vampirs nicht. -->
+            <selection id="sel-wiz" name="Wizard level 3" entryId="649a-8bc1-fb66-ed73" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dcb-03" name="DCB 03 - derselbe Aufbau wie 02, Budget 0: der Abzug ist genau 1, nicht 2" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-cost-bloodline-casting-dice E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Identisch zu Roster 02, nur das Casting-Dice-Budget ist 0 statt 1.
+       0 ist eine gewoehnliche Grenze ("keine Casting Dice erlaubt"); der
+       Sentinel fuer "unbegrenzt" waere -1 (Formatspezifikation Paragraph 7.6,
+       Sentinel-Kasten). Damit ist die Summe nach oben UND nach unten
+       eingeklemmt: hoechstens 1 (Roster 02 feuert nicht) und mehr als 0
+       (dieses Roster feuert) - also exakt 1. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+    <costLimit typeId="fcec-2340-6368-a2ba" name=" Casting Dice" value="0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bloodline" name="Blood Dragon" entryId="0158-ed16-cbbf-6a78" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="4cae-a20e-8374-b6cb" name="Blood Dragon" entryId="4cae-a20e-8374-b6cb" primary="false"/>
+              </categories>
+              <selections>
+                <selection id="sel-fpa" name="Full plate armour" entryId="64f1-879e-d9d4-7d78" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-wiz" name="Wizard level 2" entryId="42d9-cebe-18d5-cdbd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

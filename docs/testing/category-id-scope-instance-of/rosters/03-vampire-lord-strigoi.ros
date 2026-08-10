@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="cisi-03" name="CISI 03 - Vampire Lord mit Blutlinie Strigoi" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored category-id-scope condition E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wiz" name="Wizard level 2" entryId="42d9-cebe-18d5-cdbd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- Blutlinie Strigoi (Vampire Counts.cat:1763). Sie traegt per
+                 categoryLink 261b-6e13-782f-68c1 die Kategorie
+                 bf30-4ff0-a4d8-3909, also genau die Kategorie im scope der
+                 inneren modifierGroup, die A um 1 erhoehen wuerde. Sie hat
+                 keine Pflicht-Kinder. -->
+            <selection id="sel-strigoi" name="Strigoi" entryId="ef7a-5896-8856-076b" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="bf30-4ff0-a4d8-3909" name="Strigoi" entryId="bf30-4ff0-a4d8-3909" primary="false"/>
+              </categories>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

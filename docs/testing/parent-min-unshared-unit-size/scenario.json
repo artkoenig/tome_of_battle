@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-min-unshared-unit-size",
+  "description": "Eine Einheitenmindeststaerke, geschrieben als parent-skopierte min-Grenze mit shared=\"false\" (Orcs and Goblins, Modell \"Goblin\" min 20 je \"Goblins\"-Einheit), zaehlt ausschliesslich die Modelle der EINEN tragenden Einheiten-Instanz — nie die roster-weite Summe desselben Modell-Eintrags. Zwei Einheiten zu je 15 Modellen sind daher zwei getrennte Unterschreitungen (je Ist 15 / Grenze 20), obwohl sie sich roster-weit auf 30 addieren. Gegenprobe mit derselben Konstruktion an \"Goblin Wolf rider\" (min 5).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-one-unit-at-minimum-legal.ros",
+      "description": "Eine \"Goblins\"-Einheit mit genau 20 \"Goblin\"-Modellen. Die Mindeststaerke ist exakt erfuellt (Ist 20 / Grenze 20) — die Grenze darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["7156-0a0f-aa05-582a"]
+      }
+    },
+    {
+      "file": "rosters/02-one-unit-below-minimum.ros",
+      "description": "Eine \"Goblins\"-Einheit mit 15 \"Goblin\"-Modellen. Der Grundfall: die parent-skopierte Mindeststaerke feuert genau einmal mit Ist 15 / Grenze 20. Die gleichgebaute Grenze der Wolfsreiter hat mangels Einheiten-Instanz keinen Bezugsrahmen und bleibt still.",
+      "expect": {
+        "firing": [
+          { "limitId": "7156-0a0f-aa05-582a", "actual": 15, "bound": 20, "count": 1 }
+        ],
+        "absent": ["e603-749c-713c-3d36"]
+      }
+    },
+    {
+      "file": "rosters/03-one-unit-above-minimum-legal.ros",
+      "description": "Eine \"Goblins\"-Einheit mit 25 \"Goblin\"-Modellen. Mindeststaerke uebererfuellt (Ist 25 / Grenze 20) — still. Zugleich bleibt die parallele Obergrenze ad41-8936-7a56-1717 still: ihr Rohwert -1 heisst \"unbegrenzt\", und der set-25-Modifikator ist ohne \"Border Patrols rules\" (4e15-0353-165f-5528) nicht aktiv.",
+      "expect": {
+        "firing": [],
+        "absent": ["7156-0a0f-aa05-582a", "ad41-8936-7a56-1717"]
+      }
+    },
+    {
+      "file": "rosters/04-two-units-each-below-minimum.ros",
+      "description": "DER UNTERSCHEIDENDE FALL: zwei \"Goblins\"-Einheiten im selben Kontingent, je 15 \"Goblin\"-Modelle. Je Einheiten-Instanz ein eigener Bezugsrahmen und damit ein eigener Anker: die Grenze feuert GENAU ZWEIMAL, jedes Mal mit Ist 15 / Grenze 20. Eine roster-weite Lesart saehe 30 >= 20 und bliebe still; eine zusammengefasste Lesart ergaebe eine Meldung mit Ist 30.",
+      "expect": {
+        "firing": [
+          { "limitId": "7156-0a0f-aa05-582a", "actual": 15, "bound": 20, "count": 2 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/05-one-unit-at-minimum-one-below.ros",
+      "description": "Eine \"Goblins\"-Einheit mit 20 Modellen, eine zweite mit 15. Die beiden Instanzen werden sichtbar getrennt beurteilt: die Grenze feuert GENAU EINMAL, mit Ist 15 / Grenze 20 (die erfuellte Instanz erzeugt keine Meldung).",
+      "expect": {
+        "firing": [
+          { "limitId": "7156-0a0f-aa05-582a", "actual": 15, "bound": 20, "count": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/06-two-wolf-rider-units-each-below-minimum.ros",
+      "description": "Unabhaengige Gegenprobe an derselben Konstruktion: zwei \"Goblin Wolf Riders\"-Einheiten mit je 3 \"Goblin Wolf rider\"-Modellen gegen min 5. Die Grenze feuert GENAU ZWEIMAL mit Ist 3 / Grenze 5, obwohl die roster-weite Summe 6 die Grenze ueberschreitet. Ohne \"Goblins\"-Einheit bleibt 7156-0a0f-aa05-582a still.",
+      "expect": {
+        "firing": [
+          { "limitId": "e603-749c-713c-3d36", "actual": 3, "bound": 5, "count": 2 }
+        ],
+        "absent": ["7156-0a0f-aa05-582a"]
+      }
+    }
+  ]
+}

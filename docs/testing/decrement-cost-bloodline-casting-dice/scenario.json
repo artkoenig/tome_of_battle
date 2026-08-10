@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "name": "decrement-cost-bloodline-casting-dice",
+  "description": "Ein modifier type=\"decrement\", dessen field eine Kostenart-Id ist, SENKT die Kosten seines Traegers in dieser Kostenart um seinen value - und laesst den geschriebenen Wert unangetastet, solange seine Bedingung nicht haelt. Der gesenkte Wert ist das, was jede Summe ueber diese Kostenart danach benutzt. Gepinnt am Blood-Dragon-Magierabatt des upstream-Katalogs Vampire Counts.cat (ea4b-9294-3427-1fc1): \"Wizard level 2\" (42d9-cebe-18d5-cdbd, geschrieben 2 Casting Dice) und \"Wizard level 3\" (649a-8bc1-fb66-ed73, geschrieben 3) tragen je einen decrement 1 auf die Kostenart fcec-2340-6368-a2ba, gegated per condition greaterThan 0 auf die Kategorie 4cae-a20e-8374-b6cb (Blood Dragon) mit scope=\"parent\" und includeChildSelections=\"true\" - also auf die Blutlinie UNTERHALB desselben Vampirs. Messbar allein ueber die engine-eigene Budget-Regel budget::fcec-2340-6368-a2ba, denn kein constraint des Satzes misst diese Kostenart. Paarweise Roster (dieselbe Zauberstufe, nur die Blutlinie wechselt) und je eine Gegenklammer pinnen die verbilligte Summe exakt.",
+  "dataset": {
+    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/__fixtures__/whfb6/Vampire Counts.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-wizard2-strigoi-full-cost.ros",
+      "description": "Vampire Lord mit allen Pflicht-Kindern, Blutlinie Strigoi (ef7a-5896-8856-076b, Kategorie bf30-4ff0-a4d8-3909) und Wizard level 2. Keine Blood-Dragon-Kategorie unter dem Vampir: die Bedingung des decrement haelt nicht, die geschriebenen 2 Casting Dice bleiben stehen. Casting-Dice-Budget 1 => die Budget-Regel feuert mit Ist 2 / Grenze 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::fcec-2340-6368-a2ba", "actual": 2, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-wizard2-blood-dragon-discount.ros",
+      "description": "Derselbe Aufbau, dieselbe Zauberstufe, dasselbe Budget 1 - nur die Blutlinie ist Blood Dragon (0158-ed16-cbbf-6a78, Kategorie 4cae-a20e-8374-b6cb) samt Pflicht-Kind Full plate armour. Jetzt haelt die Bedingung und der decrement senkt die Casting Dice von 2 auf 1: dieselbe Zauberstufe bleibt INNERHALB desselben Budgets, die Budget-Regel darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::fcec-2340-6368-a2ba"]
+      }
+    },
+    {
+      "file": "rosters/03-wizard2-blood-dragon-exact-one.ros",
+      "description": "Wie Roster 02 - identischer Aufbau -, nur mit dem engeren Casting-Dice-Budget 0. Das haelt die verbilligte Summe exakt fest statt bloss als \"hoechstens 1\": sie ist 1 und ueberschreitet die 0 um 1. Der Abzug ist also genau 1, nicht 2.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::fcec-2340-6368-a2ba", "actual": 1, "bound": 0 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/04-wizard3-strigoi-full-cost.ros",
+      "description": "Zweiter Zeuge mit anderem geschriebenem Wert: Vampire Lord mit Blutlinie Strigoi und Wizard level 3 (649a-8bc1-fb66-ed73, geschrieben 3 Casting Dice). Kein Abzug, Summe 3, Budget 2 => die Budget-Regel feuert mit Ist 3 / Grenze 2.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::fcec-2340-6368-a2ba", "actual": 3, "bound": 2 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/05-wizard3-blood-dragon-discount.ros",
+      "description": "Wie Roster 04, nur die Blutlinie ist Blood Dragon (+ Full plate armour). Der decrement senkt 3 auf 2; das Budget 2 wird exakt eingehalten, die Budget-Regel darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::fcec-2340-6368-a2ba"]
+      }
+    },
+    {
+      "file": "rosters/06-wizard3-blood-dragon-exact-two.ros",
+      "description": "Wie Roster 05, nur mit Budget 1. Die verbilligte Summe ist 2 und ueberschreitet die 1 um 1 - zusammen mit Roster 05 die vollstaendige Klammer (>1 und <=2, also genau 2), diesmal ohne jede Null-Grenze. Der Abzug ist ein fester Betrag von 1, kein set auf 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::fcec-2340-6368-a2ba", "actual": 2, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/07-two-vampires-only-blood-dragon-discounts.ros",
+      "description": "Zwei Vampire in einem Kontingent: Vampire Lord mit Blood Dragon und Wizard level 2 (2-1 = 1), Vampire Count (6822-0110-a7c9-cbb0) mit Strigoi (30ba-e15f-9acd-7663) und Wizard level 1 (3c1a-3350-04ae-7a3f, geschrieben 1, kein Abzug). Summe 2 > Budget 1 => die Budget-Regel feuert mit Ist 2 / Grenze 1. Der Rahmen der Bedingung ist die Elternauswahl, nicht das Kontingent: eine kontingentweite Fehl-Lesart verbilligte auch den Count und ergaebe Summe 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::fcec-2340-6368-a2ba", "actual": 2, "bound": 1 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/08-two-vampires-both-blood-dragon.ros",
+      "description": "Gegenprobe zu Roster 07: identischer Aufbau und identisches Budget 1, geaendert ist allein die Blutlinie des Vampire Count (Blood Dragon 60a4-751a-19aa-35dc + Pflicht-Kind Full plate armour 1e5a-fe4d-e5ca-5445). Jetzt wird auch seine Zauberstufe verbilligt (1-1 = 0), Summe 1 = Budget 1 => die Budget-Regel darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::fcec-2340-6368-a2ba"]
+      }
+    }
+  ]
+}

@@ -338,6 +338,62 @@
         "docs/testing/roster-repeat-category-count"
       ],
       "rationale": "GREEN: rosters 01-04 walk the counted Orc-Boyz copies 0/1/2/2 against a fixed carrier count and the bound follows 0/1/2/2; roster 05 pins that the stack count and not the number of XML selection elements is counted; roster 06 puts the counted copies in a second force, which only reaches the same bound if includeChildForces=true counts across forces."
+    },
+    {
+      "key": "condition|notInstanceOf|primary-catalogue|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/primary-catalogue-scope"
+      ],
+      "rationale": "Roster pair differing only in the force: the Maneaters upgrade 'Extra Rare choice' (Mercenaries, ea59-6ea6-b3c9-c34a) carries min 0 (9e9f-e78d-6390-accc) and a set 1 modifier gated on notInstanceOf(scope=primary-catalogue, childId=731d-5b13-2a92-5427 'Ogre Kingdoms'). Roster 09 (Vampire Counts force e989-15b8-7eb6-9668) asserts the limit firing with actual 0 against bound 1, roster 08 (Ogre Kingdoms force 729f-9246-5cd3-5044) asserts it absent; both rosters additionally demand the absence of the UNRESOLVED_SCOPE diagnostic, so the notInstanceOf hit is an evaluated one and not a silent fallback to 0. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/dispel-scroll-repeat-group-max"
+      ],
+      "rationale": "The shared group 'Arcane Items (VC)' (2f34-a145-911a-fa00, Vampire Counts) carries max 1 (fa59-e6b8-9523-3510) and an increment 1 whose single repeat counts the selected copies of the Dispel Scroll link adb3-9853-d566-e432 with scope=parent, shared=true, includeChildSelections=true, includeChildForces=true. Roster 01 (two scrolls under the Master Necromancer 4ee2-ac3a-3cc6-11af) asserts effectiveMax 3, so the repetition applied twice; roster 02 without any arcane item asserts the base effectiveMax 1. The counted copies sit directly under the group, so the two include-flags of this repeat are exercised but not separately discriminated by the pair. Scenario is green."
+    },
+    {
+      "key": "conditionGroup|and|nested",
+      "evidence": [
+        "docs/testing/condition-group-and-nested"
+      ],
+      "rationale": "The first error modifier of the tournament toggle 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins) carries an outer or group whose only member is a nested and group: one plain instanceOf condition on the force Standard (OG-AB) plus its own nested or sub-group of two roster-wide greaterThan 1 counts. Five rosters falsify each half on its own — two Savage Orc Boar Big 'Uns and two Stone Trolls each produce the author message, one of each produces none (the inner or fails), the same two Big 'Uns in the Savage Orc Horde force produce none (the and group's own condition fails while its sub-group holds), and without the toggle nothing fires at all. Scenario is green."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=model",
+      "evidence": [
+        "docs/testing/category-id-scope-instance-of"
+      ],
+      "rationale": "Roster set differing only in the chosen bloodline: the Vampire Lord's profile infoLink (e0f2-8568-15f0-a384, ergofang Vampire Counts) carries three characteristic modifiers whose condition is instanceOf(childId=model) at a category-id scope (Blood Dragon 4cae-a20e-8374-b6cb +2 WS, Necrach fc4b-a86d-5897-9e4c -2 WS, Strigoi bf30-4ff0-a4d8-3909 +1 A), while those categories hang on the bloodline options BELOW the unit. Rosters 02/03/04 select one bloodline each and assert the unmoved characteristics WS 8 / A 5 against roster 01's baseline, so the frame rule (nearest ancestor carrying the category, carrier included) is what the set measures; roster 04 makes a roster-wide misreading fall downwards and roster 05 has both bloodlines at once. First scenario on the upstream src/__fixtures__/whfb6/ set. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/roster-repeat-added-category"
+      ],
+      "rationale": "The Gnoblars max (a177-82fc-0b76-5b73, written 0, Ogre Kingdoms) carries an increment +1 whose single roster-scoped repeat counts the tag category 'Bully Bully' (735e-2da1-6356-2fdb). No categoryLink in the corpus targets that category: its only carrier is the root entryLink Ogre Bulls (d82e-111e-89b9-2be1) via an unconditional add-category modifier, so the repeat has to count an effective category. Rosters 01-05 step the Ogre Bulls count 0/1/1/2/2 and assert effectiveMax 0/1/1/2/2 on the Gnoblars slot, with the limit firing where the unit count over-runs it; roster 04 makes the second repetition measurable. Rosters 06/07 repeat the pattern on Gnoblar Trappers (28cd-8b7f-3d0f-1546). Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-parent-parry-save"
+      ],
+      "rationale": "Roster pairs differing only in whether the great weapon is taken: the Mercenaries Dwarf profile (c69e-8fe4-ad3d-3b7d) writes Sv 6 and carries a decrement 1 gated on an and-group of lessThan(1, scope=parent, childId=1eb7-3f36-8cf7-e0ba 'Great Weapon') and atLeast(1, Shield). Rosters 02 vs 03 assert Sv 5 vs 6 and rosters 04 vs 05 assert Sv 4 vs 5, so the lessThan condition is the only difference in each pair; roster 01 fixes the baseline Sv 7. Scenario is green."
+    },
+    {
+      "key": "modifier|decrement|costValue",
+      "evidence": [
+        "docs/testing/decrement-cost-bloodline-casting-dice"
+      ],
+      "rationale": "Roster pairs differing only in the bloodline: 'Wizard level 2' (42d9-cebe-18d5-cdbd, upstream Vampire Counts, written 2 Casting Dice) carries a decrement 1 on the cost type fcec-2340-6368-a2ba gated on greaterThan 0 of the Blood Dragon category at scope=parent with includeChildSelections=true. The discount is measured through the roster budget budget::fcec-2340-6368-a2ba: rosters 01 vs 02 and 04 vs 05 cross the same budget in opposite directions, rosters 03 and 06 bracket the discounted sum from below so it is pinned exactly rather than only bounded, and rosters 07/08 show two vampires where only the Blood Dragon one is discounted. Scenario is green."
+    },
+    {
+      "key": "modifier|increment|unresolvedTarget",
+      "evidence": [
+        "docs/testing/modifier-unresolved-target-inert"
+      ],
+      "rationale": "The four 'Swedish Comp System' modifiers of the Orcs-and-Goblins book (one unconditional decrement on Fanatics 18f4-ad33-69ca-e327, three gated increments on Night Goblins 79af-55cb-9761-f0be) address ce6e-afde-2ed1-aac2, which the data set defines nowhere. Rosters 02/03 satisfy one and then all three gates and assert the neighbouring bounds unmoved (Fanatics max 3, Netters effectiveMax, model min 20) with ce6e-afde-2ed1-aac2 absent from every report; rosters 04/05 show a real modifier on the same unit does move the Netters bound by floor(models/4), so 'nothing happened' is distinguishable from 'nothing was evaluated'. Whether a dangling field should also raise a diagnostic is left open by the format spec and is asserted neither way. Scenario is green."
     }
   ]
 }

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-costsum-magic-items-budget",
+  "description": "Eine constraint mit field=<costType-Id> statt field=\"selections\" begrenzt die SUMME dieser Kostenart unterhalb ihres Traegers, nicht eine Anzahl. Am Hunter der Ogre Kingdoms traegt die Gruppe 'Magic Items and Big Names' (9326-f5c9-9e82-f4bf) die Grenze 2dd3-546b-146e-ce63 (type=max, field=ecfa-8486-4f6c-c249 = pts, scope=parent, value=50, includeChildSelections=true): die gewaehlten Gegenstaende duerfen zusammen hoechstens 50 Punkte kosten, und der Ist-Wert ist die Punktesumme. Die Roster klammern die Summe von unten (30), auf der Grenze (50) und darueber (55) ein; zwei weitere Roster pinnen ueber den verschachtelten Preis-Kindeintrag 'Gnoblar Thiefstones' (15 pts je Stueck unter dem 0-pts-Talisman 'Gnoblar thiefstone') genau das, was includeChildSelections=true entscheidet (65 feuert, 50 schweigt). Die Pflichtausruestung des Hunters (Ogre Club, Harpoon Crossbow, Light Armour) und der Sabertusk haengen ausserhalb der Gruppe am Hunter und gehoeren daher nicht in die Summe.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-two-items-well-under-budget.ros",
+      "description": "Hunter mit Mawseeker (Big Names, 10 pts) und Wardstone necklace (Talismans, 20 pts) = 30 pts in der Gruppe 'Magic Items and Big Names'. Deutlich unter 50 — die Punktegrenze 2dd3-546b-146e-ce63 schweigt. Das Roster pinnt zugleich, dass die 145 pts des Traegers 'Hunter' selbst NICHT in die Summe der Gruppe eingehen: wuerde der Traeger mitgezaehlt, waere die Summe 175 und die Grenze feuerte.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2dd3-546b-146e-ce63",
+          "c7d2-e151-77ae-2e3a",
+          "3d0b-90f9-0333-7423"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-two-items-exactly-at-budget.ros",
+      "description": "Hunter mit Greedy Fist (Magic Armour, 20 pts) und Cathayan Jet (Talismans, 30 pts) = genau 50 pts in der Gruppe. Ein max ist auf seiner Grenze erfuellt, also schweigt 2dd3-546b-146e-ce63. Zusaetzlich haengt ein Sabertusk (20 pts) direkt am Hunter, AUSSERHALB der Gruppe: eine Auswertung, die die Summe faelschlich ueber den ganzen Hunter statt ueber die Gruppenmitglieder bildet, kaeme auf 70 und feuerte hier.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2dd3-546b-146e-ce63",
+          "c7d2-e151-77ae-2e3a",
+          "3d0b-90f9-0333-7423"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-items-over-budget.ros",
+      "description": "Hunter mit Greatskull (Magic Armour, 35 pts) und Wardstone necklace (Talismans, 20 pts) = 55 pts in der Gruppe. Beide Gegenstaende liegen einzeln unter 50 — erst ihre SUMME reisst die Grenze. 2dd3-546b-146e-ce63 feuert mit Ist 55 gegen Grenze 50; der Ist-Wert ist die Punktesumme, keine Anzahl (eine zaehlende Lesart ergaebe 2).",
+      "expect": {
+        "firing": [
+          { "limitId": "2dd3-546b-146e-ce63", "actual": 55, "bound": 50 }
+        ],
+        "absent": [
+          "c7d2-e151-77ae-2e3a",
+          "3d0b-90f9-0333-7423"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-nested-thiefstones-over-budget.ros",
+      "description": "Hunter mit Greedy Fist (Magic Armour, 20 pts) und dem Talisman 'Gnoblar thiefstone' (0 pts), unter dem 3x 'Gnoblar Thiefstones' zu je 15 pts haengen = 20 + 0 + 45 = 65 pts. Das ist der Fall, den includeChildSelections=true entscheidet: zaehlte die Grenze nur die direkten Gruppenmitglieder, waere die Summe 20 und sie schwiege. 2dd3-546b-146e-ce63 feuert mit Ist 65 gegen Grenze 50. Die Anzahl-Grenze der Talismane (3d0b-90f9-0333-7423, max 1, includeChildSelections=false) bleibt still, weil nur EIN Talisman direkt in der Gruppe steht; die Stueckzahl-Obergrenze der Thiefstones (2217-0c91-447a-5fd4, max 3) ist mit 3 erfuellt.",
+      "expect": {
+        "firing": [
+          { "limitId": "2dd3-546b-146e-ce63", "actual": 65, "bound": 50 }
+        ],
+        "absent": [
+          "c7d2-e151-77ae-2e3a",
+          "3d0b-90f9-0333-7423",
+          "2217-0c91-447a-5fd4",
+          "c0b7-f9ea-d693-9c94"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-nested-thiefstones-exactly-at-budget.ros",
+      "description": "Derselbe Aufbau wie 04, aber nur 2x 'Gnoblar Thiefstones' = 20 + 0 + 30 = genau 50 pts. Gegenprobe zu 04: die Grenze schweigt auf ihrem Wert. Zusammen klammern 04 und 05 den Beitrag des verschachtelten Kindeintrags auf genau 15 pts je Stueck ein.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2dd3-546b-146e-ce63",
+          "c7d2-e151-77ae-2e3a",
+          "3d0b-90f9-0333-7423",
+          "2217-0c91-447a-5fd4",
+          "c0b7-f9ea-d693-9c94"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmus-06" name="pmus-06" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Force" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-wolfriders-a" name="Goblin Wolf Riders" entryId="3e13-7d88-fc17-1ecb" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-wolfriders-a-models" name="Goblin Wolf rider" entryId="b94a-ac63-6afa-7a79" entryLinkId="" number="3" type="model"/>
+          </selections>
+        </selection>
+        <selection id="sel-wolfriders-b" name="Goblin Wolf Riders" entryId="3e13-7d88-fc17-1ecb" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-wolfriders-b-models" name="Goblin Wolf rider" entryId="b94a-ac63-6afa-7a79" entryLinkId="" number="3" type="model"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

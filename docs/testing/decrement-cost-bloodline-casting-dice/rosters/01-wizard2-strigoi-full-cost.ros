@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dcb-01" name="DCB 01 - Wizard level 2 unter Strigoi: die geschriebenen 2 Casting Dice bleiben stehen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-cost-bloodline-casting-dice E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Budgets: pts 2000 ist bewusst so hoch gewaehlt, dass es nie bindet
+       (die Liste kostet 285 pts) und dass die punkteskalierenden
+       Kategorie-Grenzen der .gst in ihrem oberen Zweig stehen. Die
+       Casting-Dice-Grenze ist die einzige Variable dieses Szenarios. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+    <costLimit typeId="fcec-2340-6368-a2ba" name=" Casting Dice" value="1"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-vl" name="Vampire Lord" entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Kinder der Einheit: Handweapon (min 1, d830-89e1-7573-92e7)
+                 und Lord hero choice extra cost (min 1, 0780-5a76-9d51-e9ea);
+                 beide 0 Casting Dice. -->
+            <selection id="sel-hw" name="Handweapon" entryId="6abf-e08f-6480-cd58" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lordcost" name="Lord hero choice extra cost" entryId="42c5-9ebc-7493-89ef" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- Pflicht-Gruppe Bloodline (01b8-338b-6b92-e37f, min 1
+                 e251-f353-704b-836a): Strigoi traegt per categoryLink
+                 261b-6e13-782f-68c1 die Kategorie bf30-4ff0-a4d8-3909, also
+                 NICHT die vom Kosten-decrement verlangte Blood-Dragon-Kategorie
+                 4cae-a20e-8374-b6cb. Strigoi hat keine Pflicht-Kinder und
+                 kostet 0 Casting Dice. -->
+            <selection id="sel-bloodline" name="Strigoi" entryId="ef7a-5896-8856-076b" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="bf30-4ff0-a4d8-3909" name="Strigoi" entryId="bf30-4ff0-a4d8-3909" primary="false"/>
+              </categories>
+            </selection>
+            <!-- Pflicht-Gruppe Wizard Level (b8ff-7e47-2614-1ecd, min 1
+                 9c66-4f74-2201-82ec): Wizard level 2, geschriebene Kosten
+                 2 Casting Dice. Sein decrement-Modifikator verlangt
+                 mindestens eine Blood-Dragon-Kategorie unterhalb des Vampirs -
+                 hier ist keine da, der Abzug greift nicht. -->
+            <selection id="sel-wiz" name="Wizard level 2" entryId="42d9-cebe-18d5-cdbd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

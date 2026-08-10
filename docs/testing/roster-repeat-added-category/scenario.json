@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "name": "roster-repeat-added-category",
+  "description": "Ein <repeat field=\"selections\" scope=\"roster\" childId=\"<Kategorie-Id>\" value=\"1\" repeats=\"1\"> an einem Modifier wiederholt diesen Modifier EINMAL JE roster-weit gezaehlter Auswahl dieser Kategorie - und er zaehlt eine Kategorie, die eine Auswahl NUR ueber einen Laufzeit-Modifikator (modifier type=\"add\" field=\"category\") haelt, genauso mit wie eine ueber einen categoryLink gehaltene. Konkret die Ogre-Kingdoms-Regel 'eine Gnoblar-Einheit je Ogre-Bulls-Einheit': die Wurzel-Einheit 'Gnoblars' (1e26-0d1a-bb3c-f47a) traegt max 0 (Constraint a177-82fc-0b76-5b73, field=selections scope=parent shared=true includeChildSelections=false includeChildForces=false) und einen increment-1-Modifier auf genau diese Constraint-Id, dessen einziger <repeat> die Auswahlen der Kategorie 'Bully Bully' (735e-2da1-6356-2fdb) roster-weit zaehlt. Diese Kategorie hat im GESAMTEN Fixture-Satz KEINEN einzigen categoryLink; ihr einziger Traeger ist der Ogre-Wurzel-entryLink 'Ogre Bulls' (d82e-111e-89b9-2be1, targetId 7754-8b3d-df99-d2d5 in der Mercenaries-Bibliothek) ueber den unbedingten <modifier type=\"add\" value=\"735e-2da1-6356-2fdb\" field=\"category\"/> in seinem eigenen <modifiers>-Block. Mit N Ogre-Bulls-Einheiten ist das effektive Maximum der Gnoblars 0+N. Sieben Roster im Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044) laufen N = 0/1/2 ab und pinnen es ueber expect.capabilities am Gnoblars-Slot (current, effectiveMin, effectiveMax) sowie ueber den ANGEHOBENEN bound der feuernden Grenze. Roster 04 ist der Fall, der die ZWEITE Wiederholung messbar macht (zwei Ogre Bulls => effectiveMax 2). Roster 06/07 sind der zweite Zeuge derselben Zelle an 'Gnoblar Trappers' (041b-7d95-6ff9-754a, Constraint 28cd-8b7f-3d0f-1546), dessen geschriebener Basiswert 1 statt 0 ist. Die force-skopierte Pflicht des Ogre-Bulls-Verweises (32ed-26da-3f27-5c04, Rohwert min 0, im Standard-Kontingent per set auf 1 gehoben) ist in jedem Roster bewusst deklariert: sie feuert genau dort, wo kein Ogre Bulls steht.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-bulls-gnoblars-max-zero-fires.ros",
+      "description": "Kontingent 'Standard (OK-AB)' mit EINER Gnoblar-Einheit (Pflichtkinder: 20 Modelle, Hand Weapon, Sharp Stuff) und KEINER Auswahl der Kategorie 'Bully Bully'. Der repeat zaehlt roster-weit 0 Treffer, das increment wird nicht angewendet: a177-82fc-0b76-5b73 behaelt seinen geschriebenen Basiswert max 0 und feuert bei Ist 1. Der Slot meldet current 1 / effectiveMax 0. Zugleich feuert die im Standard-Kontingent auf 1 gehobene Ogre-Bulls-Pflicht 32ed-26da-3f27-5c04 mit Ist 0 - bewusst deklariert, weil das Roster genau diese Einheit weglaesst.",
+      "expect": {
+        "firing": [
+          { "limitId": "a177-82fc-0b76-5b73", "actual": 1, "bound": 0 },
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "28cd-8b7f-3d0f-1546",
+          "7d69-1827-de87-9e81",
+          "4900-c70c-5758-7677",
+          "3721-5eca-db0b-f875"
+        ],
+        "capabilities": [
+          {
+            "defId": "1e26-0d1a-bb3c-f47a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblars",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-bulls-one-gnoblars-legal.ros",
+      "description": "Derselbe Aufbau, zusaetzlich EINE Einheit 'Ogre Bulls' ueber den Ogre-Wurzel-entryLink d82e-111e-89b9-2be1 (die Auswahl benennt den VERWEIS als entryId, damit die am Verweis selbst deklarierten Modifikatoren tragen). Sie haelt die Kategorie 'Bully Bully' AUSSCHLIESSLICH ueber den Laufzeit-Modifikator add category - kein categoryLink im Fixture-Satz zeigt auf 735e-2da1-6356-2fdb. Der repeat zaehlt 1 Treffer => 1 Anwendung von increment +1 => effektives Maximum 0+1=1 bei Ist 1. Keine der genannten Grenzen feuert; die Ogre-Bulls-Pflicht ist mit Ist 1 erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "a177-82fc-0b76-5b73",
+          "28cd-8b7f-3d0f-1546",
+          "32ed-26da-3f27-5c04",
+          "7d69-1827-de87-9e81",
+          "4900-c70c-5758-7677",
+          "3721-5eca-db0b-f875"
+        ],
+        "capabilities": [
+          {
+            "defId": "1e26-0d1a-bb3c-f47a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblars",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-one-bulls-two-gnoblars-fires.ros",
+      "description": "Wie Roster 02 (ein gezaehlter Traeger => effektives Maximum 1), aber die Gnoblars stehen als EINE Auswahl mit number=2. a177-82fc-0b76-5b73 feuert mit Ist 2 gegen den ANGEHOBENEN bound 1 - nicht gegen den geschriebenen Basiswert 0 aus Roster 01. Die Pflichtkinder-Grenzen des gestapelten Traegers (number=2) stehen bewusst WEDER in firing NOCH in absent (siehe README).",
+      "expect": {
+        "firing": [
+          { "limitId": "a177-82fc-0b76-5b73", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "28cd-8b7f-3d0f-1546",
+          "32ed-26da-3f27-5c04"
+        ],
+        "capabilities": [
+          {
+            "defId": "1e26-0d1a-bb3c-f47a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblars",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-bulls-two-gnoblars-legal.ros",
+      "description": "ZWEI getrennte Ogre-Bulls-Auswahlen (je number=1) ueber denselben Verweis und die Gnoblars mit number=2. Der repeat zaehlt 2 Treffer => die Wiederholung greift ZWEIMAL => effektives Maximum 0+2=2 bei Ist 2. Das ist der Fall, der die zweite Wiederholung messbar macht: waere die per Modifikator vergebene Kategorie nur einmal oder gar nicht gezaehlt worden, laege effectiveMax bei 1 bzw. 0 und die Grenze wuerde feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "a177-82fc-0b76-5b73",
+          "28cd-8b7f-3d0f-1546",
+          "32ed-26da-3f27-5c04"
+        ],
+        "capabilities": [
+          {
+            "defId": "1e26-0d1a-bb3c-f47a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblars",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-bulls-three-gnoblars-fires.ros",
+      "description": "Wie Roster 04 (zwei gezaehlte Traeger => effektives Maximum 2), aber die Gnoblars stehen mit number=3. a177-82fc-0b76-5b73 feuert mit Ist 3 gegen den bound 2 - zwei Wiederholungsschritte ueber dem Basiswert 0 aus Roster 01. Damit ist die zweite Wiederholung auch im Verletzungsbericht sichtbar, nicht nur im Faehigkeits-Datensatz.",
+      "expect": {
+        "firing": [
+          { "limitId": "a177-82fc-0b76-5b73", "actual": 3, "bound": 2 }
+        ],
+        "absent": [
+          "28cd-8b7f-3d0f-1546",
+          "32ed-26da-3f27-5c04"
+        ],
+        "capabilities": [
+          {
+            "defId": "1e26-0d1a-bb3c-f47a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblars",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-no-bulls-two-trappers-fires.ros",
+      "description": "Zweiter Zeuge derselben repeat-Zelle an einem anderen Traeger: 'Gnoblar Trappers' (041b-7d95-6ff9-754a) mit number=2 und KEINER Auswahl der Kategorie 'Bully Bully'. Seine Grenze 28cd-8b7f-3d0f-1546 hat den geschriebenen Basiswert max 1 (nicht 0); der repeat zaehlt 0 Treffer, der bound bleibt 1 und feuert bei Ist 2. Der Gnoblars-Constraint a177-82fc-0b76-5b73 bleibt still, weil keine Gnoblar-Einheit im Roster steht.",
+      "expect": {
+        "firing": [
+          { "limitId": "28cd-8b7f-3d0f-1546", "actual": 2, "bound": 1 },
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "a177-82fc-0b76-5b73"
+        ],
+        "capabilities": [
+          {
+            "defId": "041b-7d95-6ff9-754a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblar Trappers",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-one-bulls-two-trappers-legal.ros",
+      "description": "Gegenprobe zu Roster 06: dieselben zwei Trapper-Einheiten, jetzt mit einer Ogre-Bulls-Einheit. Der repeat zaehlt 1 Treffer => 28cd-8b7f-3d0f-1546 steigt von 1 auf 2, Ist 2 <= 2, die Grenze schweigt. Beleg, dass die per Modifikator vergebene Kategorie an beiden Traegern dieselbe Wiederholung ausloest und sich nur der geschriebene Basiswert unterscheidet.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "28cd-8b7f-3d0f-1546",
+          "a177-82fc-0b76-5b73",
+          "32ed-26da-3f27-5c04"
+        ],
+        "capabilities": [
+          {
+            "defId": "041b-7d95-6ff9-754a",
+            "anchorKind": "occupied",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Gnoblar Trappers",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    }
+  ]
+}

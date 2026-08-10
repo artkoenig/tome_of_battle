@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="muti-02" name="MUTI 02 - Night Goblins, 20 Modelle, 5 Netters, 15 Fanatics (Bedingung 'Refund 1' des haltlosen Modifikators haelt)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored modifier-unresolved-target-inert E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-night-goblins" name="Night Goblins" entryId="79af-55cb-9761-f0be" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-ng-models" name="Night Goblin" entryId="7b95-cfde-8c59-78c3" entryLinkId="" number="20" type="model" collective="false"/>
+            <selection id="sel-ng-weapons" name="Hand Weapons and Shields" entryId="e555-e1a8-da79-3cc2" entryLinkId="" entryGroupId="ff58-295b-f79f-7a5d" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-ng-netters" name="Netters" entryId="638c-0f7d-3590-75b3" entryLinkId="" number="5" type="upgrade" collective="false"/>
+            <selection id="sel-ng-fanatics" name="Fanatics" entryId="18f4-ad33-69ca-e327" entryLinkId="" number="15" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

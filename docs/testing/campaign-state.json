@@ -46,13 +46,26 @@
       "note": "A single selection of 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, nested under the group 43b3-35c6-d7cc-e3c6 below the hidden entry 6fcf-b33d-3cf5-b56a) must be counted: its occupied slot must report current 1, and its own force-scoped limit 00f6-c1b3-ee85-5c02 (max 0, raised to 1 only while the and-group of atLeast 2000 / atMost 2500 on limit::ecfa-8486-4f6c-c249 holds) must fire with actual 1 against bound 0 at a costLimit of 1999 — the report carries current 0 and no message for that limit at all. Roster 03 additionally demands that limit:: reads the configured budget and not the spent sum."
     }
   ],
-  "parkedQuestions": [],
+  "parkedQuestions": [
+    {
+      "cellKey": "condition|instanceOf|id|selectionCount|child=model",
+      "question": "All six occurrences of this construct sit in the upstream corpus src/__fixtures__/whfb6/ (Vampire Counts.cat), which the black-box scenario author is not allowed to read — its allow-list covers only the frozen definitive corpus src/evaluator/__fixtures__/whfb6-definitive/. Should the allow-list be extended to the upstream corpus so cells that occur only there can be pinned, or should such cells be waived as out of scope for the E2E suite?",
+      "sourcesChecked": [
+        "docs/agents/e2e-testcase-author.md (read allow-list)",
+        "docs/testing/worklist.json (files map: 6 of 6 occurrences in src/__fixtures__/whfb6/Vampire Counts.cat)",
+        "docs/battlescribe-data-format.md 7.7 (instanceOf against an id-valued scope)"
+      ],
+      "parkedAt": "2026-08-10",
+      "status": "answered",
+      "answer": "Extend the allow-list: the scenario author may read the upstream corpus src/__fixtures__/whfb6/ as well, so cells occurring only there can be pinned. Recorded in docs/agents/e2e-testcase-author.md; a scenario still names the files of one fixture set only and never mixes the two."
+    }
+  ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-ipuqwm",
+    "branch": "claude/evaluator-abschluss-kampagne-4rq45b",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 8,
-    "lastRunAt": "2026-08-10T05:01:55Z",
+    "runs": 10,
+    "lastRunAt": "2026-08-10T08:16:17Z",
     "lastRunOutcome": "stopped-by-human",
     "reArmedFor": null,
     "gaps": {

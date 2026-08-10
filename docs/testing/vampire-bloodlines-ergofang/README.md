@@ -14,7 +14,7 @@ Beispiel-Datei** (`Test2.rosz`) verifiziert.
 > | Bloodline liegt … | als **eine** Selektion auf **Force-Ebene**, armeeweit | als **Gruppe in jedem Vampir** einzeln |
 > | Kardinalität | min 1 / max 1 je Bloodlines-Selektion (force) | **min 1 UND max 1 je Charakter** (parent) |
 > | Mischung | ganze Armee teilt **eine** Bloodline | jeder Vampir kann eine **andere** wählen |
-> | Profilwerte | ändern sich (Clan-Kategorie + `instanceOf`-Modifikatoren) | **keine** Profil-Modifikatoren; Bloodline schaltet **Ausrüstung/Powers** frei |
+> | Profilwerte | ändern sich (Clan-Kategorie + `instanceOf`-Modifikatoren) | Profil-Modifikatoren **existieren** (je drei am Vampire Lord und am Vampire Count), greifen aber **nie**: ihr `scope` nennt eine Clan-Kategorie, die nur *unterhalb* des Vampirs hängt, sodass der Rahmen nicht auflöst — festgenagelt in [`category-id-scope-instance-of`](../category-id-scope-instance-of/README.md). Wirksam schaltet die Bloodline hier **Ausrüstung/Powers** frei |
 > | Blood-Dragon-ID | `9fd9-…` (Force-Selektion) | `60a4-…`/`0158-…`/`3ce4-…` (3 Kopien, je Charakter) |
 >
 > Beide Kataloge sind reale Engine-Eingaben (die zwei Beispiel-Roster des Nutzers

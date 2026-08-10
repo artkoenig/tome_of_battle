@@ -109,7 +109,16 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`unit-scope-per-model-cost`](testing/unit-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
 | [`ancestor-scope-instance-of`](testing/ancestor-scope-instance-of/) | Definitive VC + Mercenaries | 2 |
 | [`root-entrylink-mandatory-catalogue-scope`](testing/root-entrylink-mandatory-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 4 |
-| **Summe** | | **134** |
+| [`roster-scope-mandatory-chariot`](testing/roster-scope-mandatory-chariot/) | Definitive O&G + Mercenaries | 7 |
+| [`parent-min-unshared-unit-size`](testing/parent-min-unshared-unit-size/) | Definitive O&G + Mercenaries | 6 |
+| [`condition-group-and-nested`](testing/condition-group-and-nested/) | Definitive O&G + Mercenaries | 5 |
+| [`category-id-scope-instance-of`](testing/category-id-scope-instance-of/) | ergofang VC (ohne Mercenaries) | 5 |
+| [`roster-repeat-added-category`](testing/roster-repeat-added-category/) | Definitive Ogre + Mercenaries | 7 |
+| [`less-than-parent-parry-save`](testing/less-than-parent-parry-save/) | Definitive Ogre + Mercenaries | 5 |
+| [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
+| [`decrement-cost-bloodline-casting-dice`](testing/decrement-cost-bloodline-casting-dice/) | ergofang VC (ohne Mercenaries) | 8 |
+| [`modifier-unresolved-target-inert`](testing/modifier-unresolved-target-inert/) | Definitive O&G + Mercenaries | 5 |
+| **Summe** | | **187** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1179,3 +1188,190 @@ ist die Wurzeleinheit Orc Boyz.
 | 04 | Drei Big 'Uns, zwei Orc Boyz | Höchstmaß 2 bei Ist 3 — die Grenze feuert |
 | 05 | Dieselbe Lage, aber die zwei Orc Boyz als **eine** Auswahl mit Stückzahl 2 | Gleiches Ergebnis: gezählt wird die Stückzahl, nicht die Zahl der XML-Elemente |
 | 06 | Big 'Uns im ersten, Orc Boyz im zweiten Kontingent | Höchstmaß 2 — `includeChildForces="true"` zählt über Kontingente hinweg |
+
+## `roster-scope-mandatory-chariot`
+
+Prüft eine armeeweite Untergrenze (`min`, `scope="roster"`, `shared="true"`,
+`includeChildSelections="false"`, `includeChildForces="false"`), deren
+geschriebener Wert 0 ist und die erst ein wiederholter `increment` hebt: „Orc
+Boar Chariot" (`5678-6ad3-0e79-2233`, Orcs and Goblins) trägt die Grenze
+`1d06-5b8c-0443-5979` und einen `increment 1`, dessen `<repeat>` armeeweit die
+Merkmals-Kategorie „orc needs chariot" (`a85e-af08-5fea-41bd`) zählt. Deren
+einziger Träger ist die Reittier-Option „Chariot" (`5cc1-2650-9e36-3c62`) in
+der Mounts-Gruppe des Orc Bigboss — ein Charakter auf Streitwagen macht also
+je Exemplar eine Streitwagen-Einheit zur Pflicht.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Bigboss ohne Reittier | Untergrenze bleibt 0 — nichts feuert |
+| 02 | Bigboss auf „Boar" | Das Geschwister-Reittier trägt die Kategorie nicht — nichts feuert |
+| 03 | Bigboss auf „Chariot", keine Streitwagen-Einheit | Untergrenze 1 bei Ist 0 — die Grenze feuert |
+| 04 | Wie 03, mit einer Streitwagen-Einheit | Pflicht erfüllt (Ist 1) — still |
+| 05 | Zwei Bigbosse auf „Chariot", keine Einheit | Zwei Wiederholungen: Untergrenze 2 bei Ist 0 |
+| 06 | Wie 05, mit einer Einheit | Untergrenze 2 bei Ist 1 — die Grenze feuert weiter |
+| 07 | Wie 05, mit zwei Einheiten | Pflicht erfüllt (Ist 2) — still |
+
+## `parent-min-unshared-unit-size`
+
+Prüft eine Mindeststärke als `min`-Grenze mit `scope="parent"` und
+`shared="false"`: gezählt wird **nur die eine Einheiten-Instanz**, die die
+Grenze trägt, nie die roster-weite Summe desselben Modell-Eintrags. Beleg: das
+Modell „Goblin" (`ec2d-a00e-8ff8-1dff`, Orcs and Goblins) trägt
+`min 20` (`7156-0a0f-aa05-582a`) unter der Einheit „Goblins"
+(`b403-b7c6-0008-27d9`); dasselbe Muster mit `min 5` trägt der „Goblin Wolf
+rider" (`e603-749c-713c-3d36`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Einheit mit genau 20 Modellen | Mindeststärke erfüllt — still |
+| 02 | Eine Einheit mit 15 Modellen | Eine Meldung: Ist 15 gegen Grenze 20 |
+| 03 | Eine Einheit mit 25 Modellen | Mindeststärke übererfüllt — still |
+| 04 | **Zwei** Einheiten mit je 15 Modellen | **Zwei** Meldungen mit je Ist 15 — die Summe 30 rettet keine der beiden |
+| 05 | Eine Einheit mit 20, eine mit 15 Modellen | Genau eine Meldung — die Instanzen werden getrennt beurteilt |
+| 06 | Zwei Wolfsreiter-Einheiten mit je 3 Modellen | Dasselbe Muster an einer zweiten Einheit: zwei Meldungen, Ist 3 gegen Grenze 5 |
+
+## `condition-group-and-nested`
+
+Prüft eine **verschachtelte** `and`-Gruppe: sie hält nur, wenn **jedes** ihrer
+Mitglieder hält — die eigene Bedingung ebenso wie die eigene Untergruppe —, und
+die umschließende Gruppe sieht davon nur dieses eine Urteil. Beleg: der
+Umschalter „Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`, Orcs and
+Goblins) trägt einen `add error`-Modifikator, dessen äußere `or`-Gruppe genau
+ein Mitglied hat — eine `and`-Gruppe aus einer `instanceOf`-Bedingung auf das
+Kontingent „Standard (OG-AB)" und einer eigenen `or`-Untergruppe aus zwei
+armeeweiten Zählungen (`greaterThan 1`) auf „Savage Orc Boar Big 'Uns" bzw.
+„Stone Trolls".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standard-Kontingent, Umschalter, zwei Big 'Uns | Die Autor-Meldung erscheint |
+| 02 | Standard-Kontingent, Umschalter, zwei Stone Trolls | Dasselbe über das zweite Mitglied der Untergruppe |
+| 03 | Standard-Kontingent, Umschalter, je eines | Keine Meldung — die Untergruppe hält nicht, also hält die `and`-Gruppe nicht |
+| 04 | „Savage Orc Horde", Umschalter, zwei Big 'Uns | Keine Meldung — die Untergruppe hält, die eigene Bedingung nicht: der Beweis der Konjunktion |
+| 05 | Standard-Kontingent **ohne** Umschalter, zwei Big 'Uns | Keine Meldung — der Träger des Modifikators liegt gar nicht in der Liste |
+
+## `category-id-scope-instance-of`
+
+Prüft die **Condition**-Ausprägung des Kategorie-Rahmens: Nennt der `scope`
+einer Bedingung eine **Kategorie-Id**, ist der Bezugsrahmen der nächste
+Vorfahre der tragenden Auswahl — sie eingeschlossen —, der diese Kategorie
+trägt. Eine Kategorie, die nur ein **Nachfahre** trägt, löst den Rahmen nicht
+auf, und ein nicht aufgelöster Rahmen lässt den gegatterten Modifikator nicht
+greifen. Beleg: der `infoLink` `e0f2-8568-15f0-a384` des „Vampire Lord"
+(`b77b-88d5-5e80-e178`, ergofang-Katalog *Vampire Counts*) trägt drei
+Merkmals-Modifikatoren, deren `scope` je eine Blutlinien-Kategorie benennt
+(Blood Dragon `4cae-a20e-8374-b6cb` +2 WS, Necrach `fc4b-a86d-5897-9e4c`
+−2 WS, Strigoi `bf30-4ff0-a4d8-3909` +1 A) — während die Kategorien selbst an
+den Blutlinien-Optionen **unterhalb** der Einheit hängen. Das Szenario ist
+zugleich der erste Fall des Katalogs auf dem ergofang-Fixture-Satz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord ohne Blutlinie | Grundwerte WS 8 / A 5; die unbesetzte Pflicht-Gruppe meldet Ist 0 gegen Grenze 1 |
+| 02 | Mit Blutlinie „Blood Dragon" | WS bleibt 8 — die Kategorie liegt unterhalb der Einheit, nicht darüber |
+| 03 | Mit Blutlinie „Strigoi" | A bleibt 5 — dasselbe an der verschachtelten Modifikator-Klammer |
+| 04 | Mit Blutlinie „Necrach" | WS bleibt 8 statt 6 — die Gegenrichtung, eine Fehl-Lesart fiele hier nach unten aus |
+| 05 | Beide Blutlinien zugleich (regelwidrig) | Die Gruppen-Obergrenze meldet Ist 2 gegen Grenze 1; die Merkmale bleiben WS 8 / A 5 |
+
+## `roster-repeat-added-category`
+
+Prüft einen `repeat` mit `scope="roster"` und einer **Kategorie-Id** in
+`childId`: er wiederholt seinen Modifikator einmal je passender Auswahl im
+ganzen Roster — und zählt eine Kategorie, die eine Auswahl erst zur Laufzeit
+per `add category` erhält, genauso wie eine per `categoryLink` getragene. Beleg:
+die Obergrenze der „Gnoblars" (`a177-82fc-0b76-5b73`, Ogre Kingdoms) steht
+geschrieben auf 0 und steigt je Ogerbullen-Einheit um 1; die Kategorie
+„Bully Bully" (`735e-2da1-6356-2fdb`) hat im ganzen Datensatz **keinen**
+`categoryLink` — ihr einziger Träger ist der Wurzel-`entryLink` „Ogre Bulls"
+(`d82e-111e-89b9-2be1`) mit einem unbedingten `add category`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Gnoblar-Einheit, **keine** Ogerbullen | Obergrenze 0 — eine Meldung Ist 1; zugleich die verletzte Ogerbullen-Pflicht |
+| 02 | Eine Ogerbullen-, eine Gnoblar-Einheit | Obergrenze 1 — still |
+| 03 | Eine Ogerbullen-, zwei Gnoblar-Einheiten | Eine Meldung: Ist 2 gegen Grenze 1 |
+| 04 | **Zwei** Ogerbullen-, zwei Gnoblar-Einheiten | Obergrenze 2 — still: die zweite Wiederholung wirkt |
+| 05 | Zwei Ogerbullen-, drei Gnoblar-Einheiten | Eine Meldung: Ist 3 gegen Grenze 2 |
+| 06 | Zwei Gnoblar-Späher, keine Ogerbullen | Dasselbe Muster an der zweiten Einheit: Ist 2 gegen Grenze 1 |
+| 07 | Eine Ogerbullen-Einheit, zwei Gnoblar-Späher | Obergrenze 2 — still |
+
+## `less-than-parent-parry-save`
+
+Prüft die `lessThan`-Bedingung mit `scope="parent"` und einer Eintrags-Id in
+`childId` — die „diese Option ist **nicht** gewählt"-Hälfte eines Gatters, die
+in dem Moment aufhört zu halten, in dem die Option erscheint. Beleg: das
+Zwergen-Profil der Mercenaries (`c69e-8fe4-ad3d-3b7d`) schreibt `Sv` 6 und trägt
+neben den Rüstungs-Abzügen einen `decrement 1`, dessen `and`-Gruppe aus
+„weniger als 1 Zweihandwaffe" (`1eb7-3f36-8cf7-e0ba`) **und** „mindestens 1
+Schild" besteht — die Parier-Regel. Gemessen wird an zwei Paaren, die sich
+allein in der Zweihandwaffe unterscheiden.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwergen-Einheit ohne Ausrüstung | Rüstungswurf 7 — nur der unbedingte Aufschlag greift |
+| 02 | Mit Schild, **ohne** Zweihandwaffe | Rüstungswurf 5 — Schild und Parieren zählen |
+| 03 | Mit Schild **und** Zweihandwaffe | Rüstungswurf 6 — der Parier-Punkt entfällt |
+| 04 | Leichte Rüstung + Schild, ohne Zweihandwaffe | Rüstungswurf 4 — dasselbe Paar, katalogkonform gebaut |
+| 05 | Leichte Rüstung + Schild + Zweihandwaffe | Rüstungswurf 5 — der Parier-Punkt entfällt erneut |
+
+## `parent-costsum-magic-items-budget`
+
+Prüft eine Grenze, deren `field` eine **Kostenart-Id** statt `selections` ist:
+sie begrenzt die **Summe** dieser Kosten unterhalb ihres Trägers, und mit
+`includeChildSelections="true"` zählen auch verschachtelte Auswahlen mit. Beleg:
+die Gruppe „Magic Items and Big Names" des Hunters (`9326-f5c9-9e82-f4bf`, Ogre
+Kingdoms) trägt `max 50` auf die Punkte-Kostenart
+(`2dd3-546b-146e-ce63`). Der gemeldete Ist-Wert ist die Punktesumme, nicht die
+Anzahl der Gegenstände.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Gegenstände für zusammen 30 Punkte | Deutlich unter dem Budget — still |
+| 02 | Zwei Gegenstände für genau 50 Punkte | Auf der Grenze erfüllt — still |
+| 03 | Zwei Gegenstände für zusammen 55 Punkte | Eine Meldung: Ist 55 gegen Grenze 50 — erst die Summe reißt sie |
+| 04 | Gegenstand mit drei verschachtelten Steinen, zusammen 65 Punkte | Eine Meldung: Ist 65 — genau das entscheidet `includeChildSelections` |
+| 05 | Derselbe Aufbau mit zwei Steinen, zusammen 50 Punkte | Still — die Gegenprobe klammert den Beitrag der verschachtelten Auswahl ein |
+
+## `decrement-cost-bloodline-casting-dice`
+
+Prüft einen `decrement`-Modifikator, dessen `field` eine **Kostenart-Id** ist:
+er senkt diese Kosten der tragenden Auswahl um seinen Wert, und die gesenkten
+Kosten sind es, die das Roster-Budget dieser Kostenart zählt. Beleg: „Wizard
+level 2" (`42d9-cebe-18d5-cdbd`, ergofang *Vampire Counts*) kostet geschrieben
+2 Zauberwürfel (`fcec-2340-6368-a2ba`) und trägt einen `decrement 1`, dessen
+Bedingung die Blutlinie **Blood Dragon** unterhalb des Vampirs zählt
+(`scope="parent"`, `includeChildSelections="true"`) — dieselbe Kategorie, an der
+die Profil-Modifikatoren derselben Einheit scheitern, hier aber in der Form, die
+den Rahmen auflöst.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zauberstufe 2 unter Strigoi, Würfel-Budget 1 | Kein Rabatt: Ist 2 gegen Grenze 1 |
+| 02 | Dieselbe Stufe unter Blood Dragon, Budget 1 | Rabatt greift — still |
+| 03 | Wie 02, Budget 0 | Ist 1 gegen Grenze 0 — nagelt die verbilligte Summe auf genau 1 |
+| 04 | Zauberstufe 3 unter Strigoi, Budget 2 | Zweiter Zeuge mit anderem Grundwert: Ist 3 gegen Grenze 2 |
+| 05 | Zauberstufe 3 unter Blood Dragon, Budget 2 | Still — ein Abzug, kein Setzen auf 1 |
+| 06 | Wie 05, Budget 1 | Ist 2 gegen Grenze 1 — dieselbe Klammer ohne Null-Budget |
+| 07 | Zwei Vampire, nur einer Blood Dragon, Budget 1 | Ist 2 — der Rabatt gilt je Auswahl, nicht armeeweit |
+| 08 | Dieselben zwei, beide Blood Dragon, Budget 1 | Still — die Gegenprobe zu 07 |
+
+## `modifier-unresolved-target-inert`
+
+Prüft einen Modifikator, dessen `field` einen Bezeichner nennt, den der geladene
+Datensatz **nirgends** definiert — weder als `constraint`, noch als Kostenart,
+noch als Merkmalstyp. Er bleibt vollständig wirkungslos: er erzeugt keine eigene
+Grenze, verschiebt keine fremde und stört die Auswertung seiner Nachbarn nicht.
+Beleg: die vier mit „Swedish Comp System" kommentierten Modifikatoren des
+Orcs-and-Goblins-Katalogs zeigen auf `ce6e-afde-2ed1-aac2` — einen unbedingten
+`decrement` an den „Fanatics" (`18f4-ad33-69ca-e327`) und drei bedingte
+`increment` an den „Night Goblins" (`79af-55cb-9761-f0be`). Damit „nichts
+passiert" von „nichts wurde ausgewertet" unterscheidbar bleibt, zeigen zwei
+Roster einen **echten** Modifikator derselben Einheit bei der Arbeit.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 20 Modelle, 5 Netter, 3 Fanatics — alle Grenzen exakt eingehalten | Der unbedingte haltlose Modifikator wirkt nicht; nur das Punktebudget meldet sich |
+| 02 | Derselbe Aufbau mit 15 Fanatics | Die erste bedingte Gruppe hält — die Nachbargrenzen bleiben unverändert |
+| 03 | Dieselbe Einheit mit 45 Fanatics | Alle drei bedingten Gruppen halten zugleich — dieselben Werte wie bei 02 |
+| 04 | 20 Modelle, 6 Netter, keine Fanatics | Gegenprobe: die Netter-Grenze **wird** von einem echten Modifikator auf 5 gehoben und meldet Ist 6 |
+| 05 | 24 Modelle, 6 Netter, 15 Fanatics | Beide Hälften in einem Roster: Netter-Grenze 6, exakt eingehalten |
