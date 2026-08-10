@@ -1097,3 +1097,23 @@ die roster-weite Budget-Regel.
 | 03 | 13 Modelle, Budget 96 | Ein Modell mehr, ein Schritt mehr: Summe 104 |
 | 04 | 12 Modelle mit Zusatz-Schild, Budget 107 | Der Schild trägt denselben `repeat` mit `includeChildSelections="false"`: Summe 108 |
 | 05 | Dasselbe bei Budget 108 | Wieder exakt eingeklammert — beide Flag-Varianten liefern im flachen Rahmen denselben Faktor |
+
+## `parent-repeat-item-include-children`
+
+Prüft einen `<repeat>` mit `scope="parent"`, Eintrags-`childId` und
+`includeChildSelections="true"` (§7.7/§9.7 der Formatdoku): der gebundene
+`increment` greift einmal je gezählter Kopie im Eltern-Rahmen. Beleg: die
+Ogre-Gruppe „Arcane Items" (`4c3e-febe-6d5d-6912`) trägt `max 1`
+(`188e-3808-4b37-c8d9`) und einen zweiten `increment 1`, dessen `repeat` die
+Power Stones (`696a-648d-c842-4c6a`) zählt. Träger ist ein Butcher im
+Kontingent „Standard (OK-AB)"; Dispel Scrolls bleiben aus allen Rostern
+heraus, damit der Nachbar-`repeat` still bleibt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein arkaner Gegenstand | Basiswert: Höchstmaß 1 |
+| 02 | Ein Power Stone | Höchstmaß 2 |
+| 03 | Zwei Power Stones | Höchstmaß 3 |
+| 04 | Zwei andere Gegenstände, kein Stein | Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
+| 05 | Dieselben zwei plus ein Stein | Grenze 2 bei Ist 3 |
+| 06 | Dieselben zwei plus zwei Steine | Grenze 3 bei Ist 4 — die Grenze steigt Schritt für Schritt mit den gezählten Kopien |

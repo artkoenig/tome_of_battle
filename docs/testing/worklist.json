@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 56,
-    "uncovered": 49
+    "covered": 57,
+    "uncovered": 48
   },
   "cells": [
     {
@@ -81,102 +81,6 @@
             "modifierGroup"
           ],
           "raw": {}
-        }
-      ]
-    },
-    {
-      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": true,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 15,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 6,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "4c3e-febe-6d5d-6912",
-            "name": "Arcane Items"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "696a-648d-c842-4c6a",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "d502-9cf6-2232-202c",
-            "name": "Arcane Items (OK-AB + Common)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "f969-0b28-b1cf-bb02",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "d502-9cf6-2232-202c",
-            "name": "Arcane Items (OK-AB + Common)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "989e-9d22-7fea-19b5",
-            "repeats": "1"
-          }
         }
       ]
     },
