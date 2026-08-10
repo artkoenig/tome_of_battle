@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rmga-03" name="RMGA 03 - zwei Generale in einem Kontingent" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-scope General-category E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- ZWEI Necromancer, jeder mit EINER eigenen General-Aufwertung.
+             Die beiden General-Auswahlen haengen an VERSCHIEDENEN Eltern -
+             die Eigengrenze der Aufwertung (5b30-f604-aa3b-1c34, max 1,
+             scope="parent") sieht in beiden Rahmen genau 1 und muss schweigen.
+             Armeeweit stehen zwei Auswahlen der Kategorie
+             a37e-7207-de6d-acb0: max d818-c60d-b1f8-8aaa feuert mit Ist 2
+             gegen Grenze 1, min 1077-7379-f142-f382 schweigt. -->
+        <selection id="sel-nec-1" name="Necromancer" entryId="b5d8-db21-a4b7-9e94" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-nec-1-hw" name="Handweapon" entryId="dca8-37d5-c64a-db33" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-1-wiz" name="Wizard level 1" entryId="fa17-5cb0-9c97-4db6" entryLinkId="" entryGroupId="0c4e-627e-e499-f135" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-1-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-nec-2" name="Necromancer" entryId="b5d8-db21-a4b7-9e94" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-nec-2-hw" name="Handweapon" entryId="dca8-37d5-c64a-db33" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-2-wiz" name="Wizard level 1" entryId="fa17-5cb0-9c97-4db6" entryLinkId="" entryGroupId="0c4e-627e-e499-f135" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-2-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1978,3 +1978,72 @@ zwei direkte Kind-Einträge (zwei House Rules).
 passten: die Grenze feuerte also nie, statt im `self`-Rahmen zu zählen. Die
 Kampagne hat die Lücke in derselben Runde geschlossen (`constraints.js`,
 `query.js`); alle sechs Fälle sind grün.
+
+## `roster-min-general-armywide`
+
+Prüft die armeeweite Pflicht einer Kategorie: die Kategorie „General"
+(`a37e-7207-de6d-acb0`, oberer Datensatz) trägt `min 1` und `max 1`, beide mit
+`scope="roster"` über alle Kontingente hinweg. Träger ist ein Necromancer, der
+die Kategorie über eine schlichte, sichtbare Verknüpfung anbietet.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein General | Die Mindestgrenze feuert mit Ist 0 / Grenze 1 |
+| 02 | Genau ein General | Beide Grenzen schweigen |
+| 03 | Zwei Generäle in einem Kontingent | Die Obergrenze feuert mit Ist 2 / Grenze 1 |
+| 04 | Zwei Kontingente, ein General | Beide schweigen — eine Zählung je Kontingent ließe die Mindestgrenze für das zweite feuern |
+| 05 | Zwei Kontingente, je ein General | Die Obergrenze feuert mit Ist 2 — eine Zählung je Kontingent bliebe stumm |
+
+> **Achtung, Datensatz:** Dieselben beiden Grenzen-Ids tragen im
+> Definitive-Edition-Datensatz `scope="force"` statt `scope="roster"`. Das
+> Szenario benennt deshalb ausschließlich Dateien des oberen Datensatzes; die
+> README des Szenarios stellt den Unterschied voran.
+
+> **Offen deklariert:** Die armeeweite Core-Pflicht des Spielsystems feuert in
+> allen fünf Rostern gleich und wird deshalb weder behauptet noch
+> ausgeschlossen.
+
+## `modifier-group-repeats-grave-markers`
+
+Prüft eine Modifikator-Klammer **ohne** Bedingung, aber **mit**
+Wiederholungen: sie greift unbedingt, und ihr Wiederholungsfaktor multipliziert
+sich in jeden Modifikator darin. Beleg: „Grave markers"
+(`f899-4fbd-db93-629e`, Vampire Counts) trägt `min 2` und `max 2`, und die
+Klammer hebt beide je gezähltem Vampir im Kontingent um 1 — die wirksame Grenze
+ist also 2 + Anzahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein Vampir, 2 Marker | Grundzustand: beide Grenzen bei 2, alles schweigt |
+| 02 | Ein Vampir, 2 Marker | Die Mindestgrenze feuert — sie steht jetzt bei 3 |
+| 03 | Ein Vampir, 3 Marker | Dieselbe Markerzahl wie 02, jetzt legal |
+| 04 | Zwei Vampire, 3 Marker | Dieselbe Markerzahl wie 03, jetzt zu wenig: die Grenze steht bei 4 |
+| 05 | Zwei Vampire, 4 Marker | Legal |
+| 06 | Zwei Vampire, 5 Marker | Die Obergrenze feuert — und meldet die **verschobene** Grenze 4, nicht die geschriebene 2 |
+
+> **Bewusst offen:** Kein Roster führt einen „0-1 Vampire Lord". Wie sich zwei
+> Wiederholungs-Elemente verrechnen, wenn **beide** zählen, behauptet das
+> Szenario deshalb nicht. Dass ein Wiederholungs-Element mit Zählung 0 neutral
+> ist und nicht alles annulliert, steht dagegen im Regeltext des Katalogs
+> selbst („je Vampire Count **oder** Vampire Lord").
+
+## `decrement-group-max-battle-standard`
+
+Prüft den senkenden Gegenpart zum `increment` auf einem Grenzwert. Die
+Waffengruppe des „Commander [HIGH ELVES]" trägt `max 1` und einen
+`decrement`-Modifikator auf genau diese Grenze, gekoppelt an die Frage, ob der
+Eltern-Rahmen **genau einen** Standartenträger führt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Commander ohne Standartenträger | Die Gruppe steht bei wirksamem Max 1 — der Modifikator greift nicht |
+| 02 | Standartenträger an einer **anderen** Figur desselben Kontingents | Unverändert Max 1: die Kopplung liest den Eltern-Rahmen, nicht das Kontingent |
+
+> **Grenze des Datensatzes, offen erklärt:** Die senkende Hälfte ist auf diesen
+> Katalogdaten **nicht baubar**. Die Waffengruppe hat keine Mitglieder und
+> niemand verweist auf sie, und der Commander bietet in seinem ganzen Teilbaum
+> keinen Standartenträger an — der gezählte Wert der Grenze ist also überall 0
+> und ihre Kopplung greift nie. Das Szenario nagelt deshalb den **ungesenkten**
+> Grenzwert und die Rahmen-Lesart der Kopplung fest; ein Roster zu erfinden, der
+> die Senkung auslöst, wäre kein Beleg aus den Daten. Ob diese Zelle stattdessen
+> als dauerhaft unprüfbar erklärt werden sollte, ist eine Frage an den Menschen.

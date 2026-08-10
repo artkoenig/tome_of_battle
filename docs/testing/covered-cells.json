@@ -555,6 +555,20 @@
         "docs/testing/not-instance-of-parent-ironskin-tribe"
       ],
       "rationale": "Roster pair on the same unit and the same army book, differing only in whether the parent selection carries the runtime category Ironskin (7ff5-9e55-c594-4b40): roster 01 (force Standard) asserts the gated reveal — isHidden false, effectiveMin 1 and the min-limit b830-0538-045e-ee90 firing with actual 0 against bound 1 — while roster 02 (force Ironskin Tribe, same root entryLink c8d5-1198-3d4a-8a67, whose add-category modifier fires only there) asserts isHidden true and effectiveMin 0. Roster 03 keeps the reveal with the choice selected, roster 04 selects the unit in the Ironskin Tribe force WITHOUT that entryLink so the runtime category is absent and the gate holds again. The sibling Extra Rare choice is asserted hidden throughout as the control. Scenario is green."
+    },
+    {
+      "key": "modifierGroup|cond=false|repeats=true|nested=false",
+      "evidence": [
+        "docs/testing/modifier-group-repeats-grave-markers"
+      ],
+      "rationale": "Six rosters in the force Army of Sylvania (SoC) that move the count of Vampire Counts through 0, 1 and 2 while varying the number of Grave markers: the condition-less modifierGroup on f899-4fbd-db93-629e carries two repeats and two increment modifiers, so both bounds (min 5c4a-c8ea-073d-909c, max 1b4e-3003-8b78-4be6) must read 2 + count. The discriminating pairs are 02/03 and 04/05 — the same three markers are min-violating at one step and legal at the next — and roster 06 shows the moved bound in the reported bound of the max. No roster holds a 0-1 Vampire Lord, so the scenario makes no claim about how two repeat elements combine when both count; that the catalogue rule text says \"for each Vampire Count OR Vampire Lord\" is what settles a zero-counting repeat as neutral. Scenario is green."
+    },
+    {
+      "key": "modifier|decrement|constraintValue",
+      "evidence": [
+        "docs/testing/decrement-group-max-battle-standard"
+      ],
+      "rationale": "The corpus holds exactly one decrement whose field is a real constraint id: the Weapons group 86431046-9343-42d5-b774-db24c99c4bb3 under the Commander [HIGH ELVES] d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff, lowering its own max 93f2a491-7de3-4020-ad0d-5d08ac3399f8 when the parent frame holds exactly one Battle Standard Bearer (e9ad-f1ce-aebf-6d23). That occurrence is STRUCTURALLY INERT in this corpus and its lowering effect is therefore not observable: the group has no members and nothing links to it, so the counted field is 0 in every admissible roster, and the Commander offers no Battle Standard Bearer anywhere in its subtree, so the gate counts 0 in the parent frame. What the two rosters pin instead is the undecremented bound (effectiveMax 1 on the group slot) and, in roster 02, that the gate reads the PARENT frame: a Battle Standard Bearer on a different character in the same force leaves the bound at 1, where a force- or roster-wide reading of the gate would drop it to 0. Scenario is green. Worth a human decision whether this cell should become a waiver instead, since no roster can make the decrement bite."
     }
   ]
 }

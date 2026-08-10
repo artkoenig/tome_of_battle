@@ -114,7 +114,7 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // evidence resolution is in place: the force/roster swap of the
     // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
     // though the specific covered/uncovered cell each resolves to changes.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 100, uncovered: 5 });
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 103, uncovered: 2 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -162,17 +162,25 @@ describe('worklist — the duplicated-id landmark resolves to the dataset-correc
     expect(recomputed.cells.some(c => c.key === key)).toBe(false);
   });
 
-  it('lists the other set\'s roster-scope cell of the same id as uncovered, with 1 occurrence in that .gst alone (B2)', () => {
-    const manifests = loadManifests(TESTING_DIR);
-    const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
-    const recomputed = computeWorklist({ cells: inventory.cells, index: inventory.index, manifests, coveredRecord });
-
+  it('keeps the other set\'s roster-scope cell of the same id a separate cell, in that .gst alone (B2)', () => {
+    // The two scopes of 1077-7379-f142-f382 are two cells, and each is
+    // credited only by a scenario whose dataset names its own fixture set —
+    // the roster-scope one by docs/testing/roster-min-general-armywide, the
+    // force-scope one by the three definitive-set scenarios. What this pins is
+    // that separation, not whether either happens to be covered right now:
+    // the coverage campaign closes cells over time, so an assertion on the
+    // uncovered list would go stale by design.
     const key = 'constraint|min|selectionCount|roster|s=true|ics=true|icf=true|pct=false';
-    const cell = recomputed.cells.find(c => c.key === key);
+    const cell = inventory.cells.find(c => c.key === key);
 
     expect(cell).toBeDefined();
     expect(cell.occurrences).toBe(1);
     expect(cell.files).toEqual({ 'src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1 });
+
+    const manifests = loadManifests(TESTING_DIR);
+    const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
+    const recomputed = computeWorklist({ cells: inventory.cells, index: inventory.index, manifests, coveredRecord });
+    expect(recomputed.cells.some(c => c.key === key)).toBe(false);
   });
 });
 

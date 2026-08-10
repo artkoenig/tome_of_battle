@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dgm-02" name="DGM 02 – Clan Lahmia (VC-AB): Battle Standard Bearer auf einem ANDEREN Charakter, Weapons-Maximum bleibt 1" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-group-max-battle-standard E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- IDENTISCHER Aufbau wie Roster 01 (Swain > Commander [HIGH ELVES]),
+         zusaetzlich ein Wight Lord (b9c6-93fb-ce3c-965a) im selben Kontingent, der
+         die Aufwertung "Battle Standard Bearer" (e9ad-f1ce-aebf-6d23 ueber den
+         Verweis a359-4a25-39d6-f518) traegt — das ist die einzige Stelle, an der
+         der Katalog einen BSB in einer Vampire-Counts-Armee ueberhaupt anbietet.
+
+         Damit steht im Kontingent (und im Roster) genau EINE BSB-Auswahl, im
+         Eltern-Rahmen des Commander aber weiterhin KEINE. Die Bedingung des
+         decrement-Modifiers ist scope="parent" (shared="true" weitet den Rahmen
+         nicht auf Kontingent oder Roster aus): sie haelt nicht, das effektive
+         Hoechstmass der Gruppe "Weapons" bleibt der Basiswert 1. Wuerde der Rahmen
+         faelschlich force-/roster-weit gelesen, faende die Bedingung hier ihre
+         "equalTo 1" und das Hoechstmass fiele auf 0.
+
+         Das Pflicht-Kind "Handweapon" (c527-e525-5b58-9b7c, min a775-7b1e-7fa8-d353)
+         des Wight Lord ist mitgewaehlt, damit keine vermeidbare Mindestgrenze
+         mitlaeuft. -->
+    <force id="force-1" name="Clan Lahmia (VC-AB)" entryId="2102-34f1-c876-98c5" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-swain" name="Swain" entryId="b920-b398-dc26-7f4d" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-commander-he" name="Commander [HIGH ELVES]" entryId="d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff" entryLinkId="" entryGroupId="6bb3-dd06-5788-b4f7" number="1" type="unit" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-wight-lord" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="5c44-3a90-6b26-bc32" name="Wight" entryId="5c44-3a90-6b26-bc32" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-handweapon" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-bsb" name="Battle Standard Bearer" entryId="e9ad-f1ce-aebf-6d23" entryLinkId="a359-4a25-39d6-f518" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="2ef7-3efe-a448-423f" name="Battle standard bearer" entryId="2ef7-3efe-a448-423f" primary="true"/>
+              </categories>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
