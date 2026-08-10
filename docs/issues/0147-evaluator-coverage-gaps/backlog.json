@@ -37,6 +37,108 @@
             "summary": "Researched the force-scoped budget-limit gap: the fix is `resolveLimitValue` in `src/evaluator/query.js` accepting `scope=\"force\"` by resolving `ctx.node.forceRoot` and reading the same roster-wide budget, with a third `BudgetLimitUnresolvedReason` in `model.js` for a force frame that does not resolve, so unbudgeted, unlimited (`-1`) and frameless reads keep failing closed. The test plan rewrites the obsolete case in `query.limitValue.test.js`, adds force-frame cases there and in `rosterBudget.unlimitedSentinel.test.js`, and adds a fixture-free facade file `query.limitValueForceScope.test.js`; the check is `npx vitest run src/evaluator`."
           },
           "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nThis increment is worked on its own branch: `claude/evaluator-abschluss-kampagne-6hzwh7--force-scope-budget-limit`, off `claude/evaluator-abschluss-kampagne-6hzwh7`.\nBefore anything else, on `claude/evaluator-abschluss-kampagne-6hzwh7`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit claude/evaluator-abschluss-kampagne-6hzwh7--force-scope-budget-limit`, commit that state change and push `claude/evaluator-abschluss-kampagne-6hzwh7`. Then create the branch with `git checkout -b claude/evaluator-abschluss-kampagne-6hzwh7--force-scope-budget-limit`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0147-evaluator-coverage-gaps/issue.md one increment at a time, and increment 1 is yours:\n  A budget-limit condition resolves in the force frame instead of failing closed — Make `docs/testing/equal-to-force-points-limit-border-patrol` green in all four of its cases. A condition reading the configured points budget (`field=\"limit::ecfa-8486-4f6c-c249\"`) with `scope=\"force\"` must resolve to the roster's configured budget - a `.ros` declares its budget only at the roster root, so a resolvable force frame yields exactly that number - instead of raising `UNRESOLVED_BUDGET_LIMIT` and suspending its consumer. That makes the catalog author's rule live: at a budget of exactly 500 the `equalTo 500` gate holds and the `set 1` modifier raises the entry's own minimum (`1a97-1579-ab05-a6d7`) so the occupied slot reports `effectiveMin` 1, while 499 and 501 leave it at the base 0 with no diagnostic. This is the whole of the issue's first acceptance criterion; the second one - every scenario green today stays green - is a constraint on it, not separate work.\nWhat it has to satisfy:\n  - `npx vitest run src/evaluator` passes the cases `Szenario: equal-to-force-points-limit-border-patrol > rosters/01-budget-500-selected-min-raised.ros`, `> rosters/02-budget-499-selected-min-unraised.ros` and `> rosters/03-budget-501-selected-min-unraised.ros`.\n  - In roster 01 the slot for defId `2066-082d-a465-4baf` with anchorKind `occupied` reports `effectiveMin` 1, `current` 1, `effectiveMax` 1, `headroom` 0, `isHidden` false and `isBlocked` true; in rosters 02 and 03 the same slot reports `effectiveMin` 0 with the rest unchanged.\n  - No `UNRESOLVED_BUDGET_LIMIT` diagnostic is raised in any of the four rosters, and the limits pinned `absent` by the scenario stay silent while the Core limit `35c2-d478-392a-aeb1` keeps firing with actual 0 against bound 2 in all four.\n  - Roster `04-budget-500-unselected-no-anchor.ros` stays green: the raised minimum `1a97-1579-ab05-a6d7` still produces no anchor and stays silent.\n  - A budget-limit read that genuinely cannot resolve - an unbudgeted cost type, an unlimited (`-1`) budget, or a frame the query cannot resolve - still fails closed with its diagnostic rather than silently answering 0; the unit tests that pin this are kept or replaced by equivalents, never weakened to let the scenario pass.\n  - `npx vitest run src/evaluator` ends at exit 0 with no failure anywhere: every scenario the earlier rounds closed included, and no unit test of the evaluator suite skipped or deleted to get there.\n  - Nothing outside `src/evaluator/` and its unit tests changes; no file under `docs/testing/` is touched.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0147-evaluator-coverage-gaps/backlog.json`, before you research.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit research:force-scope-budget-limit.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit research:force-scope-budget-limit.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:force-scope-budget-limit.0",
+          "at": "2026-08-10T16:43:59.287Z",
+          "return": {
+            "summary": "Wrote the 9 new/rewritten unit cases in query.limitValue.test.js and 1 in rosterBudget.unlimitedSentinel.test.js for the force-scope budget-limit read, a new facade file query.limitValueForceScope.test.js with the 3 miniature Border-Patrol cases, and corrected the stale file count in src/evaluator/CLAUDE.md; kept the 4 existing roster-scope guard cases untouched. `npx vitest run src/evaluator` (86 files, 1308 tests, exit 1) shows exactly 11 failures: the 3 already-red scenario cases plus my 8 new/rewritten cases, all failing for the missing force-scope-resolution behaviour, not for import/typo errors; the other 83 files and 1297 tests stay green.",
+            "cases": [
+              {
+                "case": "Criterion 1 - the scenario goes green (write nothing; covered by e2e.testcatalog.test.js, out of scope)",
+                "file": "",
+                "testName": "",
+                "got": "Not written by design: the plan says write nothing for this criterion since the committed scenario and the manifest runner are out of scope for a tests step; `npx vitest run src/evaluator` already executes them and they are the 3 confirmed-red cases below (rosters 01-03 of equal-to-force-points-limit-border-patrol)."
+              },
+              {
+                "case": "Case 1 - roster scope, budgeted cost type -> the number, no diagnostic (kept unchanged)",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > liefert die eingestellte Grenze der Kostenart, ohne den Zaehlindex zu lesen",
+                "got": "Left unchanged per the plan (fail-closed guard for the fifth criterion). Passes today: `npx vitest run src/evaluator/query.limitValue.test.js` reports it green, unaffected by my edits."
+              },
+              {
+                "case": "Case 2 - roster scope, childId=\"any\" -> same number, target ID ignored (kept unchanged)",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > ignoriert die Ziel-ID (childId) — die Grenze ist roster-weit je Kostenart",
+                "got": "Left unchanged per the plan. Passes today."
+              },
+              {
+                "case": "Case 3 - roster scope, cost type not budgeted -> UNRESOLVED_BUDGET plus UNRESOLVED_BUDGET_LIMIT/NOT_BUDGETED (kept unchanged)",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > meldet eine nicht budgetierte Kostenart als UNRESOLVED_BUDGET_LIMIT statt 0",
+                "got": "Left unchanged per the plan. Passes today."
+              },
+              {
+                "case": "Case 4 - a COST_SUM field still reads the (forbidden) index and throws (kept unchanged)",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > ein COST_SUM-Feld bleibt unberuehrt und liest weiter den Zaehlindex",
+                "got": "Left unchanged per the plan. Passes today."
+              },
+              {
+                "case": "Case 5 - force scope, node with a non-null forceRoot, cost type budgeted -> the configured number, diagnostics empty (rewrite of today's ScopeKeyword.FORCE case)",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > loest im Force-Rahmen auf, wenn der Knoten einen aufloesbaren Force-Wurzelknoten kennt (Issue 0147)",
+                "got": "Red today, for the right reason: `AssertionError: expected Symbol(unresolvedBudget) to be 2000 // Object.is equality` — the current engine still treats every force scope as unresolvable, so it returns the UNRESOLVED_BUDGET sentinel instead of the configured 2000 even though the frame is resolvable."
+              },
+              {
+                "case": "Case 6 - force scope, node with forceRoot: null -> UNRESOLVED_BUDGET plus diagnostic {kind: UNRESOLVED_BUDGET_LIMIT, costTypeId, reason: UNRESOLVED_FRAME, scope: 'force'}",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > meldet einen unaufloesbaren Force-Rahmen als eigene Diagnose-Ursache (kein forceRoot am Knoten)",
+                "got": "Red today, for the right reason: expected diagnostic with reason BudgetLimitUnresolvedReason.UNRESOLVED_FRAME (not yet defined on model.js, so undefined today) but the engine still reports the pre-existing catch-all `reason: 'nonRosterScope'` for every force scope, resolvable frame or not — proving the frame-specific branch this case pins does not exist yet."
+              },
+              {
+                "case": "Case 7a - scope neither roster nor force (ScopeKeyword.PARENT) -> UNRESOLVED_BUDGET plus reason UNSUPPORTED_SCOPE",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > meldet einen Scope ungleich roster/force (parent) als UNSUPPORTED_SCOPE statt stiller Umdeutung",
+                "got": "Red today, for the right reason: expected reason BudgetLimitUnresolvedReason.UNSUPPORTED_SCOPE (not yet defined, so undefined today) but the engine reports `reason: 'nonRosterScope'` for this scope too — the catch-all reason has not yet been split into UNSUPPORTED_SCOPE vs UNRESOLVED_FRAME."
+              },
+              {
+                "case": "Case 7b - scope neither roster nor force (ScopeKeyword.SELF, second spelling) -> UNRESOLVED_BUDGET plus reason UNSUPPORTED_SCOPE",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > meldet einen Scope ungleich roster/force (self) ebenso als UNSUPPORTED_SCOPE — die Regel gilt fuer den Zweig, nicht ein Schluesselwort",
+                "got": "Red today, same reason as case 7a: expected reason UNSUPPORTED_SCOPE (undefined today), got 'nonRosterScope'."
+              },
+              {
+                "case": "Case 8 - force scope, resolvable frame, cost type not budgeted -> UNRESOLVED_BUDGET plus NOT_BUDGETED (not UNRESOLVED_FRAME), pins order of checks",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > meldet eine nicht budgetierte Kostenart auch im aufloesbaren Force-Rahmen als NOT_BUDGETED, nicht als unaufloesbaren Rahmen",
+                "got": "Red today, for the right reason: expected reason BudgetLimitUnresolvedReason.NOT_BUDGETED but the engine still reports `reason: 'nonRosterScope'` — it never reaches the budget lookup for a force scope at all today, so it cannot yet report NOT_BUDGETED for this case."
+              },
+              {
+                "case": "Case 9 - force scope with shared: false and a resolvable frame -> the configured number, independent of the flags",
+                "file": "src/evaluator/query.limitValue.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze aus dem Budget > loest im Force-Rahmen unabhaengig vom shared-Flag auf",
+                "got": "Red today, same shape as case 5: `AssertionError: expected Symbol(unresolvedBudget) to be 2000 // Object.is equality`."
+              },
+              {
+                "case": "Case 10 - unlimited (-1) cost limit read with scope=\"force\" at a node with a resolvable forceRoot -> UNRESOLVED_BUDGET, never the number -1, plus an UNRESOLVED_BUDGET_LIMIT diagnostic (kind and costTypeId asserted, reason left open)",
+                "file": "src/evaluator/rosterBudget.unlimitedSentinel.test.js",
+                "testName": "query LIMIT_VALUE: eingestellte Grenze -1 loest fail-closed auf, nie als Zahl -1 > gilt genauso im Force-Rahmen (Issue 0147): -1 loest fail-closed auf, nie als Zahl -1",
+                "got": "Passes today: `npx vitest run src/evaluator/rosterBudget.unlimitedSentinel.test.js`, 8/8 green. This is a guard case by design — force scope is unresolvable today for an unrelated reason (every force scope fails closed regardless of the sentinel), so the assertion (never the number -1) already holds; it exists to catch a regression once force scope starts resolving, where the -1-sentinel handling would have to be reproduced in the force path too."
+              },
+              {
+                "case": "Case 11 - facade, budget exactly 500 -> the occupied slot reports effectiveMin 1, no UNRESOLVED_BUDGET_LIMIT diagnostic",
+                "file": "src/evaluator/query.limitValueForceScope.test.js",
+                "testName": "limit::<id> mit scope=\"force\": das Border-Patrol-Muster en miniature (Issue 0147) > bei Budget genau 500 hebt der Modifier die eigene Mindestgrenze auf 1, ohne Diagnose",
+                "got": "Red today, for the right reason: `AssertionError: expected { defId: 'entry-border-patrol', ... } to match object { effectiveMin: 1 }` — received effectiveMin 0, because the force-scope equalTo condition never resolves today, so the set modifier never fires."
+              },
+              {
+                "case": "Case 12 - facade, budget 499 -> the same slot reports effectiveMin 0, still no UNRESOLVED_BUDGET_LIMIT diagnostic",
+                "file": "src/evaluator/query.limitValueForceScope.test.js",
+                "testName": "limit::<id> mit scope=\"force\": das Border-Patrol-Muster en miniature (Issue 0147) > bei Budget 499 bleibt die Grenze bei der Basis 0, weiterhin ohne Diagnose",
+                "got": "Red today, for the right reason: effectiveMin 0 matches already, but `expect(unresolvedBudgetLimitDiagnosticsOf(report)).toEqual([])` fails — the engine raises one UNRESOLVED_BUDGET_LIMIT diagnostic (reason 'nonRosterScope') today, which must disappear once the force frame resolves and only the unmet equalTo makes the modifier not fire, with no diagnostic."
+              },
+              {
+                "case": "Case 13 - facade, roster without costLimits -> the same slot reports effectiveMin 0 AND an UNRESOLVED_BUDGET_LIMIT diagnostic is present",
+                "file": "src/evaluator/query.limitValueForceScope.test.js",
+                "testName": "limit::<id> mit scope=\"force\": das Border-Patrol-Muster en miniature (Issue 0147) > ohne costLimits im Roster bleibt die Grenze bei 0 UND meldet UNRESOLVED_BUDGET_LIMIT",
+                "got": "Passes today: this is the end-to-end fail-closed guard the plan calls out — a genuinely unresolvable read (no costLimits at all) already produces effectiveMin 0 plus an UNRESOLVED_BUDGET_LIMIT diagnostic today (via the current catch-all 'every force scope fails' path), and must keep doing so once force scope generally starts resolving."
+              }
+            ],
+            "openQuestions": [],
+            "questions": []
+          },
+          "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nThis increment is worked on branch `claude/evaluator-abschluss-kampagne-6hzwh7--force-scope-budget-limit`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-abschluss-kampagne-6hzwh7--force-scope-budget-limit` and check it out; if the remote does not have it, create it from `claude/evaluator-abschluss-kampagne-6hzwh7` and push it with `-u`.\nThis run works docs/issues/0147-evaluator-coverage-gaps/issue.md one increment at a time, and increment 1 is yours:\n  A budget-limit condition resolves in the force frame instead of failing closed — Make `docs/testing/equal-to-force-points-limit-border-patrol` green in all four of its cases. A condition reading the configured points budget (`field=\"limit::ecfa-8486-4f6c-c249\"`) with `scope=\"force\"` must resolve to the roster's configured budget - a `.ros` declares its budget only at the roster root, so a resolvable force frame yields exactly that number - instead of raising `UNRESOLVED_BUDGET_LIMIT` and suspending its consumer. That makes the catalog author's rule live: at a budget of exactly 500 the `equalTo 500` gate holds and the `set 1` modifier raises the entry's own minimum (`1a97-1579-ab05-a6d7`) so the occupied slot reports `effectiveMin` 1, while 499 and 501 leave it at the base 0 with no diagnostic. This is the whole of the issue's first acceptance criterion; the second one - every scenario green today stays green - is a constraint on it, not separate work.\nWhat it has to satisfy:\n  - `npx vitest run src/evaluator` passes the cases `Szenario: equal-to-force-points-limit-border-patrol > rosters/01-budget-500-selected-min-raised.ros`, `> rosters/02-budget-499-selected-min-unraised.ros` and `> rosters/03-budget-501-selected-min-unraised.ros`.\n  - In roster 01 the slot for defId `2066-082d-a465-4baf` with anchorKind `occupied` reports `effectiveMin` 1, `current` 1, `effectiveMax` 1, `headroom` 0, `isHidden` false and `isBlocked` true; in rosters 02 and 03 the same slot reports `effectiveMin` 0 with the rest unchanged.\n  - No `UNRESOLVED_BUDGET_LIMIT` diagnostic is raised in any of the four rosters, and the limits pinned `absent` by the scenario stay silent while the Core limit `35c2-d478-392a-aeb1` keeps firing with actual 0 against bound 2 in all four.\n  - Roster `04-budget-500-unselected-no-anchor.ros` stays green: the raised minimum `1a97-1579-ab05-a6d7` still produces no anchor and stays silent.\n  - A budget-limit read that genuinely cannot resolve - an unbudgeted cost type, an unlimited (`-1`) budget, or a frame the query cannot resolve - still fails closed with its diagnostic rather than silently answering 0; the unit tests that pin this are kept or replaced by equivalents, never weakened to let the scenario pass.\n  - `npx vitest run src/evaluator` ends at exit 0 with no failure anywhere: every scenario the earlier rounds closed included, and no unit test of the evaluator suite skipped or deleted to get there.\n  - Nothing outside `src/evaluator/` and its unit tests changes; no file under `docs/testing/` is touched.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit research:force-scope-budget-limit.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit tests:force-scope-budget-limit.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json force-scope-budget-limit tests:force-scope-budget-limit.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []

@@ -153,6 +153,30 @@ describe('query LIMIT_VALUE: eingestellte Grenze -1 loest fail-closed auf, nie a
     expect(query(ctx, limitValueField(POINTS), ScopeKeyword.ROSTER, null, { shared: true })).toBe(2000);
     expect(diagnostics).toHaveLength(0);
   });
+
+  it('gilt genauso im Force-Rahmen (Issue 0147): -1 loest fail-closed auf, nie als Zahl -1', () => {
+    const budget = createRosterBudget([{ costTypeId: POINTS, value: -1 }]);
+    const diagnostics = [];
+    const ctx = createQueryContext({
+      node: { isRoot: true, forceRoot: { isRoot: false } },
+      root: { isRoot: true },
+      index: forbiddenIndex,
+      categoryIds: new Set(),
+      diagnostics,
+      budget,
+    });
+
+    const result = query(ctx, limitValueField(POINTS), ScopeKeyword.FORCE, null, { shared: true });
+
+    expect(result).not.toBe(-1);
+    expect(result).toBe(UNRESOLVED_BUDGET);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        kind: DiagnosticKind.UNRESOLVED_BUDGET_LIMIT,
+        costTypeId: POINTS,
+      }),
+    );
+  });
 });
 
 // ── Kriterium 3: `.ros` mit costLimit value="-1.0" durch Parser + Fassade ────
