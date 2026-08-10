@@ -64,10 +64,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-abschluss-kampagne-4rq45b",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 9,
-    "lastRunAt": "2026-08-10T06:27:42Z",
+    "runs": 10,
+    "lastRunAt": "2026-08-10T08:16:17Z",
     "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-10T08:10:00Z",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
