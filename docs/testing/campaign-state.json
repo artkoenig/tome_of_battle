@@ -169,6 +169,15 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/equal-to-force-points-limit-border-patrol": {
+        "cellKey": "condition|equalTo|force|limitValue|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     },
     "reArmNote": "Run 13 opened by the scheduled re-arm of run 12."
