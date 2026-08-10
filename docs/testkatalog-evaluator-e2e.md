@@ -1023,3 +1023,21 @@ bewegt sich.
 
 **Stand: rot.** Das Szenario ist ein festgenagelter Befund der
 Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`).
+
+## `parent-max-include-child-selections`
+
+Prüft eine Obergrenze mit `scope="parent"`, `includeChildSelections="true"` und
+`includeChildForces="true"` (§7.6 der Formatdoku): gezählt wird der Träger im
+Eltern-Rahmen, verschachtelte Auswahlen eingeschlossen, und `shared="true"`
+zählt über alle Instanzen im Rahmen. Beleg: „Buzgob's Knobbly Staff"
+(`6a95-95ff-7763-bd6d`, Orcs and Goblins) trägt zwei unmodifizierte Grenzen —
+`c807-4ad1-4a8d-d2b1` im Eltern-Rahmen und `7bb9-9e7c-920b-9c2a` armeeweit,
+beide `max 1`. Der Gegenstand hängt über eine Gruppenkette am Orc Great Shaman.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Shaman mit einem Stab | Beide Grenzen eingehalten, der Slot meldet Ist 1 von Höchstmaß 1 |
+| 02 | Derselbe Stab mit Stückzahl 2 | Beide Grenzen feuern mit Ist 2 |
+| 03 | Ein Stab, dazu ein verschachtelter Unterbaum (Eber, Zauber in Tiefe 2) | Die Tiefe im Rahmen ändert die Zählung nicht: Ist bleibt 1 |
+| 04 | Zwei Shamanen mit je einem Stab | Der Eltern-Rahmen zählt je Shaman 1 und schweigt; die armeeweite Zwillingsgrenze feuert mit Ist 2 — beide Kopien werden also gesehen |
+| 05 | Zwei Geschwister-Auswahlen desselben Stabs am selben Shaman | `shared="true"`: Ist 2, beide Grenzen feuern |

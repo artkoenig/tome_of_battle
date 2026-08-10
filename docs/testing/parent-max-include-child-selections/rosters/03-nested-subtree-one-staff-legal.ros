@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmics-03" name="PMICS 03 – Rahmen mit tiefer Unterstruktur, aber nur einem Buzgob's Knobbly Staff (legal)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-max-include-child-selections E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Wie Roster 01, aber der Rahmen (der Shaman) traegt zusaetzlich echte
+         Unterstruktur: das Reittier "Boar" (Gruppe "Mounts") und den Eintrag
+         "Show Spells" mit einem darunter geschachtelten Spruch "1.Gaze of Mork"
+         (Tiefe 2 unterhalb des Shamans).
+         includeChildSelections="true" bezieht diese tiefer geschachtelten Auswahlen
+         in den Rahmen ein, zaehlt aber nur Kopien des TRAEGERS: der Staff steht
+         genau einmal da => Ist 1 <= Grenze 1, c807-4ad1-4a8d-d2b1 bleibt still. -->
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-great-shaman" name="Orc Great Shaman" entryId="aa57-63c4-136b-4af5" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-choppa" name="Choppa" entryId="051b-bb88-69f3-6eb6" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-level-3" name="Level 3 Shaman" entryId="9888-4923-f6d5-157a" entryLinkId="" entryGroupId="3aea-621a-cde8-b4f6" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-boar" name="Boar" entryId="8614-4beb-61b2-9595" entryLinkId="" entryGroupId="ba8a-b51f-65f9-5f96" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-show-spells" name="Show Spells" entryId="35d0-8c85-663b-fb2b" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-gaze-of-mork" name="1.Gaze of Mork" entryId="c2cf-8f3a-6f9d-6e5c" entryLinkId="b58b-cb1f-9a0b-f094" entryGroupId="b7e2-ab17-22cd-10b6" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-staff-1" name="Buzgob&apos;s Knobbly Staff" entryId="6a95-95ff-7763-bd6d" entryLinkId="99ed-8337-b602-d233" entryGroupId="2eab-0673-0cb1-a5ea" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

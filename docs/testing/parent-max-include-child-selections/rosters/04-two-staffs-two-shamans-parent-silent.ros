@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmics-04" name="PMICS 04 – je ein Buzgob's Knobbly Staff an zwei Shamanen (parent still, roster feuert)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-max-include-child-selections E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Zwei Rahmen statt einem: Orc Great Shaman (aa57-63c4-136b-4af5) und
+         Savage Orc Great Shaman (0767-0a7d-7c03-8833) tragen je EINE Kopie des
+         Staffs (beide ueber denselben Verweis 99ed-8337-b602-d233 in der Gruppe
+         "Arcane Items (Orcs)").
+         scope=parent zaehlt je Rahmen: Ist 1 in beiden => c807-4ad1-4a8d-d2b1 still.
+         scope=roster zaehlt beide Kopien zusammen => 7bb9-9e7c-920b-9c2a feuert
+         mit Ist 2 / Grenze 1. Der Kontrast belegt, dass beide Kopien gesehen werden,
+         der Eltern-Rahmen sie aber nicht zusammenfasst. -->
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-great-shaman" name="Orc Great Shaman" entryId="aa57-63c4-136b-4af5" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-choppa" name="Choppa" entryId="051b-bb88-69f3-6eb6" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-level-3" name="Level 3 Shaman" entryId="9888-4923-f6d5-157a" entryLinkId="" entryGroupId="3aea-621a-cde8-b4f6" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-staff-1" name="Buzgob&apos;s Knobbly Staff" entryId="6a95-95ff-7763-bd6d" entryLinkId="99ed-8337-b602-d233" entryGroupId="2eab-0673-0cb1-a5ea" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-savage-shaman" name="Savage Orc Great Shaman" entryId="0767-0a7d-7c03-8833" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="d4a7-5999-8207-4efe" name="Orc" entryId="d4a7-5999-8207-4efe" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-savage-choppa" name="Choppa" entryId="4df9-3f17-67bd-8715" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-savage-level-3" name="Level 3 Shaman" entryId="1248-7771-defe-214a" entryLinkId="" entryGroupId="64b5-3170-8ad3-1d15" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-staff-2" name="Buzgob&apos;s Knobbly Staff" entryId="6a95-95ff-7763-bd6d" entryLinkId="99ed-8337-b602-d233" entryGroupId="2eab-0673-0cb1-a5ea" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
