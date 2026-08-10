@@ -983,3 +983,43 @@ nicht führt, ist die Gegenprobe.
 | 01 | Leeres Kontingent „Mountain or Troll Country Waaagh!" | Das selbst-gegatete Mitglied hält: beide Savage-Orc-Helden versteckt, die Gegenprobe sichtbar |
 | 02 | Leeres Kontingent „Savage Orc Horde" | Kein Mitglied hält: beide sichtbar — die Gegenprobe umgekehrt versteckt |
 | 03 | Leeres Kontingent „Night Goblin Horde" | Die kanonisch kodierte Schwester hält: beide versteckt — beide Kodierungen verhalten sich gleich |
+
+## `at-least-self-model-count`
+
+Prüft die `atLeast`-Bedingung mit `scope="self"` und dem Typ-Schlüsselwort
+`childId="model"` (§7.6/§7.7/§13.2 der Formatdoku): gezählt werden die Modelle
+**des Trägers selbst**, nicht die des Kontingents oder der Armee, und die
+Schwelle ist einschließend. Beleg: die Ghouls (`6b45-b2ad-dcdf-d3f4`, Vampire
+Counts) tragen einen `add category`-Modifikator auf „BP Infantry 10+"
+(`6ad6-f54e-1867-00a7`), dessen `and`-Gruppe aus `atLeast 10 selections
+scope="self" childId="model"` und der roster-weiten Border-Patrols-Auswahl
+(`4e15-0353-165f-5528`) besteht; die zweite Bedingung ist in allen Rostern
+gleich erfüllt. Beobachtet wird die Autor-Meldung „You must include at least
+ONE infantry unit of 10+ models." der `.gst`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Ghouls-Einheiten mit 10 und 5 Modellen | Der erste Träger erreicht die Schwelle exakt: die Kategorie wird gesetzt, die Meldung bleibt still |
+| 02 | Dieselben Einheiten mit 9 und 5 Modellen | Kein Träger erreicht 10 — die Meldung feuert, obwohl kontingentweit 14 Modelle stehen |
+| 03 | Zwei Einheiten mit je 5 Modellen | Kontingentweit exakt 10, je Träger aber nur 5: die Meldung feuert — der Rahmen ist der Träger |
+
+## `at-least-roster-points-limit`
+
+Prüft die `atLeast`-Bedingung auf das **Kostenlimit** der Roster
+(`field="limit::<Kostenart>"`, `scope="roster"`, `childId="any"`; §7.7/§13.2 der
+Formatdoku): verglichen wird das eingestellte Budget, nicht die verplante
+Summe. Beleg: „Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`,
+Orcs and Goblins) trägt die Grenze `00f6-c1b3-ee85-5c02` (`max 0`,
+`scope="force"`) und zwei Modifikatoren unter derselben `and`-Gruppe aus
+`atLeast 2000` und `atMost 2500` auf das pts-Kostenlimit; die
+Geschwisterbedingung ist in allen Rostern erfüllt, nur das `atLeast`-Glied
+bewegt sich.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 2000, verplant 0 | Schwelle exakt erreicht: der `set` hebt die Grenze auf 1, sie feuert nicht |
+| 02 | Budget 1999, verplant 0 | Einen Punkt darunter: die Grenze behält `max 0` und feuert mit Ist 1 |
+| 03 | Budget 1999, verplant 2000 | Die verplante Summe erreicht die Schwelle, das Budget nicht: die Grenze feuert weiter — `limit::` liest das Budget |
+
+**Stand: rot.** Das Szenario ist ein festgenagelter Befund der
+Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`).

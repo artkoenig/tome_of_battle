@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-self-model-count",
+  "description": "Eine condition type=\"atLeast\" field=\"selections\" scope=\"self\" childId=\"model\" zaehlt die Modelle der TRAGENDEN Auswahl selbst — nicht die des Kontingents und nicht die des Rosters — und haelt, sobald diese Zahl den value erreicht (atLeast schliesst den Schwellenwert ein). Traeger ist die Vampire-Counts-Einheit 'Ghouls' (6b45-b2ad-dcdf-d3f4); die gegatterte Wirkung ist der Modifikator 'add category 6ad6-f54e-1867-00a7' (BP Infantry 10+), beobachtet an der Autor-Meldung 'You must include at least ONE infantry unit of 10+ models.' am Slot 'Border Patrols rules' (4e15-0353-165f-5528). Die zweite Bedingung derselben and-Gruppe (atLeast 1 childId=4e15… scope=roster) wird ueber alle Roster konstant gehalten, indem jedes Roster diesen Eintrag fuehrt; costLimit ist ueberall 500, damit er sichtbar ist.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ten-models-in-carrier.ros",
+      "description": "Schwelle exakt erreicht: 'Border Patrols rules' + zwei Ghouls-Einheiten mit 10 bzw. 5 Modellen. Der erste Traeger zaehlt unter scope=\"self\" genau 10 Modelle (Ist 10 / Schwelle 10) — atLeast haelt einschliesslich des Schwellenwerts, die Einheit erhaelt 'BP Infantry 10+' (6ad6-f54e-1867-00a7), und die Infanterie-Autor-Meldung am Slot 4e15… bleibt still. Zwei Einheiten in der Force, also bleibt auch die Einheitenzahl-Meldung still. Modellzahlen 10 und 5 liegen beide in [5,20], die Ghouls-Grenzen feuern nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8e34-4788-81a6-74f2",
+          "f257-5a4e-76a2-4fe3",
+          "ef46-30ad-181b-49c4",
+          "d07c-fd6a-46ed-ab4e"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-nine-models-in-carrier.ros",
+      "description": "Ein Modell unter der Schwelle: identisch zu Roster 01, nur hat der erste Traeger 9 statt 10 Modelle. Unter scope=\"self\" zaehlt er 9 (Ist 9 / Schwelle 10), der zweite 5 — kein Traeger haelt die Bedingung, keiner erhaelt 'BP Infantry 10+', und die Infanterie-Autor-Meldung am Slot 4e15… feuert genau einmal. Zugleich Gegenprobe zum Rahmen: force-/rosterweit stuenden hier 14 Modelle, also mehr als 10 — waere der Rahmen das Kontingent statt des Traegers, bliebe die Meldung faelschlich still. Modellzahlen 9 und 5 liegen weiterhin in [5,20].",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8e34-4788-81a6-74f2",
+          "f257-5a4e-76a2-4fe3",
+          "ef46-30ad-181b-49c4",
+          "d07c-fd6a-46ed-ab4e"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Border Patrols rules",
+            "count": 1
+          },
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-ten-models-split-across-carriers.ros",
+      "description": "Schwelle nur in der Summe erreicht: zwei Ghouls-Einheiten mit je 5 Modellen, force-/rosterweit also exakt 10 Modelle. Unter scope=\"self\" zaehlt jeder Traeger 5 (Ist 5 / Schwelle 10) — keiner erhaelt 'BP Infantry 10+', die Infanterie-Autor-Meldung feuert genau einmal. Der schaerfste Nachweis, dass der Rahmen der Traeger ist: bei einem Kontingent-/Roster-Rahmen waere der Ist-Wert 10 und die Meldung bliebe aus. Modellzahl 5 je Einheit ist das Minimum der Ghouls-Grenze 8e34…, sie feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8e34-4788-81a6-74f2",
+          "f257-5a4e-76a2-4fe3",
+          "ef46-30ad-181b-49c4",
+          "d07c-fd6a-46ed-ab4e"
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Border Patrols rules",
+            "count": 1
+          },
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -32,6 +32,18 @@
       "pinnedAt": "2026-08-09",
       "status": "open",
       "note": "A modifier type=\"set-primary\" field=\"category\" secures membership in the named category on its own: 'Kathleen' Halftank (331a-3634-095a-574a) carries an unconditional set-primary on Regiment of Renown (ee09-9a50-ad78-9c32) with no categoryLink to it and no accompanying add/category, so in the force Standard (OK-AB) — which links that category — her Regiment-of-Renown anchor must report current 1 (the report has 0), and since set-primary moves only the primary flag and removes nothing, Rare must still count her, reaching current 2 with a second Rare unit and firing the .gst limit 0a44-2d3f-adfe-f3a1 (actual 2, bound 1)."
+    },
+    {
+      "cellKey": "condition|atLeast|roster|limitValue|child=any",
+      "scenario": "docs/testing/at-least-roster-points-limit",
+      "failingCases": [
+        "Szenario: at-least-roster-points-limit > rosters/01-limit-2000-gate-open.ros",
+        "Szenario: at-least-roster-points-limit > rosters/02-limit-1999-gate-closed.ros",
+        "Szenario: at-least-roster-points-limit > rosters/03-limit-1999-spent-2000-gate-closed.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "A single selection of 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, nested under the group 43b3-35c6-d7cc-e3c6 below the hidden entry 6fcf-b33d-3cf5-b56a) must be counted: its occupied slot must report current 1, and its own force-scoped limit 00f6-c1b3-ee85-5c02 (max 0, raised to 1 only while the and-group of atLeast 2000 / atMost 2500 on limit::ecfa-8486-4f6c-c249 holds) must fire with actual 1 against bound 0 at a costLimit of 1999 — the report carries current 0 and no message for that limit at all. Roster 03 additionally demands that limit:: reads the configured budget and not the spent sum."
     }
   ],
   "parkedQuestions": [],

@@ -205,6 +205,20 @@
         "docs/testing/force-id-scope-instance-of"
       ],
       "rationale": "GREEN: three empty rosters differing only in the force entryId. Roster 01 (the force named in scope) hides both Savage Orc carriers while the control unit stays visible, roster 02 reverses it; since every roster is empty, a counting reading of the condition would yield 0 and fail, so only the identity reading explains roster 01. Roster 03 shows the canonical encoding behaving alike."
+    },
+    {
+      "key": "condition|atLeast|self|selectionCount|child=model",
+      "evidence": [
+        "docs/testing/at-least-self-model-count"
+      ],
+      "rationale": "GREEN: three rosters vary only the model counts of two Ghouls units (all inside the carrier's own min 5 / max 20, asserted absent). Roster 01 hits the threshold exactly and the author message stays silent; rosters 02 (9+5 = 14 force-wide) and 03 (5+5 = exactly 10 force-wide) both fire it, so the counting frame is the carrier itself and not the force or the roster."
+    },
+    {
+      "key": "condition|atLeast|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/at-least-roster-points-limit"
+      ],
+      "rationale": "RED — pinned, not passing: all three rosters fail. Roster 01 expects the occupied Uprising slot to report current 1 (report has 0); rosters 02 and 03 expect the force-scoped max 00f6-c1b3-ee85-5c02 to fire with actual 1 / bound 0 (the report carries no such message). See pinnedGaps in docs/testing/campaign-state.json."
     }
   ]
 }

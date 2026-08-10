@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="asmc-01" name="ASMC 01 - Traeger mit genau 10 Modellen: atLeast 10 haelt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored at-least-self-model-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costs>
+    <cost name="Points" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+  </costs>
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="500.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="bp-rules" name="Border Patrols rules" entryId="4e15-0353-165f-5528" number="1" type="upgrade"/>
+        <selection id="unit-ghouls-1" name="Ghouls" entryId="6b45-b2ad-dcdf-d3f4" number="1" type="unit">
+          <selections>
+            <selection id="ghoul-models-1" name="Ghouls" entryId="c11f-8aaf-5c69-4066" number="10" type="model"/>
+            <selection id="ghoul-handweapon-1" name="Handweapon" entryId="38ed-0cf0-ac63-31f5" number="2" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="unit-ghouls-2" name="Ghouls" entryId="6b45-b2ad-dcdf-d3f4" number="1" type="unit">
+          <selections>
+            <selection id="ghoul-models-2" name="Ghouls" entryId="c11f-8aaf-5c69-4066" number="5" type="model"/>
+            <selection id="ghoul-handweapon-2" name="Handweapon" entryId="38ed-0cf0-ac63-31f5" number="2" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
