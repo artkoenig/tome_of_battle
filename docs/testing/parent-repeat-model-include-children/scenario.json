@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-repeat-model-include-children",
+  "description": "Pinnt die Repeat-Zelle <repeat field=\"selections\" scope=\"parent\" childId=\"model\" repeats=\"1\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"false\" roundUp=\"false\" percentValue=\"false\"> am Kostenmodifikator 'increment 2' des Eintrags 'Additional Hand Weapon' (2099-eac8-a45d-b4b6) der Einheit 'Savage Orc Boyz' (e4d9-143c-2cf3-6615, Orcs and Goblins): der Modifikator wird GENAU einmal je im Eltern-Rahmen gezaehltem Modell angewandt, der Rahmen ist die Eltern-Auswahl des Traegers (die Einheit), gezaehlt wird das Roh-Typ-Schluesselwort 'model'. Beobachtbar ueber die roster-weite Budget-Regel: bei 12 Modellen kostet die Liste 96 pts (72 Modelle + 0 Choppa + 12 x 2 = 24 AHW), bei 13 Modellen 104 pts — ein Schritt von 8 pts je Modell, davon 2 pts vom Traeger. Roster 04/05 stellen dieselbe Zelle (AHW, includeChildSelections=true) neben die Gegenzelle am 'Shield' (415a-7627-c819-3b4b, includeChildSelections=false) im selben Rahmen: beide zaehlen dort dieselben 12 Modelle (Summe 108). Die Tiefen-Haelfte des Flags (zaehlen tiefer verschachtelte Modelle mit?) ist in diesem Rahmen NICHT beobachtbar — kein Traeger dieser Zelle im ganzen Fixture-Korpus sitzt in einem Rahmen, der Modelle auf zwei Ebenen halten kann; Begruendung und Beleg in der README.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ahw-12-models-over-budget.ros",
+      "description": "Savage Orc Boyz mit 12 Modellen (je 6 pts), Pflicht-Choppa (0 pts) und Additional Hand Weapon (Basis 0 pts + 'increment 2' je gezaehltem Modell = 24 pts). Korrekte Summe 96, Punktelimit 95: das Budget feuert mit Ist 96. Jede Unter-Anwendung der Wiederholung bleibt darunter und laesst das Budget faelschlich schweigen — 0-fach 72, 1-fach 74, je Modell-*Auswahl* statt je Modell 74, nach dem min-Constraint-Wert 10 statt der echten Zaehlung 92.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 96, "bound": 95 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "parent" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-ahw-12-models-within-budget.ros",
+      "description": "Derselbe Aufbau mit Punktelimit 96: die korrekte Summe 96 haelt das Limit ein (Gleichstand feuert nicht), das Budget schweigt. Zusammen mit Roster 01 klammert das die Summe auf genau 96 ein — eine Engine, die 13-fach (98) oder ueber alle Kinder der Eltern-Auswahl statt nur ueber type=\"model\" rechnet (12+1+1 = 14 -> 100), feuert hier faelschlich.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "parent" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-ahw-13-models-one-step-more.ros",
+      "description": "Byte-gleich zu Roster 02 bis auf EIN Modell mehr (13 statt 12) — dasselbe Punktelimit 96. Die Summe steigt um genau einen Schritt: 78 Modelle + 26 AHW = 104, das Budget feuert mit Ist 104. Damit ist die Kopplung 'eine Anwendung je gezaehltem Modell' direkt gemessen: eine Engine, die die Wiederholung bei 12 einfriert (102), auf den min-Wert 10 setzt (98) oder alle Eltern-Kinder zaehlt (15 -> 108), feuert hier mit falschem Ist.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 104, "bound": 96 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "parent" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-ahw-and-shield-over-budget.ros",
+      "description": "12 Modelle, zusaetzlich zum AHW (includeChildSelections=\"true\", increment 2) das 'Shield' (415a-7627-c819-3b4b, includeChildSelections=\"false\", increment 1) — zwei Zellen, gleicher Rahmen, gleiche Modellzahl. Korrekte Summe 72 + 12 (Shield) + 24 (AHW) = 108, Punktelimit 107: das Budget feuert mit Ist 108. Das pinnt, dass beide Flag-Werte im flachen Rahmen DIESELBE Zaehlung 12 liefern; eine Engine, die die 'true'-Zelle die direkten Kinder zusaetzlich als Nachfahren zaehlen laesst (24 Anwendungen -> AHW 48, Summe 132), traegt hier ein falsches Ist.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 108, "bound": 107 }
+        ],
+        "absent": [],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "parent" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-ahw-and-shield-within-budget.ros",
+      "description": "Derselbe Aufbau wie 04 mit Punktelimit 108: die korrekte Summe 108 haelt das Limit ein, das Budget schweigt. Die Klammer 107/108 legt die gemeinsame Summe beider Zellen auf exakt 108 fest.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "parent" }
+          ]
+        }
+      }
+    }
+  ]
+}

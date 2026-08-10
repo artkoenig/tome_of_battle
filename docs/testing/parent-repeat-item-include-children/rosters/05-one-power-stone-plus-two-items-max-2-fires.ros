@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="prici-05" name="PRICI 05 – Standard (OK-AB): ein Power Stone + zwei andere Arcane Items, angehobene Grenze 2 feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-item-include-children E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Wie 04 (Skullmantle + Halfling cookbook), zusaetzlich EIN Power Stone.
+         Der repeat zaehlt 1 Kopie => EIN Schritt => effektives Maximum 1 + 1 = 2.
+         Gezaehlte Gruppenmitglieder: 1 + 1 + 1 = 3 > 2
+         => 188e-3808-4b37-c8d9 feuert mit actual 3 / bound 2 —
+         der gemeldete bound liegt genau EINEN Schritt ueber dem von Roster 04
+         (bound 1) bei identischen Zusatz-Items.
+         Bewusst in Kauf genommen: 25 + 20 + 25 = 70 > 50, das Punkte-Budget der
+         Gruppe "Magic Items and Big Names" (62a3-8df3-3e65-6be1) feuert zusaetzlich
+         und wird darum NICHT als abwesend erwartet. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-butcher" name="Butcher" entryId="8933-af8e-e780-6f48" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-butcher-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8b61-79ab-f251-234b" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-power-stones" name="Power Stone (only one use)" entryId="696a-648d-c842-4c6a" entryLinkId="c492-f625-09c8-3702" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-skullmantle" name="Skullmantle" entryId="5ccf-df71-8c78-ee5e" entryLinkId="2b2e-55f4-12ec-7fd1" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-cookbook" name="Halfling cookbook" entryId="be52-409a-aa8e-0ac5" entryLinkId="0d40-306e-1e25-1447" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

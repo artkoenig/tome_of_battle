@@ -275,6 +275,13 @@
         "docs/testing/primary-catalogue-scope"
       ],
       "rationale": "Ten rosters place the same Mercenaries selections in Ogre, Vampire-Counts and Orcs forces: the Extra-Special minimum fires only in the Ogre army, the Extra-Rare minima only outside it, the force-scoped max is lifted only on the Ogre hit, and roster 10 shows the .ros catalogueId attribute does not decide the army book."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-model-include-children"
+      ],
+      "rationale": "GREEN: rosters 02 and 03 are byte-identical apart from the model count (12 vs 13) and bracket the roster sum exactly, so the 8-point step is one application of the increment per counted model; rosters 04/05 put the ics=true and the ics=false variant side by side in the same flat frame. The depth half of includeChildSelections=true is unreachable in this corpus and is documented in the scenario README instead of faked."
     }
   ]
 }

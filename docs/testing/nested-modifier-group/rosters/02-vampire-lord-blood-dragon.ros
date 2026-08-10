@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="nmg-02" name="NMG 02 - Vampire Lord, Blood Dragon: genau die erste innere Klammer haelt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored nested-modifierGroup E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <!-- "Bloodlines" mit GENAU EINER Clan-Blutlinie (Blood Dragon
+             9fd9-e05c-ffcb-2c4d). Damit haelt exakt die Bedingung der ersten
+             inneren modifierGroup (VC-.cat:3050-3063) - die vier uebrigen
+             inneren Klammern derselben aeusseren Klammer bleiben stumm. -->
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-blooddragon" name="Bloodline of Clan Blood Dragon" entryId="9fd9-e05c-ffcb-2c4d" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-vl" name="0-1 Vampire Lord " entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

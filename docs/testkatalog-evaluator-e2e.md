@@ -1079,3 +1079,21 @@ tragen aber je eine eigene `instanceOf`-Bedingung auf eine Clan-Kategorie.
 | 03 | Vampire Count ohne Blutlinie | Keine der fünf Eigenbedingungen hält: alle Merkmale auf Katalogwert — die Klammer setzt nichts pauschal |
 | 04 | Derselbe mit Blutlinie Blood Dragon | Genau die zwei Modifikatoren mit dieser Clan-Bedingung greifen |
 | 05 | Derselbe mit Blutlinie Strigoi | Genau die beiden anderen greifen |
+
+## `parent-repeat-model-include-children`
+
+Prüft einen `<repeat>` mit `scope="parent"`, `childId="model"` und
+`includeChildSelections="true"` (§7.7/§9.4 der Formatdoku): der gebundene
+Kosten-Modifikator greift einmal je gezähltem Modell des Eltern-Rahmens. Beleg:
+„Additional Hand Weapon" (`2099-eac8-a45d-b4b6`, Orcs and Goblins, Basis 0 pts)
+trägt `increment 2` auf die pts-Kostenart mit genau diesem `repeat`; Träger ist
+eine Savage-Orc-Boyz-Einheit im Kontingent „Standard (OG-AB)". Beobachtet wird
+die roster-weite Budget-Regel.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 12 Modelle, Budget 95 | 12 Wiederholungen: Summe 96 — das Budget ist überschritten |
+| 02 | Dasselbe bei Budget 96 | Gleichstand feuert nicht — die Summe ist exakt eingeklammert |
+| 03 | 13 Modelle, Budget 96 | Ein Modell mehr, ein Schritt mehr: Summe 104 |
+| 04 | 12 Modelle mit Zusatz-Schild, Budget 107 | Der Schild trägt denselben `repeat` mit `includeChildSelections="false"`: Summe 108 |
+| 05 | Dasselbe bei Budget 108 | Wieder exakt eingeklammert — beide Flag-Varianten liefern im flachen Rahmen denselben Faktor |

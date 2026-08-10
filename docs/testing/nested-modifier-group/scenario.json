@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "name": "nested-modifier-group",
+  "description": "Die verschachtelte modifierGroup - Klammer in der Klammer. Ein <modifierGroup> darf laut Catalogue.xsd:523-538 wieder <modifierGroups> enthalten; die Bedingungen der aeusseren Klammer regieren alles darin, die der inneren nur deren eigene Modifikatoren, und beide verknuepfen sich als Konjunktion. Gepinnt am einzigen Traeger-Muster des Fixture-Korpus: der BLOODLINE-Klammer des 0-1 Vampire Lord (Vampire Counts .cat:3046-3122), einer bedingungslosen aeusseren Klammer mit fuenf je eigen-bedingten inneren Klammern. Beobachtet ueber expect.capabilities (effektiver Anzeigename des Slots sowie die Merkmalswerte des Profil-Vorkommens, dessen Modifikatoren die von der inneren Klammer gesetzte Clan-Kategorie lesen) und - in Roster 04 - ueber die zaehlende Gruppengrenze der Blutlinienwahl. Die Kombination 'innere Bedingung haelt, aeussere schlaegt fehl' ist im Datensatz NICHT baubar: alle drei verschachtelten Stellen des Korpus tragen eine bedingungslose aeussere Klammer (siehe README, Abschnitt 'Luecke').",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-vampire-lord-no-bloodline.ros",
+      "description": "Standard-Kontingent (VC-AB) mit einem 0-1 Vampire Lord und OHNE Bloodlines-Selektion. Die aeussere Klammer (VC-.cat:3047-3121) ist bedingungslos, aber keine der fuenf inneren Klammern hat eine haltende Bedingung. Nichts darf wirken: der Name bleibt der Katalogname (inklusive des im Katalog stehenden Schluss-Leerzeichens, VC-.cat:2713), und das Profil-Vorkommen behaelt die Werte des geteilten Profils ff43-329c-048a-f374 (WS 8, A 5, Sv 7, Sv+ 7) - denn ohne Clan-Kategorie haelt auch keine der Bedingungen der Merkmals-Modifikatoren am infoLink e0f2-8568-15f0-a384.",
+      "expect": {
+        "firing": [],
+        "absent": ["39c7-f615-17db-7016", "a7c9-5fec-592a-3716"],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "0-1 Vampire Lord ",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "5" },
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-vampire-lord-blood-dragon.ros",
+      "description": "Derselbe Vampire Lord, jetzt mit Bloodlines + Bloodline of Clan Blood Dragon (9fd9-e05c-ffcb-2c4d). Damit haelt genau die Bedingung der ERSTEN inneren Klammer (VC-.cat:3050-3063): ihr append haengt 'of Clan Blood Dragon' mit dem join-Trennzeichen U+00A0 an den Namen an, ihr add category setzt 4cae-a20e-8374-b6cb. Sichtbar wird beides: der Slot-Name traegt genau EINEN Clan-Zusatz, und die auf 4cae gegatteten Merkmals-Modifikatoren am infoLink greifen (WS 8+2=10, Sv+ auf '5+'), waehrend die auf Strigoi bzw. Necrarch gegatteten stumm bleiben (A bleibt 5).",
+      "expect": {
+        "firing": [],
+        "absent": ["39c7-f615-17db-7016", "a7c9-5fec-592a-3716"],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "0-1 Vampire Lord  of Clan Blood Dragon",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "10" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "5" },
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "5+" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-vampire-lord-strigoi.ros",
+      "description": "Derselbe Vampire Lord, jetzt mit Bloodline of Clan Strigoi (ddfa-0d72-8557-6906). Jetzt haelt genau die DRITTE innere Klammer (VC-.cat:3078-3091) derselben aeusseren Klammer: Name '... of Clan Strigoi', add category bf30-4ff0-a4d8-3909. Die Merkmals-Modifikatoren schalten entsprechend um - A 5+1=6 und Sv+ auf '5+', waehrend WS auf dem Katalogwert 8 bleibt (der Blood-Dragon-increment haelt nicht). Der Kontrast zu Roster 02 zeigt, dass die aeussere Klammer keine ihrer Kinder-Klammern pauschal anwendet.",
+      "expect": {
+        "firing": [],
+        "absent": ["39c7-f615-17db-7016", "a7c9-5fec-592a-3716"],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "0-1 Vampire Lord  of Clan Strigoi",
+            "infoElements": [
+              {
+                "id": "e0f2-8568-15f0-a384",
+                "kind": "profile",
+                "name": "Vampire Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "8" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "6" },
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "5+" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-vampire-lord-two-bloodlines.ros",
+      "description": "Bewusst regelwidriger Aufbau: BEIDE Blutlinien (Blood Dragon und Strigoi) in derselben Gruppe 'Vampiric Bloodline'. Damit halten ZWEI der fuenf inneren Klammern zugleich, und beide wirken - die aeussere Klammer trifft unter ihren Kindern keine Auswahl. Der Name traegt daher BEIDE Anhaenge, in Dokumentreihenfolge (Blood Dragon VC-.cat:3057 vor Strigoi VC-.cat:3085), jeweils mit dem join-Trennzeichen U+00A0. Die Gruppengrenze 39c7-f615-17db-7016 (max 1, scope=parent an der Gruppe 5655-13ba-8980-bd1c) feuert mit Ist 2 / Grenze 1. Merkmalswerte werden hier bewusst NICHT behauptet - sie haengen an der Reihenfolge der konkurrierenden add/remove-category-Modifikatoren, die das Nachbarszenario unit-scope-instance-of-category pinnt.",
+      "expect": {
+        "firing": [
+          { "limitId": "39c7-f615-17db-7016", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["a7c9-5fec-592a-3716"],
+        "capabilities": [
+          {
+            "defId": "b77b-88d5-5e80-e178",
+            "name": "0-1 Vampire Lord  of Clan Blood Dragon of Clan Strigoi"
+          }
+        ]
+      }
+    }
+  ]
+}
