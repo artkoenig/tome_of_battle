@@ -7,50 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 89,
-    "uncovered": 16
+    "covered": 90,
+    "uncovered": 15
   },
   "cells": [
-    {
-      "key": "condition|equalTo|force|limitValue|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "force",
-        "field": "limitValue",
-        "childId": "any"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "2066-082d-a465-4baf",
-            "name": "Border Patrol (500pts)"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "force",
-            "childId": "any"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|equalTo|force|selectionCount|child=id",
       "kind": "condition",

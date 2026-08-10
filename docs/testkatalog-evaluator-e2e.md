@@ -161,7 +161,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`append-characteristic-zacharias-spell`](testing/append-characteristic-zacharias-spell/) | Definitive VC + Mercenaries | 2 |
 | [`set-unresolved-target-inert-lord-slot`](testing/set-unresolved-target-inert-lord-slot/) | Definitive VC + Mercenaries | 5 |
 | [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
-| **Summe** | | **351** |
+| [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
+| **Summe** | | **355** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1753,3 +1754,27 @@ gesetzt, sodass es mit genau dieser Summe feuert.
 | 04 | 20 Manbiters ohne Schild | Summe 100: ohne die Auswahl kein Aufschlag, dafür feuert ihre Pflichtgrenze |
 | 05 | 30 Manbiters ohne Schild | Summe 150 — die Gegenprobe zur dritten Größe |
 | 06 | 8 Heavy Cavalry mit Barding | Summe 168: der Faktor 2 kommt aus dem `increment`, nicht aus dem `value` des `repeat` |
+
+## `equal-to-force-points-limit-border-patrol`
+
+Prüft die `equalTo`-Bedingung auf dem **eingestellten Punktebudget**
+(`limit::ecfa-8486-4f6c-c249`) mit `scope="force"` und `childId="any"`: Sie hält
+nur bei exakter Gleichheit, ein Punkt darüber oder darunter kippt sie. Beleg:
+der geteilte Eintrag „Border Patrol (500pts)" (`2066-082d-a465-4baf`,
+Mercenaries) hängt seine Pflicht — `set 1` auf die Mindestgrenze
+`1a97-1579-ab05-a6d7`, Basis 0 — an genau diese Bedingung mit dem Wert 500. Alle
+vier Roster tragen denselben Inhalt; nur die eine Zahl im `costLimit` ändert sich.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget exakt 500, der Eintrag gewählt | Die Bedingung hält: der Slot meldet Mindestmaß 1, und weil eine Auswahl liegt, schweigt die Grenze |
+| 02 | Budget 499 — ein Punkt darunter | Die Bedingung kippt: Mindestmaß 0. Damit ist `equalTo` von `atMost` getrennt |
+| 03 | Budget 501 — ein Punkt darüber | Dasselbe nach oben: `equalTo` ist auch von `atLeast` getrennt |
+| 04 | Budget 500, nichts gewählt | Der Eintrag ist im Katalog verwaist — kein Verweis zeigt auf ihn —, also trägt der Bericht keine Grenze dieser Id |
+
+> **Offene Lücke (Kampagne).** Die Roster 01–03 sind rot. Das `.ros`-Format kennt
+> ein Budget nur an der Roster-Wurzel, der Rahmen `force` ist also auflösbar und
+> liefert genau dieses Budget — die Engine liest es hier aber nicht: bei exakt
+> 500 bleibt das Mindestmaß auf 0, und bei 499 wie 501 meldet der Bericht
+> zusätzlich die Diagnose `UNRESOLVED_BUDGET_LIMIT`. Unter der jetzigen
+> Auswertung ist die Regel des Katalogautors tot.

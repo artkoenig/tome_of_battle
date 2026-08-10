@@ -67,6 +67,18 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "An option that exists in the catalogue but is not selected must appear in the report as an offer anchor, so its visibility is observable at all: 'Wolf Lord' (link b8be-a71f-569c-5cdc, target 66bc-8fc1-81a2-9cd4) carries hidden=true plus a single set hidden=false gated on atLeast 1 selection of anything in its parent frame, and rosters 01-03 assert exactly that flip (isHidden true at an empty frame, false once the frame holds one resp. two selections, current 0 throughout). The report carries no anchorKind=offerAnchor slot for that defId/targetDefId pair at all in those three rosters, so the flip cannot be seen; the same pair resolves as anchorKind=occupied in rosters 04 and 05, which pass, and the sibling scenario at-least-unit-upgrade-gate shows an unselected option's offerAnchor being projected in a shallower position. The option sits four selectionEntryGroup levels below the unit; whether the missing projection is the depth, the fact that nothing in that group chain is selected, or something else, is for the implementation round to diagnose. Without the anchor a user is never offered the option at all (ADR 0034: the report is the sole source of the surface)."
+    },
+    {
+      "cellKey": "condition|equalTo|force|limitValue|child=any",
+      "scenario": "docs/testing/equal-to-force-points-limit-border-patrol",
+      "failingCases": [
+        "Szenario: equal-to-force-points-limit-border-patrol > rosters/01-budget-500-selected-min-raised.ros",
+        "Szenario: equal-to-force-points-limit-border-patrol > rosters/02-budget-499-selected-min-unraised.ros",
+        "Szenario: equal-to-force-points-limit-border-patrol > rosters/03-budget-501-selected-min-unraised.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "Eine Bedingung auf das eingestellte Punktebudget (field=limit::ecfa-8486-4f6c-c249) muss dieses Budget auch dann lesen, wenn sie scope=force traegt: das .ros-Format kennt nur ein Budget an der Roster-Wurzel, also ist der Rahmen aufloesbar und liefert genau dieses Budget. Der Eintrag 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries) haengt seine Pflicht (set 1 auf die min-Grenze 1a97-1579-ab05-a6d7) an equalTo 500; bei einem Budget von exakt 500 meldet der Bericht weiterhin effectiveMin 0 statt 1, und bei 499 wie 501 meldet er zusaetzlich die Diagnose UNRESOLVED_BUDGET_LIMIT. Unter der jetzigen Auswertung ist die Regel des Katalogautors tot."
     }
   ],
   "parkedQuestions": [

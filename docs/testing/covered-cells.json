@@ -492,6 +492,13 @@
         "docs/testing/unit-model-repeat-shield-markup"
       ],
       "rationale": "Beide Vorkommen der Zelle sind Kostenaufschlaege je Modell in Mercenaries: der Shield-Link der 'Manbiters' (a7e5-d466-038a-a9d6) traegt increment 1 auf die pts-Kostenart, wiederholt je gezaehltem Modell im unit-Rahmen, der Barding-Link der 'Heavy Cavalry' (19d1-de95-644d-00a7) dasselbe mit increment 2. Sechs Roster variieren allein die Modellzahl (20/25/30) und die Wahl des Schildes: die Summe waechst exakt linear (120/150/180 mit Schild gegen 100/150 ohne), was die Roster ueber das Punktebudget beobachtbar machen — ein Aufschlag je Auswahl statt je Modell laege in jedem Fall daneben. Roster 06 zeigt am Barding, dass der Faktor 2 aus dem increment kommt und nicht aus dem value='1' des repeat. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|force|limitValue|child=any",
+      "evidence": [
+        "docs/testing/equal-to-force-points-limit-border-patrol"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle gattert die Mindestgrenze 1a97-1579-ab05-a6d7 des geteilten Eintrags 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries): equalTo 500 auf limit::ecfa-8486-4f6c-c249, scope=force, childId=any. Vier Roster mit identischem Inhalt variieren allein das eingestellte Budget (500 / 499 / 501 sowie 500 ohne Auswahl) und klemmen die Gleichheit beidseitig ein. Das Szenario ist ROT: die Engine hebt die Grenze bei exakt 500 nicht und meldet in den Rostern 02 und 03 die Diagnose UNRESOLVED_BUDGET_LIMIT — siehe den pinnedGaps-Eintrag zu diesem Szenario. Roster 04 ist gruen."
     }
   ]
 }
