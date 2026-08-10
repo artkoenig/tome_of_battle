@@ -1,7 +1,7 @@
 ---
 status: active
-branch: claude/evaluator-coverage-campaign
-pr:
+branch: claude/evaluator-abschluss-kampagne-ipuqwm
+pr: 204
 ---
 
 # Evaluator gaps pinned by the coverage campaign
@@ -17,7 +17,7 @@ Make every scenario listed below green by changing `src/evaluator/` production c
 
 ## Acceptance criteria
 
-- `docs/testing/at-least-force-toggle-gate` — failing case: `Szenario: at-least-force-toggle-gate > rosters/02-greasus-with-toggle-max1.ros`. What the catalog data demands: an atLeast(scope=force) condition whose childId names a root entryLink (9e50-7486-65ab-c449) must also count roster selections that carry only the link's resolved target id (8923-5946-7b10-8957, entryLinkId empty): with the toggle selected, the set-1 modifier must lift Greasus's max-0 constraint (cef8-c3b1-7850-85bc) so it no longer fires and the slot reports effectiveMax 1.
+- `docs/testing/at-least-roster-points-limit` — failing cases: `Szenario: at-least-roster-points-limit > rosters/01-limit-2000-gate-open.ros`, `rosters/02-limit-1999-gate-closed.ros` and `rosters/03-limit-1999-spent-2000-gate-closed.ros`. What the catalog data demands: a single selection of "Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`, reached through the group `43b3-35c6-d7cc-e3c6` below the entry `6fcf-b33d-3cf5-b56a`, which carries `hidden="true"`) must be counted. Its occupied slot must report `current` 1 — the report has 0 — and its own limit `00f6-c1b3-ee85-5c02` (`type="max" value="0" field="selections" scope="force"`, raised to 1 by a `set` only while the `and` group of `atLeast 2000` and `atMost 2500` on `limit::ecfa-8486-4f6c-c249` holds) must fire with actual 1 against bound 0 at a `costLimit` of 1999; the report carries no message for that limit at all. Roster 03 additionally demands that `limit::<costTypeId>` reads the roster's **configured** cost limit and not the summed cost of its selections: at `costLimit` 1999 with 2000 points spent, the gate stays closed.
 
 ## Out of scope
 

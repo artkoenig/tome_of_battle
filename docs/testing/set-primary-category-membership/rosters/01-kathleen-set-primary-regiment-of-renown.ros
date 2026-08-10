@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="spcm-01" name="SPCM 01 – Kathleen Halftank: set-primary sichert die Regiment-of-Renown-Mitgliedschaft" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored set-primary-category-membership E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <!-- 1000 pts: keine Punkte-Bracket der Rare-Grenze 0a44-2d3f-adfe-f3a1 haelt
+         (set 0 verlangt < 200; set 1 verlangt 200-499; set 2..5 verlangen >= 2000;
+         die beiden Border-Patrols-Varianten verlangen eine Border-Patrols-Selektion
+         4e15-0353-165f-5528, die hier fehlt). Effektiv: Rare max 1. -->
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Force "Standard (OK-AB)" 729f-9246-5cd3-5044: einziges Ogre-Kontingent, das
+         einen categoryLink auf "Regiment of Renown" traegt
+         (f78c-c639-4655-0461 -> ee09-9a50-ad78-9c32, primary="false"). -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms (6th definitive edition)">
+      <selections>
+        <!-- Schalter "Allow Regiments of Renown" (3d35-6b18-262f-6503) unter seinem
+             Traeger 6a7d-7d85-8d7e-cbce: damit haelt die zweite Oder-Bedingung des
+             hidden-Modifikators der Kategorie "Regiment of Renown" NICHT mehr
+             (lessThan 1 selections scope=force childId=3d35-...) -> Kategorie sichtbar. -->
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Schalter "Allow experimental rules?" (8b76-92c4-23f9-54b1): hebt Kathleens
+             Eigengrenze 99ea-c7dd-2a0b-ff10 per set von max 0 auf max 1 und unterdrueckt
+             die Autor-Fehlermeldung des Eintrags. -->
+        <selection id="sel-allow-exp" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="" number="1" type="upgrade" collective="false"/>
+        <!-- 'Kathleen' Halftank (150 pts). Der <categories>-Block notiert bewusst NUR die
+             ROHEN Katalog-Links (Rare primary, Experimental rules, War Machine) - genau so,
+             wie sie im Katalog stehen. "Regiment of Renown" steht hier absichtlich NICHT:
+             die Mitgliedschaft entsteht allein aus dem unbedingten
+             <modifier type="set-primary" value="ee09-9a50-ad78-9c32" field="category"/>
+             und muss aus den Katalogdaten abgeleitet werden, nicht aus diesem Snapshot. -->
+        <selection id="sel-kathleen" name="&apos;Kathleen&apos; Halftank" entryId="331a-3634-095a-574a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-kathleen-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+            <category id="cat-kathleen-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+            <category id="cat-kathleen-wm" name="War Machine" entryId="f672-d9d4-a601-479a" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

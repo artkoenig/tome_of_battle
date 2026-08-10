@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "name": "unconditional-modifier-group",
+  "description": "Die bedingungslose modifierGroup ist eine blosse Klammer. Ein <modifierGroup> ohne eigene <conditions>, <conditionGroups> und <repeats> fuegt kein Gatter hinzu: jeder Modifikator darin wirkt genau so, als staende er in der <modifiers>-Liste des Traegers - ein unbedingter Modifikator wirkt immer, ein bedingter genau dann, wenn seine EIGENE Bedingung haelt. Gepinnt an drei Traegern des Vampire-Counts-Katalogs ueber expect.capabilities: Simulacra und 0-1 Charnel Guard/Ghast (unbedingte Modifikatoren in der nackten Klammer, teils neben der eigenen <modifiers>-Liste desselben infoLink), Vampire Count (fuenf je eigen-bedingte Modifikatoren in einer nackten Klammer, ueber die Blutlinienwahl geschaltet). Kategoriezugehoerigkeit, Sichtbarkeit und zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-simulacra-bare-bracket.ros",
+      "description": "Standard-Kontingent (VC-AB) mit der Einheit Simulacra (3 Simulacrum-Modelle). Ihr infoLink 3ffe3e73-... auf das geteilte Ushabti-Profil traegt BEIDE Listen nebeneinander: eine eigene <modifiers>-Liste (set name=Simulacrum) und eine bedingungslose <modifierGroup> mit vier unbedingten set-Modifikatoren (I=1, S=5, A=4, T=5). Beide Listen muessen greifen; die nicht adressierten Merkmale (WS 4, Ld 10) bleiben auf dem Katalogwert.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "f38d47d3-32d7-40de-a093-f01f12afa61d",
+            "name": "Simulacra",
+            "isHidden": true,
+            "infoElements": [
+              {
+                "id": "3ffe3e73-586f-45ae-8292-2dcdb1e7c905",
+                "kind": "profile",
+                "name": "Simulacrum",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "dfff-363e-f72a-5a59", "value": "1" },
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "5" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "5" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "value": "10" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-charnel-guard-bare-bracket.ros",
+      "description": "Standard-Kontingent (VC-AB) mit 0-1 Charnel Guard (5 Ghouls, 2 Handweapon, 1 Ghast). Drei Traeger nebeneinander: der infoLink 7000-... der Einheit und der infoLink 41d3-... des Ghast tragen je eine bedingungslose <modifierGroup> mit vier unbedingten set-Modifikatoren (Name, WS=4, S=4, Ld=7); das Ghouls-Modell und der Ghast tragen denselben Umbenennungs-Effekt in einer gewoehnlichen <modifiers>-Liste. Klammer und Liste muessen dasselbe Ergebnis liefern.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "e90d-82fc-b484-efa0",
+            "name": "0-1 Charnel Guard",
+            "isHidden": true,
+            "infoElements": [
+              {
+                "id": "7000-4421-89d9-9cf4",
+                "kind": "profile",
+                "name": "Charnel Guard",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "4" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "2" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "7432-3972-32cb-77d2",
+            "name": "Charnel Guard"
+          },
+          {
+            "defId": "e67b-523f-4be5-433b",
+            "name": "Charnel Champion",
+            "infoElements": [
+              {
+                "id": "41d3-b9aa-b10d-c024",
+                "kind": "profile",
+                "name": "Charnel Champion",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "4" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "value": "7" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "3" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-vampire-count-no-bloodline.ros",
+      "description": "Standard-Kontingent (VC-AB) mit einem Vampire Count OHNE Bloodlines-Selektion. Die bedingungslose <modifierGroup> am infoLink a106-... haelt fuenf Modifikatoren, jeder mit einer EIGENEN instanceOf-Bedingung auf eine Clan-Kategorie. Ohne Blutlinie traegt der Vampire Count keine dieser Kategorien - kein einziger Modifikator darf wirken, das Profil bleibt auf den Katalogwerten (Sv 7, Sv+ 7, WS 7, A 4).",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "6822-0110-a7c9-cbb0",
+            "infoElements": [
+              {
+                "id": "a106-4a05-36ea-cb01",
+                "kind": "profile",
+                "name": "Vampire Count",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-vampire-count-blood-dragon.ros",
+      "description": "Derselbe Vampire Count, jetzt mit Bloodlines + Bloodline of Clan Blood Dragon. Genau die beiden Modifikatoren der nackten Klammer, deren eigene Bedingung die Blood-Dragon-Kategorie 4cae-... nennt, wirken: set Sv=4+ und increment WS um 2 (7 + 2 = 9). Die drei uebrigen Modifikatoren derselben Klammer (Necrarch, Strigoi) duerfen NICHT wirken - Sv+ bleibt 7, A bleibt 4.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "6822-0110-a7c9-cbb0",
+            "infoElements": [
+              {
+                "id": "a106-4a05-36ea-cb01",
+                "kind": "profile",
+                "name": "Vampire Count",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "4+" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "9" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-vampire-count-strigoi.ros",
+      "description": "Derselbe Vampire Count, jetzt mit Bloodlines + Bloodline of Clan Strigoi. Jetzt wirken die beiden ANDEREN Modifikatoren derselben nackten Klammer (Bedingung auf die Strigoi-Kategorie bf30-...): set Sv+=5+ und increment A um 1 (4 + 1 = 5). Die Blood-Dragon-Modifikatoren bleiben stumm - Sv bleibt 7, WS bleibt 7.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "6822-0110-a7c9-cbb0",
+            "infoElements": [
+              {
+                "id": "a106-4a05-36ea-cb01",
+                "kind": "profile",
+                "name": "Vampire Count",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "5+" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "5" },
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

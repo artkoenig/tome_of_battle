@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "name": "not-instance-of-force-gate",
+  "description": "Condition-Zelle condition|notInstanceOf|force|child=forceEntry-Id: Eine Bedingung type=notInstanceOf field=selections scope=force, deren childId ein forceEntry benennt, ist die inverse Identitaetspruefung zu instanceOf - sie haelt in JEDEM Kontingent, das keine Instanz dieses forceEntry ist, und haelt in genau dem einen nicht. Traeger ist der Katalog-Wurzel-entryLink 'Ogre Bulls' (d82e-111e-89b9-2be1, targetId 7754-8b3d-df99-d2d5 in der Mercenaries-Bibliothek) der Ogre Kingdoms: sein constraint 32ed-26da-3f27-5c04 (min, Rohwert 0, field=selections, scope=force) wird von einem modifier type=set value=1 in einer modifierGroup (Kommentar 'Standard') genau dann auf 1 gehoben, wenn die Bedingung notInstanceOf childId=8711-ed16-2a44-7251 ('Ironskin Tribe (WD#309-UK)') haelt; die komplementaere modifierGroup (Kommentar 'Ironskin Tribe', instanceOf auf dieselbe Id) laesst den Constraint-Wert unangetastet. Die Roster variieren ausschliesslich das Kontingent innerhalb DESSELBEN Katalogs: in 'Standard (OK-AB)' (729f-9246-5cd3-5044) und '[WIP] Gnoblar Horde (WD#310-UK)' (9746-73c4-6ea2-578a) haelt die Bedingung und das effektive Mindestmass des Slots ist 1, in 'Ironskin Tribe' (8711-ed16-2a44-7251) haelt sie nicht und das Mindestmass bleibt der geschriebene Rohwert 0. Die Zaehl-Flags der Bedingung (value=1, shared=true, includeChildSelections=true) engen die Identitaetspruefung nicht ein: sie haelt auch im voellig leeren Kontingent, wo jede zaehlende Lesart auf 0 kaeme. Weder der Verweis (hidden=false, ohne hidden-Modifikator) noch sein Ziel (hidden=false) sind in einem der drei Kontingente ausgeblendet - das Mindestmass ist also in allen Faellen validierbar.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-standard-force-min-raised.ros",
+      "description": "Leeres Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044). Es ist keine Instanz von 8711-ed16-2a44-7251, die notInstanceOf-Bedingung haelt, der set-Modifier hebt 32ed-26da-3f27-5c04 auf 1. Ohne jede Ogre-Bulls-Auswahl ist die Pflicht unerfuellt: Ist 0, Grenze 1. Zugleich der Nachweis, dass die Bedingung KEIN Zaehlrahmen ist - im leeren Kontingent kaeme jede zaehlende Lesart auf 0 und duerfte nicht halten.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "d82e-111e-89b9-2be1",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Ogre Bulls",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-ironskin-force-min-stays-zero.ros",
+      "description": "Identischer Aufbau, nur das Kontingent ist 'Ironskin Tribe (WD#309-UK)' (8711-ed16-2a44-7251) - genau die in der childId benannte forceEntry. Die notInstanceOf-Bedingung haelt hier NICHT, der set-Modifier bleibt aus, 32ed-26da-3f27-5c04 behaelt seinen geschriebenen Rohwert 0. Die Grenze darf nicht feuern; das effektive Mindestmass des Slots ist 0 (ein geschriebenes min 0, nicht 'kein Mindestmass'), und mit Ist 0 ist es erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"],
+        "capabilities": [
+          {
+            "defId": "d82e-111e-89b9-2be1",
+            "frameDefId": "8711-ed16-2a44-7251",
+            "name": "Ogre Bulls",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-gnoblar-horde-force-min-raised.ros",
+      "description": "Zweiter Nicht-Ironskin-Zeuge im selben Katalog: leeres Kontingent '[WIP] Gnoblar Horde (WD#310-UK)' (9746-73c4-6ea2-578a). Die Bedingung nennt dieses Kontingent nirgends und haelt trotzdem - das ist die Kernaussage von notInstanceOf: sie haelt in JEDEM Kontingent ausser dem einen benannten, nicht nur in 'Standard'. Also wieder Mindestmass 1 und Ist 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "32ed-26da-3f27-5c04", "actual": 0, "bound": 1 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "d82e-111e-89b9-2be1",
+            "frameDefId": "9746-73c4-6ea2-578a",
+            "name": "Ogre Bulls",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-standard-force-bulls-selected.ros",
+      "description": "Kontingent 'Standard (OK-AB)' MIT einer Ogre-Bulls-Einheit (entryId 7754-8b3d-df99-d2d5 ueber entryLinkId d82e-111e-89b9-2be1, drei 'Bulls'-Modelle und die Pflicht-Ausruestung 'Ogre Club'). Die gehobene Pflicht bleibt bei 1, ist mit Ist 1 aber erfuellt: 32ed-26da-3f27-5c04 feuert nicht. Positive Kontrolle - die Abwesenheit in Roster 02 liegt an der gefallenen Grenze, nicht daran, dass der Slot gar nicht bewertet wuerde.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"],
+        "capabilities": [
+          {
+            "defId": "d82e-111e-89b9-2be1",
+            "frameDefId": "729f-9246-5cd3-5044",
+            "name": "Ogre Bulls",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-ironskin-force-bulls-selected.ros",
+      "description": "Derselbe Aufbau wie 04 im Kontingent 'Ironskin Tribe (WD#309-UK)'. Vervollstaendigt die 2x2-Matrix: die fehlgeschlagene Bedingung nimmt dem Slot nur die PFLICHT (Mindestmass bleibt 0), nicht das ANGEBOT - die Einheit ist waehlbar und gewaehlt (Ist 1), 32ed-26da-3f27-5c04 feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["32ed-26da-3f27-5c04"],
+        "capabilities": [
+          {
+            "defId": "d82e-111e-89b9-2be1",
+            "frameDefId": "8711-ed16-2a44-7251",
+            "name": "Ogre Bulls",
+            "current": 1,
+            "effectiveMin": 0,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

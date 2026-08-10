@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "name": "roster-repeat-category-count",
+  "description": "Ein <repeat field=\"selections\" scope=\"roster\" childId=\"<Kategorie-Id>\" value=\"1\" repeats=\"1\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"true\" roundUp=\"false\" percentValue=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl dieser Kategorie im GESAMTEN Roster an — ueber alle Kontingente hinweg. Ein increment auf eine Grenze waechst dadurch je gezaehlter Auswahl um genau einen Schritt. Konkret: die Wurzel-Einheit 'Orc Big Uns' (eeb1-a6c4-b57e-f08c, Orcs-and-Goblins-.cat) traegt max 0 (Constraint 938b-15b1-f433-e0d5, field=selections scope=roster shared=true includeChildSelections=false includeChildForces=false) und einen increment-1-Modifier auf genau diese Constraint-Id, dessen einziger <repeat> die Auswahlen der Kategorie 'Orc boyz' (344f-77ef-7238-f157) roster-weit zaehlt. Diese Kategorie traegt im ganzen Fixture-Satz genau eine Definition: die Wurzel-Einheit 'Orc Boyz' (ac23-b9d3-4046-23b7, categoryLink 61ca-d64b-4a52-c623). Mit N gezaehlten Orc Boyz ist das effektive Maximum der Big Uns 0+N. Sechs Roster im Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f) laufen die Zahl der gezaehlten Kopien ab (0/1/2) und pinnen sie ueber expect.capabilities am Big-Uns-Slot (current, effectiveMax) sowie ueber den ANGEHOBENEN bound der feuernden Grenze: 3 Big Uns feuern gegen bound 2 statt gegen den geschriebenen Basiswert 0. Roster 05 pinnt, dass das `number` einer Auswahl zaehlt (eine Auswahl mit number=2 wirkt wie zwei Auswahlen mit number=1); Roster 06 pinnt includeChildForces=\"true\", indem die gezaehlten Orc Boyz in einem ZWEITEN Kontingent stehen.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-orc-boyz-max-zero-fires.ros",
+      "description": "Kontingent 'Standard (OG-AB)' mit EINEM Orc Big 'Uns (Pflichtkinder: 10 Modelle, Choppa, Light Armour) und KEINER Auswahl der Kategorie 'Orc boyz'. Der repeat zaehlt roster-weit 0 Treffer, das increment wird nicht angewendet: die Grenze 938b-15b1-f433-e0d5 behaelt ihren geschriebenen Basiswert max 0 und feuert bei Ist 1. Der Slot meldet current 1 / effectiveMax 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "938b-15b1-f433-e0d5", "actual": 1, "bound": 0 }
+        ],
+        "absent": [
+          "cd53-8606-5530-dbe3",
+          "d707-6a7b-03fe-e3d8",
+          "2d4e-7468-78d3-fc5e",
+          "10b8-4839-ddb4-4014",
+          "a28c-90ff-44ec-daf9"
+        ],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-orc-boyz-max-one-legal.ros",
+      "description": "Derselbe Aufbau, zusaetzlich EINE Einheit Orc Boyz (ac23-b9d3-4046-23b7, number=1) — die einzige Definition mit der Kategorie 'Orc boyz'. Der repeat zaehlt 1 Treffer => 1 Anwendung von increment +1 => effektives Maximum 0+1=1 bei Ist 1. Keine der genannten Grenzen feuert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "938b-15b1-f433-e0d5",
+          "cd53-8606-5530-dbe3",
+          "d707-6a7b-03fe-e3d8",
+          "2d4e-7468-78d3-fc5e",
+          "10b8-4839-ddb4-4014",
+          "a28c-90ff-44ec-daf9",
+          "158f-ed55-76f2-eba0",
+          "dbcc-2eb6-66d6-e785",
+          "db48-8078-f3c8-6c29",
+          "0b95-cef7-a64a-3172",
+          "34cc-8bc4-9ef8-cd20"
+        ],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-orc-boyz-max-two-legal.ros",
+      "description": "ZWEI getrennte Auswahlen Orc Boyz (je number=1) und der Traeger mit number=2. Der repeat zaehlt 2 Treffer => die Wiederholung greift ZWEIMAL => effektives Maximum 0+2=2 bei Ist 2. Keine der genannten Grenzen feuert. Die Pflichtkinder-Grenzen des gestapelten Traegers (number=2) stehen bewusst NICHT in absent (siehe README).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "938b-15b1-f433-e0d5",
+          "158f-ed55-76f2-eba0",
+          "dbcc-2eb6-66d6-e785",
+          "db48-8078-f3c8-6c29",
+          "0b95-cef7-a64a-3172",
+          "34cc-8bc4-9ef8-cd20"
+        ],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-orc-boyz-three-big-uns-max-two-fires.ros",
+      "description": "Wie Roster 03 (zwei gezaehlte Orc Boyz => effektives Maximum 2), aber der Traeger steht mit number=3. Die Grenze 938b-15b1-f433-e0d5 feuert mit Ist 3 gegen den ANGEHOBENEN bound 2 — zwei Wiederholungsschritte ueber dem geschriebenen Basiswert 0 aus Roster 01.",
+      "expect": {
+        "firing": [
+          { "limitId": "938b-15b1-f433-e0d5", "actual": 3, "bound": 2 }
+        ],
+        "absent": [
+          "158f-ed55-76f2-eba0",
+          "dbcc-2eb6-66d6-e785",
+          "db48-8078-f3c8-6c29",
+          "0b95-cef7-a64a-3172",
+          "34cc-8bc4-9ef8-cd20"
+        ],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-orc-boyz-number-two-max-two-fires.ros",
+      "description": "Zwilling zu Roster 04: dieselben zwei gezaehlten Orc Boyz, aber als EINE Auswahl mit number=2 statt als zwei Auswahlen mit je number=1. Das `number` einer .ros-Auswahl ist die absolute Gesamtstueckzahl (Formatdoku Paragraf 7.5, Kasten 'Zahlenbasis'), der repeat zaehlt also ebenfalls 2 Treffer => bound 2, Ist 3 feuert. Zaehlte die Engine Auswahl-ELEMENTE statt Stueckzahlen, laege der bound bei 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "938b-15b1-f433-e0d5", "actual": 3, "bound": 2 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-orc-boyz-in-second-force-max-two-fires.ros",
+      "description": "ZWEI Kontingente 'Standard (OG-AB)': Kontingent 1 traegt allein die drei Orc Big 'Uns, Kontingent 2 allein die beiden gezaehlten Orc Boyz. Wegen scope=roster und includeChildForces=true zaehlt der repeat ueber Kontingentsgrenzen hinweg 2 Treffer => bound 2, Ist 3 feuert. Blieben die Orc Boyz des zweiten Kontingents ungezaehlt, feuerte dieselbe Grenze mit bound 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "938b-15b1-f433-e0d5", "actual": 3, "bound": 2 }
+        ],
+        "absent": [
+          "158f-ed55-76f2-eba0",
+          "dbcc-2eb6-66d6-e785",
+          "db48-8078-f3c8-6c29",
+          "0b95-cef7-a64a-3172",
+          "34cc-8bc4-9ef8-cd20"
+        ],
+        "capabilities": [
+          {
+            "defId": "eeb1-a6c4-b57e-f08c",
+            "anchorKind": "occupied",
+            "name": "Orc Big 'Uns",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    }
+  ]
+}

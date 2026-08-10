@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="nmg-01" name="NMG 01 - Vampire Lord ohne Blutlinie: keine der fuenf inneren Klammern haelt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored nested-modifierGroup E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <!-- KEINE "Bloodlines"-Selektion. Damit haelt keine der fuenf Bedingungen
+             der inneren modifierGroups (je "atLeast 1 ... scope=force" auf eine
+             Clan-Blutlinie, VC-.cat:3061/3075/3089/3103/3117). Die AEUSSERE
+             Klammer (VC-.cat:3047-3121) ist bedingungslos - sie darf trotzdem
+             nichts von dem anwenden, was in ihr steht. -->
+        <selection id="sel-vl" name="0-1 Vampire Lord " entryId="b77b-88d5-5e80-e178" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

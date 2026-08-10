@@ -68,6 +68,9 @@ const NO_DECLARED_COST_TYPES = Object.freeze([]);
 /** Ohne Herkunftsindex bleibt die Herkunft jedes Slots unbekannt (`null`). */
 const NO_DEFINITION_SOURCES = new Map();
 
+/** Ohne gezaehlte Belegungen faellt ein grenzenloser Kategorie-Anker auf 0 zurueck. */
+const NO_ANCHOR_OCCUPANCIES = new Map();
+
 /**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
  * sprachfreie Einordnung (Herkunft, Schweregrad, Anker, Art der Grenze,
@@ -363,7 +366,10 @@ function headroomOf(maxResult) {
 /**
  * Baut den Faehigkeitsdatensatz eines Slots aus seinen MIN-/MAX-Ergebnissen und
  * dem effektiven Zustand. Der aktuelle Stand kommt bevorzugt aus der MAX-, sonst
- * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er 0.
+ * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er an
+ * einem **Kategorie-Anker** die in dessen Rahmen gezaehlte Zahl der Auswahlen
+ * seiner Kategorie (`constraints.js`, {@link import('./constraints.js').categoryAnchorOccupancies}),
+ * an jeder anderen Ankerart 0.
  *
  * `anchorKind` sagt, **woher** der Slot stammt (belegt, Pflicht-Phantom,
  * Gruppen-, Kategorie- oder Angebots-Anker) — die einzige Stelle, an der die
@@ -405,7 +411,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId, anchorOccupancies }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -428,7 +434,11 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
-    current: maxResult?.actual ?? minResult?.actual ?? 0,
+    // Wo eine Grenze ausgewertet wurde, ist deren Ist-Wert die berichtete Zahl —
+    // zu ihm passen Hoechstmass, Restspielraum und Sperrung daneben. Erst ohne
+    // Grenzergebnis greift die gezaehlte Belegung; sie steht nur fuer
+    // Kategorie-Anker in der Karte, jede andere Ankerart bleibt bei 0.
+    current: maxResult?.actual ?? minResult?.actual ?? anchorOccupancies.get(node) ?? 0,
     headroom: headroomOf(maxResult),
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
@@ -449,7 +459,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -469,6 +479,11 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   `sourceIdByDefId`: der Herkunftsindex der Definitionen
  *   (`catalogSet.js`) — je Slot das Dokument, das seine Definition deklariert
  *   (`sourceId`). Fehlt er, bleibt die Herkunft jedes Slots `null`.
+ *   `categoryAnchorOccupancies`: je Kategorie-Anker die in seinem Rahmen
+ *   gezaehlte Zahl der Auswahlen seiner Kategorie (`constraints.js`,
+ *   {@link import('./constraints.js').categoryAnchorOccupancies}, gezaehlt in der
+ *   Grenzen-Phase). Sie ist der `current` eines Kategorie-Ankers ohne
+ *   Grenzergebnis; fehlt die Karte, bleibt ein solcher Anker bei 0.
  * @returns {{ violations: object[], capabilities: Map<string, object>, costTotals: Record<string, number>, diagnostics: object[] }}
  */
 export function buildReport(root, effective, results, diagnostics, extras = {}) {
@@ -479,6 +494,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     categoryIds = NO_CATEGORY_IDS,
     declaredCostTypeIds = NO_DECLARED_COST_TYPES,
     sourceIdByDefId = NO_DEFINITION_SOURCES,
+    categoryAnchorOccupancies = NO_ANCHOR_OCCUPANCIES,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -490,6 +506,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
     costProjection,
     sourceIdByDefId,
+    anchorOccupancies: categoryAnchorOccupancies,
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

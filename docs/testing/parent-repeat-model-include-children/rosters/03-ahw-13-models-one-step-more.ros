@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="prmic-03" name="PRMIC 03 - Savage Orc Boyz, 13 Modelle (ein Modell mehr als 02), Punktelimit 96 (Budget feuert 104)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-model-include-children E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="96.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-savage-orc-boyz" name="Savage Orc Boyz" entryId="e4d9-143c-2cf3-6615" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+            <category id="cat-savage-boyz" name="Savage Boyz" entryId="5e83-d646-097c-dbee" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-savage-models" name="Savage Orc Boyz" entryId="e5fb-a639-766e-34e0" entryLinkId="" number="13" type="model" collective="false"/>
+            <selection id="sel-choppa" name="Choppa" entryId="456a-16c8-8b31-c422" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-ahw" name="Additional Hand Weapon" entryId="2099-eac8-a45d-b4b6" entryLinkId="" entryGroupId="2213-9b27-662a-9aba" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

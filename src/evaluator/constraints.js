@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { ConstraintKind, DefinitionKind, ScopeKeyword, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
+import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, SELECTION_COUNT, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, evaluableLimitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -34,8 +34,8 @@ const PERCENT_DIVISOR = 100;
  * Verletzung. Nenner und Zaehler teilen den **Scope**; die Flags koennen
  * auseinanderfallen: der Nenner zaehlt „alles im Rahmen" stets mit den
  * hingeschriebenen Flags, waehrend der Zaehler bei einer geteilten,
- * eintrags-verankerten roster-Grenze verschachtelte Vorkommen erzwungen
- * mitzaehlt ({@link countingFlagsOf}).
+ * eintrags-verankerten roster- oder force-Grenze verschachtelte Vorkommen
+ * erzwungen mitzaehlt ({@link countingFlagsOf}).
  */
 function resolveBound(limit, node, effective, ctx) {
   const raw = effective.limitValue(node, limit.id) ?? limit.value;
@@ -60,13 +60,21 @@ function resolveBound(limit, node, effective, ctx) {
 /**
  * Die Zaehl-Flags einer Grenze, wie sie an das Query-Primitiv gehen.
  *
- * Eine **geteilte, eintrags-verankerte** Grenze mit `scope="roster"` zaehlt
- * die Vorkommen ihres Eintrags im **ganzen** Roster — auch verschachtelte —,
+ * Eine **geteilte, eintrags-verankerte** Grenze mit `scope="roster"` oder
+ * `scope="force"` zaehlt die Vorkommen ihres Eintrags im **ganzen** Rahmen —
+ * auch verschachtelte —,
  * unabhaengig von `includeChildSelections="false"`: „unchecked" heisst „just
  * scope's field", nicht „nichts" (`docs/battlescribe-data-format.md` §7.6,
  * Issue 083), und die Auswahlen des Rosters sind alle seine Auswahlen — eine
  * armeeweite „hoechstens 1"-Grenze trifft ein magisches Item auch dann, wenn
- * es unter einem Charakter geschachtelt steht. Das gilt fuer jede Messgroesse:
+ * es unter einem Charakter geschachtelt steht. §7.6 formuliert diese Regel
+ * rahmen-unabhaengig, und fuer das Kontingent sagt die Nachbarzeile derselben
+ * Tabelle dasselbe aus der Gegenrichtung: `includeChildForces="false"` rechnet
+ * „only from parent force selections" — die Auswahlen des **eigenen**
+ * Kontingents zaehlen also weiter mit, und das sind alle seine Auswahlen,
+ * geschachtelte eingeschlossen (Issue 0147). `includeChildForces` bleibt
+ * dabei bewusst **un**angehoben: Unter-Kontingente bleiben draussen.
+ * Das gilt fuer jede Messgroesse:
  * auch eine Kostenart-Grenze liest die **Eigen**-Kosten jedes Vorkommens ihres
  * Traegers, egal wie tief es steckt (§9.4: „Ein Traeger mit eigenen Kosten
  * bringt diese in seine Summe ein", Issue 091).
@@ -82,7 +90,7 @@ function resolveBound(limit, node, effective, ctx) {
  */
 function countingFlagsOf(limit, node) {
   const flags = limit.flags;
-  if (limit.scope !== ScopeKeyword.ROSTER) return flags;
+  if (limit.scope !== ScopeKeyword.ROSTER && limit.scope !== ScopeKeyword.FORCE) return flags;
   if (flags?.shared === false || flags?.includeChildSelections === true) return flags;
   const counted = isLinkDefinition(node.def) ? node.def.resolved : node.def;
   if (counted?.kind !== DefinitionKind.ENTRY) return flags;
@@ -195,4 +203,50 @@ export function evaluateConstraints(root, index, effective, categoryIds, diagnos
     }
   }
   return results;
+}
+
+/**
+ * Zaehlt je **Kategorie-Anker** die Belegung seines Rahmens: wie viele
+ * Auswahlen unter dem Rahmen des Ankers effektiv zu seiner Kategorie gehoeren.
+ * Ein Kategorie-Anker ist ein Zaehlrahmen, keine Grenze — traegt er keine
+ * auswertbare Grenze (etwa eine unbegrenzte, die kein Ergebnis liefert), gibt es
+ * ohne diese Zaehlung ueberhaupt keine Zahl zu seinem Rahmen.
+ *
+ * Gezaehlt wird ueber dasselbe Query-Primitiv wie jede Grenze, damit die
+ * Rahmen-Aufloesung und der Zaehlindex die einzige Zaehlstelle bleiben; die
+ * hier gesammelten Diagnosen fliessen in dieselbe Liste wie die der Grenzen.
+ * Der Rahmen ist `scope="parent"` — der Eltern-Knoten des Ankers, also das
+ * Kontingent bzw. die Wurzel, unter der er haengt. Die Flags sind die dieser
+ * Zaehlung eigenen: Mitgliedschaft in einer Kategorie endet weder an einer
+ * Verschachtelungsgrenze noch an einem Unter-Kontingent, deshalb zaehlen
+ * `includeChildSelections` und `includeChildForces` mit. Sie sind unabhaengig
+ * von den Flags, die eine Grenze am selben Anker hinschreibt.
+ *
+ * Gezaehlt wird die aufgeloeste Ziel-Id, wenn der Anker ein `categoryLink` ist,
+ * sonst die eigene Definition — dieselbe Wahl wie in {@link evaluateLimit} und
+ * aus demselben Grund.
+ *
+ * @param {object} root  Wurzel des Evaluationsbaums.
+ * @param {{ get: Function }} index
+ * @param {import('./effectiveState.js').EffectiveState} effective
+ * @param {Set<string>} categoryIds  bekannte Kategorie-IDs (Ziel-Typ-Regel).
+ * @param {object[]} diagnostics  Sammelliste, in die Query-Diagnosen fliessen.
+ * @param {import('./rosterBudget.js').RosterBudget} [budget]
+ * @param {Map<string, string>} [primaryCatalogueByForceDefId]
+ * @returns {Map<object, number>} je Kategorie-Anker die gezaehlte Belegung.
+ */
+export function categoryAnchorOccupancies(root, index, effective, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId) {
+  const occupancies = new Map();
+  for (const node of allNodes(root)) {
+    if (node.anchorKind !== AnchorKind.CATEGORY_ANCHOR) continue;
+    const ctx = createQueryContext({ node, root, index, categoryIds, diagnostics, budget, primaryCatalogueByForceDefId, effective });
+    const targetId = isLinkDefinition(node.def) ? node.def.targetId : node.def.id;
+    const count = query(ctx, SELECTION_COUNT, ScopeKeyword.PARENT, targetId, {
+      shared: true,
+      includeChildSelections: true,
+      includeChildForces: true,
+    });
+    occupancies.set(node, count);
+  }
+  return occupancies;
 }

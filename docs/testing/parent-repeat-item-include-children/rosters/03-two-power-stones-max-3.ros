@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="prici-03" name="PRICI 03 – Standard (OK-AB): zwei Power Stones heben das Maximum auf 3" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-item-include-children E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Wie 02, aber number="2": ZWEI gezaehlte Kopien des Power Stone.
+         floor(2/1) x repeats(1) = 2 Anwendungen von increment +1
+         => effektives Maximum 1 + 2 = 3 bei Ist 2.
+         Genau EIN Schritt je gezaehlter Kopie — das ist die gepinnte Aussage.
+         2 <= 4 (e44e-74a9-e4a4-6939), 2 x 25 = 50 <= 50 pts (62a3-8df3-3e65-6be1). -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-butcher" name="Butcher" entryId="8933-af8e-e780-6f48" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-butcher-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8b61-79ab-f251-234b" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-power-stones" name="Power Stone (only one use)" entryId="696a-648d-c842-4c6a" entryLinkId="c492-f625-09c8-3702" entryGroupId="4c3e-febe-6d5d-6912" number="2" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

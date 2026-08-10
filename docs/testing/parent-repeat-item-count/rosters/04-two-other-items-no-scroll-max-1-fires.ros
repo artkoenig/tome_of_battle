@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pric-04" name="PRIC 04 – Standard (OK-AB): zwei andere Arcane Items ohne Dispel Scroll sprengen das Maximum 1" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-item-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Wie 01, zusaetzlich ZWEI andere Mitglieder der Gruppe "Arcane Items":
+         Skullmantle (5ccf-df71-8c78-ee5e, Link 2b2e-55f4-12ec-7fd1, 20 pts) und
+         Bangstick (c5d0-f7e9-6534-f6f4, Link f7d4-c610-84a1-2796, 25 pts).
+         KEIN Dispel Scroll: beide repeat-Zaehler treffen 0, kein increment wird
+         angewendet, die Grenze 188e-3808-4b37-c8d9 bleibt bei ihrem Basiswert 1.
+         Ist 2 > 1 => 188e feuert mit actual 2 / bound 1.
+         Punkte im Magic-Items-Budget: 20 + 25 = 45 <= 50 (62a3-8df3-3e65-6be1). -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-butcher" name="Butcher" entryId="8933-af8e-e780-6f48" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-butcher-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8b61-79ab-f251-234b" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-skullmantle" name="Skullmantle" entryId="5ccf-df71-8c78-ee5e" entryLinkId="2b2e-55f4-12ec-7fd1" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bangstick" name="Bangstick" entryId="c5d0-f7e9-6534-f6f4" entryLinkId="f7d4-c610-84a1-2796" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

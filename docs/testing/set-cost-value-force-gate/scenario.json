@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "name": "set-cost-value-force-gate",
+  "description": "Ein modifier type=\"set\", dessen field eine Kostenart-Id ist, ERSETZT die Kosten seines Traegers in dieser Kostenart durch seinen value, solange seine Bedingung haelt - und laesst den geschriebenen Basiswert unangetastet, solange sie nicht haelt. Der ersetzte Wert ist das, was jede Summe ueber diese Kostenart danach benutzt, die Punktsumme der Roster eingeschlossen: dasselbe Zombie-Modell des Vampire-Counts-Katalogs kostet 6 pts (geschrieben), 5 pts im Kontingent \"Necromancer's Army (VC-AB)\" (set 5) und 8 pts im Kontingent \"Army of Sylvania (SoC)\" (set 8). Vier ansonsten identische Roster mit je 20 Modellen machen das an der engine-eigenen Budget-Regel budget::ecfa-8486-4f6c-c249 messbar (120 / 100 / 160 / 100 pts).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-standard-force-written-cost.ros",
+      "description": "Kontingent \"Standard (VC-AB)\" (e989-15b8-7eb6-9668) mit einer Zombies-Einheit (0 pts) und 20 Zombie-Modellen, Budget 110 pts. Keine der beiden instanceOf-Bedingungen der Kosten-Modifikatoren haelt (weder d3af-... noch 4072-...), also bleibt der geschriebene Wert des Modells stehen: 20 x 6 = 120 pts. Das Budget ist damit um 10 pts ueberschritten. Gegenprobe zum Sylvania-Gate ueber den Namens-set an der Einheit: er greift hier NICHT, die Einheit heisst weiterhin \"Zombies\".",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 120, "bound": 110 }
+        ],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "derivedLimit",
+            "limitId": "budget::ecfa-8486-4f6c-c249",
+            "severity": "error",
+            "limitKind": "max",
+            "measure": "rosterBudget",
+            "costTypeId": "ecfa-8486-4f6c-c249",
+            "isPercent": false,
+            "scopeKind": "roster",
+            "scopeTargetId": null,
+            "actual": 120,
+            "bound": 110,
+            "delta": -10
+          }
+        ],
+        "capabilities": [
+          { "defId": "749f-cf91-6317-7ac0", "name": "Zombies" }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-necromancer-army-set-5-within-budget.ros",
+      "description": "Derselbe Aufbau (dieselbe Einheit, dieselben 20 Modelle, dasselbe Budget 110 pts), nur das Kontingent ist \"Necromancer's Army (VC-AB)\" (d3af-1add-4e99-b977). Jetzt haelt die Bedingung des ersten Kosten-Modifikators (instanceOf, scope=force, childId=d3af-...) und ersetzt die 6 geschriebenen pts durch 5: 20 x 5 = 100 pts. Damit bleibt dieselbe Modellzahl INNERHALB desselben Budgets - die Budget-Regel darf nicht feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"],
+        "messages": [
+          {
+            "origin": "derivedLimit",
+            "limitId": "budget::ecfa-8486-4f6c-c249",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-sylvania-force-set-8-over-budget.ros",
+      "description": "Derselbe Aufbau, nur das Kontingent ist \"Army of Sylvania (SoC)\" (4072-c3b8-84c4-a097). Jetzt haelt die Bedingung des zweiten Kosten-Modifikators (instanceOf, scope=force, childId=4072-...) und ersetzt die 6 geschriebenen pts durch 8: 20 x 8 = 160 pts, das Budget ist um 50 pts ueberschritten. Dass genau dieses Force-Gate haelt, bezeugt unabhaengig von der Kostenrechnung der Namens-set an derselben Einheit: sie heisst hier \"Sylvanian Levy\".",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 160, "bound": 110 }
+        ],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "derivedLimit",
+            "limitId": "budget::ecfa-8486-4f6c-c249",
+            "severity": "error",
+            "limitKind": "max",
+            "measure": "rosterBudget",
+            "costTypeId": "ecfa-8486-4f6c-c249",
+            "isPercent": false,
+            "scopeKind": "roster",
+            "scopeTargetId": null,
+            "actual": 160,
+            "bound": 110,
+            "delta": -50
+          }
+        ],
+        "capabilities": [
+          { "defId": "749f-cf91-6317-7ac0", "name": "Sylvanian Levy" }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-necromancer-army-set-5-over-tight-budget.ros",
+      "description": "Wie Roster 02 - dasselbe Kontingent \"Necromancer's Army (VC-AB)\", dieselben 20 Modelle -, nur mit einem engeren Budget von 90 pts. Das haelt die ersetzten Kosten exakt fest statt bloss als \"hoechstens 110\": die Summe ist 20 x 5 = 100 pts und ueberschreitet die 90 um 10.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 100, "bound": 90 }
+        ],
+        "absent": [],
+        "messages": [
+          {
+            "origin": "derivedLimit",
+            "limitId": "budget::ecfa-8486-4f6c-c249",
+            "severity": "error",
+            "limitKind": "max",
+            "measure": "rosterBudget",
+            "costTypeId": "ecfa-8486-4f6c-c249",
+            "isPercent": false,
+            "scopeKind": "roster",
+            "scopeTargetId": null,
+            "actual": 100,
+            "bound": 90,
+            "delta": -10
+          }
+        ]
+      }
+    }
+  ]
+}

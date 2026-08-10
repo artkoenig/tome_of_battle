@@ -4,98 +4,340 @@
   "cells": [
     {
       "key": "condition|greaterThanOrEqualTo|parent|selectionCount|child=id",
-      "evidence": ["waived"],
+      "evidence": [
+        "waived"
+      ],
       "rationale": "greaterThanOrEqualTo is not one of the condition types the format defines (docs/battlescribe-data-format.md 13.1). The single occurrence in the corpus (src/__fixtures__/whfb6/Orcs and Goblins.cat, infoLink e564-9cf9-e4ef-e625 'Fast Cavalry') is catalogue data outside the schema, reported as an unsupported condition and evaluated fail-closed. There is no catalogue-derivable semantics for a scenario to pin, so no test can be authored for it."
     },
     {
       "key": "condition|instanceOf|force|selectionCount|child=id",
-      "evidence": ["docs/testing/force-instance-gated-rename"],
+      "evidence": [
+        "docs/testing/force-instance-gated-rename"
+      ],
       "rationale": "Roster pair differing only in the force: the instanceOf(scope=force, childId=forceEntry f37a-a93e-fa22-61a8 'Army of the Lichemaster') gate on three set-name modifiers of Grave Guard (Vampire Counts) holds in roster 01 (capabilities assert the renamed unit/model/profile) and does not hold in roster 02 (base names asserted). Scenario is green."
     },
     {
       "key": "modifier|set|hidden",
-      "evidence": ["docs/testing/set-hidden-force-gate"],
+      "evidence": [
+        "docs/testing/set-hidden-force-gate"
+      ],
       "rationale": "Roster pair differing only in the force: Scouts (ff2c-a7c6-4cab-b0fd, base hidden=true) under Dire Wolves (Vampire Counts) carries set hidden=false gated on the Army of Sylvania force; roster 01 asserts the offer slot visible (isHidden false), roster 02 asserts it hidden (isHidden true). Scenario is green."
     },
     {
       "key": "modifier|set|constraintValue",
-      "evidence": ["docs/testing/set-constraint-value-force-gate"],
+      "evidence": [
+        "docs/testing/set-constraint-value-force-gate"
+      ],
       "rationale": "Roster pair differing only in the force: the Skeletons model slot (eaa1-c6a6-9aae-ae9a, Vampire Counts) carries max 40 (id 6679-1132-0a76-9ba3) and a set 30 modifier gated on the Army of Sylvania force; roster 01 asserts effectiveMax 30, roster 02 asserts the base effectiveMax 40. Scenario is green."
     },
     {
       "key": "repeatList|n=1|on=modifier",
-      "evidence": ["docs/testing/dispel-scroll-repeat-group-max"],
+      "evidence": [
+        "docs/testing/dispel-scroll-repeat-group-max"
+      ],
       "rationale": "The Arcane Items (VC) group max 1 (fa59-e6b8-9523-3510, Vampire Counts) carries an increment +1 whose single repeat counts Dispel Scroll copies; roster 01 with 2 scrolls asserts effectiveMax 3 (two applications), roster 02 without asserts the base effectiveMax 1. Scenario is green."
     },
     {
       "key": "condition|atLeast|force|selectionCount|child=id",
-      "evidence": ["docs/testing/at-least-force-toggle-gate"],
+      "evidence": [
+        "docs/testing/at-least-force-toggle-gate"
+      ],
       "rationale": "RED scenario, pinned gap (see pinnedGaps in campaign-state.json): Greasus Goldtooth's force max 0 (cef8-c3b1-7850-85bc, Ogre Kingdoms) is set to 1 by an atLeast(scope=force) condition counting the 'Allow special characters?' toggle; roster 01 without the toggle passes (max 0 fires), roster 02 with the toggle fails because the engine does not credit the toggle selection carrying the target id against the condition's link childId."
     },
     {
       "key": "condition|atLeast|roster|selectionCount|child=id",
-      "evidence": ["docs/testing/at-least-roster-border-patrols-gate"],
+      "evidence": [
+        "docs/testing/at-least-roster-border-patrols-gate"
+      ],
       "rationale": "Roster pair differing only in one root 'Border Patrols rules' selection at costLimit 500: the atLeast(scope=roster, includeChildForces) gate on the 0-1 Black Coach root unit (Vampire Counts) flips its isHidden from false to true, and the same condition flips the Core-min bound from 2 to 1 (asserted via firing actual/bound). Scenario is green."
     },
     {
       "key": "modifier|increment|costValue",
-      "evidence": ["docs/testing/unit-scope-per-model-cost"],
+      "evidence": [
+        "docs/testing/unit-scope-per-model-cost"
+      ],
       "rationale": "The Barding link of Heavy Cavalry (Mercenaries) carries increment 2 on the pts cost type repeated per model of the enclosing unit; roster 01 asserts the budget fires with actual 105 = 95 base + 5x2 increments against limit 100 (a zero-fold application would stay silent), roster 02 asserts silence at limit 110 (an over-application would fire). Pre-existing green scenario, credited without a new authoring pass."
     },
     {
       "key": "modifier|set|name",
-      "evidence": ["docs/testing/force-instance-gated-rename"],
+      "evidence": [
+        "docs/testing/force-instance-gated-rename"
+      ],
       "rationale": "Three set-name modifiers of Grave Guard (Vampire Counts) are asserted through effective names in both directions: roster 01 (Lichemaster force) pins the replaced names 'Barrow Guardians'/'Barrow Guard' on unit, model slot and profile info occurrence, roster 02 (Standard force) pins the base name 'Grave Guard' on all three. Green campaign scenario of run 1, credited without a new authoring pass."
     },
     {
       "key": "conditionGroup|or|top",
-      "evidence": ["docs/testing/condition-group-or-force-gate"],
+      "evidence": [
+        "docs/testing/condition-group-or-force-gate"
+      ],
       "rationale": "The 0-1 Bat Swarm root unit (Vampire Counts) is hidden by a set-hidden modifier gated by a lone top-level or-group of five instanceOf(scope=force) members; roster 01 (Clan Necrarch force, exactly the second member true) asserts isHidden true — one true member suffices — and roster 02 (Standard force, no member true) asserts isHidden false. Scenario is green."
     },
     {
       "key": "conditionGroup|and|top",
-      "evidence": ["docs/testing/condition-group-and-points-bracket"],
+      "evidence": [
+        "docs/testing/condition-group-and-points-bracket"
+      ],
       "rationale": "Three empty Standard (VC-AB) forces differing only in costLimit (1000/2500/3000) pin the .gst Core-min points ladder: at 1000 both bracket and-groups are defeated by a single false atLeast member (bound 2), at 2500 all three members of the 2000-group hold (bound 3), at 3000 the 2000-group is defeated by its lessThan member while the 3000-group holds (bound 4). Scenario is green."
     },
     {
       "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
-      "evidence": ["docs/testing/parent-scope-per-model-cost"],
+      "evidence": [
+        "docs/testing/parent-scope-per-model-cost"
+      ],
       "rationale": "The Light Armour link under the Ogre Bulls root unit (Mercenaries) increments its pts cost by 3 per model-type selection of the parent; roster 01 with 4 Bulls asserts the budget fires with actual 152 = 140 + 4x3 against limit 151 (every under-application stays below), roster 02 asserts silence at limit 153 (any over-application would fire). Scenario is green."
     },
     {
       "key": "modifier|remove|category",
-      "evidence": ["docs/testing/remove-category-force-gate"],
+      "evidence": [
+        "docs/testing/remove-category-force-gate"
+      ],
       "rationale": "Grave Guard (Vampire Counts) is recategorized Special->Core by a modifierGroup gated on the Clan Blood Dragons force; roster 01 (Standard force, 4 units) asserts the raw categories count (Special max fires 4>3, Core min fires 0<2), roster 02 (Blood Dragons force, same build) asserts both silent — the absent Special-max is the removal pin, the absent Core-min co-pins the added membership. Scenario is green."
     },
     {
       "key": "modifier|add|category",
-      "evidence": ["docs/testing/remove-category-force-gate"],
+      "evidence": [
+        "docs/testing/remove-category-force-gate"
+      ],
       "rationale": "The same Grave Guard recategorization pins the add side: in roster 02 (Blood Dragons force) the Core-min limit 35c2-d478-392a-aeb1 is asserted absent, which holds only if the add category 64bf (Core) makes the four Grave Guard units count toward Core (otherwise 0 < 2 fires, as roster 01 proves on the raw links). Green scenario, credited without a new authoring pass."
     },
     {
       "key": "modifierGroup|cond=true|repeats=false|nested=false",
-      "evidence": ["docs/testing/remove-category-force-gate"],
+      "evidence": [
+        "docs/testing/remove-category-force-gate"
+      ],
       "rationale": "The Grave Guard recategorization is carried by a conditioned, non-repeating, non-nested modifierGroup: its single instanceOf(scope=force) condition gates all three contained category modifiers at once. Roster 01 (Standard force) asserts none of them applied (raw categories fire both .gst limits), roster 02 (Blood Dragons force) asserts they all applied (both limits silent) — the group's gate-for-all semantics is exactly what the pair distinguishes. Green scenario, credited without a new authoring pass."
     },
     {
       "key": "modifier|increment|constraintValue",
-      "evidence": ["docs/testing/group-max-increment-on-choice"],
+      "evidence": [
+        "docs/testing/group-max-increment-on-choice"
+      ],
       "rationale": "The Vampire Count's Weapons-and-Armour group max 2 (b3b5-f872-24df-04dc, Vampire Counts) carries increment +1 gated on the Full Plate Armour choice (section 9.8 armour pattern); roster 01 with Full Plate asserts effectiveMax 3 at current 2, roster 02 without asserts the base effectiveMax 2 at current 1. Scenario is green."
     },
     {
       "key": "modifier|set|characteristic",
-      "evidence": ["docs/testing/set-characteristic-force-gate"],
+      "evidence": [
+        "docs/testing/set-characteristic-force-gate"
+      ],
       "rationale": "RED scenario, pinned gap (see pinnedGaps in campaign-state.json): the Tomb stalker's Lichemaster-gated set Mv=6 is asserted through the profile info occurrence in both forces; roster 01 (Lichemaster, Mv 6) passes, roster 02 (Standard, base Mv 7) fails because the report carries no info element for the unconditional infoLink on the hidden unit's slot."
     },
     {
       "key": "condition|lessThan|force|selectionCount|child=id",
-      "evidence": ["docs/testing/less-than-force-min-drop"],
+      "evidence": [
+        "docs/testing/less-than-force-min-drop"
+      ],
       "rationale": "Neferata's 'Seduction, Domination, Transfix and Beguile.' power carries min 1 (10a1-ac7b-4b9c-0e12) set to 0 while the force counts fewer than one Lahmia bloodline; roster 01 (Lahmia, power missing) asserts the min fires 0/1, roster 02 (Necrarch twin) asserts it absent while the unconditional link min 330a-d0d9-2177-a87f proves the slot is validated, roster 03 (Lahmia, power selected) asserts all silent. Scenario is green."
     },
     {
       "key": "condition|atLeast|unit|selectionCount|child=id",
-      "evidence": ["docs/testing/at-least-unit-upgrade-gate"],
+      "evidence": [
+        "docs/testing/at-least-unit-upgrade-gate"
+      ],
       "rationale": "The Vampire Lord's Magic Level 4 (revealed) and Magic Level 2 (hidden) are both gated on atLeast 1 of Nehekhara's Noble Blood counted in unit scope; roster 02 with the nested upgrade asserts ML4 visible and the occupied ML2 hidden (threshold exactly reached), roster 01 without asserts the base values. Scenario is green."
+    },
+    {
+      "key": "modifier|append|name",
+      "evidence": [
+        "docs/testing/modifier-effective-name"
+      ],
+      "rationale": "rosters/02-blood-dragon-append-join-space.ros pins the append on a selectionEntry name including the verbatim NBSP join ('Vampire Count of Clan Blood Dragon'); rosters/03-lahmia-set-then-append.ros pins set-then-append order on one carrier; rosters/06-infolink-name-not-unit-name.ros pins that an append on an infoLink renames only that info occurrence, not the carrying selection."
+    },
+    {
+      "key": "modifier|set-primary|category",
+      "evidence": [
+        "docs/testing/set-primary-category-membership"
+      ],
+      "rationale": "RED — pinned, not passing: rosters 01/03 assert that the unconditional set-primary on 'Kathleen' Halftank makes her count in the Regiment-of-Renown category anchor (current 1) without a categoryLink or an accompanying add/category, and that Rare keeps counting her (current 2 in roster 03, firing the .gst max 1). See pinnedGaps in docs/testing/campaign-state.json."
+    },
+    {
+      "key": "condition|instanceOf|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/unit-scope-instance-of-category"
+      ],
+      "rationale": "GREEN: rosters 01/02 differ only in the bloodline, so the isHidden flip on the three familiar slots is the condition's own semantics against the unit's effective categories; roster 03 pins that a later remove wins over an earlier add, roster 04 the same construct one group level deeper."
+    },
+    {
+      "key": "modifier|add|error",
+      "evidence": [
+        "docs/testing/author-message-severity",
+        "docs/testing/author-message-tokens"
+      ],
+      "rationale": "author-message-severity pins the add/error modifier at Skrag and Greasus (Ogre Kingdoms) with a firing and a silent roster and the wording taken verbatim from the value attribute; author-message-tokens pins the same construct's message list entry (origin authorMessage, severity error) including the {this} token rendering at Gnoblars and the untouched plain message at Skrag."
+    },
+    {
+      "key": "condition|atLeast|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/remaining-condition-types"
+      ],
+      "rationale": "The Skeletons mutual exclusion of Spear Infantry and Halberds (Vampire Counts) is gated by condition type=atLeast value=1 scope=parent childId=104f-5817-4bda-9382; the two rosters differ only in whether the sibling is selected, so the max bound flip from 1 to 0 is the condition's own semantics."
+    },
+    {
+      "key": "condition|lessThan|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "GREEN: rosters 01/02 and 04/05 are single-cause twins — only the chosen character's Orc-category membership differs — so the effectiveMax flip of Extra Goblin Hero (186c-6345-5b25-5aa2) and the firing of that limit are the roster-scoped lessThan count itself; roster 03 separates the two members of the and-group."
+    },
+    {
+      "key": "condition|lessThan|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/condition-group-not"
+      ],
+      "rationale": "The not-group guarding the Lichemaster mandatory minima holds `condition type=lessThan value=2000 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=any`; rosters 03 (1500 pts, campaign selection present) against 04 (1500 pts, no campaign selection) and 05 (3000 pts, campaign selection present) vary the points limit and the sibling condition independently, so the lessThan member on the roster's cost limit is distinguished on its own."
+    },
+    {
+      "key": "condition|greaterThan|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/greater-than-parent-upgrade-gate"
+      ],
+      "rationale": "GREEN: the two rosters differ only in the Noble-Blood selection inside the Vampire Thrall frame, so the isHidden flip and the effectiveMin 0->1 of the Magic-Level-1 slot (limit c195-d40a-1c54-f572, firing with actual 0 / bound 1) are the parent-scoped greaterThan count itself. This is the only greaterThan/parent site in the corpus without a co-extensive <repeat>."
+    },
+    {
+      "key": "modifier|set|costValue",
+      "evidence": [
+        "docs/testing/set-cost-value-force-gate"
+      ],
+      "rationale": "GREEN: four rosters with the same unit and 20 Zombie models differ only in the force (roster 04 also in the budget), so the roster-budget totals 120 / 100 / 160 / 100 are the set-on-cost-type modifier itself — written 6, set 5, set 8 — and roster 04 pins the gated value as exactly 5."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=any",
+      "evidence": [
+        "docs/testing/force-id-scope-instance-of"
+      ],
+      "rationale": "GREEN: three empty rosters differing only in the force entryId. Roster 01 (the force named in scope) hides both Savage Orc carriers while the control unit stays visible, roster 02 reverses it; since every roster is empty, a counting reading of the condition would yield 0 and fail, so only the identity reading explains roster 01. Roster 03 shows the canonical encoding behaving alike."
+    },
+    {
+      "key": "condition|atLeast|self|selectionCount|child=model",
+      "evidence": [
+        "docs/testing/at-least-self-model-count"
+      ],
+      "rationale": "GREEN: three rosters vary only the model counts of two Ghouls units (all inside the carrier's own min 5 / max 20, asserted absent). Roster 01 hits the threshold exactly and the author message stays silent; rosters 02 (9+5 = 14 force-wide) and 03 (5+5 = exactly 10 force-wide) both fire it, so the counting frame is the carrier itself and not the force or the roster."
+    },
+    {
+      "key": "condition|atLeast|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/at-least-roster-points-limit"
+      ],
+      "rationale": "RED — pinned, not passing: all three rosters fail. Roster 01 expects the occupied Uprising slot to report current 1 (report has 0); rosters 02 and 03 expect the force-scoped max 00f6-c1b3-ee85-5c02 to fire with actual 1 / bound 0 (the report carries no such message). See pinnedGaps in docs/testing/campaign-state.json."
+    },
+    {
+      "key": "modifier|decrement|characteristic",
+      "evidence": [
+        "docs/testing/modifier-characteristic-value"
+      ],
+      "rationale": "Rosters 01/02 differ only in the Light-Armour selection under the same Mercenaries Ogres unit, and the conditional decrement on the Sv characteristic is what moves the profile value between them (Sv 11 - 1 - 4 = 6); every other characteristic of the profile is asserted unchanged."
+    },
+    {
+      "key": "condition|greaterThan|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The and-group on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 holds `greaterThan 999 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=model`; rosters 01 (1000 pts) and 03 (500 pts) are identical apart from the configured cost limit and straddle that threshold, so the effectiveMax flip from 1 to 0 isolates this member, while roster 04 (2000 pts) shows it holding across two repeat applications."
+    },
+    {
+      "key": "condition|equalTo|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/numeric-conditions"
+      ],
+      "rationale": "The increment on the Orcs-and-Goblins limit 4928-8a21-ef4a-3007 is gated by a single `condition type=equalTo value=1 field=selections scope=parent childId=c5c1-60aa-745f-c9d3`; rosters equal-to-true.ros and equal-to-false.ros differ only in whether that count equals 1, and the limit stays silent in one and fires with actual 2 / bound 1 in the other."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-item-count"
+      ],
+      "rationale": "GREEN: rosters 01-03 walk the Dispel-Scroll count 0/1/2 under the same Butcher and the group's effectiveMax walks 1/2/3 with it; rosters 04 and 05 add the same two non-scroll items to both ends, so the moved bound is the repeat count and nothing else."
+    },
+    {
+      "key": "modifierGroup|cond=false|repeats=false|nested=false",
+      "evidence": [
+        "docs/testing/unconditional-modifier-group"
+      ],
+      "rationale": "GREEN: rosters 01/02 falsify 'a condition-less bracket never applies' (its unconditional modifiers do apply, and a bracket and a plain <modifiers> list on the same entry agree); roster 03 falsifies 'a condition-less bracket applies everything inside it' (none of the five bracketed modifiers applies because each one's own condition fails); rosters 04/05 pick out exactly the two whose own condition holds."
+    },
+    {
+      "key": "condition|lessThan|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The `set 0` modifier on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 is gated by an or-group whose first member is `lessThan 1000 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=model`; rosters 01 (1000 pts) and 03 (500 pts) differ only in the configured cost limit, so the effectiveMax 1 -> 0 flip isolates that member."
+    },
+    {
+      "key": "condition|greaterThan|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The same or-group's second member is `greaterThan 0 field=selections scope=roster childId=d4a7-5999-8207-4efe`; rosters 01 and 02 (both 1000 pts) differ only in whether the chosen character carries the Orc category, so the effectiveMax 1 -> 0 flip isolates that member."
+    },
+    {
+      "key": "condition|instanceOf|primary-catalogue|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/primary-catalogue-scope"
+      ],
+      "rationale": "Ten rosters place the same Mercenaries selections in Ogre, Vampire-Counts and Orcs forces: the Extra-Special minimum fires only in the Ogre army, the Extra-Rare minima only outside it, the force-scoped max is lifted only on the Ogre hit, and roster 10 shows the .ros catalogueId attribute does not decide the army book."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-model-include-children"
+      ],
+      "rationale": "GREEN: rosters 02 and 03 are byte-identical apart from the model count (12 vs 13) and bracket the roster sum exactly, so the 8-point step is one application of the increment per counted model; rosters 04/05 put the ics=true and the ics=false variant side by side in the same flat frame. The depth half of includeChildSelections=true is unreachable in this corpus and is documented in the scenario README instead of faked."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-item-include-children"
+      ],
+      "rationale": "GREEN: rosters 04/05/06 hold the two non-stone items constant and walk the Power-Stone count 0/1/2, so the reported bound steps 1/2/3 while actual steps 2/3/4 — the repeat isolated. The depth half of includeChildSelections=true is unreachable here (in this fixture set the Power Stone entry is flat, not a wrapper) and is documented in the scenario README instead of faked."
+    },
+    {
+      "key": "modifierGroup|cond=true|repeats=false|nested=true",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "GREEN: four rosters differing only in the chosen bloodline pick out exactly the inner bracket whose own condition holds — none in roster 01, one each in 02 and 03, two at once in 04 — so a nested conditional bracket is neither suppressed by its enclosing bracket nor applied blanket with it. The 'inner holds, outer fails' case has no carrier in this corpus and is documented in the scenario README."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "The Vampire Lord's profile modifiers are gated by conditions whose scope names the carrying entry id (scope=\"b77b-88d5-5e80-e178\") and whose childId names a clan category; rosters 01-03 differ only in the chosen bloodline and move exactly the characteristics those conditions gate (WS 8 vs 10, A 5 vs 6, Sv+ 7 vs 5+)."
+    },
+    {
+      "key": "modifier|increment|characteristic",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "Roster 02 pins the +2 increment on the Vampire Lord's WS (8 -> 10) and roster 03 the +1 increment on his A (5 -> 6), each against roster 01 where no bloodline holds and the profile keeps its catalogue values."
+    },
+    {
+      "key": "repeat|limitValue|roster|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The increment on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 repeats per 1000 points of the roster's cost limit; rosters 03 (500 pts), 01 (1000 pts) and 04 (2000 pts) walk the applications 0/1/2 and the effectiveMax follows 0/1/2."
+    },
+    {
+      "key": "condition|instanceOf|ancestor|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/ancestor-scope-instance-of"
+      ],
+      "rationale": "Roster 01 pins the holding side at grandparent depth — the Tiranoc Chariot's max drops from 2 to 1 because an ancestor two levels up carries the Characters category while its direct parent does not — and roster 02 the failing side, where no ancestor carries the Slaanesh category and the Steed keeps its written max 0."
+    },
+    {
+      "key": "condition|notInstanceOf|force|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/not-instance-of-force-gate"
+      ],
+      "rationale": "GREEN: rosters 01 and 02 are identical apart from the force and flip the Ogre-Bulls minimum between 1 (fires with actual 0) and its written 0 (silent); roster 03 adds a second non-Ironskin force in the same catalogue, so the rule pinned is 'every force that is not the named one'. Both are empty rosters, which rules out a counting reading."
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/roster-repeat-category-count"
+      ],
+      "rationale": "GREEN: rosters 01-04 walk the counted Orc-Boyz copies 0/1/2/2 against a fixed carrier count and the bound follows 0/1/2/2; roster 05 pins that the stack count and not the number of XML selection elements is counted; roster 06 puts the counted copies in a second force, which only reaches the same bound if includeChildForces=true counts across forces."
     }
   ]
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pric-01" name="PRIC 01 – Standard (OK-AB): Butcher ohne Dispel Scroll, Arcane-Items-Maximum 1" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-item-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Butcher (8933-af8e-e780-6f48) mit Pflicht-Hand-Weapon, ohne jede Auswahl in der
+         geteilten Gruppe "Arcane Items" (4c3e-febe-6d5d-6912). Der repeat des ersten
+         increment-Modifiers zaehlt 0 Kopien von b76c-6bad-4650-dbb0, seine Bedingung
+         (greaterThan 0) haelt nicht: die Grenze 188e-3808-4b37-c8d9 behaelt ihren
+         geschriebenen Basiswert max 1. Ist 0 <= 1 => nichts feuert. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-butcher" name="Butcher" entryId="8933-af8e-e780-6f48" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-butcher-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8b61-79ab-f251-234b" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

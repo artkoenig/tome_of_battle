@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-repeat-item-include-children",
+  "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"<entryId>\" value=\"1\" repeats=\"1\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"false\" roundUp=\"false\" percentValue=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl des genannten Eintrags im Eltern-Rahmen an. Gepinnt wird der ZWEITE increment-Modifier der geteilten Gruppe 'Arcane Items' (4c3e-febe-6d5d-6912) der Ogre Kingdoms: er hebt die Constraint 188e-3808-4b37-c8d9 (max 1, field=selections, scope=parent, includeChildSelections=false) um +1 je gezaehlter Kopie des Power Stone (696a-648d-c842-4c6a, Link c492-f625-09c8-3702), gegatet durch eine condition greaterThan 0 auf dieselbe childId. Mit N Power Stones ist das effektive Maximum der Gruppe 1+N. Sechs Roster im Kontingent Standard (OK-AB) (729f-9246-5cd3-5044) unter demselben Traeger Butcher (8933-af8e-e780-6f48) pinnen das ueber expect.capabilities am Gruppen-Anker (Verweis a8d2-cc08-f449-6ad6): 0/1/2 Power Stones => effectiveMax 1/2/3, und mit zwei konstanten Nicht-Stepper-Items (Skullmantle, Halfling cookbook) feuert 188e-3808-4b37-c8d9 mit dem ANGEHOBENEN bound 1/2/3 bei actual 2/3/4. Der erste increment derselben Constraint-Id (repeat auf b76c-6bad-4650-dbb0, includeChildSelections=false; Szenario parent-repeat-item-count) ist in allen Rostern inert, weil kein Dispel Scroll gewaehlt ist. NICHT Gegenstand: die Abgrenzung includeChildSelections=true gegen false — in diesem Datensatz ist Power Stone ein flacher Eintrag (kein Wrapper) und keiner der beiden Traeger der Gruppe hat eine Unterauswahl, die einen Power Stone fuehren duerfte; eine tiefer geschachtelte Kopie ist katalogseitig nicht konstruierbar (siehe README).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-power-stone-base-max-1.ros",
+      "description": "Standard (OK-AB) mit einem Butcher (Pflicht-Hand-Weapon) und KEINER Auswahl in der Gruppe 'Arcane Items'. Der gepinnte repeat zaehlt 0 Kopien von 696a-648d-c842-4c6a, die Bedingung greaterThan 0 haelt nicht: die Grenze 188e-3808-4b37-c8d9 behaelt ihren geschriebenen Basiswert max 1, der Gruppen-Anker meldet effectiveMax 1 bei Ist 0.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "e44e-74a9-e4a4-6939",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-power-stone-max-2.ros",
+      "description": "Identischer Aufbau mit EINEM Power Stone in der Gruppe 'Arcane Items' (Link c492-f625-09c8-3702 -> 696a-648d-c842-4c6a). Der repeat zaehlt im Eltern-Rahmen (Butcher) 1 Kopie => 1 Anwendung von increment +1 => effektives Maximum 1+1=2 bei Ist 1. Keine der genannten Grenzen feuert (1 <= 4 eigene Power-Stone-Grenze; 25 <= 50 pts Budget).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "e44e-74a9-e4a4-6939",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 2,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-power-stones-max-3.ros",
+      "description": "Identischer Aufbau mit ZWEI Power Stones (number=2). Der repeat zaehlt 2 Kopien => die Wiederholung greift ZWEIMAL => effektives Maximum 1+2=3 bei Ist 2. Genau ein Schritt je gezaehlter Kopie. Keine der genannten Grenzen feuert (2 <= 4 eigene Power-Stone-Grenze; 2x25=50 <= 50 pts Budget).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "e44e-74a9-e4a4-6939",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-other-items-no-stone-max-1-fires.ros",
+      "description": "Kontrollfall (Nullschritt): derselbe Butcher mit ZWEI nicht-steppenden Mitgliedern der Gruppe (Skullmantle 5ccf-df71-8c78-ee5e, 20 pts; Halfling cookbook be52-409a-aa8e-0ac5, 25 pts) und KEINEM Power Stone. Der repeat trifft 0 Kopien, kein increment wird angewendet: die Grenze bleibt beim Basiswert 1 und feuert bei Ist 2 mit bound 1. Punkte 45 <= 50.",
+      "expect": {
+        "firing": [
+          { "limitId": "188e-3808-4b37-c8d9", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "e44e-74a9-e4a4-6939",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "153e-42d6-004c-e352",
+          "6482-f23b-9933-2363",
+          "9854-1f29-c1f2-153f",
+          "442c-7320-ceec-81c5"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-one-power-stone-plus-two-items-max-2-fires.ros",
+      "description": "Wie 04, zusaetzlich EIN Power Stone. Der repeat hebt die Grenze um EINEN Schritt auf 2, gezaehlt werden 1+1+1=3 Mitglieder: 188e-3808-4b37-c8d9 feuert mit actual 3 und dem ANGEHOBENEN bound 2 (gegen bound 1 in Roster 04 bei identischen Zusatz-Items). Das 50-pts-Budget 62a3-8df3-3e65-6be1 wird hier bewusst gesprengt (70 pts) und darum nicht als abwesend erwartet.",
+      "expect": {
+        "firing": [
+          { "limitId": "188e-3808-4b37-c8d9", "actual": 3, "bound": 2 }
+        ],
+        "absent": [
+          "e44e-74a9-e4a4-6939",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "153e-42d6-004c-e352",
+          "6482-f23b-9933-2363",
+          "9854-1f29-c1f2-153f",
+          "442c-7320-ceec-81c5"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-two-power-stones-plus-two-items-max-3-fires.ros",
+      "description": "Wie 05, aber ZWEI Power Stones (number=2). Der repeat hebt die Grenze um ZWEI Schritte auf 3, gezaehlt werden 2+1+1=4 Mitglieder: 188e-3808-4b37-c8d9 feuert mit actual 4 und bound 3. Zusammen mit 04 (bound 1) und 05 (bound 2) ist die Staffel 1->2->3 bei identischen Zusatz-Items gepinnt. Das 50-pts-Budget 62a3-8df3-3e65-6be1 wird bewusst gesprengt (95 pts) und darum nicht als abwesend erwartet.",
+      "expect": {
+        "firing": [
+          { "limitId": "188e-3808-4b37-c8d9", "actual": 4, "bound": 3 }
+        ],
+        "absent": [
+          "e44e-74a9-e4a4-6939",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "153e-42d6-004c-e352",
+          "6482-f23b-9933-2363",
+          "9854-1f29-c1f2-153f",
+          "442c-7320-ceec-81c5"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 4,
+            "effectiveMin": null,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    }
+  ]
+}

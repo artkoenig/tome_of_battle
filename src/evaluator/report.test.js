@@ -443,6 +443,152 @@ describe('Bericht: Faehigkeitsdatensatz eines Kategorie-Knotens', () => {
   });
 });
 
+describe('Bericht: der Kategorie-Anker zaehlt die Mitgliedschaft, die ein set-primary gewaehrt hat', () => {
+  // Eigene, minimale Fixtur statt der des vorigen Blocks (die traegt schon vier
+  // Faelle und soll keinen fuenften Sinn dazubekommen): ein Kontingent mit zwei
+  // Kategorien — eine ohne jede Grenze (der Fall unter Test) und eine mit einer
+  // MAX-Grenze (der Vorrang-Fall) — und Eintraege, die die Mitgliedschaft je Fall
+  // unterschiedlich herstellen: per categoryLink, per set-primary, per beidem,
+  // gar nicht, oder ueber ein Kind (verschachtelte Auswahl).
+  const FORCE_ID = 'force-set-primary-count';
+  const UNBOUNDED_CATEGORY_ID = 'cat-unbounded';
+  const BOUNDED_CATEGORY_ID = 'cat-bounded';
+  const MAX_BOUNDED = 3;
+
+  const UNBOUNDED_MEMBER_ID = 'entry-unbounded-member';
+  const SET_PRIMARY_ONLY_ID = 'entry-set-primary-only';
+  const SET_PRIMARY_PLUS_BOUNDED_ID = 'entry-set-primary-plus-bounded';
+  const OUTSIDER_ID = 'entry-outsider';
+  const BOUNDED_MEMBER_ID = 'entry-bounded-member';
+  const NESTED_PARENT_ID = 'entry-nested-parent';
+  const NESTED_CHILD_ID = 'entry-nested-child';
+
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-set-primary-anchor-count" name="Set Primary Anchor Count Catalogue">
+      <categoryEntries>
+        <categoryEntry id="${UNBOUNDED_CATEGORY_ID}" name="Unbounded"/>
+        <categoryEntry id="${BOUNDED_CATEGORY_ID}" name="Bounded"/>
+      </categoryEntries>
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army">
+          <categoryLinks>
+            <categoryLink id="link-unbounded" name="Unbounded" targetId="${UNBOUNDED_CATEGORY_ID}"/>
+            <categoryLink id="link-bounded" name="Bounded" targetId="${BOUNDED_CATEGORY_ID}">
+              <constraints>
+                <constraint id="max-bounded" type="max" value="${MAX_BOUNDED}" field="selections" scope="force"/>
+              </constraints>
+            </categoryLink>
+          </categoryLinks>
+        </forceEntry>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${UNBOUNDED_MEMBER_ID}" name="Unbounded Member" type="unit">
+          <categoryLinks>
+            <categoryLink id="clink-unbounded-member" targetId="${UNBOUNDED_CATEGORY_ID}"/>
+          </categoryLinks>
+        </selectionEntry>
+        <selectionEntry id="${SET_PRIMARY_ONLY_ID}" name="Set Primary Only" type="unit">
+          <modifiers>
+            <modifier type="set-primary" field="category" value="${UNBOUNDED_CATEGORY_ID}"/>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry id="${SET_PRIMARY_PLUS_BOUNDED_ID}" name="Set Primary Plus Bounded" type="unit">
+          <categoryLinks>
+            <categoryLink id="clink-set-primary-plus-bounded" targetId="${BOUNDED_CATEGORY_ID}"/>
+          </categoryLinks>
+          <modifiers>
+            <modifier type="set-primary" field="category" value="${UNBOUNDED_CATEGORY_ID}"/>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry id="${OUTSIDER_ID}" name="Outsider" type="unit"/>
+        <selectionEntry id="${BOUNDED_MEMBER_ID}" name="Bounded Member" type="unit">
+          <categoryLinks>
+            <categoryLink id="clink-bounded-member" targetId="${BOUNDED_CATEGORY_ID}"/>
+          </categoryLinks>
+        </selectionEntry>
+        <selectionEntry id="${NESTED_PARENT_ID}" name="Nested Parent" type="unit">
+          <selectionEntries>
+            <selectionEntry id="${NESTED_CHILD_ID}" name="Nested Child" type="upgrade">
+              <categoryLinks>
+                <categoryLink id="clink-nested-child" targetId="${UNBOUNDED_CATEGORY_ID}"/>
+              </categoryLinks>
+            </selectionEntry>
+          </selectionEntries>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Ein Kontingent mit den uebergebenen Auswahl-Instanzen (wie im Kategorie-Knoten-Block). */
+  function army(selections) {
+    return { forces: [{ defId: FORCE_ID, count: 1, children: selections }] };
+  }
+
+  /** Der Faehigkeitsdatensatz des Kategorie-Ankers dieser Kategorie — allein aus dem Bericht. */
+  function categorySlot(report, categoryId) {
+    return [...report.capabilities.values()].find(
+      capability => capability.anchorKind === AnchorKind.CATEGORY_ANCHOR && capability.targetDefId === categoryId,
+    );
+  }
+
+  it('zaehlt an einem grenzenlosen Kategorie-Anker seine per categoryLink verbundenen Mitglieder', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: UNBOUNDED_MEMBER_ID, count: 2, children: [] }]));
+
+    expect(report.diagnostics).toEqual([]);
+    expect(categorySlot(report, UNBOUNDED_CATEGORY_ID)).toMatchObject({
+      current: 2,
+      effectiveMin: null,
+      effectiveMax: null,
+      headroom: null,
+    });
+  });
+
+  it('set-primary allein laesst den Eintrag am Anker der Zielkategorie zaehlen, ohne dass ein categoryLink dorthin besteht', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: SET_PRIMARY_ONLY_ID, count: 1, children: [] }]));
+
+    expect(report.diagnostics).toEqual([]);
+    expect(categorySlot(report, UNBOUNDED_CATEGORY_ID)).toMatchObject({ current: 1 });
+  });
+
+  it('set-primary entfernt keine bestehende Mitgliedschaft — der Eintrag zaehlt an BEIDEN Ankern', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: SET_PRIMARY_PLUS_BOUNDED_ID, count: 1, children: [] }]));
+
+    expect(report.diagnostics).toEqual([]);
+    // Die Mitgliedschaft ist gewachsen (set-primary zusaetzlich zum categoryLink),
+    // nicht gewandert: der Eintrag zaehlt weiterhin an der grenzenbehafteten
+    // Kategorie UND neu an der grenzenlosen.
+    expect(categorySlot(report, BOUNDED_CATEGORY_ID)).toMatchObject({ current: 1 });
+    expect(categorySlot(report, UNBOUNDED_CATEGORY_ID)).toMatchObject({ current: 1 });
+  });
+
+  it('GEGENPROBE: ein Eintrag ohne categoryLink und ohne set-primary zaehlt am Anker nicht mit', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: OUTSIDER_ID, count: 1, children: [] }]));
+
+    expect(report.diagnostics).toEqual([]);
+    expect(categorySlot(report, UNBOUNDED_CATEGORY_ID)).toMatchObject({ current: 0 });
+  });
+
+  it('haelt an einem grenzenbehafteten Anker den Stand aus dem Grenzergebnis, unveraendert vom Vorrang', () => {
+    const report = evaluate(CATALOGUE_XML, army([{ defId: BOUNDED_MEMBER_ID, count: 2, children: [] }]));
+
+    expect(report.diagnostics).toEqual([]);
+    expect(categorySlot(report, BOUNDED_CATEGORY_ID)).toMatchObject({
+      current: 2,
+      effectiveMax: MAX_BOUNDED,
+      headroom: MAX_BOUNDED - 2,
+    });
+  });
+
+  it('zaehlt ein Mitglied auch dann, wenn der categoryLink an einer verschachtelten Kind-Auswahl haengt', () => {
+    const report = evaluate(
+      CATALOGUE_XML,
+      army([{ defId: NESTED_PARENT_ID, count: 1, children: [{ defId: NESTED_CHILD_ID, count: 1, children: [] }] }]),
+    );
+
+    expect(report.diagnostics).toEqual([]);
+    expect(categorySlot(report, UNBOUNDED_CATEGORY_ID)).toMatchObject({ current: 1 });
+  });
+});
+
 describe('Bericht: alle ausgeloesten Diagnosen sind gesammelt', () => {
   const HERO_DEF_ID = 'entry-hero';
   const UNKNOWN_SCOPE = 'kein-rahmen';

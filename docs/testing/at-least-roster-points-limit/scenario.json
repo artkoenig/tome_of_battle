@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-roster-points-limit",
+  "description": "Eine condition type=\"atLeast\" mit field=\"limit::ecfa-8486-4f6c-c249\", scope=\"roster\" und childId=\"any\" liest das im Roster EINGESTELLTE Punktebudget (<costLimits>), nicht die verplante Kostensumme, und haelt, sobald dieses Budget den value der Bedingung ERREICHT (>=). Traeger: der Eintrag \"Tournament rules: Uprising (2026)\" (4bc4-8781-2091-d9df, Orcs and Goblins) mit Basisgrenze max 0 selections scope=force (00f6-c1b3-ee85-5c02); ein set-1-Modifikator auf genau diese Grenze ist per and-Gruppe aus atLeast 2000 UND atMost 2500 auf dasselbe Kostenlimit gegated. Drei Roster mit IDENTISCHEM Inhalt (eine Uprising-Selektion), die sich nur im costLimit bzw. in der verplanten Summe unterscheiden: 2000 (Schwellenwert selbst, atLeast haelt -> Grenze 1, keine Verletzung), 1999 (einen Punkt darunter, atLeast haelt nicht -> Basisgrenze 0 feuert bei Ist 1) und 1999 bei verplanter Summe 2000 (die Bedingung bleibt falsch, weil sie das Budget und nicht die Summe liest). Das zweite gegatterte Ergebnis desselben Modifikatorpaars (set hidden=false) wird bewusst NICHT behauptet, weil der Traeger unter einem hidden=\"true\"-Elterneintrag haengt und die Formatreferenz die Vererbung von hidden ueber eine Eltern-selectionEntry nicht festlegt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-limit-2000-gate-open.ros",
+      "description": "Kontingent \"Standard (OG-AB)\" (2bfa-e64a-7123-895f) mit genau einer Selektion \"Tournament rules: Uprising (2026)\" unter \"Army composition rules\"; costLimit pts = 2000, verplante Summe 0. Das Budget ERREICHT den Schwellenwert (2000 >= 2000) und bleibt unter der Obergrenze der Geschwisterbedingung (2000 <= 2500): die and-Gruppe haelt, der set-Modifikator ersetzt den Grenzwert 0 durch 1. Ist 1 <= Grenze 1 -> 00f6-c1b3-ee85-5c02 feuert NICHT; der besetzte Slot meldet effectiveMax 1.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02", "budget::ecfa-8486-4f6c-c249"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "name": "Tournament rules: Uprising (2026)",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-limit-1999-gate-closed.ros",
+      "description": "IDENTISCHER Aufbau, costLimit pts = 1999 (ein Punkt unter dem Schwellenwert), verplante Summe 0. Die atLeast-Bedingung haelt nicht (1999 < 2000), waehrend die Geschwisterbedingung atMost 2500 unveraendert wahr bleibt: die and-Gruppe faellt allein am atLeast-Mitglied, kein set greift. Die Grenze 00f6-c1b3-ee85-5c02 behaelt ihren geschriebenen Basiswert max 0 und feuert bei einer Uprising-Selektion im Kontingent (Ist 1, Grenze 0); der besetzte Slot meldet effectiveMax 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "00f6-c1b3-ee85-5c02", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["budget::ecfa-8486-4f6c-c249"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "name": "Tournament rules: Uprising (2026)",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-limit-1999-spent-2000-gate-closed.ros",
+      "description": "Derselbe Aufbau wie Roster 02 (costLimit pts = 1999), zusaetzlich eine Einheit Orc Boyz mit 400 Modellen a 5 pts = verplante Summe 2000 pts (Einheit selbst 0 pts, Choppa und Light Armour je 0 pts). Die Kostensumme erreicht damit exakt den Schwellenwert und liegt im Fenster der Geschwisterbedingung (2000 <= 2500) - eine Auswertung, die limit:: als Kostensumme (oder als Maximum aus Summe und Budget) laese, wuerde den set-Modifikator hier anwenden. Das eingestellte Budget bleibt 1999: die Bedingung haelt nicht, 00f6-c1b3-ee85-5c02 feuert wie in Roster 02 (Ist 1, Grenze 0). Die roster-weite Budget-Regel feuert als Zeuge der tatsaechlich verplanten Summe (Ist 2000, Grenze 1999).",
+      "expect": {
+        "firing": [
+          { "limitId": "00f6-c1b3-ee85-5c02", "actual": 1, "bound": 0 },
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 2000, "bound": 1999 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "name": "Tournament rules: Uprising (2026)",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

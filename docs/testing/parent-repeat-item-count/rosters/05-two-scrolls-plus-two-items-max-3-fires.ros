@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pric-05" name="PRIC 05 – Standard (OK-AB): zwei Dispel Scrolls + zwei andere Arcane Items sprengen das angehobene Maximum 3" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-item-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Wie 04 (Skullmantle + Bangstick), zusaetzlich ZWEI Dispel Scrolls (number="2").
+         Der repeat zaehlt 2 direkt gehaltene Kopien von b76c-6bad-4650-dbb0:
+         2 Anwendungen von increment +1 => effektives Maximum 1 + 2 = 3.
+         Gezaehlte Mitglieder der Gruppe: 2 (Scrolls) + 1 + 1 = 4 > 3
+         => 188e-3808-4b37-c8d9 feuert mit actual 4 / bound 3.
+         Der gemeldete bound zeigt die ZWEI Wiederholungsschritte gegenueber Roster 04
+         (dort bound 1 bei identischen Zusatz-Items).
+         Bewusst in Kauf genommen: 2 x 25 + 20 + 25 = 95 > 50, das Punkte-Budget der
+         Gruppe "Magic Items and Big Names" (62a3-8df3-3e65-6be1) feuert zusaetzlich
+         und wird darum NICHT als abwesend erwartet. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-butcher" name="Butcher" entryId="8933-af8e-e780-6f48" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-butcher-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8b61-79ab-f251-234b" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-dispel-scrolls" name="Dispel Scroll (one use only)" entryId="b76c-6bad-4650-dbb0" entryLinkId="1954-4ffd-5be0-eac7" entryGroupId="4c3e-febe-6d5d-6912" number="2" type="upgrade" collective="false"/>
+            <selection id="sel-skullmantle" name="Skullmantle" entryId="5ccf-df71-8c78-ee5e" entryLinkId="2b2e-55f4-12ec-7fd1" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bangstick" name="Bangstick" entryId="c5d0-f7e9-6534-f6f4" entryLinkId="f7d4-c610-84a1-2796" entryGroupId="4c3e-febe-6d5d-6912" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

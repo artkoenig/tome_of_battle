@@ -856,3 +856,326 @@ und Magic Level 2; Unterschied nur die Noble-Blood-Auswahl.
 | :--- | :--- | :--- |
 | 01 | Vampire Lord ohne Noble Blood | Zählung 0 < 1: Basiswerte stehen — Magic Level 4 verborgen, Magic Level 2 sichtbar |
 | 02 | Derselbe Aufbau mit Noble Blood (verschachtelt unter dem Lord) | Zählung 1 ≥ 1 (Schwelle exakt erreicht): Magic Level 4 aufgedeckt und der **gewählte** Magic-Level-2-Slot versteckt |
+
+## `set-primary-category-membership`
+
+Prüft den `set-primary`-Modifikator auf `field="category"` (§8 der Formatdoku,
+Projektentscheidung Issue 0100): er sichert die Mitgliedschaft in der benannten
+Kategorie auch dann, wenn der Eintrag sie nicht per `categoryLink` führt und
+kein begleitendes `add category` danebensteht — und er verschiebt nur das
+`primary`-Flag, entfernt also keine bestehende Mitgliedschaft. Beleg:
+„'Kathleen' Halftank" (`331a-3634-095a-574a`, Ogre Kingdoms) trägt die
+Kategorie-Links Rare (primär), Experimental rules und War Machine sowie einen
+**unbedingten** `set-primary` auf „Regiment of Renown" (`ee09-9a50-ad78-9c32`)
+ohne `add`. Alle Roster stehen im Kontingent „Standard (OK-AB)", das einen
+Kategorie-Link auf Regiment of Renown führt, mit den Schaltern „Allow Regiments
+of Renown" und „Allow experimental rules?"; der Slave Giant (`7ec6-83de-2dc3-82e9`,
+nur ein Rare-Link, kein Kategorie-Modifikator) ist die Nullprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Nur „Kathleen" Halftank | Sie zählt in Regiment of Renown (Ist 1), obwohl sie dorthin keinen Kategorie-Link führt, und weiterhin in Rare (Ist 1) |
+| 02 | Nur Slave Giant, sonst identisch | Regiment of Renown bleibt bei Ist 0 — die 1 aus Roster 01 ist keine Konstante |
+| 03 | Beide Einheiten zusammen | Regiment of Renown zählt weiter nur Kathleen (Ist 1), Rare zählt beide (Ist 2) und die Rare-Obergrenze max 1 feuert — `set-primary` nimmt keine Mitgliedschaft weg |
+
+**Stand: rot.** Das Szenario ist ein festgenagelter Befund der
+Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`): die
+Engine zählt die per `set-primary` gesicherte Mitgliedschaft heute nicht mit.
+
+## `unit-scope-instance-of-category`
+
+Prüft die `instanceOf`-Bedingung mit `scope="unit"` und Kategorie-`childId`
+(§7.7 der Formatdoku, Kasten `scope="unit"`): sie hält genau dann, wenn die
+umschließende Einheit — der nächste Vorfahre mit `type="unit"` — Mitglied der
+benannten Kategorie ist, und zwar nach den **effektiven** Kategorien, also
+einschließlich einer per `add category` zur Auswertungszeit gewährten und
+ausschließlich einer per `remove category` genommenen Mitgliedschaft. Beleg:
+die Magic-Item-Verweise Spell Familiar (`4561-b83b-6268-9dde`), Power Familiar
+(`0ec8-aa23-e935-59f7`) und Warrior Familiar (`67c6-f3bb-803a-0ca3`) unter dem
+Vampire Count (Vampire Counts) tragen je einen `set hidden=true`, gegatet auf
+`instanceOf scope="unit" childId="4cae-a20e-8374-b6cb"` („Blood Dragon"); die
+Kategorie steht an keinem `categoryLink`, sondern kommt aus der
+`BLOODLINE`-modifierGroup. Alle Roster unterscheiden sich nur in der gewählten
+Blutlinie; Black Periapt ist die Nullprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Blutlinie Blood Dragon, ein Vampire Count | Die Bedingung hält: alle drei Familiar-Slots sind versteckt, Black Periapt und Great Weapon bleiben sichtbar |
+| 02 | Derselbe Aufbau mit der Blutlinie Von Carstein | Die Bedingung hält nicht (`remove` der Blood-Dragon-Kategorie): alle fünf Slots sichtbar |
+| 03 | Beide Blutlinien zugleich | Das spätere `remove` gewinnt: die Slots bleiben sichtbar, und die Gruppengrenze „Vampiric Bloodline" (max 1) feuert mit Ist 2 |
+| 04 | Blutlinie Strigoi | Derselbe Konstrukttyp eine Gruppenebene tiefer: der Great-Weapon-Slot ist versteckt |
+
+## `less-than-roster-category-count`
+
+Prüft die `lessThan`-Bedingung mit `scope="roster"` und Kategorie-`childId`
+(§7.6/§7.7 der Formatdoku): gezählt werden alle Selektionen mit dieser
+Kategorie armeeweit, und die Bedingung hält genau dann, wenn die Zählung echt
+unter dem `value` liegt. Beleg: „Extra Goblin Hero" (`ed97-811b-cdb5-46c3`,
+Orcs and Goblins) trägt die Grenze `186c-6345-5b25-5aa2` mit Basis `max 0`;
+ein `increment 1` mit `repeat` je 1000 Punkten ist auf eine `and`-Gruppe aus
+`greaterThan 999` auf das Punktelimit **und** `lessThan 1` auf die Kategorie
+„Orc" (`d4a7-5999-8207-4efe`) gegatet. Die Zwillingspaare unterscheiden sich
+nur darin, ob der gewählte Charakter einen Kategorie-Link auf „Orc" führt
+(Orc Bigboss `6279-4d0a-6dce-f2f3` gegen Goblin Bigboss `8c8f-3fba-e337-fd2f`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 1000 Punkte, kein Orc | Beide Bedingungen halten: Höchstmaß 1, die Grenze feuert nicht |
+| 02 | 1000 Punkte, Orc-Charakter dabei | Die Zählung ist 1, nicht < 1: Höchstmaß 0, die Grenze feuert mit Ist 1 |
+| 03 | 500 Punkte, kein Orc | Die Kategorie-Bedingung hält, die Punkte-Bedingung nicht: Höchstmaß 0 — die beiden Glieder der `and`-Gruppe sind unterscheidbar |
+| 04 | 2000 Punkte, kein Orc | Zwei Wiederholungen: Höchstmaß 2, die Grenze feuert nicht |
+| 05 | 2000 Punkte, Orc-Charakter dabei | Höchstmaß 0, die Grenze feuert mit Ist 1 |
+
+## `greater-than-parent-upgrade-gate`
+
+Prüft die `greaterThan`-Bedingung mit `scope="parent"` und Eintrags-`childId`
+(§7.6/§7.7 der Formatdoku): sie hält genau dann, wenn die Zählung im
+Eltern-Rahmen echt über dem `value` liegt. Beleg: der Verweis „Magic Level 1"
+(`86d1-3bd6-6cb2-711d`, Basis `hidden="true"`, eigene Grenze
+`c195-d40a-1c54-f572` mit `min 0`) unter dem Wurzel-Eintrag Vampire Thrall
+(`e37b-c827-99ac-b706`, Vampire Counts) trägt genau zwei Modifikatoren ohne
+`<repeats>` — `set hidden=false` und `set 1` auf die eigene Grenze —, beide
+gegatet auf `greaterThan 0` von „Nehekhara's Noble Blood"
+(`32d0-a151-94a3-aa54`) im Eltern-Rahmen. Beide Roster sind bis auf diese eine
+Auswahl identisch.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Thrall ohne Noble Blood | Zählung 0, nicht > 0: Basiswerte — der Slot bleibt versteckt, seine Untergrenze 0, nichts feuert |
+| 02 | Derselbe Aufbau mit Noble Blood | Zählung 1 > 0: der Slot wird sichtbar **und** seine Untergrenze steigt auf 1 — unerfüllt, also feuert sie mit Ist 0 gegen Grenze 1 |
+
+## `set-cost-value-force-gate`
+
+Prüft den `set`-Modifikator auf eine **Kostenart** (`field` = die pts-Kostenart,
+§7.5/§7.7 der Formatdoku): hält seine Bedingung, ersetzt er die geschriebenen
+Kosten des Trägers, und jede Summe über diese Kostenart rechnet danach mit dem
+ersetzten Wert. Beleg: das Modell „Zombie" (`5c6c-eaf9-2716-6f7e`, Vampire
+Counts) trägt geschriebene 6 Punkte und zwei `set`-Modifikatoren ohne
+`<repeats>` — auf 5 im Kontingent „Necromancer's Army" (`d3af-1add-4e99-b977`)
+und auf 8 in „Army of Sylvania" (`4072-c3b8-84c4-a097`). Alle Roster tragen
+dieselbe Einheit mit 20 Modellen und unterscheiden sich nur im Kontingent
+(Roster 04 zusätzlich im Budget).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standard-Kontingent, Budget 110 | Kein Gatter hält: 6 × 20 = 120 — das Budget ist überschritten |
+| 02 | „Necromancer's Army", Budget 110 | `set 5`: 5 × 20 = 100 — dieselbe Modellzahl bleibt im selben Budget |
+| 03 | „Army of Sylvania", Budget 110 | `set 8`: 8 × 20 = 160 — deutlich überschritten; der Einheitenname belegt zusätzlich, dass genau dieses Gatter hält |
+| 04 | „Necromancer's Army", Budget 90 | 100 > 90 — der gegatete Wert ist exakt 5, nicht bloß „klein genug" |
+
+## `force-id-scope-instance-of`
+
+Prüft die **selbst-gegatete** Kodierung einer `instanceOf`-Bedingung auf ein
+Kontingent (§7.7 der Formatdoku, Kasten „zwei Kodierungen"): die
+`forceEntry`-Id steht direkt im `scope`, `childId` trägt `"any"` — gleichbedeutend
+mit der kanonischen Form `scope="force"` + Id in `childId`. Beleg: der Savage
+Orc Warboss (`ca27-a5f4-4a3e-7aeb`) und der Savage Orc Great Shaman
+(`0767-0a7d-7c03-8833`, Orcs and Goblins) tragen je einen `set hidden=true`
+mit einer `or`-Gruppe aus sieben Mitgliedern, von denen genau eines
+`scope="a2fa-6a0e-8c17-373c" childId="any"` lautet („Mountain or Troll Country
+Waaagh!"). Alle Roster sind leer und bis auf die Kontingent-Id identisch —
+eine zählende Lesart müsste 0 ergeben und scheitern, die Identitätsprüfung
+hält. Der Orc Great Shaman (`aa57-63c4-136b-4af5`), dessen Gruppe diese Id
+nicht führt, ist die Gegenprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent „Mountain or Troll Country Waaagh!" | Das selbst-gegatete Mitglied hält: beide Savage-Orc-Helden versteckt, die Gegenprobe sichtbar |
+| 02 | Leeres Kontingent „Savage Orc Horde" | Kein Mitglied hält: beide sichtbar — die Gegenprobe umgekehrt versteckt |
+| 03 | Leeres Kontingent „Night Goblin Horde" | Die kanonisch kodierte Schwester hält: beide versteckt — beide Kodierungen verhalten sich gleich |
+
+## `at-least-self-model-count`
+
+Prüft die `atLeast`-Bedingung mit `scope="self"` und dem Typ-Schlüsselwort
+`childId="model"` (§7.6/§7.7/§13.2 der Formatdoku): gezählt werden die Modelle
+**des Trägers selbst**, nicht die des Kontingents oder der Armee, und die
+Schwelle ist einschließend. Beleg: die Ghouls (`6b45-b2ad-dcdf-d3f4`, Vampire
+Counts) tragen einen `add category`-Modifikator auf „BP Infantry 10+"
+(`6ad6-f54e-1867-00a7`), dessen `and`-Gruppe aus `atLeast 10 selections
+scope="self" childId="model"` und der roster-weiten Border-Patrols-Auswahl
+(`4e15-0353-165f-5528`) besteht; die zweite Bedingung ist in allen Rostern
+gleich erfüllt. Beobachtet wird die Autor-Meldung „You must include at least
+ONE infantry unit of 10+ models." der `.gst`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Ghouls-Einheiten mit 10 und 5 Modellen | Der erste Träger erreicht die Schwelle exakt: die Kategorie wird gesetzt, die Meldung bleibt still |
+| 02 | Dieselben Einheiten mit 9 und 5 Modellen | Kein Träger erreicht 10 — die Meldung feuert, obwohl kontingentweit 14 Modelle stehen |
+| 03 | Zwei Einheiten mit je 5 Modellen | Kontingentweit exakt 10, je Träger aber nur 5: die Meldung feuert — der Rahmen ist der Träger |
+
+## `at-least-roster-points-limit`
+
+Prüft die `atLeast`-Bedingung auf das **Kostenlimit** der Roster
+(`field="limit::<Kostenart>"`, `scope="roster"`, `childId="any"`; §7.7/§13.2 der
+Formatdoku): verglichen wird das eingestellte Budget, nicht die verplante
+Summe. Beleg: „Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`,
+Orcs and Goblins) trägt die Grenze `00f6-c1b3-ee85-5c02` (`max 0`,
+`scope="force"`) und zwei Modifikatoren unter derselben `and`-Gruppe aus
+`atLeast 2000` und `atMost 2500` auf das pts-Kostenlimit; die
+Geschwisterbedingung ist in allen Rostern erfüllt, nur das `atLeast`-Glied
+bewegt sich.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 2000, verplant 0 | Schwelle exakt erreicht: der `set` hebt die Grenze auf 1, sie feuert nicht |
+| 02 | Budget 1999, verplant 0 | Einen Punkt darunter: die Grenze behält `max 0` und feuert mit Ist 1 |
+| 03 | Budget 1999, verplant 2000 | Die verplante Summe erreicht die Schwelle, das Budget nicht: die Grenze feuert weiter — `limit::` liest das Budget |
+
+**Stand: rot.** Das Szenario ist ein festgenagelter Befund der
+Abdeckungs-Kampagne (`docs/testing/campaign-state.json`, `pinnedGaps`).
+
+## `parent-max-include-child-selections`
+
+Prüft eine Obergrenze mit `scope="parent"`, `includeChildSelections="true"` und
+`includeChildForces="true"` (§7.6 der Formatdoku): gezählt wird der Träger im
+Eltern-Rahmen, verschachtelte Auswahlen eingeschlossen, und `shared="true"`
+zählt über alle Instanzen im Rahmen. Beleg: „Buzgob's Knobbly Staff"
+(`6a95-95ff-7763-bd6d`, Orcs and Goblins) trägt zwei unmodifizierte Grenzen —
+`c807-4ad1-4a8d-d2b1` im Eltern-Rahmen und `7bb9-9e7c-920b-9c2a` armeeweit,
+beide `max 1`. Der Gegenstand hängt über eine Gruppenkette am Orc Great Shaman.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Shaman mit einem Stab | Beide Grenzen eingehalten, der Slot meldet Ist 1 von Höchstmaß 1 |
+| 02 | Derselbe Stab mit Stückzahl 2 | Beide Grenzen feuern mit Ist 2 |
+| 03 | Ein Stab, dazu ein verschachtelter Unterbaum (Eber, Zauber in Tiefe 2) | Die Tiefe im Rahmen ändert die Zählung nicht: Ist bleibt 1 |
+| 04 | Zwei Shamanen mit je einem Stab | Der Eltern-Rahmen zählt je Shaman 1 und schweigt; die armeeweite Zwillingsgrenze feuert mit Ist 2 — beide Kopien werden also gesehen |
+| 05 | Zwei Geschwister-Auswahlen desselben Stabs am selben Shaman | `shared="true"`: Ist 2, beide Grenzen feuern |
+
+## `parent-repeat-item-count`
+
+Prüft einen `<repeat>` mit `scope="parent"`, Eintrags-`childId`, `repeats="1"`
+und `includeChildSelections="false"` (§7.7/§9.7 der Formatdoku): der gebundene
+Modifikator greift einmal je gezählter Kopie im Eltern-Rahmen. Beleg: die
+Ogre-Gruppe „Arcane Items" (`4c3e-febe-6d5d-6912`) trägt `max 1`
+(`188e-3808-4b37-c8d9`) und einen `increment 1`, dessen `repeat` die gewählten
+Dispel Scrolls (`b76c-6bad-4650-dbb0`) zählt. Träger ist ein Butcher im
+Kontingent „Standard (OK-AB)".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine arkanen Gegenstände | Basiswert: Höchstmaß 1 |
+| 02 | Ein Dispel Scroll | Eine Wiederholung: Höchstmaß 2 |
+| 03 | Zwei Dispel Scrolls | Zwei Wiederholungen: Höchstmaß 3 |
+| 04 | Zwei andere arkane Gegenstände, kein Scroll | Kein Treffer des `repeat`: Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
+| 05 | Zwei Scrolls und dieselben zwei Gegenstände | Höchstmaß 3 bei Ist 4 — die Grenze feuert, zwei Wiederholungsschritte über Roster 04 |
+
+## `unconditional-modifier-group`
+
+Prüft die **bedingungslose** `modifierGroup` (§7.7 der Formatdoku): eine
+Klammer ohne eigene `<conditions>`, `<conditionGroups>` und `<repeats>` fügt
+kein Gatter hinzu — jeder Modifikator darin wirkt genau so, als stünde er in
+der eigenen `<modifiers>`-Liste, weiterhin gesteuert von seiner **eigenen**
+Bedingung. Belege in Vampire Counts: der Simulacra-`infoLink`
+(`3ffe3e73-…`) trägt neben seiner `<modifiers>`-Liste eine bare Klammer mit
+vier unbedingten `set`-Modifikatoren; die Blutlinien-Klammer am Vampire Count
+(`a106-4a05-36ea-cb01`) ist ebenfalls bedingungslos, ihre fünf Modifikatoren
+tragen aber je eine eigene `instanceOf`-Bedingung auf eine Clan-Kategorie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Simulacra | Die unbedingten Modifikatoren der Klammer greifen: Name und vier Merkmalswerte geändert, die übrigen unberührt |
+| 02 | Charnel Guard | Klammer und gewöhnliche `<modifiers>`-Liste am selben Eintrag liefern dasselbe Ergebnis |
+| 03 | Vampire Count ohne Blutlinie | Keine der fünf Eigenbedingungen hält: alle Merkmale auf Katalogwert — die Klammer setzt nichts pauschal |
+| 04 | Derselbe mit Blutlinie Blood Dragon | Genau die zwei Modifikatoren mit dieser Clan-Bedingung greifen |
+| 05 | Derselbe mit Blutlinie Strigoi | Genau die beiden anderen greifen |
+
+## `parent-repeat-model-include-children`
+
+Prüft einen `<repeat>` mit `scope="parent"`, `childId="model"` und
+`includeChildSelections="true"` (§7.7/§9.4 der Formatdoku): der gebundene
+Kosten-Modifikator greift einmal je gezähltem Modell des Eltern-Rahmens. Beleg:
+„Additional Hand Weapon" (`2099-eac8-a45d-b4b6`, Orcs and Goblins, Basis 0 pts)
+trägt `increment 2` auf die pts-Kostenart mit genau diesem `repeat`; Träger ist
+eine Savage-Orc-Boyz-Einheit im Kontingent „Standard (OG-AB)". Beobachtet wird
+die roster-weite Budget-Regel.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 12 Modelle, Budget 95 | 12 Wiederholungen: Summe 96 — das Budget ist überschritten |
+| 02 | Dasselbe bei Budget 96 | Gleichstand feuert nicht — die Summe ist exakt eingeklammert |
+| 03 | 13 Modelle, Budget 96 | Ein Modell mehr, ein Schritt mehr: Summe 104 |
+| 04 | 12 Modelle mit Zusatz-Schild, Budget 107 | Der Schild trägt denselben `repeat` mit `includeChildSelections="false"`: Summe 108 |
+| 05 | Dasselbe bei Budget 108 | Wieder exakt eingeklammert — beide Flag-Varianten liefern im flachen Rahmen denselben Faktor |
+
+## `parent-repeat-item-include-children`
+
+Prüft einen `<repeat>` mit `scope="parent"`, Eintrags-`childId` und
+`includeChildSelections="true"` (§7.7/§9.7 der Formatdoku): der gebundene
+`increment` greift einmal je gezählter Kopie im Eltern-Rahmen. Beleg: die
+Ogre-Gruppe „Arcane Items" (`4c3e-febe-6d5d-6912`) trägt `max 1`
+(`188e-3808-4b37-c8d9`) und einen zweiten `increment 1`, dessen `repeat` die
+Power Stones (`696a-648d-c842-4c6a`) zählt. Träger ist ein Butcher im
+Kontingent „Standard (OK-AB)"; Dispel Scrolls bleiben aus allen Rostern
+heraus, damit der Nachbar-`repeat` still bleibt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein arkaner Gegenstand | Basiswert: Höchstmaß 1 |
+| 02 | Ein Power Stone | Höchstmaß 2 |
+| 03 | Zwei Power Stones | Höchstmaß 3 |
+| 04 | Zwei andere Gegenstände, kein Stein | Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
+| 05 | Dieselben zwei plus ein Stein | Grenze 2 bei Ist 3 |
+| 06 | Dieselben zwei plus zwei Steine | Grenze 3 bei Ist 4 — die Grenze steigt Schritt für Schritt mit den gezählten Kopien |
+
+## `nested-modifier-group`
+
+Prüft die **verschachtelte** `modifierGroup` (§7.7 der Formatdoku): eine
+Klammer innerhalb einer Klammer trägt eigene Bedingungen, und beide Ebenen
+verknüpfen sich als Und — die äußere gattert alles darin, die innere nur ihre
+eigenen Modifikatoren. Beleg: die `BLOODLINE`-Klammer des „0-1 Vampire Lord"
+(`b77b-88d5-5e80-e178`, Vampire Counts) ist selbst unbedingt und enthält fünf
+innere Klammern mit je einer Clan-Bedingung. Alle Roster unterscheiden sich nur
+in der gewählten Blutlinie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Blutlinie | Keine innere Bedingung hält: Katalogname und Basiswerte |
+| 02 | Blood Dragon | Nur diese innere Klammer greift: Namenszusatz, WS 10, Sv+ 5+ |
+| 03 | Strigoi | Nur die andere greift: Namenszusatz, A 6, Sv+ 5+ |
+| 04 | Beide Blutlinien | Beide inneren Klammern greifen zugleich (zwei Namenszusätze), und die Gruppengrenze max 1 feuert mit Ist 2 |
+
+Der Fall „innere Bedingung hält, äußere scheitert" ist im Fixture-Korpus nicht
+baubar — alle drei verschachtelten Fundstellen haben eine unbedingte äußere
+Klammer; das ist in der README des Szenarios als Lücke festgehalten.
+
+## `not-instance-of-force-gate`
+
+Prüft die `notInstanceOf`-Bedingung mit `scope="force"` und `forceEntry`-`childId`
+(§7.7 der Formatdoku): sie ist die inverse Identitätsprüfung — sie hält in
+**jedem** Kontingent außer dem benannten. Beleg: der Wurzel-`entryLink`
+„Ogre Bulls" (`d82e-111e-89b9-2be1`, Ogre Kingdoms) trägt `min 0`
+(`32ed-26da-3f27-5c04`), per `set 1` gehoben, sobald das Kontingent **keine**
+Instanz von „Ironskin Tribe" (`8711-ed16-2a44-7251`) ist; der Verweis ist in
+allen drei Kontingenten sichtbar, seine Untergrenze also prüfbar.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent „Standard (OK-AB)" | Die Bedingung hält: Pflicht 1, unerfüllt — die Grenze feuert mit Ist 0 |
+| 02 | Leeres Kontingent „Ironskin Tribe" | Die Bedingung hält nicht: der Rohwert `min 0` bleibt, nichts feuert |
+| 03 | Leeres Kontingent „Gnoblar Horde" | Ein zweites Nicht-Ironskin-Kontingent: die Pflicht greift auch dort — „jedes andere", nicht „Standard" |
+| 04 | „Standard" mit Ogre Bulls | Pflicht erfüllt (Ist 1), nichts feuert |
+| 05 | „Ironskin Tribe" mit Ogre Bulls | Untergrenze bleibt 0, nichts feuert |
+
+Beide leeren Roster schließen zugleich eine zählende Lesart aus: eine Zählung
+wäre dort 0 und die Grenze bliebe bei 0.
+
+## `roster-repeat-category-count`
+
+Prüft einen `<repeat>` mit `scope="roster"`, Kategorie-`childId`,
+`includeChildSelections="true"` und `includeChildForces="true"` (§7.7 der
+Formatdoku): der gebundene `increment` greift einmal je gezählter Auswahl
+dieser Kategorie — armeeweit, über alle Kontingente. Beleg: „Orc Big 'Uns"
+(`eeb1-a6c4-b57e-f08c`, Orcs and Goblins) trägt `max 0`
+(`938b-15b1-f433-e0d5`) und einen `increment 1`, dessen `repeat` die Kategorie
+„Orc boyz" (`344f-77ef-7238-f157`) zählt; deren einziger Träger im Datensatz
+ist die Wurzeleinheit Orc Boyz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Big 'Uns, keine Orc Boyz | Höchstmaß 0 — die Grenze feuert mit Ist 1 |
+| 02 | Ein Big 'Uns, eine Orc-Boyz-Einheit | Eine Wiederholung: Höchstmaß 1, still |
+| 03 | Zwei und zwei | Zwei Wiederholungen: Höchstmaß 2, still |
+| 04 | Drei Big 'Uns, zwei Orc Boyz | Höchstmaß 2 bei Ist 3 — die Grenze feuert |
+| 05 | Dieselbe Lage, aber die zwei Orc Boyz als **eine** Auswahl mit Stückzahl 2 | Gleiches Ergebnis: gezählt wird die Stückzahl, nicht die Zahl der XML-Elemente |
+| 06 | Big 'Uns im ersten, Orc Boyz im zweiten Kontingent | Höchstmaß 2 — `includeChildForces="true"` zählt über Kontingente hinweg |

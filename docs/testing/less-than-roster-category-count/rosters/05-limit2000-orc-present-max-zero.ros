@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ltrcc-05" name="LTRCC 05 – 2000 pts, ein Orc-Kategorie-Mitglied: Extra Goblin Hero max 0" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored lessThan/roster/category E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-orc-bigboss" name="Orc Bigboss" entryId="6279-4d0a-6dce-f2f3" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="d4a7-5999-8207-4efe" name="Orc" entryId="d4a7-5999-8207-4efe" primary="false"/>
+          </categories>
+        </selection>
+        <selection id="sel-extra-goblin-hero" name="Extra Goblin Hero" entryId="ed97-811b-cdb5-46c3" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

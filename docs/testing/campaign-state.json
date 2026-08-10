@@ -21,16 +21,39 @@
       "pinnedAt": "2026-08-09",
       "status": "open",
       "note": "The Tomb stalker's unconditional Tomb-Scorpion infoLink (fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32) must yield a profile info occurrence on the unit slot in EVERY force - in Standard (VC-AB) with the base values (Mv 7, name 'Tomb Scorpion', isHidden true), since no modifier of the infoLink is gated on that force; the report currently carries no info element with that id on the hidden unit's slot."
+    },
+    {
+      "cellKey": "modifier|set-primary|category",
+      "scenario": "docs/testing/set-primary-category-membership",
+      "failingCases": [
+        "Szenario: set-primary-category-membership > rosters/01-kathleen-set-primary-regiment-of-renown.ros",
+        "Szenario: set-primary-category-membership > rosters/03-kathleen-and-slave-giant-rare-max.ros"
+      ],
+      "pinnedAt": "2026-08-09",
+      "status": "open",
+      "note": "A modifier type=\"set-primary\" field=\"category\" secures membership in the named category on its own: 'Kathleen' Halftank (331a-3634-095a-574a) carries an unconditional set-primary on Regiment of Renown (ee09-9a50-ad78-9c32) with no categoryLink to it and no accompanying add/category, so in the force Standard (OK-AB) — which links that category — her Regiment-of-Renown anchor must report current 1 (the report has 0), and since set-primary moves only the primary flag and removes nothing, Rare must still count her, reaching current 2 with a second Rare unit and firing the .gst limit 0a44-2d3f-adfe-f3a1 (actual 2, bound 1)."
+    },
+    {
+      "cellKey": "condition|atLeast|roster|limitValue|child=any",
+      "scenario": "docs/testing/at-least-roster-points-limit",
+      "failingCases": [
+        "Szenario: at-least-roster-points-limit > rosters/01-limit-2000-gate-open.ros",
+        "Szenario: at-least-roster-points-limit > rosters/02-limit-1999-gate-closed.ros",
+        "Szenario: at-least-roster-points-limit > rosters/03-limit-1999-spent-2000-gate-closed.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "A single selection of 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, nested under the group 43b3-35c6-d7cc-e3c6 below the hidden entry 6fcf-b33d-3cf5-b56a) must be counted: its occupied slot must report current 1, and its own force-scoped limit 00f6-c1b3-ee85-5c02 (max 0, raised to 1 only while the and-group of atLeast 2000 / atMost 2500 on limit::ecfa-8486-4f6c-c249 holds) must fire with actual 1 against bound 0 at a costLimit of 1999 — the report carries current 0 and no message for that limit at all. Roster 03 additionally demands that limit:: reads the configured budget and not the spent sum."
     }
   ],
   "parkedQuestions": [],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-coverage-campaign",
+    "branch": "claude/evaluator-abschluss-kampagne-ipuqwm",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 3,
-    "lastRunAt": "2026-08-09T19:06:28Z",
-    "lastRunOutcome": "rearmed",
+    "runs": 8,
+    "lastRunAt": "2026-08-10T05:01:55Z",
+    "lastRunOutcome": "stopped-by-human",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -38,6 +61,33 @@
         "attempts": 1,
         "status": "closed",
         "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/set-characteristic-force-gate": {
+        "cellKey": "modifier|set|characteristic",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/set-primary-category-membership": {
+        "cellKey": "modifier|set-primary|category",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-09",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/at-least-roster-points-limit": {
+        "cellKey": "condition|atLeast|roster|limitValue|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
         "question": null,
         "questionStatus": null,
         "answer": null
