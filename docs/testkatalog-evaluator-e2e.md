@@ -1059,3 +1059,23 @@ Kontingent „Standard (OK-AB)".
 | 03 | Zwei Dispel Scrolls | Zwei Wiederholungen: Höchstmaß 3 |
 | 04 | Zwei andere arkane Gegenstände, kein Scroll | Kein Treffer des `repeat`: Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
 | 05 | Zwei Scrolls und dieselben zwei Gegenstände | Höchstmaß 3 bei Ist 4 — die Grenze feuert, zwei Wiederholungsschritte über Roster 04 |
+
+## `unconditional-modifier-group`
+
+Prüft die **bedingungslose** `modifierGroup` (§7.7 der Formatdoku): eine
+Klammer ohne eigene `<conditions>`, `<conditionGroups>` und `<repeats>` fügt
+kein Gatter hinzu — jeder Modifikator darin wirkt genau so, als stünde er in
+der eigenen `<modifiers>`-Liste, weiterhin gesteuert von seiner **eigenen**
+Bedingung. Belege in Vampire Counts: der Simulacra-`infoLink`
+(`3ffe3e73-…`) trägt neben seiner `<modifiers>`-Liste eine bare Klammer mit
+vier unbedingten `set`-Modifikatoren; die Blutlinien-Klammer am Vampire Count
+(`a106-4a05-36ea-cb01`) ist ebenfalls bedingungslos, ihre fünf Modifikatoren
+tragen aber je eine eigene `instanceOf`-Bedingung auf eine Clan-Kategorie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Simulacra | Die unbedingten Modifikatoren der Klammer greifen: Name und vier Merkmalswerte geändert, die übrigen unberührt |
+| 02 | Charnel Guard | Klammer und gewöhnliche `<modifiers>`-Liste am selben Eintrag liefern dasselbe Ergebnis |
+| 03 | Vampire Count ohne Blutlinie | Keine der fünf Eigenbedingungen hält: alle Merkmale auf Katalogwert — die Klammer setzt nichts pauschal |
+| 04 | Derselbe mit Blutlinie Blood Dragon | Genau die zwei Modifikatoren mit dieser Clan-Bedingung greifen |
+| 05 | Derselbe mit Blutlinie Strigoi | Genau die beiden anderen greifen |

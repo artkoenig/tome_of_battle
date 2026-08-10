@@ -247,6 +247,13 @@
         "docs/testing/parent-repeat-item-count"
       ],
       "rationale": "GREEN: rosters 01-03 walk the Dispel-Scroll count 0/1/2 under the same Butcher and the group's effectiveMax walks 1/2/3 with it; rosters 04 and 05 add the same two non-scroll items to both ends, so the moved bound is the repeat count and nothing else."
+    },
+    {
+      "key": "modifierGroup|cond=false|repeats=false|nested=false",
+      "evidence": [
+        "docs/testing/unconditional-modifier-group"
+      ],
+      "rationale": "GREEN: rosters 01/02 falsify 'a condition-less bracket never applies' (its unconditional modifiers do apply, and a bracket and a plain <modifiers> list on the same entry agree); roster 03 falsifies 'a condition-less bracket applies everything inside it' (none of the five bracketed modifiers applies because each one's own condition fails); rosters 04/05 pick out exactly the two whose own condition holds."
     }
   ]
 }
