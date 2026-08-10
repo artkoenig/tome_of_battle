@@ -122,10 +122,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-abschluss-kampagne-uhbxfy",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 14,
-    "lastRunAt": "2026-08-10T19:23:47Z",
-    "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-10T21:57:00Z",
+    "runs": 15,
+    "lastRunAt": "2026-08-10T21:58:22Z",
+    "lastRunOutcome": "running",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -200,6 +200,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 14: six cells worked (coverage 97 -> 103 of 105), one phase B round closed the self-scope max gap. Two cells remain uncovered and one parked question is still open. The campaign branch of this run is claude/evaluator-abschluss-kampagne-uhbxfy; PR 208 is open for it."
+    "reArmNote": "Run 15: opened by the re-arm of run 14. PR 208 for the campaign branch is open and its CI is green; the branch is unmerged, so the run continues on it."
   }
 }
