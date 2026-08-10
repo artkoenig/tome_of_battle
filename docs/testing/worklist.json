@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 61,
-    "uncovered": 44
+    "covered": 62,
+    "uncovered": 43
   },
   "cells": [
     {
@@ -103,119 +103,6 @@
             "scope": "roster",
             "childId": "344f-77ef-7238-f157",
             "repeats": "1"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|instanceOf|ancestor|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "instanceOf",
-        "scope": "ancestor",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 10,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 9
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4a8f-1002-5a67-df41",
-            "name": "Mork's Spirit-totem "
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "ancestor",
-            "childId": "2ef7-3efe-a448-423f"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "47754590-b882-4599-afcd-441ae7eb7e87",
-            "name": "Enchanted Items (HoC)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "ancestor",
-            "childId": "e7350b07-b1b1-41ba-8b02-e303d4461b84"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "0809de3b-cfba-49c6-9e5c-1734da491372",
-            "name": "Magic Weapons (HoC)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "ancestor",
-            "childId": "e7350b07-b1b1-41ba-8b02-e303d4461b84"
           }
         }
       ]

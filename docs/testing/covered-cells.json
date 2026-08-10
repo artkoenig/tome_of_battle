@@ -317,6 +317,13 @@
         "docs/testing/less-than-roster-category-count"
       ],
       "rationale": "The increment on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 repeats per 1000 points of the roster's cost limit; rosters 03 (500 pts), 01 (1000 pts) and 04 (2000 pts) walk the applications 0/1/2 and the effectiveMax follows 0/1/2."
+    },
+    {
+      "key": "condition|instanceOf|ancestor|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/ancestor-scope-instance-of"
+      ],
+      "rationale": "Roster 01 pins the holding side at grandparent depth — the Tiranoc Chariot's max drops from 2 to 1 because an ancestor two levels up carries the Characters category while its direct parent does not — and roster 02 the failing side, where no ancestor carries the Slaanesh category and the Steed keeps its written max 0."
     }
   ]
 }
