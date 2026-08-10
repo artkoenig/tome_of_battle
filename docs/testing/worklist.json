@@ -7,50 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 90,
-    "uncovered": 15
+    "covered": 91,
+    "uncovered": 14
   },
   "cells": [
-    {
-      "key": "condition|equalTo|force|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ef9d-ae15-cc43-f2d6",
-            "name": "Gotrek Gurnisson & Felix Jaeger"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8923-5946-7b10-8957"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|equalTo|id|selectionCount|child=id",
       "kind": "condition",

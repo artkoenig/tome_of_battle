@@ -162,7 +162,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`set-unresolved-target-inert-lord-slot`](testing/set-unresolved-target-inert-lord-slot/) | Definitive VC + Mercenaries | 5 |
 | [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
 | [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
-| **Summe** | | **355** |
+| [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
+| **Summe** | | **358** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1778,3 +1779,21 @@ vier Roster tragen denselben Inhalt; nur die eine Zahl im `costLimit` ändert si
 > 500 bleibt das Mindestmaß auf 0, und bei 499 wie 501 meldet der Bericht
 > zusätzlich die Diagnose `UNRESOLVED_BUDGET_LIMIT`. Unter der jetzigen
 > Auswertung ist die Regel des Katalogautors tot.
+
+## `equal-to-force-toggle-count-gotrek`
+
+Prüft die `equalTo`-Bedingung auf einer **Auswahlzählung** im Kontingent
+(`field="selections"`, `scope="force"`, `childId` = eine Eintrags-Id): Sie hält
+nur bei exakter Gleichheit. Beleg: „Gotrek Gurnisson & Felix Jaeger"
+(`ef9d-ae15-cc43-f2d6`, Mercenaries) trägt eine Roster-Obergrenze `max 0`
+(`e3c5-278b-09bc-84cf`), die per `set 1` gehoben wird, sobald das Kontingent
+**genau eine** Selektion des `.gst`-Schalters „Allow special characters?"
+(`8923-5946-7b10-8957`) führt. Derselbe Zähler trägt zusätzlich die Autor-Meldung
+des Eintrags — aber mit `lessThan 1` als Gatter, und genau diese Kombination
+trennt `equalTo` von `atLeast`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Gotrek, kein Schalter | Die Obergrenze bleibt 0 und feuert mit Ist 1; die Fehlermeldung „Please enable …" liegt an |
+| 02 | Ein Gotrek, ein Schalter | Die Obergrenze ist 1: alles schweigt |
+| 03 | Ein Gotrek, zwei Schalter | Die Gleichheit kippt: die Obergrenze fällt auf 0 zurück und feuert erneut — die Meldung bleibt jedoch stumm, denn ihr Gatter ist `lessThan 1`. Offen deklariert: die Roster-Obergrenze des Schalters selbst feuert mit Ist 2 / Grenze 1 |

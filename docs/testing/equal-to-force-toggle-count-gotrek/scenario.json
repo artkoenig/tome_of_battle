@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-force-toggle-count-gotrek",
+  "description": "Eine condition type=\"equalTo\" field=\"selections\" scope=\"force\" childId=\"<Eintrags-Id>\" zaehlt die Selektionen dieses Eintrags im umschliessenden Kontingent und haelt NUR bei exakter Gleichheit mit ihrem value - nicht 'mindestens'. Einziges Vorkommen im Definitive-Korpus: der Sondercharakter 'Gotrek Gurnisson & Felix Jaeger' (ef9d-ae15-cc43-f2d6, Mercenaries-.cat, <sharedSelectionEntries>) traegt max 0 selections scope=roster (Constraint e3c5-278b-09bc-84cf) und einen set-1-Modifikator auf genau diese Constraint-Id, gegatet per equalTo 1 auf den .gst-Schalter 'Allow special characters?' (8923-5946-7b10-8957). Drei Roster mit je EINEM Gotrek variieren allein die Zahl der Schalter-Selektionen im Kontingent: 0 -> Bedingung faellt, Grenze bleibt max 0 und feuert (Ist 1 / Grenze 0), zusaetzlich liegt die Autor-Meldung 'Please enable \"Allow special characters?\"' an (eigenes Gatter lessThan 1); 1 -> Bedingung haelt, effectiveMax 1, keine Verletzung, Meldung schweigt; 2 -> die Trennung von atLeast: die Bedingung faellt WIEDER, die Grenze faellt auf max 0 zurueck und feuert erneut (Ist 1 / Grenze 0), waehrend die Meldung stumm BLEIBT (ihr Gatter ist lessThan 1, und 2 liegt nicht darunter). Die zweite Schalter-Selektion ist als zweites Geschwister-<selection> mit number=1 geschrieben; sie verletzt dabei die eigene Roster-Obergrenze des Schalters (max 1, 5036-e10c-2fd8-f135) mit Ist 2 / Grenze 1 - offen deklariert statt versteckt. Der baugleiche atLeast-Fall am Schwester-Eintrag '0-1 Amazon Serpent Priestess' kommt in keinem dieser Roster vor, damit die Gleichheit isoliert bleibt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-gotrek-no-toggle-max0.ros",
+      "description": "Orcs-and-Goblins-Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f) mit genau einem 'Gotrek Gurnisson & Felix Jaeger' und OHNE jede 'Allow special characters?'-Selektion. Die Zaehlung der equalTo-Bedingung ist 0, sie haelt nicht (0 != 1): der set 1 wirkt nicht, der Constraint e3c5-278b-09bc-84cf behaelt seinen geschriebenen Basiswert max 0 und feuert bei einem Gotrek im Roster (Ist 1, Grenze 0). Zugleich haelt das eigene Gatter der Autor-Meldung (lessThan 1 auf denselben Schalter, Ist 0): die error-Meldung 'Please enable \"Allow special characters?\"' liegt am Gotrek-Slot an. Die Roster-Obergrenze des Schalters selbst (5036-e10c-2fd8-f135) kann mangels Selektion nicht feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "e3c5-278b-09bc-84cf", "actual": 1, "bound": 0 }
+        ],
+        "absent": ["5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "ef9d-ae15-cc43-f2d6",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "Gotrek Gurnisson & Felix Jaeger",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "ef9d-ae15-cc43-f2d6",
+            "text": "Please enable \"Allow special characters?\"",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Gotrek Gurnisson & Felix Jaeger"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-gotrek-one-toggle-max1.ros",
+      "description": "DERSELBE Aufbau, zusaetzlich mit GENAU EINER 'Allow special characters?'-Selektion (entryId 8923-5946-7b10-8957, number=1) als direktes Kind des Kontingents. Die Zaehlung der equalTo-Bedingung ist 1 und trifft ihren value exakt: der set 1 ersetzt den Constraint-Wert, e3c5-278b-09bc-84cf steht auf max 1 und feuert bei Ist 1 nicht mehr; der Gotrek-Slot meldet effectiveMax 1 mit Spielraum 0. Das Meldungs-Gatter lessThan 1 haelt bei Ist 1 nicht mehr - die error-Meldung ist weg. Die eigene Roster-Obergrenze des Schalters (max 1) ist mit einer Selektion genau erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["e3c5-278b-09bc-84cf", "5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "ef9d-ae15-cc43-f2d6",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "Gotrek Gurnisson & Felix Jaeger",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "Please enable \"Allow special characters?\"",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-gotrek-two-toggles-max0.ros",
+      "description": "Der Fall, der equalTo von atLeast trennt: DERSELBE Aufbau, aber mit ZWEI 'Allow special characters?'-Selektionen (zwei Geschwister-<selection>, je number=1) im selben Kontingent. Die Zaehlung ist 2; equalTo 1 haelt daher WIEDER NICHT, der set 1 faellt aus und e3c5-278b-09bc-84cf faellt auf seinen Basiswert max 0 zurueck - die Grenze feuert erneut mit Ist 1 / Grenze 0, und der Gotrek-Slot meldet wieder effectiveMax 0. Ein atLeast 1 an derselben Stelle wuerde bei 2 dagegen weiter halten (so beim Schwester-Eintrag '0-1 Amazon Serpent Priestess'), der Slot bliebe bei effectiveMax 1 und die Grenze stumm. Die Autor-Meldung bleibt zugleich ABWESEND, denn ihr eigenes Gatter ist lessThan 1 und 2 liegt nicht darunter - dieselbe Zaehlung, zwei verschiedene Vergleichsarten, zwei verschiedene Ergebnisse. Die zweite Schalter-Selektion verletzt die Roster-Obergrenze des Schalters selbst (5036-e10c-2fd8-f135, max 1, scope=roster, includeChildSelections/-Forces=true) mit Ist 2 / Grenze 1; das ist der unvermeidbare Preis dieses Falles und wird offen behauptet.",
+      "expect": {
+        "firing": [
+          { "limitId": "e3c5-278b-09bc-84cf", "actual": 1, "bound": 0 },
+          { "limitId": "5036-e10c-2fd8-f135", "actual": 2, "bound": 1 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "ef9d-ae15-cc43-f2d6",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "Gotrek Gurnisson & Felix Jaeger",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "Please enable \"Allow special characters?\"",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

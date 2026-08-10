@@ -499,6 +499,13 @@
         "docs/testing/equal-to-force-points-limit-border-patrol"
       ],
       "rationale": "Das einzige Vorkommen der Zelle gattert die Mindestgrenze 1a97-1579-ab05-a6d7 des geteilten Eintrags 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries): equalTo 500 auf limit::ecfa-8486-4f6c-c249, scope=force, childId=any. Vier Roster mit identischem Inhalt variieren allein das eingestellte Budget (500 / 499 / 501 sowie 500 ohne Auswahl) und klemmen die Gleichheit beidseitig ein. Das Szenario ist ROT: die Engine hebt die Grenze bei exakt 500 nicht und meldet in den Rostern 02 und 03 die Diagnose UNRESOLVED_BUDGET_LIMIT — siehe den pinnedGaps-Eintrag zu diesem Szenario. Roster 04 ist gruen."
+    },
+    {
+      "key": "condition|equalTo|force|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-force-toggle-count-gotrek"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle hebt die Roster-Obergrenze von 'Gotrek Gurnisson & Felix Jaeger' (ef9d-ae15-cc43-f2d6, Mercenaries): der Constraint e3c5-278b-09bc-84cf steht auf max 0 und wird per set 1 gehoben, sobald das Kontingent GENAU EINE Selektion des .gst-Schalters 'Allow special characters?' (8923-5946-7b10-8957) fuehrt. Drei Roster halten je einen Gotrek und variieren allein die Zahl der Schalter-Selektionen: bei 0 feuert die Grenze mit Ist 1 / Grenze 0 und die error-Meldung des Eintrags liegt an, bei 1 schweigt beides, bei 2 faellt die Grenze auf 0 zurueck und feuert erneut — waehrend die Meldung stumm bleibt, weil ihr eigenes Gatter lessThan 1 lautet. Genau diese Kombination trennt equalTo von atLeast. Die Roster-Obergrenze des Schalters selbst (5036-e10c-2fd8-f135) feuert im dritten Roster offen mit Ist 2 / Grenze 1. Szenario ist gruen."
     }
   ]
 }
