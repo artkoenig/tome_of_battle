@@ -569,6 +569,13 @@
         "docs/testing/decrement-group-max-battle-standard"
       ],
       "rationale": "The corpus holds exactly one decrement whose field is a real constraint id: the Weapons group 86431046-9343-42d5-b774-db24c99c4bb3 under the Commander [HIGH ELVES] d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff, lowering its own max 93f2a491-7de3-4020-ad0d-5d08ac3399f8 when the parent frame holds exactly one Battle Standard Bearer (e9ad-f1ce-aebf-6d23). That occurrence is STRUCTURALLY INERT in this corpus and its lowering effect is therefore not observable: the group has no members and nothing links to it, so the counted field is 0 in every admissible roster, and the Commander offers no Battle Standard Bearer anywhere in its subtree, so the gate counts 0 in the parent frame. What the two rosters pin instead is the undecremented bound (effectiveMax 1 on the group slot) and, in roster 02, that the gate reads the PARENT frame: a Battle Standard Bearer on a different character in the same force leaves the bound at 1, where a force- or roster-wide reading of the gate would drop it to 0. Scenario is green. Worth a human decision whether this cell should become a waiver instead, since no roster can make the decrement bite."
+    },
+    {
+      "key": "modifier|decrement|unresolvedTarget",
+      "evidence": [
+        "docs/testing/modifier-unresolved-target-inert"
+      ],
+      "rationale": "Already pinned by the committed scenario, which was credited only for its increment sibling when it was written. The corpus holds ce6e-afde-2ed1-aac2 exclusively as the field of four modifiers and never as a constraint, costType or characteristicType id, and the UNCONDITIONAL decrement 100 of that set is the one at Fanatics (18f4-ad33-69ca-e327) — the very occurrence of this cell. Roster 01 of the scenario keeps exactly that decrement active (its bare modifierGroup gates nothing) while the three conditional increments stay inert, and pins the points budget at exactly 125 against a limit of 124: had the dangling decrement 100 reached any cost, the sum would sit below the bound and the budget would wrongly stay silent. The limit id ce6e-afde-2ed1-aac2 is asserted absent in the same roster, so the modifier also creates no limit of its own. Scenario is green."
     }
   ]
 }

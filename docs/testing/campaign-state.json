@@ -116,6 +116,18 @@
       "parkedAt": "2026-08-10",
       "status": "open",
       "answer": null
+    },
+    {
+      "cellKey": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "question": "The only repeat in the whole fixture corpus that counts childId=\"any\" sits on the shared entry \"Grappling Hooks\" (6eac-4ed9-4511-ff14, game system), and that entry is orphaned: its id occurs exactly once in the corpus — at its own definition. Nothing links it, it carries no categoryLink so no force slot can offer it, and the game system declares no forceEntries at all; of the corpus's 141 repeat elements, no other one uses childId=\"any\". So no catalogue-admissible roster can reach the construct, and whether childId=\"any\" counts the query's own carrier among its parent frame's children cannot be triangulated from a second instance either. Should this cell be waived as permanently untestable on this corpus (recording that the entry is unreferenced upstream data), or should it be covered on the synthetic unit-test track under src/evaluator/ instead of the black-box docs/testing/ track?",
+      "sourcesChecked": [
+        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst (the definition at the sharedSelectionEntries top level, and the absence of any forceEntries)",
+        "all five definitive fixture files (0 incoming references to 6eac-4ed9-4511-ff14; 0 of 141 repeat elements carry childId=\"any\" besides this one)",
+        "docs/battlescribe-data-format.md 7.7 (childId values) and 5.6/8 (force slots resolve through categoryLinks)"
+      ],
+      "parkedAt": "2026-08-10",
+      "status": "open",
+      "answer": null
     }
   ],
   "driver": {
