@@ -134,10 +134,10 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-abschluss-kampagne-uhbxfy",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 15,
-    "lastRunAt": "2026-08-10T21:58:22Z",
-    "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-10T23:15:00Z",
+    "runs": 16,
+    "lastRunAt": "2026-08-10T23:18:35Z",
+    "lastRunOutcome": "stopped-waiting-on-human",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -212,6 +212,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 15: coverage 103 -> 104 of 105. Phase B was skipped, because no pinned gap is open. The one remaining cell is parked, so the campaign now has no takeable work at all and waits on two human answers (parkedQuestions). The re-arm carries the instruction to stop re-arming if nothing has been answered by then, instead of scheduling further empty runs."
+    "reArmNote": "Run 16 did the termination check and stopped without re-arming. The campaign is NOT closed: the inventory exits 1 with one uncovered cell, but that cell is parked and no pinned gap is open, so there is no takeable work of any kind. Both open parkedQuestions entries wait on a human answer. This outcome value is not one of the three the skill names; it means \"unfinished, but nothing to do\" and was chosen over another empty hourly run. A later run must be started by the human, or by answering a parked question and re-invoking the evaluator-closure-loop skill; do not read the missing re-arm as termination."
   }
 }
