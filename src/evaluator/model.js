@@ -86,17 +86,22 @@ export const LIMIT_FIELD_PREFIX = 'limit::';
 export const UNRESOLVED_BUDGET = Symbol('unresolvedBudget');
 
 /**
- * Grund, aus dem ein `LIMIT_VALUE`-Feld unaufloesbar ist — zwei distinkte
+ * Grund, aus dem ein `LIMIT_VALUE`-Feld unaufloesbar ist — drei distinkte
  * Ursachen unter derselben Diagnose {@link DiagnosticKind.UNRESOLVED_BUDGET_LIMIT},
- * damit ein Berichts-Leser sie trennen kann (`design.md`, „Zwei Unauflösbar-Gründe").
+ * damit ein Berichts-Leser sie trennen kann (`design.md`, „Zwei Unauflösbar-Gründe";
+ * die dritte kam mit Issue 0147 dazu).
  */
 export const BudgetLimitUnresolvedReason = Object.freeze({
   // Die Kostenart ist im mitgegebenen Budget (`costLimits`) nicht deklariert.
   NOT_BUDGETED: 'notBudgeted',
-  // Das `limit::`-Feld traegt einen Bezugsrahmen ungleich `roster`; eine
-  // eingestellte Grenze ist roster-weit, ein abweichender Scope wird nicht still
-  // umgedeutet, sondern laut gemeldet.
-  NON_ROSTER_SCOPE: 'nonRosterScope',
+  // Das `limit::`-Feld traegt einen Bezugsrahmen ausserhalb von `roster`/`force`;
+  // eine eingestellte Grenze steht nur an diesen beiden Rahmen, ein abweichender
+  // Scope wird nicht still umgedeutet, sondern laut gemeldet.
+  UNSUPPORTED_SCOPE: 'unsupportedScope',
+  // Der Scope ist `force`, der Knoten liegt aber ueber keinem Kontingent: der
+  // Rahmen selbst loest nicht auf. Getrennt von {@link UNSUPPORTED_SCOPE}, weil
+  // hier der Scope getragen wird und die **Daten** scheitern (Issue 0147).
+  UNRESOLVED_FRAME: 'unresolvedFrame',
 });
 
 /**
@@ -547,8 +552,9 @@ export const DiagnosticKind = Object.freeze({
   // statt stiller Teil-Auswertung (ADR-0032, Entscheidung 3).
   MISSING_CATALOGUE_DEPENDENCY: 'missingCatalogueDependency',
   // Eine Regel nennt ueber `limit::<costTypeId>` eine eingestellte Kostengrenze,
-  // die sich nicht aufloesen laesst — die Kostenart ist nicht budgetiert oder das
-  // Feld traegt einen Scope ungleich `roster` ({@link BudgetLimitUnresolvedReason}).
+  // die sich nicht aufloesen laesst — die Kostenart ist nicht budgetiert, das Feld
+  // traegt einen Scope ausserhalb von `roster`/`force`, oder der `force`-Rahmen
+  // loest am Knoten nicht auf ({@link BudgetLimitUnresolvedReason}).
   // Sichtbar gemacht statt still als Wert 0 angenommen (Main-Issue 70, `design.md`).
   UNRESOLVED_BUDGET_LIMIT: 'unresolvedBudgetLimit',
   // Eine Katalogquelle (`.cat`/`.gst`) ist als Katalog nicht lesbar: das XML ist
