@@ -115,7 +115,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`category-id-scope-instance-of`](testing/category-id-scope-instance-of/) | ergofang VC (ohne Mercenaries) | 5 |
 | [`roster-repeat-added-category`](testing/roster-repeat-added-category/) | Definitive Ogre + Mercenaries | 7 |
 | [`less-than-parent-parry-save`](testing/less-than-parent-parry-save/) | Definitive Ogre + Mercenaries | 5 |
-| **Summe** | | **169** |
+| [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
+| **Summe** | | **174** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1310,3 +1311,21 @@ allein in der Zweihandwaffe unterscheiden.
 | 03 | Mit Schild **und** Zweihandwaffe | Rüstungswurf 6 — der Parier-Punkt entfällt |
 | 04 | Leichte Rüstung + Schild, ohne Zweihandwaffe | Rüstungswurf 4 — dasselbe Paar, katalogkonform gebaut |
 | 05 | Leichte Rüstung + Schild + Zweihandwaffe | Rüstungswurf 5 — der Parier-Punkt entfällt erneut |
+
+## `parent-costsum-magic-items-budget`
+
+Prüft eine Grenze, deren `field` eine **Kostenart-Id** statt `selections` ist:
+sie begrenzt die **Summe** dieser Kosten unterhalb ihres Trägers, und mit
+`includeChildSelections="true"` zählen auch verschachtelte Auswahlen mit. Beleg:
+die Gruppe „Magic Items and Big Names" des Hunters (`9326-f5c9-9e82-f4bf`, Ogre
+Kingdoms) trägt `max 50` auf die Punkte-Kostenart
+(`2dd3-546b-146e-ce63`). Der gemeldete Ist-Wert ist die Punktesumme, nicht die
+Anzahl der Gegenstände.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Gegenstände für zusammen 30 Punkte | Deutlich unter dem Budget — still |
+| 02 | Zwei Gegenstände für genau 50 Punkte | Auf der Grenze erfüllt — still |
+| 03 | Zwei Gegenstände für zusammen 55 Punkte | Eine Meldung: Ist 55 gegen Grenze 50 — erst die Summe reißt sie |
+| 04 | Gegenstand mit drei verschachtelten Steinen, zusammen 65 Punkte | Eine Meldung: Ist 65 — genau das entscheidet `includeChildSelections` |
+| 05 | Derselbe Aufbau mit zwei Steinen, zusammen 50 Punkte | Still — die Gegenprobe klammert den Beitrag der verschachtelten Auswahl ein |
