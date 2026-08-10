@@ -1,6 +1,6 @@
 ---
 status: active
-branch: claude/evaluator-abschluss-kampagne-tk44u4
+branch: claude/evaluator-abschluss-kampagne-6hzwh7
 pr:
 ---
 
@@ -18,9 +18,8 @@ Make every scenario listed below green by changing `src/evaluator/` production c
 
 ## Acceptance criteria
 
-- `docs/testing/greater-than-force-unlimited-gate` — failing cases: `Szenario: greater-than-force-unlimited-gate > rosters/02-tyrant-one-slaughtermaster-unlimited.ros` and `rosters/03-tyrant-two-slaughtermasters-unlimited.ros`. What the catalog data demands: an occupied slot must keep reporting how many selections it holds when its `max` limit has been lifted to the written sentinel `-1` (unlimited). The Slaughtermaster slot (`0ff3-ec4d-1c6b-6d53`, frame `Standard (OK-AB)` `729f-9246-5cd3-5044`) reports `current` 0 in those two rosters, where the roster holds one resp. two of them and the `set -1` modifier on `c70d-c292-36ee-21b5` has opened the cap. Roster 01 is the control and passes with `current` 1 while the same limit still stands at `max 0`, so the count is lost exactly when the bound becomes unlimited, not in general. The limit's own firing and silence are already correct in all four rosters — do not change that behaviour while fixing the count.
-
-- `docs/testing/at-least-parent-any-reveal` — failing cases: `Szenario: at-least-parent-any-reveal > rosters/01-empty-frame-wolf-lord-hidden.ros`, `rosters/02-one-selection-reveals-wolf-lord.ros` and `rosters/03-two-selections-reveal-unchanged.ros`. What the catalog data demands: an option that exists in the catalogue but is not selected must appear in the report as an offer anchor, so that its visibility is observable at all. `Wolf Lord` (link `b8be-a71f-569c-5cdc`, target `66bc-8fc1-81a2-9cd4`) carries `hidden="true"` plus a single `set hidden="false"` gated on `atLeast 1` selection of anything in its parent frame, and those three rosters assert exactly that flip (`isHidden` true at an empty frame, false once the frame holds one resp. two selections, `current` 0 throughout). The report carries no `anchorKind="offerAnchor"` slot for that `defId`/`targetDefId` pair at all in those rosters, so the flip cannot be seen. The same pair resolves as `anchorKind="occupied"` in rosters 04 and 05, which pass, and the sibling scenario `docs/testing/at-least-unit-upgrade-gate` shows an unselected option's offer anchor being projected in a shallower position. The option sits four `selectionEntryGroup` levels below the unit; whether the missing projection is the depth, the fact that nothing in that group chain is selected, or something else, is for this round to diagnose. Without the anchor a user is never offered the option at all — ADR 0034 makes the report the sole source of the surface.
+- `docs/testing/equal-to-force-points-limit-border-patrol` is green in all four of its cases. The failing ones today are `rosters/01-budget-500-selected-min-raised.ros`, `rosters/02-budget-499-selected-min-unraised.ros` and `rosters/03-budget-501-selected-min-unraised.ros`. What the catalog data demands: a condition on the configured points budget (`field="limit::ecfa-8486-4f6c-c249"`) must read that budget even when it carries `scope="force"` — a `.ros` declares its budget only at the roster root, so the force frame is resolvable and yields exactly that roster budget. The shared entry `Border Patrol (500pts)` (`2066-082d-a465-4baf`, Mercenaries) raises its own minimum (`set 1` on `1a97-1579-ab05-a6d7`) via `equalTo 500` on that field; at a budget of exactly 500 the report still says `effectiveMin 0` instead of 1, and at 499 and 501 it additionally raises the diagnostic `UNRESOLVED_BUDGET_LIMIT`. Under the current evaluation the catalog author's rule is dead code.
+- Every scenario that is green today stays green.
 
 ## Out of scope
 
