@@ -369,7 +369,13 @@ function headroomOf(maxResult) {
  * der MIN-Grenze; traegt der Slot keine (nicht suspendierte) Grenze, ist er an
  * einem **Kategorie-Anker** die in dessen Rahmen gezaehlte Zahl der Auswahlen
  * seiner Kategorie (`constraints.js`, {@link import('./constraints.js').categoryAnchorOccupancies}),
- * an jeder anderen Ankerart 0.
+ * an einem **belegten Slot** dessen eigene Stueckzahl — die Anzahl seiner
+ * Selektion — und an jeder synthetischen Ankerart (Pflicht-Phantom, Gruppen-,
+ * Angebots-Anker), die keine Instanz traegt, 0. Diese Stufe ist noetig, weil ein
+ * Max, das per Sentinel `-1` zu unbegrenzt gehoben wurde, gar kein
+ * Grenzergebnis liefert (Issue 079, `constraints.js`): ein belegter Slot meldet
+ * dann trotzdem, wie viele Auswahlen er haelt, statt 0. Die Regel gilt uniform
+ * bis hinauf zum Kontingent-Slot.
  *
  * `anchorKind` sagt, **woher** der Slot stammt (belegt, Pflicht-Phantom,
  * Gruppen-, Kategorie- oder Angebots-Anker) — die einzige Stelle, an der die
@@ -436,9 +442,15 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     effectiveMax: maxResult === null ? null : maxResult.bound,
     // Wo eine Grenze ausgewertet wurde, ist deren Ist-Wert die berichtete Zahl —
     // zu ihm passen Hoechstmass, Restspielraum und Sperrung daneben. Erst ohne
-    // Grenzergebnis greift die gezaehlte Belegung; sie steht nur fuer
-    // Kategorie-Anker in der Karte, jede andere Ankerart bleibt bei 0.
-    current: maxResult?.actual ?? minResult?.actual ?? anchorOccupancies.get(node) ?? 0,
+    // Grenzergebnis greifen die Rueckfallstufen: die gezaehlte Belegung (nur
+    // Kategorie-Anker stehen in der Karte), dann die eigene Stueckzahl des
+    // Slots. `node.instance` traegt nur ein belegter Slot — jeder synthetische
+    // Anker (Pflicht-Phantom, Gruppen-, Angebots-Anker) hat keine Instanz und
+    // bleibt bei 0. Der Fall, der die Stufe erzwingt: ein per Sentinel `-1` zu
+    // unbegrenzt gehobenes Max liefert gar kein Grenzergebnis (Issue 079,
+    // `constraints.js`), und ein belegter Slot darf dann nicht 0 fuer
+    // Auswahlen melden, die er nachweislich haelt.
+    current: maxResult?.actual ?? minResult?.actual ?? anchorOccupancies.get(node) ?? node.instance?.count ?? 0,
     headroom: headroomOf(maxResult),
     isMandatoryUnmet: minResult !== null && !minResult.satisfied,
     isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
