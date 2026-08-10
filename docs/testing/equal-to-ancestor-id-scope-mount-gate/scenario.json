@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-ancestor-id-scope-mount-gate",
+  "description": "Eine condition type=\"equalTo\" field=\"selections\", deren scope KEIN Schluesselwort, sondern die Id eines Vorfahren ist (scope=\"febe-2170-775b-0d13\" = die umschliessende Einheit 'Black Orc Bigboss'), zaehlt im Rahmen dieses benannten Vorfahren und haelt nur bei exakter Gleichheit. Einziges Vorkommen der Zelle im Definitive-Korpus: die Aufwertung 'Additional Hero choice' (e3cf-e551-eb3d-852e) unter dem Black Orc Bigboss traegt min 1 (7198-b57b-4d7b-6c52) und max 1 (8a24-9eaa-7a36-19d9), beide scope=parent; eine modifierGroup setzt BEIDE auf 0, wenn (a) die Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des Bigboss GENAU 0 Selektionen zaehlt UND (b) das Kontingent eine Instanz von 'Grimgor's 'Ardboyz (SoC)' (1821-fbd1-0d96-2d88) ist. In-World (Autoren-Kommentar, SoC S.58): der Bigboss kostet nur dann einen weiteren Heldenplatz, wenn er ein Reittier hat. Sechs Roster variieren allein das Reittier, die Wahl der Aufwertung, das Kontingent und die Zahl der Bigbosses: ohne Reittier gilt effectiveMin 0 / effectiveMax 0 (und eine dennoch gewaehlte Aufwertung reisst max 0), mit einem Boar bleiben die geschriebenen 1/1 stehen. Beobachtbar ist die Regel zusaetzlich an den Kategorie-Ankern des Kontingents: die Aufwertung traegt categoryLinks auf Heroes (c16b-f319-2c62-2c12) und Characters (7a1c-d611-c2dc-def1), der Ist-Stand beider Anker steigt mit ihr von 1 auf 2.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-grimgor-no-mount-upgrade-unselected.ros",
+      "description": "Kontingent 'Grimgor's 'Ardboyz (SoC)' (1821-fbd1-0d96-2d88), ein Black Orc Bigboss mit seiner Pflichtwaffe Choppa, KEIN Reittier, die Aufwertung 'Additional Hero choice' NICHT gewaehlt. Die Zaehlung der Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des benannten Vorfahren febe-2170-775b-0d13 ist 0, equalTo 0 haelt also; die zweite Bedingung (instanceOf auf dieses Kontingent) haelt ebenfalls. Beide set-0-Modifikatoren greifen: der Slot meldet effectiveMin 0 UND effectiveMax 0, weder 7198-b57b-4d7b-6c52 noch 8a24-9eaa-7a36-19d9 feuert. Eine Engine, die den Id-Rahmen nicht aufloest und die Bedingung deshalb fallen laesst, behielte min 1 und liesse 7198-... mit Ist 0 / Grenze 1 feuern. Die Kategorie-Anker des Kontingents zaehlen ohne die Aufwertung genau den Bigboss selbst: Heroes 1, Characters 1.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "7198-b57b-4d7b-6c52",
+          "8a24-9eaa-7a36-19d9",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "defId": "e3cf-e551-eb3d-852e",
+            "frameDefId": "febe-2170-775b-0d13",
+            "name": "Additional Hero choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Heroes",
+            "current": 1,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Characters",
+            "current": 1,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-grimgor-no-mount-upgrade-selected-max-zero.ros",
+      "description": "DERSELBE Aufbau wie 01, aber die Aufwertung 'Additional Hero choice' ist GEWAEHLT (number=1). Die Bedingungsklammer haelt weiterhin (kein Reittier, richtiges Kontingent), also steht die Obergrenze auf 0 und feuert mit Ist 1 / Grenze 0 - der set-0-Modifikator auf 8a24-9eaa-7a36-19d9 wird hier als Verletzung sichtbar, nicht nur als Slot-Wert. Die auf 0 gesenkte Pflicht 7198-b57b-4d7b-6c52 bleibt still. Die Kategorie-Anker steigen auf Heroes 2 / Characters 2 - genau das, was der Autoren-Kommentar 'counts as a further Hero choice' beschreibt; die Characters-Grenze max 3 (bei Punktelimit 1000) und die unbegrenzte Heroes-Grenze bleiben dabei unverletzt.",
+      "expect": {
+        "firing": [
+          { "limitId": "8a24-9eaa-7a36-19d9", "actual": 1, "bound": 0 }
+        ],
+        "absent": [
+          "7198-b57b-4d7b-6c52",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "defId": "e3cf-e551-eb3d-852e",
+            "frameDefId": "febe-2170-775b-0d13",
+            "name": "Additional Hero choice",
+            "current": 1,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Heroes",
+            "current": 2,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Characters",
+            "current": 2,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-grimgor-boar-upgrade-unselected-min-one.ros",
+      "description": "Wie 01, zusaetzlich mit GENAU EINEM Reittier: dem Boar (fd20-5671-fbd8-0523) aus der Mounts-Gruppe 8a7a-d454-ad84-6f7e. Die Zaehlung im Rahmen des benannten Vorfahren ist damit 1; equalTo 0 haelt NICHT mehr, die Klammer faellt vollstaendig aus, und beide Grenzen behalten ihre geschriebenen Werte min 1 / max 1. Da die Aufwertung nicht gewaehlt ist, feuert die Pflicht 7198-b57b-4d7b-6c52 mit Ist 0 / Grenze 1; der Slot meldet effectiveMin 1, effectiveMax 1, isMandatoryUnmet true. Die Gruppengrenzen der Mounts (max 1, min 0) und die Eigengrenze des Boar (max 1) sind mit einem Reittier eingehalten.",
+      "expect": {
+        "firing": [
+          { "limitId": "7198-b57b-4d7b-6c52", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "8a24-9eaa-7a36-19d9",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "6aab-cec4-e779-f7f6",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "defId": "e3cf-e551-eb3d-852e",
+            "frameDefId": "febe-2170-775b-0d13",
+            "name": "Additional Hero choice",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Heroes",
+            "current": 1,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Characters",
+            "current": 1,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-grimgor-boar-upgrade-selected-legal.ros",
+      "description": "Wie 03, zusaetzlich mit der GEWAEHLTEN Aufwertung 'Additional Hero choice'. Die Klammer faellt weiterhin aus (ein Reittier), die Grenzen stehen auf min 1 / max 1 und sind mit genau einer Selektion beide erfuellt: keine der beiden Grenzen feuert, der Slot meldet effectiveMin 1, effectiveMax 1, headroom 0. Dieses Roster belegt, dass die Abwesenheit in 01 an den auf 0 GESETZTEN Werten liegt und nicht daran, dass der Slot ueberhaupt nicht bewertet wuerde. Kategorie-Anker: Heroes 2 / Characters 2 - der berittene Bigboss kostet den zusaetzlichen Heldenplatz, den 03 einfordert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "7198-b57b-4d7b-6c52",
+          "8a24-9eaa-7a36-19d9",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "6aab-cec4-e779-f7f6",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "defId": "e3cf-e551-eb3d-852e",
+            "frameDefId": "febe-2170-775b-0d13",
+            "name": "Additional Hero choice",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Heroes",
+            "current": 2,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Characters",
+            "current": 2,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-standard-force-no-mount-min-one.ros",
+      "description": "Kontrolle zur ZWEITEN Halbklammer: BAUGLEICH zu 01 (Bigboss mit Choppa, kein Reittier, Aufwertung nicht gewaehlt), nur das Kontingent wechselt auf 'Standard (OG-AB)' (2bfa-e64a-7123-895f). Die equalTo-Bedingung haelt hier weiterhin (0 Reittiere), die instanceOf-Bedingung auf 1821-fbd1-0d96-2d88 aber nicht - und da beide in einer conditionGroup type=\"and\" stehen, faellt die Klammer als Ganzes aus. Die geschriebenen Werte min 1 / max 1 bleiben stehen, die Pflicht feuert mit Ist 0 / Grenze 1. Der einzige Unterschied zu 01 ist das entryId der <force>; damit ist belegt, dass die Wirkung an BEIDEN Bedingungen haengt und nicht allein an der Reittier-Zaehlung. Der Bigboss ist in diesem Kontingent nicht versteckt (sein set-hidden-Modifikator nennt 2bfa-... nicht), die Min-Grenze ist also validierbar.",
+      "expect": {
+        "firing": [
+          { "limitId": "7198-b57b-4d7b-6c52", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "8a24-9eaa-7a36-19d9",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "defId": "e3cf-e551-eb3d-852e",
+            "frameDefId": "febe-2170-775b-0d13",
+            "name": "Additional Hero choice",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "Heroes",
+            "current": 1,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "Characters",
+            "current": 1,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-grimgor-two-bigbosses-frame-per-unit.ros",
+      "description": "Der Rahmen-Fall: ZWEI Black Orc Bigbosses im selben Kontingent 'Grimgor's 'Ardboyz (SoC)'. Bigboss A hat KEIN Reittier und KEINE Aufwertung; Bigboss B hat einen Boar UND die Aufwertung. Weil der scope den naechsten Vorfahren mit der Id febe-2170-775b-0d13 benennt - also die JEWEILS eigene Einheit -, zaehlt die Bedingung fuer A 0 Reittiere (Klammer haelt, seine Grenzen fallen auf 0/0) und fuer B 1 Reittier (Klammer faellt aus, seine Grenzen bleiben 1/1 und sind durch die eine Aufwertung erfuellt). Keine der beiden Grenzen darf feuern. Eine Engine, die den Id-Rahmen zu einem kontingent- oder rosterweiten Zaehlrahmen verbreitert, saehe fuer BEIDE Einheiten 1 Reittier, liesse As Pflicht auf 1 stehen und muesste 7198-b57b-4d7b-6c52 mit Ist 0 / Grenze 1 melden; eine Engine, die shared=\"true\" als roster-weite Teilung eines scope=\"parent\"-Zaehlers liest, saehe fuer As max 0 den Wert 1 und muesste 8a24-9eaa-7a36-19d9 melden. Der Slot der Aufwertung wird hier bewusst NICHT ueber capabilities behauptet: dieselbe Definition steht zweimal unter demselben frameDefId. Die Kategorie-Anker zaehlen kontingentweit: Heroes 3 und Characters 3 (zwei Bigbosses + eine Aufwertung) - Characters trifft damit seine Grenze 3 exakt, ohne sie zu reissen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "7198-b57b-4d7b-6c52",
+          "8a24-9eaa-7a36-19d9",
+          "b1f4-515f-23ef-a9d8",
+          "a90d-4ca4-299a-1a72",
+          "6aab-cec4-e779-f7f6",
+          "50f1-d94f-dc4a-b808",
+          "137d-0a2a-e477-e1a8",
+          "7fca-63fb-63d2-9dad",
+          "c3c3-a80c-e026-200f"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Heroes",
+            "current": 3,
+            "effectiveMax": null
+          },
+          {
+            "targetDefId": "7a1c-d611-c2dc-def1",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "1821-fbd1-0d96-2d88",
+            "name": "Characters",
+            "current": 3,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    }
+  ]
+}

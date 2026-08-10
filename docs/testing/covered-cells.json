@@ -506,6 +506,13 @@
         "docs/testing/equal-to-force-toggle-count-gotrek"
       ],
       "rationale": "Das einzige Vorkommen der Zelle hebt die Roster-Obergrenze von 'Gotrek Gurnisson & Felix Jaeger' (ef9d-ae15-cc43-f2d6, Mercenaries): der Constraint e3c5-278b-09bc-84cf steht auf max 0 und wird per set 1 gehoben, sobald das Kontingent GENAU EINE Selektion des .gst-Schalters 'Allow special characters?' (8923-5946-7b10-8957) fuehrt. Drei Roster halten je einen Gotrek und variieren allein die Zahl der Schalter-Selektionen: bei 0 feuert die Grenze mit Ist 1 / Grenze 0 und die error-Meldung des Eintrags liegt an, bei 1 schweigt beides, bei 2 faellt die Grenze auf 0 zurueck und feuert erneut — waehrend die Meldung stumm bleibt, weil ihr eigenes Gatter lessThan 1 lautet. Genau diese Kombination trennt equalTo von atLeast. Die Roster-Obergrenze des Schalters selbst (5036-e10c-2fd8-f135) feuert im dritten Roster offen mit Ist 2 / Grenze 1. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-ancestor-id-scope-mount-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle traegt als scope keine Schluesselwort-Reichweite, sondern die Id eines Vorfahren: die Aufwertung 'Additional Hero choice' (e3cf-e551-eb3d-852e, Orcs and goblins) zaehlt per equalTo 0 die Auswahlen der Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des benannten 'Black Orc Bigboss' (febe-2170-775b-0d13). Haelt die Gleichheit — der Bigboss hat kein Reittier —, setzen zwei Modifikatoren Mindest- und Hoechstgrenze der Aufwertung auf 0, sie kostet also keine Heldenwahl; mit einem Boar bleiben die geschriebenen 1/1 stehen. Sechs Roster zeigen beide Seiten je einmal mit und ohne gewaehlte Aufwertung, dazu ein Kontrollroster im Kontingent 'Standard (OG-AB)', das die zweite Haelfte der and-Klammer (instanceOf auf 'Grimgor's Ardboyz') isoliert, und ein Roster mit zwei Bigbossen, das die Breite des Rahmens von einer roster-weiten Lesart trennt. Szenario ist gruen."
     }
   ]
 }

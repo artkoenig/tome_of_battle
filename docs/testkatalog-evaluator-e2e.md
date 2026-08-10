@@ -163,7 +163,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
 | [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
 | [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
-| **Summe** | | **358** |
+| [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
+| **Summe** | | **364** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1797,3 +1798,31 @@ trennt `equalTo` von `atLeast`.
 | 01 | Ein Gotrek, kein Schalter | Die Obergrenze bleibt 0 und feuert mit Ist 1; die Fehlermeldung „Please enable …" liegt an |
 | 02 | Ein Gotrek, ein Schalter | Die Obergrenze ist 1: alles schweigt |
 | 03 | Ein Gotrek, zwei Schalter | Die Gleichheit kippt: die Obergrenze fällt auf 0 zurück und feuert erneut — die Meldung bleibt jedoch stumm, denn ihr Gatter ist `lessThan 1`. Offen deklariert: die Roster-Obergrenze des Schalters selbst feuert mit Ist 2 / Grenze 1 |
+
+## `equal-to-ancestor-id-scope-mount-gate`
+
+Prüft eine Bedingung, deren `scope` **kein Schlüsselwort, sondern die Id eines
+Vorfahren** ist (§7.6/§7.7 der Formatdoku nennen Vorfahren-Ids in der
+Scope-Aufzählung, ohne sie zu beschreiben): gezählt wird im Rahmen der benannten
+Entität. Beleg: die Aufwertung „Additional Hero choice" (`e3cf-e551-eb3d-852e`,
+Orcs and goblins) zählt per `equalTo 0` die Auswahlen der Mounts-Gruppe
+(`8a7a-d454-ad84-6f7e`) im Rahmen des sie tragenden „Black Orc Bigboss"
+(`febe-2170-775b-0d13`). Hält die Gleichheit, setzen zwei Modifikatoren Mindest-
+**und** Höchstgrenze der Aufwertung auf 0 — der Kommentar des Katalogautors sagt
+warum: ein Black Orc Bigboss kostet nur dann eine weitere Heldenwahl, wenn er
+beritten ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Grimgors 'Ardboyz, kein Reittier, Aufwertung nicht gewählt | Beide Grenzen stehen auf 0: nichts feuert, der Bigboss zählt als eine Heldenwahl |
+| 02 | Dasselbe, Aufwertung aber gewählt | Die Obergrenze 0 feuert mit Ist 1 |
+| 03 | Mit Boar, Aufwertung nicht gewählt | Die geschriebenen 1/1 bleiben stehen: die Pflicht feuert mit Ist 0 / Grenze 1 |
+| 04 | Mit Boar und Aufwertung | Alles erfüllt — die legale Fassung des berittenen Bosses |
+| 05 | Kontrolle im Kontingent „Standard (OG-AB)" | Sonst identisch zu 01: die zweite Hälfte der `and`-Klammer (`instanceOf` auf das Sonderkontingent) hält nicht, die Grenzen bleiben bei 1/1 |
+| 06 | Zwei Bigbosse, einer beritten | Der Rahmen ist je Einheit, nicht rosterweit: die Kategorie-Anker zählen beide Bosse plus die eine Aufwertung |
+
+> **Was das Szenario nicht trennt:** Der benannte Vorfahre steht hier direkt über
+> dem Träger, `scope="febe-…"`, `parent` und `unit` bezeichnen also denselben
+> Knoten. Die Roster 01–05 nageln das Zählergebnis fest, nicht die
+> Unterscheidbarkeit der Rahmen; Roster 06 trennt immerhin die **Breite** des
+> Rahmens von einer rosterweiten Lesart.
