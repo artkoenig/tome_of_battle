@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "name": "less-than-parent-parry-save",
+  "description": "Die Bedingung type=\"lessThan\" mit scope=\"parent\" und einer Eintrags-Id in childId ist die 'diese Option ist NICHT gewaehlt'-Haelfte eines Gatters: sie haelt genau so lange, wie die Elternauswahl weniger als die genannte Zahl dieses Eintrags fuehrt. Im Soeldner-Profil 'Dwarf' (c69e-8fe4-ad3d-3b7d, Mercenaries, Modell 216c-6851-789d-4904 unter der Einheit 'Dwarfs' 59b2-d9d4-f797-9649) ist das die Parier-Regel des Schilds: der vierte Sv-Modifikator (decrement 1 auf f1be-e66c-d5e1-673c) haengt an einer and-Gruppe aus 'lessThan 1 Great Weapon (1eb7-3f36-8cf7-e0ba)' UND 'atLeast 1 Shield (50e2-1873-a856-03e7)', beide scope=parent. Basis Sv 6, dazu ein unbedingter increment 1 sowie decrement 2 (Heavy Armour), decrement 1 (Shield) und decrement 1 (Light Armour). Gemessen wird das Paar Schild-ohne-Zweihandwaffe gegen Schild-mit-Zweihandwaffe: der Ruestungswurf muss sich um genau einen Punkt unterscheiden. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-bare-dwarf-sv-7.ros",
+      "description": "Grundlinie: die Einheit 'Dwarfs' mit 10 Dwarf-Modellen und SONST NICHTS. Keine der vier Bedingungen haelt (auch die and-Gruppe nicht, weil ihr zweites Glied 'atLeast 1 Shield' fehlschlaegt); nur der unbedingte increment 1 wirkt: Sv 6 + 1 = 7. Bewusst nicht katalogkonform: die Pflichten 'genau eine Ruestung' (400c-aa4e-1507-c61f) und 'genau eine Handwaffe' (8fe0-6808-1e8a-512f / bdef-ba9b-d6ce-5b14) bleiben unerfuellt — siehe README; sie stehen deshalb weder in firing noch in absent.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ed40-d485-6292-84ee",
+          "cb43-ba97-f160-e2ff",
+          "e8c1-8bb3-8732-7d53"
+        ],
+        "capabilities": [
+          {
+            "defId": "216c-6851-789d-4904",
+            "anchorKind": "occupied",
+            "name": "Dwarf",
+            "infoElements": [
+              {
+                "id": "c69e-8fe4-ad3d-3b7d",
+                "kind": "profile",
+                "name": "Dwarf",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-shield-no-great-weapon-sv-5.ros",
+      "description": "Schild ohne Zweihandwaffe: 10 Dwarf-Modelle + Handwaffe + Schild. Die and-Gruppe haelt vollstaendig — 'lessThan 1 Great Weapon' (Ist 0) UND 'atLeast 1 Shield' (Ist 1). Sv 6 - 1 (Schild) - 1 (Parieren) + 1 = 5. Erste Haelfte des Messpaares mit Roster 03.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ed40-d485-6292-84ee",
+          "8fe0-6808-1e8a-512f",
+          "bdef-ba9b-d6ce-5b14",
+          "cb43-ba97-f160-e2ff",
+          "e8c1-8bb3-8732-7d53"
+        ],
+        "capabilities": [
+          {
+            "defId": "216c-6851-789d-4904",
+            "anchorKind": "occupied",
+            "name": "Dwarf",
+            "infoElements": [
+              {
+                "id": "c69e-8fe4-ad3d-3b7d",
+                "kind": "profile",
+                "name": "Dwarf",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-shield-and-great-weapon-sv-6.ros",
+      "description": "Bis auf die zusaetzliche Zweihandwaffe identisch mit Roster 02. Die lessThan-Bedingung haelt jetzt NICHT mehr (Ist 1, nicht < 1), damit faellt die ganze and-Gruppe und der Parier-Punkt entfaellt: Sv 6 - 1 (Schild) + 1 = 6. Genau ein Punkt Unterschied zu Roster 02, und die Zweihandwaffe ist der einzige Unterschied.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ed40-d485-6292-84ee",
+          "8fe0-6808-1e8a-512f",
+          "bdef-ba9b-d6ce-5b14",
+          "cb43-ba97-f160-e2ff",
+          "e8c1-8bb3-8732-7d53"
+        ],
+        "capabilities": [
+          {
+            "defId": "216c-6851-789d-4904",
+            "anchorKind": "occupied",
+            "name": "Dwarf",
+            "infoElements": [
+              {
+                "id": "c69e-8fe4-ad3d-3b7d",
+                "kind": "profile",
+                "name": "Dwarf",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "6" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-light-armour-shield-no-great-weapon-sv-4.ros",
+      "description": "Vollstaendig katalogkonforme Variante des Messpaares: 10 Dwarf-Modelle + Handwaffe + Leichte Ruestung (erfuellt die Ruestungs-Pflicht der Gruppe ec46-018a-ef42-7c0c) + Schild, keine Zweihandwaffe. Drei Abzuege auf demselben Feld plus der unbedingte Zuschlag: Sv 6 - 1 (Schild) - 1 (Leichte Ruestung) - 1 (Parieren) + 1 = 4.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ed40-d485-6292-84ee",
+          "8fe0-6808-1e8a-512f",
+          "bdef-ba9b-d6ce-5b14",
+          "cb43-ba97-f160-e2ff",
+          "e8c1-8bb3-8732-7d53",
+          "400c-aa4e-1507-c61f",
+          "8d83-204d-8f58-f004"
+        ],
+        "capabilities": [
+          {
+            "defId": "216c-6851-789d-4904",
+            "anchorKind": "occupied",
+            "name": "Dwarf",
+            "infoElements": [
+              {
+                "id": "c69e-8fe4-ad3d-3b7d",
+                "kind": "profile",
+                "name": "Dwarf",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "4" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-light-armour-shield-great-weapon-sv-5.ros",
+      "description": "Bis auf die zusaetzliche Zweihandwaffe identisch mit Roster 04 — das katalogkonforme Gegenstueck des Messpaares. Die lessThan-Bedingung faellt, der Parier-Punkt entfaellt: Sv 6 - 1 (Schild) - 1 (Leichte Ruestung) + 1 = 5. Wieder genau ein Punkt Unterschied, diesmal auf einem Roster, das jede Grenze der Einheit einhaelt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ed40-d485-6292-84ee",
+          "8fe0-6808-1e8a-512f",
+          "bdef-ba9b-d6ce-5b14",
+          "cb43-ba97-f160-e2ff",
+          "e8c1-8bb3-8732-7d53",
+          "400c-aa4e-1507-c61f",
+          "8d83-204d-8f58-f004"
+        ],
+        "capabilities": [
+          {
+            "defId": "216c-6851-789d-4904",
+            "anchorKind": "occupied",
+            "name": "Dwarf",
+            "infoElements": [
+              {
+                "id": "c69e-8fe4-ad3d-3b7d",
+                "kind": "profile",
+                "name": "Dwarf",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

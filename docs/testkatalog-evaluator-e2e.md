@@ -114,7 +114,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`condition-group-and-nested`](testing/condition-group-and-nested/) | Definitive O&G + Mercenaries | 5 |
 | [`category-id-scope-instance-of`](testing/category-id-scope-instance-of/) | ergofang VC (ohne Mercenaries) | 5 |
 | [`roster-repeat-added-category`](testing/roster-repeat-added-category/) | Definitive Ogre + Mercenaries | 7 |
-| **Summe** | | **164** |
+| [`less-than-parent-parry-save`](testing/less-than-parent-parry-save/) | Definitive Ogre + Mercenaries | 5 |
+| **Summe** | | **169** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1290,3 +1291,22 @@ geschrieben auf 0 und steigt je Ogerbullen-Einheit um 1; die Kategorie
 | 05 | Zwei Ogerbullen-, drei Gnoblar-Einheiten | Eine Meldung: Ist 3 gegen Grenze 2 |
 | 06 | Zwei Gnoblar-Späher, keine Ogerbullen | Dasselbe Muster an der zweiten Einheit: Ist 2 gegen Grenze 1 |
 | 07 | Eine Ogerbullen-Einheit, zwei Gnoblar-Späher | Obergrenze 2 — still |
+
+## `less-than-parent-parry-save`
+
+Prüft die `lessThan`-Bedingung mit `scope="parent"` und einer Eintrags-Id in
+`childId` — die „diese Option ist **nicht** gewählt"-Hälfte eines Gatters, die
+in dem Moment aufhört zu halten, in dem die Option erscheint. Beleg: das
+Zwergen-Profil der Mercenaries (`c69e-8fe4-ad3d-3b7d`) schreibt `Sv` 6 und trägt
+neben den Rüstungs-Abzügen einen `decrement 1`, dessen `and`-Gruppe aus
+„weniger als 1 Zweihandwaffe" (`1eb7-3f36-8cf7-e0ba`) **und** „mindestens 1
+Schild" besteht — die Parier-Regel. Gemessen wird an zwei Paaren, die sich
+allein in der Zweihandwaffe unterscheiden.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwergen-Einheit ohne Ausrüstung | Rüstungswurf 7 — nur der unbedingte Aufschlag greift |
+| 02 | Mit Schild, **ohne** Zweihandwaffe | Rüstungswurf 5 — Schild und Parieren zählen |
+| 03 | Mit Schild **und** Zweihandwaffe | Rüstungswurf 6 — der Parier-Punkt entfällt |
+| 04 | Leichte Rüstung + Schild, ohne Zweihandwaffe | Rüstungswurf 4 — dasselbe Paar, katalogkonform gebaut |
+| 05 | Leichte Rüstung + Schild + Zweihandwaffe | Rüstungswurf 5 — der Parier-Punkt entfällt erneut |

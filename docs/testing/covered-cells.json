@@ -373,6 +373,13 @@
         "docs/testing/roster-repeat-added-category"
       ],
       "rationale": "The Gnoblars max (a177-82fc-0b76-5b73, written 0, Ogre Kingdoms) carries an increment +1 whose single roster-scoped repeat counts the tag category 'Bully Bully' (735e-2da1-6356-2fdb). No categoryLink in the corpus targets that category: its only carrier is the root entryLink Ogre Bulls (d82e-111e-89b9-2be1) via an unconditional add-category modifier, so the repeat has to count an effective category. Rosters 01-05 step the Ogre Bulls count 0/1/1/2/2 and assert effectiveMax 0/1/1/2/2 on the Gnoblars slot, with the limit firing where the unit count over-runs it; roster 04 makes the second repetition measurable. Rosters 06/07 repeat the pattern on Gnoblar Trappers (28cd-8b7f-3d0f-1546). Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-parent-parry-save"
+      ],
+      "rationale": "Roster pairs differing only in whether the great weapon is taken: the Mercenaries Dwarf profile (c69e-8fe4-ad3d-3b7d) writes Sv 6 and carries a decrement 1 gated on an and-group of lessThan(1, scope=parent, childId=1eb7-3f36-8cf7-e0ba 'Great Weapon') and atLeast(1, Shield). Rosters 02 vs 03 assert Sv 5 vs 6 and rosters 04 vs 05 assert Sv 4 vs 5, so the lessThan condition is the only difference in each pair; roster 01 fixes the baseline Sv 7. Scenario is green."
     }
   ]
 }
