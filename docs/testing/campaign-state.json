@@ -101,8 +101,8 @@
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 12,
     "lastRunAt": "2026-08-10T12:54:52Z",
-    "lastRunOutcome": "running",
-    "reArmedFor": null,
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": "2026-08-10T15:41:00Z",
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -159,6 +159,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 12 opens on the session branch claude/evaluator-abschluss-kampagne-6hzwh7; the run-11 branch was merged into main via PR #206, so this branch starts from main and carries the campaign on."
+    "reArmNote": "Run 12: six cells taken in two phase-A passes (seven cells covered - the add|warning cell fell with add|info). Phase B was skipped: every pinnedGaps entry is recorded closed in driver.gaps, so the open task list was empty. Re-armed for 15:41 UTC."
   }
 }
