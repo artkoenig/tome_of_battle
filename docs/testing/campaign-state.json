@@ -136,8 +136,8 @@
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 15,
     "lastRunAt": "2026-08-10T21:58:22Z",
-    "lastRunOutcome": "running",
-    "reArmedFor": null,
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": "2026-08-10T23:15:00Z",
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -212,6 +212,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 15: opened by the re-arm of run 14. PR 208 for the campaign branch is open and its CI is green; the branch is unmerged, so the run continues on it."
+    "reArmNote": "Run 15: coverage 103 -> 104 of 105. Phase B was skipped, because no pinned gap is open. The one remaining cell is parked, so the campaign now has no takeable work at all and waits on two human answers (parkedQuestions). The re-arm carries the instruction to stop re-arming if nothing has been answered by then, instead of scheduling further empty runs."
   }
 }
