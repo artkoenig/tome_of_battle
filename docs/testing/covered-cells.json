@@ -240,6 +240,13 @@
         "docs/testing/numeric-conditions"
       ],
       "rationale": "The increment on the Orcs-and-Goblins limit 4928-8a21-ef4a-3007 is gated by a single `condition type=equalTo value=1 field=selections scope=parent childId=c5c1-60aa-745f-c9d3`; rosters equal-to-true.ros and equal-to-false.ros differ only in whether that count equals 1, and the limit stays silent in one and fires with actual 2 / bound 1 in the other."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-item-count"
+      ],
+      "rationale": "GREEN: rosters 01-03 walk the Dispel-Scroll count 0/1/2 under the same Butcher and the group's effectiveMax walks 1/2/3 with it; rosters 04 and 05 add the same two non-scroll items to both ends, so the moved bound is the repeat count and nothing else."
     }
   ]
 }

@@ -1041,3 +1041,21 @@ beide `max 1`. Der Gegenstand hängt über eine Gruppenkette am Orc Great Shaman
 | 03 | Ein Stab, dazu ein verschachtelter Unterbaum (Eber, Zauber in Tiefe 2) | Die Tiefe im Rahmen ändert die Zählung nicht: Ist bleibt 1 |
 | 04 | Zwei Shamanen mit je einem Stab | Der Eltern-Rahmen zählt je Shaman 1 und schweigt; die armeeweite Zwillingsgrenze feuert mit Ist 2 — beide Kopien werden also gesehen |
 | 05 | Zwei Geschwister-Auswahlen desselben Stabs am selben Shaman | `shared="true"`: Ist 2, beide Grenzen feuern |
+
+## `parent-repeat-item-count`
+
+Prüft einen `<repeat>` mit `scope="parent"`, Eintrags-`childId`, `repeats="1"`
+und `includeChildSelections="false"` (§7.7/§9.7 der Formatdoku): der gebundene
+Modifikator greift einmal je gezählter Kopie im Eltern-Rahmen. Beleg: die
+Ogre-Gruppe „Arcane Items" (`4c3e-febe-6d5d-6912`) trägt `max 1`
+(`188e-3808-4b37-c8d9`) und einen `increment 1`, dessen `repeat` die gewählten
+Dispel Scrolls (`b76c-6bad-4650-dbb0`) zählt. Träger ist ein Butcher im
+Kontingent „Standard (OK-AB)".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine arkanen Gegenstände | Basiswert: Höchstmaß 1 |
+| 02 | Ein Dispel Scroll | Eine Wiederholung: Höchstmaß 2 |
+| 03 | Zwei Dispel Scrolls | Zwei Wiederholungen: Höchstmaß 3 |
+| 04 | Zwei andere arkane Gegenstände, kein Scroll | Kein Treffer des `repeat`: Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
+| 05 | Zwei Scrolls und dieselben zwei Gegenstände | Höchstmaß 3 bei Ist 4 — die Grenze feuert, zwei Wiederholungsschritte über Roster 04 |

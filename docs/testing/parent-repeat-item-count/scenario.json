@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-repeat-item-count",
+  "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"<entryId>\" repeats=\"1\" value=\"1\" includeChildSelections=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl des genannten Eintrags im Eltern-Rahmen an; ein increment auf eine Grenze waechst dadurch je gezaehlter Kopie um einen Schritt. Konkret: die geteilte Gruppe 'Arcane Items' (4c3e-febe-6d5d-6912) der Ogre Kingdoms traegt max 1 (Constraint 188e-3808-4b37-c8d9, field=selections scope=parent includeChildSelections=false) und einen increment-1-Modifier auf genau diese Constraint-Id, dessen einziger <repeat> (value=1, repeats=1, includeChildSelections=false) die vom Traeger DIREKT gehaltenen Kopien des Dispel Scroll b76c-6bad-4650-dbb0 zaehlt (Bedingung greaterThan 0 auf dieselbe childId). Mit N Dispel Scrolls ist das effektive Maximum der Gruppe 1+N. Fuenf Roster im Kontingent Standard (OK-AB) (729f-9246-5cd3-5044) unter demselben Traeger Butcher (8933-af8e-e780-6f48) pinnen das ueber expect.capabilities am Gruppen-Anker (Verweis a8d2-cc08-f449-6ad6) und ueber die feuernde Grenze: 0/1/2 Scrolls => effectiveMax 1/2/3, und bei Ueberschreitung meldet 188e den ANGEHOBENEN bound (1 ohne Scroll, 3 mit zwei Scrolls). Der zweite increment derselben Constraint-Id (repeat auf 696a-648d-c842-4c6a, includeChildSelections=true) ist in allen Rostern inert, weil kein Power Stone gewaehlt ist.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-dispel-scroll-base-max-1.ros",
+      "description": "Standard (OK-AB) mit einem Butcher (Pflicht-Hand-Weapon) und KEINER Auswahl in der Gruppe 'Arcane Items'. Der repeat zaehlt 0 Kopien von b76c-6bad-4650-dbb0, die Bedingung greaterThan 0 haelt nicht: die Grenze 188e-3808-4b37-c8d9 behaelt ihren geschriebenen Basiswert max 1, der Gruppen-Anker meldet effectiveMax 1 bei Ist 0.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "809a-eb2a-6def-15f6",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-dispel-scroll-max-2.ros",
+      "description": "Identischer Aufbau mit EINEM Dispel Scroll in der Gruppe 'Arcane Items' (Link 1954-4ffd-5be0-eac7 -> b76c-6bad-4650-dbb0). Der repeat zaehlt im Eltern-Rahmen (Butcher) 1 direkt gehaltene Kopie => 1 Anwendung von increment +1 => effektives Maximum 1+1=2 bei Ist 1. Keine der genannten Grenzen feuert (1 <= 4 eigene Scroll-Grenze; 25 <= 50 pts Budget).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "809a-eb2a-6def-15f6",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 2,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-dispel-scrolls-max-3.ros",
+      "description": "Identischer Aufbau mit ZWEI Dispel Scrolls (number=2). Der repeat zaehlt 2 direkt gehaltene Kopien => die Wiederholung greift ZWEIMAL => effektives Maximum 1+2=3 bei Ist 2. Keine der genannten Grenzen feuert (2 <= 4 eigene Scroll-Grenze; 2x25=50 <= 50 pts Budget).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "188e-3808-4b37-c8d9",
+          "809a-eb2a-6def-15f6",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-other-items-no-scroll-max-1-fires.ros",
+      "description": "Derselbe Butcher mit ZWEI anderen Mitgliedern der Gruppe (Skullmantle 5ccf-df71-8c78-ee5e, 20 pts; Bangstick c5d0-f7e9-6534-f6f4, 25 pts) und KEINEM Dispel Scroll. Beide repeat-Zaehler treffen 0 Kopien, kein increment wird angewendet: die Grenze bleibt beim Basiswert 1 und feuert bei Ist 2 mit bound 1. Punkte 45 <= 50.",
+      "expect": {
+        "firing": [
+          { "limitId": "188e-3808-4b37-c8d9", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "809a-eb2a-6def-15f6",
+          "62a3-8df3-3e65-6be1",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "153e-42d6-004c-e352",
+          "6482-f23b-9933-2363",
+          "ffca-6d1b-26f9-9be5",
+          "0fad-e34d-5f8d-b1f3"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-scrolls-plus-two-items-max-3-fires.ros",
+      "description": "Wie 04, zusaetzlich ZWEI Dispel Scrolls (number=2). Der repeat hebt die Grenze um zwei Schritte auf 3, gezaehlt werden 2+1+1=4 Mitglieder: 188e-3808-4b37-c8d9 feuert mit actual 4 und dem ANGEHOBENEN bound 3 (gegen bound 1 in Roster 04 bei identischen Zusatz-Items). Das 50-pts-Budget 62a3-8df3-3e65-6be1 wird hier bewusst gesprengt (95 pts) und darum nicht als abwesend erwartet.",
+      "expect": {
+        "firing": [
+          { "limitId": "188e-3808-4b37-c8d9", "actual": 4, "bound": 3 }
+        ],
+        "absent": [
+          "809a-eb2a-6def-15f6",
+          "4dd7-db61-d846-4252",
+          "90b7-8f2e-6da9-6516",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "153e-42d6-004c-e352",
+          "6482-f23b-9933-2363",
+          "ffca-6d1b-26f9-9be5",
+          "0fad-e34d-5f8d-b1f3"
+        ],
+        "capabilities": [
+          {
+            "defId": "a8d2-cc08-f449-6ad6",
+            "targetDefId": "4c3e-febe-6d5d-6912",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "8933-af8e-e780-6f48",
+            "name": "Arcane Items",
+            "current": 4,
+            "effectiveMin": null,
+            "effectiveMax": 3
+          }
+        ]
+      }
+    }
+  ]
+}
