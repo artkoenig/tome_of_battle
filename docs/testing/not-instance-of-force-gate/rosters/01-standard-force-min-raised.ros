@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="niofg-01" name="NIOFG 01 - Standard (OK-AB), notInstanceOf haelt, Pflicht auf 1 gehoben" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms"></force>
+  </forces>
+</roster>

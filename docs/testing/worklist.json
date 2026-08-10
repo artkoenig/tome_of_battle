@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 62,
-    "uncovered": 43
+    "covered": 63,
+    "uncovered": 42
   },
   "cells": [
     {
@@ -103,97 +103,6 @@
             "scope": "roster",
             "childId": "344f-77ef-7238-f157",
             "repeats": "1"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|notInstanceOf|force|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "notInstanceOf",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 9,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 5
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "d82e-111e-89b9-2be1",
-            "name": "Ogre Bulls"
-          },
-          "path": [
-            "catalogue",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8711-ed16-2a44-7251"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "c487-0350-e5cf-0c0a",
-            "name": "Leadbelchers"
-          },
-          "path": [
-            "catalogue",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8711-ed16-2a44-7251"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "c8d5-1198-3d4a-8a67",
-            "name": "Rhinox Riders"
-          },
-          "path": [
-            "catalogue",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notInstanceOf",
-            "field": "selections",
-            "scope": "force",
-            "childId": "8711-ed16-2a44-7251"
           }
         }
       ]

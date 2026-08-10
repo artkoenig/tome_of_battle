@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rrcc-05" name="RRCC 05 – Standard (OG-AB): EINE Orc-Boyz-Auswahl mit number=2 hebt max ebenfalls auf 2" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-repeat-category-count E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Zwilling zu Roster 04: dieselben ZWEI gezaehlten Orc Boyz, aber als
+         EINE Auswahl mit number="2" statt als zwei Auswahlen mit je number="1".
+         Das `number` einer .ros-Auswahl ist die absolute Gesamtstueckzahl
+         (Formatdoku §7.5, Kasten "Zahlenbasis"), also zaehlt der <repeat>
+         auch hier 2 Treffer => effektives Maximum 0 + 2 = 2, Ist 3 feuert
+         mit bound 2. -->
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-orc-boyz" name="Orc Boyz" entryId="ac23-b9d3-4046-23b7" entryLinkId="" number="2" type="unit" collective="false">
+          <categories>
+            <category id="cat-orc-boyz-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+            <category id="cat-orc-boyz-tag" name="Orc boyz" entryId="344f-77ef-7238-f157" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-orc-boyz-models" name="Orc Boyz" entryId="cef0-77ce-8158-32d4" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-orc-boyz-choppa" name="Choppa" entryId="f73d-18a2-089b-285e" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-orc-boyz-armour" name="Light Armour" entryId="ee53-a14e-2084-9f87" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-big-uns" name="Orc Big &apos;Uns" entryId="eeb1-a6c4-b57e-f08c" entryLinkId="" number="3" type="unit" collective="false">
+          <categories>
+            <category id="cat-big-uns-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-big-uns-models" name="Big &apos;Uns" entryId="0d44-66f5-eae1-bb16" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-big-uns-choppa" name="Choppa" entryId="a199-353d-5f10-c4da" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-big-uns-armour" name="Light Armour" entryId="ab64-4412-7454-4b8e" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

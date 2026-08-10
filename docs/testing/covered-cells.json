@@ -324,6 +324,13 @@
         "docs/testing/ancestor-scope-instance-of"
       ],
       "rationale": "Roster 01 pins the holding side at grandparent depth — the Tiranoc Chariot's max drops from 2 to 1 because an ancestor two levels up carries the Characters category while its direct parent does not — and roster 02 the failing side, where no ancestor carries the Slaanesh category and the Steed keeps its written max 0."
+    },
+    {
+      "key": "condition|notInstanceOf|force|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/not-instance-of-force-gate"
+      ],
+      "rationale": "GREEN: rosters 01 and 02 are identical apart from the force and flip the Ogre-Bulls minimum between 1 (fires with actual 0) and its written 0 (silent); roster 03 adds a second non-Ironskin force in the same catalogue, so the rule pinned is 'every force that is not the named one'. Both are empty rosters, which rules out a counting reading."
     }
   ]
 }

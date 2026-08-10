@@ -1138,3 +1138,24 @@ in der gewählten Blutlinie.
 Der Fall „innere Bedingung hält, äußere scheitert" ist im Fixture-Korpus nicht
 baubar — alle drei verschachtelten Fundstellen haben eine unbedingte äußere
 Klammer; das ist in der README des Szenarios als Lücke festgehalten.
+
+## `not-instance-of-force-gate`
+
+Prüft die `notInstanceOf`-Bedingung mit `scope="force"` und `forceEntry`-`childId`
+(§7.7 der Formatdoku): sie ist die inverse Identitätsprüfung — sie hält in
+**jedem** Kontingent außer dem benannten. Beleg: der Wurzel-`entryLink`
+„Ogre Bulls" (`d82e-111e-89b9-2be1`, Ogre Kingdoms) trägt `min 0`
+(`32ed-26da-3f27-5c04`), per `set 1` gehoben, sobald das Kontingent **keine**
+Instanz von „Ironskin Tribe" (`8711-ed16-2a44-7251`) ist; der Verweis ist in
+allen drei Kontingenten sichtbar, seine Untergrenze also prüfbar.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent „Standard (OK-AB)" | Die Bedingung hält: Pflicht 1, unerfüllt — die Grenze feuert mit Ist 0 |
+| 02 | Leeres Kontingent „Ironskin Tribe" | Die Bedingung hält nicht: der Rohwert `min 0` bleibt, nichts feuert |
+| 03 | Leeres Kontingent „Gnoblar Horde" | Ein zweites Nicht-Ironskin-Kontingent: die Pflicht greift auch dort — „jedes andere", nicht „Standard" |
+| 04 | „Standard" mit Ogre Bulls | Pflicht erfüllt (Ist 1), nichts feuert |
+| 05 | „Ironskin Tribe" mit Ogre Bulls | Untergrenze bleibt 0, nichts feuert |
+
+Beide leeren Roster schließen zugleich eine zählende Lesart aus: eine Zählung
+wäre dort 0 und die Grenze bliebe bei 0.
