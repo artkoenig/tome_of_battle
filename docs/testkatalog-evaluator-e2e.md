@@ -118,7 +118,41 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
 | [`decrement-cost-bloodline-casting-dice`](testing/decrement-cost-bloodline-casting-dice/) | ergofang VC (ohne Mercenaries) | 8 |
 | [`modifier-unresolved-target-inert`](testing/modifier-unresolved-target-inert/) | Definitive O&G + Mercenaries | 5 |
-| **Summe** | | **187** |
+| [`force-instance-gated-rename`](testing/force-instance-gated-rename/) | Definitive VC + Mercenaries | 2 |
+| [`set-hidden-force-gate`](testing/set-hidden-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-constraint-value-force-gate`](testing/set-constraint-value-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`dispel-scroll-repeat-group-max`](testing/dispel-scroll-repeat-group-max/) | Definitive VC + Mercenaries | 2 |
+| [`at-least-force-toggle-gate`](testing/at-least-force-toggle-gate/) | Definitive Ogre + Mercenaries | 2 |
+| [`at-least-roster-border-patrols-gate`](testing/at-least-roster-border-patrols-gate/) | Definitive VC + Mercenaries | 2 |
+| [`condition-group-or-force-gate`](testing/condition-group-or-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`condition-group-and-points-bracket`](testing/condition-group-and-points-bracket/) | Definitive VC + Mercenaries | 3 |
+| [`parent-scope-per-model-cost`](testing/parent-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
+| [`remove-category-force-gate`](testing/remove-category-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`group-max-increment-on-choice`](testing/group-max-increment-on-choice/) | Definitive VC + Mercenaries | 2 |
+| [`set-characteristic-force-gate`](testing/set-characteristic-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`less-than-force-min-drop`](testing/less-than-force-min-drop/) | Definitive VC + Mercenaries | 3 |
+| [`at-least-unit-upgrade-gate`](testing/at-least-unit-upgrade-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-primary-category-membership`](testing/set-primary-category-membership/) | Definitive Ogre + Mercenaries | 3 |
+| [`unit-scope-instance-of-category`](testing/unit-scope-instance-of-category/) | Definitive VC + Mercenaries | 4 |
+| [`less-than-roster-category-count`](testing/less-than-roster-category-count/) | Definitive O&G + Mercenaries | 5 |
+| [`greater-than-parent-upgrade-gate`](testing/greater-than-parent-upgrade-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-cost-value-force-gate`](testing/set-cost-value-force-gate/) | Definitive VC + Mercenaries | 4 |
+| [`force-id-scope-instance-of`](testing/force-id-scope-instance-of/) | Definitive O&G + Mercenaries | 3 |
+| [`at-least-self-model-count`](testing/at-least-self-model-count/) | Definitive VC + Mercenaries | 3 |
+| [`at-least-roster-points-limit`](testing/at-least-roster-points-limit/) | Definitive O&G + Mercenaries | 3 |
+| [`parent-max-include-child-selections`](testing/parent-max-include-child-selections/) | Definitive O&G + Mercenaries | 5 |
+| [`parent-repeat-item-count`](testing/parent-repeat-item-count/) | Definitive Ogre + Mercenaries | 5 |
+| [`unconditional-modifier-group`](testing/unconditional-modifier-group/) | Definitive VC + Mercenaries | 5 |
+| [`parent-repeat-model-include-children`](testing/parent-repeat-model-include-children/) | Definitive O&G + Mercenaries | 5 |
+| [`parent-repeat-item-include-children`](testing/parent-repeat-item-include-children/) | Definitive Ogre + Mercenaries | 6 |
+| [`nested-modifier-group`](testing/nested-modifier-group/) | Definitive VC + Mercenaries | 4 |
+| [`not-instance-of-force-gate`](testing/not-instance-of-force-gate/) | Definitive Ogre + Mercenaries | 5 |
+| [`roster-repeat-category-count`](testing/roster-repeat-category-count/) | Definitive O&G + Mercenaries | 6 |
+| [`modifier-group-repeats`](testing/modifier-group-repeats/) | Definitive VC + Mercenaries | 9 |
+| [`condition-group-or-nested`](testing/condition-group-or-nested/) | Definitive O&G + Mercenaries | 6 |
+| [`category-scope-ancestor-frame`](testing/category-scope-ancestor-frame/) | Definitive VC + Mercenaries | 4 |
+| [`condition-group-not`](testing/condition-group-not/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **310** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1428,3 +1462,46 @@ Roster dazwischenfunkt.
 | 04 | Zwei und zwei | Genau **eine** Meldung: beide Mitglieder halten — kein „entweder oder", und die Meldung wird nicht je Mitglied wiederholt |
 | 05 | Ein einzelnes Big 'Uns | **Keine** Meldung: `greaterThan 1` ist nicht `atLeast 1` |
 | 06 | Keine der beiden Einheiten | **Keine** Meldung: „kein Mitglied hält" ist nicht leer-wahr |
+
+## `category-scope-ancestor-frame`
+
+Prüft, was der `scope` einer Grenze bedeutet, wenn er eine **Kategorie-Id**
+nennt: der Bezugsrahmen ist der nächste **Vorfahre** der tragenden Auswahl (den
+Träger eingeschlossen), der diese Kategorie trägt — **kein** armeeweiter Rahmen.
+Beleg: die auf „Strigoi" skopierte Reittier-Sperre `6afc-566e-34d4-d35c` des
+Master Necromancer (Vampire Counts) kann daher nie feuern, denn kein Vorfahre
+seiner Gruppe „Mounts" trägt die Kategorie Strigoi — auch dann nicht, wenn im
+selben Kontingent ein Strigoi-Vampir steht. Damit „schweigt" nicht mit „wird gar
+nicht gezählt" verwechselt werden kann, belegt die `parent`-skopierte
+Gruppengrenze `7e5f-f372-f244-a864` derselben Gruppe im Gegenzug, dass die
+Gruppe sehr wohl gezählt wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Master Necromancer mit genau einem Reittier | Der Kategorie-Rahmen löst nicht auf: die Strigoi-Sperre schweigt, die Gruppengrenze ist eingehalten |
+| 02 | Wie 01, zusätzlich ein Strigoi-Vampir im selben Kontingent | Der Strigoi ist Geschwister, nicht Vorfahre: die Sperre schweigt weiter — eine armeeweite Lesart schlüge hier an |
+| 03 | Derselbe Necromancer mit **zwei** Reittieren | Die `parent`-skopierte Gruppengrenze feuert mit Ist 2 / Grenze 1 — die Gegenprobe, dass überhaupt gezählt wird |
+| 04 | Strigoi im Kontingent **und** zwei Reittiere | Schärfster Kontrast: die Gruppengrenze feuert, die Strigoi-Sperre bleibt still |
+
+## `condition-group-not`
+
+Prüft die `conditionGroup type="not"` als **Negation**: sie hält genau dann,
+wenn **keines** ihrer Mitglieder hält (§7.7 der Formatdoku, Issue 0115). Beleg
+ist das einzige reale Vorkommen im Datensatz — der `set`-Modifikator, der im
+Kontingent „Army of the Lichemaster" die Pflicht-Untergrenzen von Heinrich
+Kemmler (`8461-3eab-e5ac-1636`) und Krell (`60a8-5b49-6b81-7c84`) von 0 auf 1
+hebt. Sein Wächter ist eine `and`-Gruppe aus (a) `instanceOf` auf das Kontingent
+`f37a-a93e-fa22-61a8` und (b) einer `not`-Gruppe über genau einer
+`and`-Untergruppe (Punktelimit < 2000 **und** mindestens eine Kampagnen-Auswahl
+`14fb-dd39-08e7-cbde` im Kontingent). Die Roster variieren Budget,
+Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart der Negation sichtbar
+wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Lichemaster-Kontingent, 3000 Punkte | Die innere Untergruppe scheitert doppelt, die Negation hält: beide Pflichtgrenzen stehen auf 1 und feuern mit Ist 0 |
+| 02 | Wie 01, aber Kemmler und Krell gewählt | Die Pflicht gilt weiter und ist erfüllt — die Gegenprobe, dass die Stille in 03/06 nicht „gar nicht ausgewertet" heißt |
+| 03 | 1500 Punkte **und** Kampagnen-Auswahl | Beide Mitglieder halten, die Negation hält **nicht**: der Modifikator greift nicht, beide Grenzen bleiben bei 0 und schweigen |
+| 04 | 1500 Punkte, **ohne** Kampagnen-Auswahl | Nur eine Hälfte hält: die Negation hält, beide Pflichtgrenzen feuern — das Budget allein schaltet die Pflicht nicht ab |
+| 05 | 3000 Punkte **mit** Kampagnen-Auswahl | Die andere Hälfte: die Negation hält, beide Pflichtgrenzen feuern — auch die Kampagnen-Auswahl allein schaltet sie nicht ab |
+| 06 | Leeres Kontingent „Clan Von Carstein (VC-AB)", 3000 Punkte | Schon das `instanceOf` scheitert: der Modifikator greift unabhängig von der Negation nicht, beide Grenzen schweigen |
