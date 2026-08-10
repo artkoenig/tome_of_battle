@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-max-enchanted-items-per-bearer",
+  "description": "Eine max-Grenze mit field=\"selections\" und scope=\"parent\" an einer GETEILTEN selectionEntryGroup zaehlt die Mitglieder der Gruppe im Rahmen der Elternauswahl, die die Gruppe haelt - und dieser Rahmen ist der einzelne Traeger, nicht das Roster, obwohl die Grenze shared=\"true\" und includeChildForces=\"true\" traegt. Gepinnt an der geteilten Gruppe \"Enchanted Items\" 76c3-b01d-0836-2f86 des upstream-Katalogs Vampire Counts.cat (:3579) mit ihrer einzigen Grenze e945-1f86-ecf8-4c65 (type=max, field=selections, scope=parent, value=1, shared=true, includeChildSelections=false, includeChildForces=true, :3581). Ein Traeger mit zwei Enchanted Items laesst sie mit Ist 2 / Grenze 1 feuern; zwei Traeger mit je einem lassen sie in BEIDEN Rahmen schweigen. Die Gegenprobe liefert die Eigengrenze eines Gegenstands (Casket of Ages c235-25ac-6aaf-b4bd, max 1 scope=\"roster\"): sie feuert mit Ist 2, wenn beide Traeger denselben Gegenstand nehmen - der roster-weite Rahmen aggregiert also sehr wohl, der Eltern-Rahmen nicht.",
+  "dataset": {
+    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/__fixtures__/whfb6/Vampire Counts.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-one-bearer-one-item.ros",
+      "description": "Ein Wight Lord (b9c6-93fb-ce3c-965a) mit seinem Pflicht-Kind Handweapon und EINEM Enchanted Item (Casket of Ages, 25 pts). Im Eltern-Rahmen steht ein Gruppenmitglied: Ist 1 gegen Grenze 1 - e945-1f86-ecf8-4c65 schweigt. Die Punktegrenze der haltenden Gruppe \"Magic Items\" (67d9-40b0-b9a8-bb85, max 50 pts) bleibt mit 25 pts still, die roster-weite Eigengrenze des Gegenstands (c235-25ac-6aaf-b4bd) mit einem Exemplar ebenfalls. Der Gruppen-Slot macht den Rahmen sichtbar: Ist 1, effektives Hoechstmass 1.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e945-1f86-ecf8-4c65",
+          "c235-25ac-6aaf-b4bd",
+          "67d9-40b0-b9a8-bb85",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6"
+        ],
+        "capabilities": [
+          {
+            "defId": "d257-de6d-5d8b-7c6b",
+            "targetDefId": "76c3-b01d-0836-2f86",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "b9c6-93fb-ce3c-965a",
+            "name": "Enchanted Items",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-bearer-two-items.ros",
+      "description": "Derselbe Wight Lord, jetzt mit ZWEI verschiedenen Enchanted Items (Casket of Ages 25 pts + Talon of Death 40 pts). Im Eltern-Rahmen stehen zwei Gruppenmitglieder: e945-1f86-ecf8-4c65 feuert mit Ist 2 gegen Grenze 1. Die beiden roster-weiten Eigengrenzen der Gegenstaende (c235-25ac-6aaf-b4bd, 6af0-7513-7375-ff53) bleiben still, weil von jedem Gegenstand nur EIN Exemplar im Roster steht - die feuernde Grenze ist also eindeutig die Gruppengrenze. Die Punktegrenze 67d9-40b0-b9a8-bb85 (max 50 pts) wird mit 65 pts zwangslaeufig mit gerissen; sie ist bewusst NICHT Gegenstand der Erwartung (siehe README).",
+      "expect": {
+        "firing": [
+          { "limitId": "e945-1f86-ecf8-4c65", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "c235-25ac-6aaf-b4bd",
+          "6af0-7513-7375-ff53",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6"
+        ],
+        "capabilities": [
+          {
+            "defId": "d257-de6d-5d8b-7c6b",
+            "targetDefId": "76c3-b01d-0836-2f86",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "b9c6-93fb-ce3c-965a",
+            "name": "Enchanted Items",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-different-bearers-one-item-each.ros",
+      "description": "Zwei verschiedene Traeger derselben geteilten Gruppe: Wight Lord (ueber entryLink d257-de6d-5d8b-7c6b) mit Casket of Ages und Necromancer (b5d8-db21-a4b7-9e94, ueber entryLink c6f1-4ed3-eb25-9c78) mit Talon of Death, beide samt ihren Pflicht-Kindern. Das ist der Fall, der den Rahmen entscheidet: zusammen stehen zwei Gruppenmitglieder im Roster, aber je Eltern-Rahmen nur eines. e945-1f86-ecf8-4c65 muss in BEIDEN Rahmen schweigen - ein roster-weites Lesen von shared=\"true\" (oder ein Aufweiten des Rahmens durch includeChildForces=\"true\") liesse sie hier mit Ist 2 feuern. Beide Gruppen-Slots zeigen Ist 1 gegen effektives Hoechstmass 1.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e945-1f86-ecf8-4c65",
+          "c235-25ac-6aaf-b4bd",
+          "6af0-7513-7375-ff53",
+          "67d9-40b0-b9a8-bb85",
+          "b5f5-2eda-0882-7aca",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6",
+          "2525-273c-d3f1-cd1f",
+          "846e-7221-e02a-201f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "c1c6-801e-dae2-3841"
+        ],
+        "capabilities": [
+          {
+            "defId": "d257-de6d-5d8b-7c6b",
+            "targetDefId": "76c3-b01d-0836-2f86",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "b9c6-93fb-ce3c-965a",
+            "name": "Enchanted Items",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0
+          },
+          {
+            "defId": "c6f1-4ed3-eb25-9c78",
+            "targetDefId": "76c3-b01d-0836-2f86",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "b5d8-db21-a4b7-9e94",
+            "name": "Enchanted Items",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-identical-bearers-one-item-each.ros",
+      "description": "Zwei GLEICHE Traeger (zweimal Wight Lord b9c6-93fb-ce3c-965a) und damit zweimal DERSELBE entryLink d257-de6d-5d8b-7c6b auf dieselbe geteilte Gruppe; jeder Traeger nimmt ein anderes Enchanted Item (Casket of Ages / Talon of Death). Die schaerfste Form der Frage nach shared=\"true\": auch ueber zwei Instanzen desselben Verweises hinweg wird nicht zusammengezaehlt, e945-1f86-ecf8-4c65 schweigt. Auch die Punktegrenze 67d9-40b0-b9a8-bb85 bleibt still (25 bzw. 40 pts je Rahmen; roster-weit gelesen waeren es 65). Keine capabilities-Aussage, weil Definition UND Rahmen hier zweimal identisch sind und ein Slot damit nicht eindeutig benannt werden kann.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "e945-1f86-ecf8-4c65",
+          "c235-25ac-6aaf-b4bd",
+          "6af0-7513-7375-ff53",
+          "67d9-40b0-b9a8-bb85",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-identical-bearers-same-item.ros",
+      "description": "Gegenprobe zum Rahmen: wieder zwei Wight Lords, aber beide nehmen DENSELBEN Gegenstand Casket of Ages. Dessen Eigengrenze c235-25ac-6aaf-b4bd (max 1, scope=\"roster\", shared=true) feuert mit Ist 2 gegen Grenze 1 - der roster-weite Rahmen aggregiert ueber die Traeger hinweg. Die Gruppengrenze e945-1f86-ecf8-4c65 (max 1, scope=\"parent\") schweigt im selben Roster. Damit ist das Schweigen in Roster 03/04 kein Alibi einer allgemein nicht zaehlenden Auswertung, sondern die Aussage ueber den Eltern-Rahmen.",
+      "expect": {
+        "firing": [
+          { "limitId": "c235-25ac-6aaf-b4bd", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "e945-1f86-ecf8-4c65",
+          "6af0-7513-7375-ff53",
+          "67d9-40b0-b9a8-bb85",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6"
+        ]
+      }
+    }
+  ]
+}

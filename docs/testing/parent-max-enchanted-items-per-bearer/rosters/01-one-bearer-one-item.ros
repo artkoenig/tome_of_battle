@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmei-01" name="PMEI 01 - ein Traeger mit einem Enchanted Item" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-scope enchanted-items E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Traeger: Wight Lord (Vampire Counts.cat:978). Seine Gruppe
+             "Magic Items" 81df-d2c1-7091-b1bc (:1067) haelt die geteilte Gruppe
+             "Enchanted Items" 76c3-b01d-0836-2f86 ueber den entryLink
+             d257-de6d-5d8b-7c6b (:1075) - dieser Link traegt KEINE eigene
+             Grenze, die einzige Stueckzahl-Obergrenze der Gruppe ist also
+             e945-1f86-ecf8-4c65 an der Gruppendefinition selbst. -->
+        <selection id="sel-wl" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Kind des Wight Lord: Handweapon, min 1 (a775-7b1e-7fa8-d353). -->
+            <selection id="sel-wl-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- EIN Mitglied der Gruppe "Enchanted Items": Casket of Ages
+                 (a46f-b46b-2efc-0283, 25 pts, :3624). Ist 1 gegen Grenze 1 -
+                 e945-1f86-ecf8-4c65 schweigt. -->
+            <selection id="sel-wl-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="niop-02" name="NIOP 02 - Ironskin Tribe (WD#309-UK): Eltern-Einheit ist Ironskin, Extra Special choice bleibt verborgen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costs>
+    <cost name="Points" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+  </costs>
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Ironskin Tribe (WD#309-UK)" entryId="8711-ed16-2a44-7251" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="rhinox-1" name="Rhinox Riders" entryId="5e33-e510-ba45-933e" entryLinkId="c8d5-1198-3d4a-8a67" number="1" type="unit">
+          <selections>
+            <selection id="rhinox-1-model" name="Rhinox Riders" entryId="c7a1-044e-39f1-9ad8" entryLinkId="" number="1" type="model"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

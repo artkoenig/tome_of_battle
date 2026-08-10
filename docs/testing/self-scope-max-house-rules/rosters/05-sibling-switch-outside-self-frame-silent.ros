@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ssm-05" name="SSM 05 – Schwester-Schalter unter demselben Traeger liegt AUSSERHALB des self-Rahmens" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored self-scope-max-house-rules E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms (6th definitive edition)">
+      <selections>
+        <!-- Der Traeger 6a7d haelt hier ZWEI direkte Kinder (Allow RoR + Allow Mercenaries),
+             die "Allow Mercenaries" selbst aber nur EINES. Wuerde die self-skopierte Grenze
+             714b-5314-33d4-dd68 faelschlich im Rahmen des ELTERN-Eintrags zaehlen, kaeme sie
+             auf 2 und feuerte. Aus den Daten gefordert: sie zaehlt 1 und bleibt stumm. -->
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-allow-merc" name="Allow Mercenaries" entryId="fda5-49b9-b74c-aaf4" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-hr-dow" name="House rule: All generic DoW are Special" entryId="713c-28b1-0861-1ffd" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1907,3 +1907,73 @@ Erreichbar ist der Gegenstand nur über die geteilte Gruppe „Enchanted Items
 > Bericht zu adressieren ist — über die Verweis-Id oder die Ziel-Id —, legt der
 > Manifest-Vertrag nicht fest, und kein anderes Szenario zeigt einen solchen
 > Fall. Der Slot wird dort deshalb ohne Rahmen-Koordinate benannt.
+
+## `parent-max-enchanted-items-per-bearer`
+
+Prüft, dass eine `max`-Grenze mit `scope="parent"` an einer geteilten
+Auswahlgruppe **je Träger** zählt und nicht armeeweit — obwohl sie
+`shared="true"` und `includeChildForces="true"` trägt. Beleg: die geteilte Gruppe
+„Enchanted Items" (`76c3-b01d-0836-2f86`, Vampire Counts) trägt genau eine
+Grenze, `max 1` auf `selections` im Eltern-Rahmen (`e945-1f86-ecf8-4c65`). Die
+Roster tragen dieselben Gegenstände in wechselnder Verteilung auf einen oder zwei
+Träger.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Träger, ein Gegenstand | Die Grenze schweigt |
+| 02 | Ein Träger, zwei Gegenstände | Sie feuert mit Ist 2 / Grenze 1 |
+| 03 | Zwei **verschiedene** Träger, je ein Gegenstand | Sie schweigt für beide — der Rahmen ist der Träger, nicht die Armee |
+| 04 | Zwei **gleiche** Träger (derselbe Verweis zweimal), je ein Gegenstand | Sie schweigt ebenfalls: auch Instanzen desselben Verweises werden nicht zusammengelegt |
+| 05 | Zwei gleiche Träger, **derselbe** Gegenstand | Die Gegenprobe: die armeeweite Grenze des Gegenstands feuert mit Ist 2 / Grenze 1, die Gruppengrenze schweigt |
+
+> **Offen deklariert:** In Roster 02 reißt zwangsläufig auch das Punktebudget der
+> Gruppe (die zwei billigsten Mitglieder kosten zusammen mehr als deren 50
+> Punkte); weil dieses Szenario eine Zähl-Grenze festnagelt und das Kostenbudget
+> anderswo gepinnt ist, wird es dort weder behauptet noch ausgeschlossen. Der
+> Fall „untergeordnetes Kontingent" ist auf diesem Datensatz nicht baubar — das
+> Spielsystem deklariert genau ein Kontingent —, sodass `includeChildForces` nur
+> in seiner Wirkungslosigkeit am Eltern-Rahmen belegt ist.
+
+## `not-instance-of-parent-ironskin-tribe`
+
+Prüft, dass eine `notInstanceOf`-Bedingung mit `scope="parent"` und einer
+Kategorie-Id die **effektiven** Kategorien der Eltern-Auswahl liest — also auch
+die, die ein Modifikator am Wurzel-Verweis der Einheit erst zur Laufzeit
+hinzufügt. Beleg: die Nullpunkt-Aufwertung „Extra Special choice"
+(`6c8d-f6f3-823e-e6a5`, unter „Rhinox Riders", Mercenaries) wird aufgedeckt und
+zur Pflicht (`min` 1), wenn die Eltern-Einheit **kein** „Ironskin" ist und das
+Armeebuch Ogre Kingdoms ist. Die Kategorie „Ironskin" hängt an keinem
+`categoryLink`; sie entsteht allein durch ein `add category` am Wurzel-Verweis,
+das nur im Kontingent „Ironskin Tribe" greift.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kontingent „Standard", Einheit über den Wurzel-Verweis | Die Aufwertung ist sichtbar und Pflicht; sie fehlt, also feuert ihre Mindestgrenze mit Ist 0 / Grenze 1 |
+| 02 | Kontingent „Ironskin Tribe", dieselbe Einheit über denselben Verweis | Die Laufzeit-Kategorie greift: die Aufwertung bleibt verborgen und unverpflichtend |
+| 03 | Wie 01, Aufwertung gewählt | Die Grenze schweigt, die Sichtbarkeit bleibt — der Unterschied ist die Auswahl, nicht die Regel |
+| 04 | Kontingent „Ironskin Tribe", Einheit **ohne** den Wurzel-Verweis | Ohne den Verweis fehlt die Laufzeit-Kategorie: die Pflicht greift wieder wie in 01 |
+
+> **Kontrolle:** Die Schwester-Aufwertung „Extra Rare choice" hängt allein am
+> Armeebuch und bleibt in allen vier Rostern verborgen — aufgedeckt wird also
+> nicht pauschal alles unter der Einheit.
+
+## `self-scope-max-house-rules` (ROT — gepinnter Gap)
+
+Prüft, dass eine `max`-Grenze mit `scope="self"` die tragende Auswahl **selbst**
+zum Zählrahmen macht: gezählt werden die Auswahlen unterhalb genau dieser
+Auswahl. Beleg: „Allow Mercenaries" (`fda5-49b9-b74c-aaf4`, Spielsystem) trägt
+nebeneinander eine `self`- und eine `parent`-skopierte `max 1` und hält genau
+zwei direkte Kind-Einträge (zwei House Rules).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Beide House Rules unter derselben „Allow Mercenaries" | Die `self`-Grenze feuert mit Ist 2 / Grenze 1 |
+| 02 / 03 | Je eine der beiden House Rules | Sie schweigt — und zwar unabhängig davon, welche |
+| 04 | Keine House Rule | Nullpunkt: der Träger zählt sich nicht selbst mit |
+| 05 | Der Eltern-Eintrag hält zwei Kinder, die „Allow Mercenaries" nur eines | Rahmen-Abgrenzung: eine Zählung im Eltern-Rahmen käme auf 2 und feuerte — gefordert ist Schweigen |
+| 06 | Ein Kind-Knoten mit Stückzahl 2 | Der Rahmen summiert Stückzahlen, nicht Knoten: die Grenze feuert ebenfalls |
+
+**Stand: rot.** Die Roster 01 und 06 schlagen fehl: der Bericht führt für
+`714b-5314-33d4-dd68` überhaupt keine Verletzung, während die vier stummen Fälle
+passen — die Grenze feuert also nie, statt im `self`-Rahmen zu zählen. Gepinnt
+als Phase-B-Aufgabe in `docs/testing/campaign-state.json`.

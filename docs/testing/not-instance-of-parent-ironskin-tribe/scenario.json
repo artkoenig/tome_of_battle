@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "name": "not-instance-of-parent-ironskin-tribe",
+  "description": "Eine condition type=\"notInstanceOf\" field=\"selections\" scope=\"parent\" mit einer KATEGORIE in childId ist eine Mitgliedschaftspruefung mit umgekehrter Polaritaet auf der ELTERN-Auswahl, und sie muss deren EFFEKTIVE Kategorien lesen — die, die ein Modifikator am Wurzel-Verweis der Eltern-Auswahl zur Laufzeit hinzufuegt —, nicht nur die categoryLinks ihrer Definition (Formatdoku 8: 'Saemtliche kategorie-abhaengige Logik muss die effektiven Kategorie-Links auswerten'). Traeger ist die Null-Punkte-Aufwertung 'Extra Special choice' (6c8d-f6f3-823e-e6a5, hidden=\"true\") unter der Soeldner-Einheit 'Rhinox Riders' (5e33-e510-ba45-933e, Mercenaries): eine modifierGroup setzt ihre eigene min-Grenze b830-0538-045e-ee90 auf 1 und hidden auf false, gegatet auf eine and-Gruppe aus GENAU ZWEI Bedingungen — notInstanceOf(scope=parent, childId=7ff5-9e55-c594-4b40 = categoryEntry 'Ironskin') und instanceOf(scope=primary-catalogue, childId=731d-5b13-2a92-5427 = Armeebuch Ogre Kingdoms). Die Kategorie Ironskin entsteht im ganzen Fixture-Korpus an genau EINER Stelle: der Wurzel-entryLink c8d5-1198-3d4a-8a67 des Ogre-Kingdoms-Katalogs traegt eine zweite modifierGroup mit 'add category 7ff5-9e55-c594-4b40', gegatet auf instanceOf(scope=force, childId=8711-ed16-2a44-7251 = forceEntry 'Ironskin Tribe (WD#309-UK)'). Alle vier Roster stehen im SELBEN Armeebuch (Ogre Kingdoms), damit die zweite Bedingung der and-Gruppe in allen vier haelt und nicht das ist, was das Paar misst. Roster 01 (Kontingent 'Standard (OK-AB)') und 02 (Kontingent 'Ironskin Tribe') unterscheiden sich allein im Kontingent und kippen die Aufwertung zwischen 'aufgedeckt und pflichtig' (isHidden=false, effectiveMin=1, b830 feuert mit Ist 0 gegen Grenze 1) und 'verborgen und unverbindlich' (isHidden=true, effectiveMin=0, b830 still). Roster 03 waehlt die Aufwertung im Standard-Kontingent und macht die Aufdeckung unabhaengig von der Verletzung sichtbar (isHidden=false, effectiveMin=1, b830 erfuellt und still). Roster 04 steht im Ironskin-Kontingent, laesst aber den Wurzel-Verweis weg — ohne ihn erteilt niemand die Kategorie, also feuert b830 dort wieder: das trennt 'die Eltern-Auswahl ist ein Ironskin' von 'das Kontingent ist das Ironskin-Kontingent'. Sichtbarkeit ist Verfuegbarkeit und keine zaehlende Grenze; sie steht deshalb in expect.capabilities[].isHidden, nicht in firing.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-standard-force-parent-not-ironskin-choice-mandatory.ros",
+      "description": "Kontingent 'Standard (OK-AB)' (729f-9246-5cd3-5044), eine Rhinox-Riders-Einheit ueber den Wurzel-Verweis c8d5-1198-3d4a-8a67 mit einem Modell. In diesem Kontingent haelt die Bedingung instanceOf(force, Ironskin Tribe) der zweiten modifierGroup des Verweises NICHT — 'add category 7ff5' greift nicht, die Eltern-Auswahl fuehrt Rare (per set-primary) und ist KEIN Ironskin. Damit haelt notInstanceOf(parent, 7ff5), und instanceOf(primary-catalogue, 731d) haelt ohnehin: die and-Gruppe haelt, 'Extra Special choice' wird auf hidden=false und min=1 gesetzt. Die Aufwertung fehlt im Roster, also feuert b830-0538-045e-ee90 mit Ist 0 gegen Grenze 1. Kontrolle: die Schwester-Aufwertung 'Extra Rare choice' (a97e-5cc9-264b-74f4) ist allein auf notInstanceOf(primary-catalogue, 731d) gegatet und bleibt in einer Ogerarmee verborgen und bei min 0 — es wird also nicht pauschal alles unter der Einheit aufgedeckt.",
+      "expect": {
+        "firing": [
+          { "limitId": "b830-0538-045e-ee90", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "f873-6cfe-911e-2c46",
+          "e575-a5af-7fb3-5930",
+          "18c5-ec9f-0857-c0de",
+          "47d7-b2ed-39e9-0e60",
+          "3b38-fce2-6218-99da",
+          "415e-73ce-512b-c125"
+        ],
+        "capabilities": [
+          {
+            "defId": "6c8d-f6f3-823e-e6a5",
+            "anchorKind": "mandatoryPhantom",
+            "name": "Extra Special choice",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "defId": "a97e-5cc9-264b-74f4",
+            "name": "Extra Rare choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-ironskin-force-parent-is-ironskin-choice-hidden.ros",
+      "description": "Bis auf entryId/name des <force> byte-gleich zu Roster 01: dasselbe Armeebuch (Ogre Kingdoms), derselbe Wurzel-Verweis, dieselbe Einheit, dasselbe Modell — nur das Kontingent ist 'Ironskin Tribe (WD#309-UK)' (8711-ed16-2a44-7251). Jetzt haelt instanceOf(force, 8711) am Verweis: 'add category 7ff5-9e55-c594-4b40' erteilt der Eltern-Auswahl zur Laufzeit die Kategorie Ironskin (dazu remove Rare, add + set-primary Special). Folglich haelt notInstanceOf(parent, 7ff5) NICHT mehr, die and-Gruppe faellt, und 'Extra Special choice' behaelt ihre Rohwerte: hidden=true und min 0. Die Grenze b830-0538-045e-ee90 bleibt still. Die scharfe Aussage dieses Rosters ist effectiveMin=0 am Slot: das Schweigen der Grenze allein waere nicht beweiskraeftig, weil die Min-Grenzen eines effektiv verborgenen Traegers ohnehin nicht gemeldet werden. anchorKind ist bewusst nicht gefordert — bei einer min-Grenze mit Wert 0 ist aus den Katalogdaten nicht ableitbar, ob der Slot als Pflicht- oder als Angebots-Anker gefuehrt wird.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "b830-0538-045e-ee90",
+          "f873-6cfe-911e-2c46",
+          "e575-a5af-7fb3-5930",
+          "18c5-ec9f-0857-c0de",
+          "47d7-b2ed-39e9-0e60",
+          "3b38-fce2-6218-99da",
+          "415e-73ce-512b-c125"
+        ],
+        "capabilities": [
+          {
+            "defId": "6c8d-f6f3-823e-e6a5",
+            "name": "Extra Special choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "a97e-5cc9-264b-74f4",
+            "name": "Extra Rare choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-standard-force-choice-selected-min-satisfied.ros",
+      "description": "Wie Roster 01, aber die 'Extra Special choice' ist gewaehlt (number=1, 0 pts). Damit ist die Aufdeckung unabhaengig von der Verletzung beobachtbar: der jetzt besetzte Slot meldet weiterhin isHidden=false und effectiveMin=1 — die per notInstanceOf(parent) gehobene Untergrenze steht also wirklich auf 1 und ist nur ERFUELLT (Ist 1), nicht abwesend. Die Obergrenze f873-6cfe-911e-2c46 (max 1) ist damit ausgeschoepft: headroom 0, isBlocked=true. Beide Grenzen der Aufwertung bleiben still.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "b830-0538-045e-ee90",
+          "f873-6cfe-911e-2c46",
+          "e575-a5af-7fb3-5930",
+          "18c5-ec9f-0857-c0de",
+          "47d7-b2ed-39e9-0e60",
+          "3b38-fce2-6218-99da",
+          "415e-73ce-512b-c125"
+        ],
+        "capabilities": [
+          {
+            "defId": "6c8d-f6f3-823e-e6a5",
+            "anchorKind": "occupied",
+            "name": "Extra Special choice",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "a97e-5cc9-264b-74f4",
+            "name": "Extra Rare choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-ironskin-force-without-entrylink-choice-mandatory.ros",
+      "description": "Dasselbe Kontingent wie Roster 02 ('Ironskin Tribe (WD#309-UK)'), aber die Einheit steht OHNE den Wurzel-Verweis im Roster (entryLinkId=\"\", direkte Ziel-Id des geteilten Eintrags 5e33-e510-ba45-933e). Der Modifikator 'add category 7ff5' haengt am Verweis c8d5-1198-3d4a-8a67 des Ogre-Kingdoms-Katalogs und ist die EINZIGE Stelle im ganzen Fixture-Korpus, die diese Kategorie je erteilt; ohne den Verweis fuehrt die Eltern-Auswahl nur ihre eigenen categoryLinks (Rare, Regiment of Renown) und ist kein Ironskin. notInstanceOf(parent, 7ff5) haelt also wieder, das Armeebuch ist unveraendert Ogre Kingdoms — b830-0538-045e-ee90 feuert erneut mit Ist 0 gegen Grenze 1, obwohl das Kontingent das Ironskin-Kontingent ist. Zusammen mit Roster 02 trennt das 'die ELTERN-AUSWAHL ist ein Ironskin' von 'das KONTINGENT ist das Ironskin-Kontingent': eine Auswertung, die die Bedingung als notInstanceOf(force, 8711) lesen wuerde, bliebe hier faelschlich still.",
+      "expect": {
+        "firing": [
+          { "limitId": "b830-0538-045e-ee90", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "f873-6cfe-911e-2c46",
+          "e575-a5af-7fb3-5930",
+          "18c5-ec9f-0857-c0de",
+          "47d7-b2ed-39e9-0e60",
+          "3b38-fce2-6218-99da",
+          "415e-73ce-512b-c125"
+        ],
+        "capabilities": [
+          {
+            "defId": "6c8d-f6f3-823e-e6a5",
+            "anchorKind": "mandatoryPhantom",
+            "name": "Extra Special choice",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "defId": "a97e-5cc9-264b-74f4",
+            "name": "Extra Rare choice",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -79,6 +79,17 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "Eine Bedingung auf das eingestellte Punktebudget (field=limit::ecfa-8486-4f6c-c249) muss dieses Budget auch dann lesen, wenn sie scope=force traegt: das .ros-Format kennt nur ein Budget an der Roster-Wurzel, also ist der Rahmen aufloesbar und liefert genau dieses Budget. Der Eintrag 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries) haengt seine Pflicht (set 1 auf die min-Grenze 1a97-1579-ab05-a6d7) an equalTo 500; bei einem Budget von exakt 500 meldet der Bericht weiterhin effectiveMin 0 statt 1, und bei 499 wie 501 meldet er zusaetzlich die Diagnose UNRESOLVED_BUDGET_LIMIT. Unter der jetzigen Auswertung ist die Regel des Katalogautors tot."
+    },
+    {
+      "cellKey": "constraint|max|selectionCount|self|s=true|ics=false|icf=false|pct=false",
+      "scenario": "docs/testing/self-scope-max-house-rules",
+      "failingCases": [
+        "Szenario: self-scope-max-house-rules > rosters/01-both-house-rules-self-max-fires.ros",
+        "Szenario: self-scope-max-house-rules > rosters/06-single-house-rule-number-two-self-max-fires.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "A max constraint with scope=\"self\" must make its own carrier selection the counting frame and count the selections underneath it: \"Allow Mercenaries\" (fda5-49b9-b74c-aaf4, game system) carries max 1 selections scope=\"self\" shared=\"true\" includeChildSelections=\"false\" (714b-5314-33d4-dd68) and holds exactly two direct children (the two hidden house-rule entries 713c-28b1-0861-1ffd and 698e-c660-5c99-d481), so a roster holding both — and equally one holding a single child node with number=2 — must make that limit fire with actual 2 against bound 1. The report carries no violation for 714b-5314-33d4-dd68 at all in either roster, while the four silent rosters (one child, no child, and the frame-delimiting roster 05 where the PARENT holds two children but the carrier only one) all pass; so the limit never fires rather than counting in the wrong frame. The parent-scoped sibling 1df9-8159-156a-641f is asserted absent in every roster and is correct throughout."
     }
   ],
   "parkedQuestions": [

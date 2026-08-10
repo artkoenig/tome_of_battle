@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "name": "self-scope-max-house-rules",
+  "description": "Eine max-Grenze mit scope=\"self\" macht die Traeger-Selektion selbst zum Zaehlrahmen: sie deckelt die Auswahlen UNTERHALB genau dieser Selektion, mit includeChildSelections=\"false\" nur deren direkte Kinder. Belegeintrag: \"Allow Mercenaries\" (fda5-49b9-b74c-aaf4, Kind des geteilten Eintrags \"Mercenaries and Regiments of Renown\" 6a7d-7d85-8d7e-cbce in der .gst) traegt zwei Grenzen - max 1 scope=self (714b-5314-33d4-dd68) und max 1 scope=parent (1df9-8159-156a-641f) - und haelt genau zwei direkte Kinder, beide hidden=\"true\": \"House rule: All generic DoW are Special\" (713c-28b1-0861-1ffd) und \"House rule: Category Upgrade\" (698e-c660-5c99-d481). Eine \"Allow Mercenaries\" mit BEIDEN House rules muss 714b mit Ist 2 gegen Grenze 1 feuern lassen, eine mit einer oder keiner nicht. Die parent-skopierte Schwester 1df9 zaehlt etwas anderes (wie viele \"Allow Mercenaries\" unter dem Traeger 6a7d stehen) und bleibt in JEDEM Roster stumm - genau das trennt den self-Rahmen vom parent-Rahmen. Max-Grenzen gelten unabhaengig von der Sichtbarkeit; das hidden=\"true\" der Kinder setzt 714b also nicht aus, und die Sichtbarkeit selbst ist nicht Teil des Verletzungsberichts.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-both-house-rules-self-max-fires.ros",
+      "description": "Kontingent Standard (OK-AB), Traeger \"Mercenaries and Regiments of Renown\" mit genau einer \"Allow Mercenaries\", die BEIDE House-rule-Kinder haelt (je number=1). Der self-Rahmen der \"Allow Mercenaries\" zaehlt 2 direkte Auswahlen gegen max 1: 714b-5314-33d4-dd68 feuert mit Ist 2 / Grenze 1. Die parent-skopierte Schwester 1df9-8159-156a-641f zaehlt die eine \"Allow Mercenaries\" unter dem Traeger (Ist 1) und bleibt stumm.",
+      "expect": {
+        "firing": [
+          { "limitId": "714b-5314-33d4-dd68", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["1df9-8159-156a-641f"]
+      }
+    },
+    {
+      "file": "rosters/02-single-house-rule-dow-special-silent.ros",
+      "description": "Identischer Aufbau, aber nur EIN House-rule-Kind (\"All generic DoW are Special\" 713c-28b1-0861-1ffd). Der self-Rahmen zaehlt 1 gegen max 1: 714b-5314-33d4-dd68 bleibt stumm, obwohl das Kind im Katalog hidden=\"true\" traegt. Auch 1df9-8159-156a-641f bleibt stumm.",
+      "expect": {
+        "firing": [],
+        "absent": ["714b-5314-33d4-dd68", "1df9-8159-156a-641f"]
+      }
+    },
+    {
+      "file": "rosters/03-single-house-rule-category-upgrade-silent.ros",
+      "description": "Gegenprobe zu Roster 02 mit dem anderen der beiden Kinder (\"House rule: Category Upgrade\" 698e-c660-5c99-d481). Der self-Rahmen zaehlt wieder 1: 714b-5314-33d4-dd68 stumm. Das Paar 02/03 belegt, dass die 2 in Roster 01 aus der ANZAHL der Kinder stammt und nicht an einem bestimmten Kind-Eintrag haengt.",
+      "expect": {
+        "firing": [],
+        "absent": ["714b-5314-33d4-dd68", "1df9-8159-156a-641f"]
+      }
+    },
+    {
+      "file": "rosters/04-no-house-rule-silent.ros",
+      "description": "Nullpunkt: die \"Allow Mercenaries\" haelt gar kein Kind. Der self-Rahmen zaehlt 0 - die Traeger-Selektion zaehlt sich nicht selbst mit, gezaehlt werden die Auswahlen unterhalb des Grenzen-Traegers. Beide Grenzen stumm.",
+      "expect": {
+        "firing": [],
+        "absent": ["714b-5314-33d4-dd68", "1df9-8159-156a-641f"]
+      }
+    },
+    {
+      "file": "rosters/05-sibling-switch-outside-self-frame-silent.ros",
+      "description": "Rahmen-Abgrenzung: der Traeger 6a7d-7d85-8d7e-cbce haelt ZWEI direkte Kinder (\"Allow Regiments of Renown\" 3d35-6b18-262f-6503 und \"Allow Mercenaries\"), die \"Allow Mercenaries\" selbst aber nur EINES. Wuerde die self-skopierte Grenze im Rahmen des Eltern-Eintrags zaehlen, kaeme sie auf 2 und feuerte; aus den Daten gefordert ist Ist 1 und Schweigen. 1df9-8159-156a-641f zaehlt weiterhin genau eine \"Allow Mercenaries\" und bleibt ebenfalls stumm.",
+      "expect": {
+        "firing": [],
+        "absent": ["714b-5314-33d4-dd68", "1df9-8159-156a-641f"]
+      }
+    },
+    {
+      "file": "rosters/06-single-house-rule-number-two-self-max-fires.ros",
+      "description": "Ein einziger Kind-Knoten, aber mit number=2: der self-Rahmen summiert Stueckzahlen, nicht Knoten (Rechenregel §7.5 der Formatdoku). 714b-5314-33d4-dd68 feuert damit ebenfalls mit Ist 2 / Grenze 1, 1df9-8159-156a-641f bleibt stumm. Zusaetzlich reisst der Knoten seine eigene parent-Grenze 046e-1c8a-1c6d-ae5f (max 1) - erwartet, aber bewusst nicht behauptet.",
+      "expect": {
+        "firing": [
+          { "limitId": "714b-5314-33d4-dd68", "actual": 2, "bound": 1 }
+        ],
+        "absent": ["1df9-8159-156a-641f"]
+      }
+    }
+  ]
+}
