@@ -1159,3 +1159,23 @@ allen drei Kontingenten sichtbar, seine Untergrenze also prüfbar.
 
 Beide leeren Roster schließen zugleich eine zählende Lesart aus: eine Zählung
 wäre dort 0 und die Grenze bliebe bei 0.
+
+## `roster-repeat-category-count`
+
+Prüft einen `<repeat>` mit `scope="roster"`, Kategorie-`childId`,
+`includeChildSelections="true"` und `includeChildForces="true"` (§7.7 der
+Formatdoku): der gebundene `increment` greift einmal je gezählter Auswahl
+dieser Kategorie — armeeweit, über alle Kontingente. Beleg: „Orc Big 'Uns"
+(`eeb1-a6c4-b57e-f08c`, Orcs and Goblins) trägt `max 0`
+(`938b-15b1-f433-e0d5`) und einen `increment 1`, dessen `repeat` die Kategorie
+„Orc boyz" (`344f-77ef-7238-f157`) zählt; deren einziger Träger im Datensatz
+ist die Wurzeleinheit Orc Boyz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Big 'Uns, keine Orc Boyz | Höchstmaß 0 — die Grenze feuert mit Ist 1 |
+| 02 | Ein Big 'Uns, eine Orc-Boyz-Einheit | Eine Wiederholung: Höchstmaß 1, still |
+| 03 | Zwei und zwei | Zwei Wiederholungen: Höchstmaß 2, still |
+| 04 | Drei Big 'Uns, zwei Orc Boyz | Höchstmaß 2 bei Ist 3 — die Grenze feuert |
+| 05 | Dieselbe Lage, aber die zwei Orc Boyz als **eine** Auswahl mit Stückzahl 2 | Gleiches Ergebnis: gezählt wird die Stückzahl, nicht die Zahl der XML-Elemente |
+| 06 | Big 'Uns im ersten, Orc Boyz im zweiten Kontingent | Höchstmaß 2 — `includeChildForces="true"` zählt über Kontingente hinweg |

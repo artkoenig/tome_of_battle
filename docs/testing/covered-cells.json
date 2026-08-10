@@ -331,6 +331,13 @@
         "docs/testing/not-instance-of-force-gate"
       ],
       "rationale": "GREEN: rosters 01 and 02 are identical apart from the force and flip the Ogre-Bulls minimum between 1 (fires with actual 0) and its written 0 (silent); roster 03 adds a second non-Ironskin force in the same catalogue, so the rule pinned is 'every force that is not the named one'. Both are empty rosters, which rules out a counting reading."
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/roster-repeat-category-count"
+      ],
+      "rationale": "GREEN: rosters 01-04 walk the counted Orc-Boyz copies 0/1/2/2 against a fixed carrier count and the bound follows 0/1/2/2; roster 05 pins that the stack count and not the number of XML selection elements is counted; roster 06 puts the counted copies in a second force, which only reaches the same bound if includeChildForces=true counts across forces."
     }
   ]
 }

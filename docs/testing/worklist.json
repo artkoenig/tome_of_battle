@@ -7,106 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 63,
-    "uncovered": 42
+    "covered": 64,
+    "uncovered": 41
   },
   "cells": [
-    {
-      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "roster",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": true,
-        "includeChildForces": true,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 12,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 1,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 4,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 6
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ab2c-30b1-9eaa-2306",
-            "name": "Gnoblar Scraplauncher"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "dd12-e469-588f-6b5b",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "5678-6ad3-0e79-2233",
-            "name": "Orc Boar Chariot"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "a85e-af08-5fea-41bd",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "eeb1-a6c4-b57e-f08c",
-            "name": "Orc Big 'Uns"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "344f-77ef-7238-f157",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|notInstanceOf|primary-catalogue|selectionCount|child=id",
       "kind": "condition",
