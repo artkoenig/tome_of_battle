@@ -66,8 +66,8 @@
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 10,
     "lastRunAt": "2026-08-10T08:16:17Z",
-    "lastRunOutcome": "rearmed",
-    "reArmedFor": "2026-08-10T10:38:00Z",
+    "lastRunOutcome": "stopped-by-human",
+    "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
