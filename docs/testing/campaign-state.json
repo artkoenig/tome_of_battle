@@ -62,11 +62,11 @@
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-4rq45b",
+    "branch": "claude/evaluator-abschluss-kampagne-tk44u4",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 10,
-    "lastRunAt": "2026-08-10T08:16:17Z",
-    "lastRunOutcome": "stopped-by-human",
+    "runs": 11,
+    "lastRunAt": "2026-08-10T09:20:00Z",
+    "lastRunOutcome": "running",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
