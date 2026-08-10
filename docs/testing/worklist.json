@@ -7,83 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 57,
-    "uncovered": 48
+    "covered": 58,
+    "uncovered": 47
   },
   "cells": [
-    {
-      "key": "modifierGroup|cond=true|repeats=false|nested=true",
-      "kind": "modifierGroup",
-      "axes": {
-        "conditional": true,
-        "repeats": false,
-        "nested": true
-      },
-      "occurrences": 17,
-      "files": {
-        "src/__fixtures__/whfb6/Vampire Counts.cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 15
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "b77b-88d5-5e80-e178",
-            "name": "0-1 Vampire Lord "
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "b77b-88d5-5e80-e178",
-            "name": "0-1 Vampire Lord "
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "b77b-88d5-5e80-e178",
-            "name": "0-1 Vampire Lord "
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifierGroups",
-            "modifierGroup"
-          ],
-          "raw": {}
-        }
-      ]
-    },
     {
       "key": "condition|instanceOf|id|selectionCount|child=id",
       "kind": "condition",

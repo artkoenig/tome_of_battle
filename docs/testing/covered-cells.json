@@ -289,6 +289,13 @@
         "docs/testing/parent-repeat-item-include-children"
       ],
       "rationale": "GREEN: rosters 04/05/06 hold the two non-stone items constant and walk the Power-Stone count 0/1/2, so the reported bound steps 1/2/3 while actual steps 2/3/4 — the repeat isolated. The depth half of includeChildSelections=true is unreachable here (in this fixture set the Power Stone entry is flat, not a wrapper) and is documented in the scenario README instead of faked."
+    },
+    {
+      "key": "modifierGroup|cond=true|repeats=false|nested=true",
+      "evidence": [
+        "docs/testing/nested-modifier-group"
+      ],
+      "rationale": "GREEN: four rosters differing only in the chosen bloodline pick out exactly the inner bracket whose own condition holds — none in roster 01, one each in 02 and 03, two at once in 04 — so a nested conditional bracket is neither suppressed by its enclosing bracket nor applied blanket with it. The 'inner holds, outer fails' case has no carrier in this corpus and is documented in the scenario README."
     }
   ]
 }

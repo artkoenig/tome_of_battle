@@ -1117,3 +1117,24 @@ heraus, damit der Nachbar-`repeat` still bleibt.
 | 04 | Zwei andere Gegenstände, kein Stein | Höchstmaß bleibt 1, die Grenze feuert mit Ist 2 |
 | 05 | Dieselben zwei plus ein Stein | Grenze 2 bei Ist 3 |
 | 06 | Dieselben zwei plus zwei Steine | Grenze 3 bei Ist 4 — die Grenze steigt Schritt für Schritt mit den gezählten Kopien |
+
+## `nested-modifier-group`
+
+Prüft die **verschachtelte** `modifierGroup` (§7.7 der Formatdoku): eine
+Klammer innerhalb einer Klammer trägt eigene Bedingungen, und beide Ebenen
+verknüpfen sich als Und — die äußere gattert alles darin, die innere nur ihre
+eigenen Modifikatoren. Beleg: die `BLOODLINE`-Klammer des „0-1 Vampire Lord"
+(`b77b-88d5-5e80-e178`, Vampire Counts) ist selbst unbedingt und enthält fünf
+innere Klammern mit je einer Clan-Bedingung. Alle Roster unterscheiden sich nur
+in der gewählten Blutlinie.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Blutlinie | Keine innere Bedingung hält: Katalogname und Basiswerte |
+| 02 | Blood Dragon | Nur diese innere Klammer greift: Namenszusatz, WS 10, Sv+ 5+ |
+| 03 | Strigoi | Nur die andere greift: Namenszusatz, A 6, Sv+ 5+ |
+| 04 | Beide Blutlinien | Beide inneren Klammern greifen zugleich (zwei Namenszusätze), und die Gruppengrenze max 1 feuert mit Ist 2 |
+
+Der Fall „innere Bedingung hält, äußere scheitert" ist im Fixture-Korpus nicht
+baubar — alle drei verschachtelten Fundstellen haben eine unbedingte äußere
+Klammer; das ist in der README des Szenarios als Lücke festgehalten.
