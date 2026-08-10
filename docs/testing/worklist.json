@@ -7,107 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 43,
-    "uncovered": 62
+    "covered": 44,
+    "uncovered": 61
   },
   "cells": [
-    {
-      "key": "condition|instanceOf|id|selectionCount|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "instanceOf",
-        "scope": "id",
-        "field": "selectionCount",
-        "childId": "any"
-      },
-      "occurrences": 36,
-      "files": {
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 25,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 11
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ca27-a5f4-4a3e-7aeb",
-            "name": "Savage Orc Warboss"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "a2fa-6a0e-8c17-373c",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0767-0a7d-7c03-8833",
-            "name": "Savage Orc Great Shaman"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "a2fa-6a0e-8c17-373c",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "5ddb-5bfd-a86d-4ff6",
-            "name": "Wyvern"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "instanceOf",
-            "field": "selections",
-            "scope": "a2fa-6a0e-8c17-373c",
-            "childId": "any"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|roster|limitValue|child=any",
       "kind": "condition",

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "name": "force-id-scope-instance-of",
+  "description": "Die selbst-gegatterte Kodierung einer instanceOf-Pruefung auf ein forceEntry (6th Definitive Edition, Orcs and Goblins): eine condition darf die forceEntry-Id direkt im scope tragen (scope=\"a2fa-6a0e-8c17-373c\" childId=\"any\") statt kanonisch in childId (scope=\"force\" childId=\"<forceId>\"). Beide Kodierungen bedeuten dasselbe — die Bedingung haelt genau dann, wenn das umschliessende Kontingent eine Instanz dieses forceEntry ist. Sie ist eine Identitaetspruefung, kein Zaehlrahmen: die Zaehl-Flags (value=1, field=selections, includeChildSelections=false, includeChildForces=false, shared) engen sie nicht ein, weshalb sie auch in einem voellig leeren Kontingent haelt. Getraeger wird das an den or-Gruppen der set-hidden-Modifikatoren von \"Savage Orc Warboss\" (ca27-a5f4-4a3e-7aeb) und \"Savage Orc Great Shaman\" (0767-0a7d-7c03-8833), deren or-Gruppen identisch sind und deren einziges auf die jeweilige Force zutreffendes Mitglied das selbst-gegatterte ist. Als Kontrolle laeuft \"Orc Great Shaman\" (aa57-63c4-136b-4af5) mit, dessen or-Gruppe a2fa NICHT enthaelt, dafuer aber kanonisch 59e1-efd7-af88-55a1. Drei bis auf die Kontingent-entryId identische (leere) Roster pinnen das ueber expect.capabilities[].isHidden an den Angebots-Ankern; zaehlende Grenzen sind nicht Gegenstand des Szenarios.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-mountain-waaagh-self-gated.ros",
+      "description": "Leeres Kontingent \"Mountain or Troll Country Waaagh! (OG-AB)\" (a2fa-6a0e-8c17-373c). Von der or-Gruppe der beiden Savage-Orc-Charaktere haelt GENAU das selbst-gegatterte Mitglied (scope=\"a2fa-6a0e-8c17-373c\" childId=\"any\"); alle kanonisch kodierten Mitglieder benennen andere forceEntry-Ids, und das zaehlende atLeast-Mitglied auf Grom (5653-1e8a-640d-fc56) zaehlt 0. Folge: beide Traeger sind verborgen. Das Kontingent ist leer — eine zaehlende Lesart der Bedingung ergaebe 0 und wuerde nicht halten; genau daran haengt die Aussage \"Identitaetspruefung, kein Zaehlrahmen\". Kontrolle: \"Orc Great Shaman\" (aa57-...) fuehrt a2fa nicht in seiner or-Gruppe und bleibt sichtbar.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "ca27-a5f4-4a3e-7aeb",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "a2fa-6a0e-8c17-373c",
+            "name": "Savage Orc Warboss",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "0767-0a7d-7c03-8833",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "a2fa-6a0e-8c17-373c",
+            "name": "Savage Orc Great Shaman",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "aa57-63c4-136b-4af5",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "a2fa-6a0e-8c17-373c",
+            "name": "Orc Great Shaman",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-savage-orc-horde-no-member-holds.ros",
+      "description": "Derselbe leere Aufbau im Kontingent \"Savage Orc Horde (OG-AB)\" (59e1-efd7-af88-55a1). Diese Id kommt in der or-Gruppe der beiden Savage-Orc-Charaktere NICHT vor — weder selbst-gegattert noch kanonisch —, also haelt kein Mitglied und beide behalten ihren geschriebenen Basiswert hidden=\"false\". Die Kontrolle kippt: \"Orc Great Shaman\" fuehrt 59e1 kanonisch in seiner or-Gruppe und ist hier verborgen.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "ca27-a5f4-4a3e-7aeb",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "59e1-efd7-af88-55a1",
+            "name": "Savage Orc Warboss",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "0767-0a7d-7c03-8833",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "59e1-efd7-af88-55a1",
+            "name": "Savage Orc Great Shaman",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "aa57-63c4-136b-4af5",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "59e1-efd7-af88-55a1",
+            "name": "Orc Great Shaman",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-night-goblin-horde-canonical.ros",
+      "description": "Derselbe leere Aufbau im Kontingent \"Night Goblin Horde (OG-AB)\" (c248-eea0-b5c1-857b) — der Zeuge fuer die Gleichwertigkeit der Kodierungen. Hier haelt genau das ERSTE, kanonisch kodierte Mitglied derselben or-Gruppe (scope=\"force\" childId=\"c248-eea0-b5c1-857b\"), das selbst-gegatterte dagegen nicht. Ergebnis: dieselbe Wirkung wie in Roster 01 — beide Savage-Orc-Charaktere verborgen. Die Kontrolle \"Orc Great Shaman\" fuehrt c248 ebenfalls und ist ebenfalls verborgen.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "ca27-a5f4-4a3e-7aeb",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "c248-eea0-b5c1-857b",
+            "name": "Savage Orc Warboss",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "0767-0a7d-7c03-8833",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "c248-eea0-b5c1-857b",
+            "name": "Savage Orc Great Shaman",
+            "current": 0,
+            "isHidden": true
+          },
+          {
+            "defId": "aa57-63c4-136b-4af5",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "c248-eea0-b5c1-857b",
+            "name": "Orc Great Shaman",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    }
+  ]
+}

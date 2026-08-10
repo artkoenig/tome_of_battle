@@ -198,6 +198,13 @@
         "docs/testing/set-cost-value-force-gate"
       ],
       "rationale": "GREEN: four rosters with the same unit and 20 Zombie models differ only in the force (roster 04 also in the budget), so the roster-budget totals 120 / 100 / 160 / 100 are the set-on-cost-type modifier itself — written 6, set 5, set 8 — and roster 04 pins the gated value as exactly 5."
+    },
+    {
+      "key": "condition|instanceOf|id|selectionCount|child=any",
+      "evidence": [
+        "docs/testing/force-id-scope-instance-of"
+      ],
+      "rationale": "GREEN: three empty rosters differing only in the force entryId. Roster 01 (the force named in scope) hides both Savage Orc carriers while the control unit stays visible, roster 02 reverses it; since every roster is empty, a counting reading of the condition would yield 0 and fail, so only the identity reading explains roster 01. Roster 03 shows the canonical encoding behaving alike."
     }
   ]
 }

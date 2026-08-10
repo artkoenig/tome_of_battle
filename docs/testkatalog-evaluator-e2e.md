@@ -962,3 +962,24 @@ dieselbe Einheit mit 20 Modellen und unterscheiden sich nur im Kontingent
 | 02 | „Necromancer's Army", Budget 110 | `set 5`: 5 × 20 = 100 — dieselbe Modellzahl bleibt im selben Budget |
 | 03 | „Army of Sylvania", Budget 110 | `set 8`: 8 × 20 = 160 — deutlich überschritten; der Einheitenname belegt zusätzlich, dass genau dieses Gatter hält |
 | 04 | „Necromancer's Army", Budget 90 | 100 > 90 — der gegatete Wert ist exakt 5, nicht bloß „klein genug" |
+
+## `force-id-scope-instance-of`
+
+Prüft die **selbst-gegatete** Kodierung einer `instanceOf`-Bedingung auf ein
+Kontingent (§7.7 der Formatdoku, Kasten „zwei Kodierungen"): die
+`forceEntry`-Id steht direkt im `scope`, `childId` trägt `"any"` — gleichbedeutend
+mit der kanonischen Form `scope="force"` + Id in `childId`. Beleg: der Savage
+Orc Warboss (`ca27-a5f4-4a3e-7aeb`) und der Savage Orc Great Shaman
+(`0767-0a7d-7c03-8833`, Orcs and Goblins) tragen je einen `set hidden=true`
+mit einer `or`-Gruppe aus sieben Mitgliedern, von denen genau eines
+`scope="a2fa-6a0e-8c17-373c" childId="any"` lautet („Mountain or Troll Country
+Waaagh!"). Alle Roster sind leer und bis auf die Kontingent-Id identisch —
+eine zählende Lesart müsste 0 ergeben und scheitern, die Identitätsprüfung
+hält. Der Orc Great Shaman (`aa57-63c4-136b-4af5`), dessen Gruppe diese Id
+nicht führt, ist die Gegenprobe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Kontingent „Mountain or Troll Country Waaagh!" | Das selbst-gegatete Mitglied hält: beide Savage-Orc-Helden versteckt, die Gegenprobe sichtbar |
+| 02 | Leeres Kontingent „Savage Orc Horde" | Kein Mitglied hält: beide sichtbar — die Gegenprobe umgekehrt versteckt |
+| 03 | Leeres Kontingent „Night Goblin Horde" | Die kanonisch kodierte Schwester hält: beide versteckt — beide Kodierungen verhalten sich gleich |
