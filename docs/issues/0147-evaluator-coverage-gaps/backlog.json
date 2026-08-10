@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "issue": "docs/issues/0147-evaluator-coverage-gaps",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap - issue 0147, round 6: the two pinned evaluator gaps\n\nEvery file this issue has to change, one line each, with the increment it belongs to. Round 6 opens on two acceptance criteria, one per pinned scenario, and the map is a searched guess until each increment measures it.\n\nThe issue fences the scope hard: only `src/evaluator/` and its unit tests may change. Nothing under `docs/testing/` may be touched at all.\n\n## Increment `parent-any-offer-anchor` (criterion 2, `docs/testing/at-least-parent-any-reveal`)\n\n- `src/evaluator/offer.js` - the layer that decides which (frame, definition) pairs become an offer anchor; its descent through `selectionEntryGroup`s and `entryLink`s and its stop rules decide whether the four-level-deep `Wolf Lord` link is reached at all.\n- `src/evaluator/evalTree.js` - holds tree phase 2: the offer anchor's node shape, the visibility-gate chain it carries from the groups it was descended through, and the deduplication against nodes that already hang in the frame.\n- `src/evaluator/effectiveState.js` - carries base `hidden` down the gate chain and holds the effective state the asserted `isHidden` flip is read from.\n- `src/evaluator/fixpoint.js` - runs the post-pass that applies modifiers to offer anchors after convergence, so a `set hidden=\"false\"` has to reach a newly projected anchor there.\n- `src/evaluator/report.js` - projects every anchor into the capability record the scenario asserts (`anchorKind`, `isHidden`, `current`).\n- `src/evaluator/offer.test.js` - the unit tests of the offer set; the rule this increment establishes or supersedes is pinned here.\n- `src/evaluator/offer.hiddenGate.test.js` - pins how a hidden gate above an offered definition is handled today.\n- `src/evaluator/effectiveState.baseHiddenInheritance.test.js` - pins the base-hidden inheritance the gate chain relies on.\n\n## Increment `unlimited-slot-count` (criterion 1, `docs/testing/greater-than-force-unlimited-gate`)\n\n- `src/evaluator/constraints.js` - `evaluateLimit` deliberately produces no result for an UNLIMITED bound, and the anchor-occupancy count it does produce beside the limits exists for category anchors only, so an occupied slot whose only max limit went unlimited has no number left.\n- `src/evaluator/report.js` - derives a slot's `current` from the max/min result and falls back to the category-anchor occupancy map or a literal 0; this is where the occupied slot's count is lost. Shared with the other increment.\n- `src/evaluator/evaluator.js` - the facade that runs the constraints phase and the report phase and decides what the report may read; it was widened for the same occupancy map in an earlier round.\n- `src/evaluator/report.test.js` - the unit tests of the `current` derivation.\n- `src/evaluator/constraints.unlimitedSentinel.test.js` - pins the meaning of the written `-1` sentinel (issue 079); any change on the unlimited path is judged against it.\n\n## Read-only, never edited\n\n- `src/evaluator/e2e.testcatalog.test.js` - the manifest-driven runner that turns the scenarios into cases; it is the check, never an edit.\n- `docs/testing/greater-than-force-unlimited-gate/` and `docs/testing/at-least-parent-any-reveal/` (`scenario.json`, `rosters/*.ros`, `README.md`) - the specification, out of scope by the issue.\n- `src/evaluator/__fixtures__/whfb6-definitive/` - the frozen catalog data both scenarios are derived from.\n- `docs/testing/campaign-state.json` - the campaign driver's state; it pins these two gaps and is outside the issue's fence.\n\n## Known drift, outside this issue's fence\n\n`docs/evaluator-architecture.md` (SS3.2 offer layer, SS4.8 `current` derivation) already went stale in earlier rounds and will go further stale with either increment. The issue's out-of-scope rule bars changing anything outside `src/evaluator/`, so it stays for the human to schedule.\n",
+  "increments": [
+    {
+      "id": "parent-any-offer-anchor",
+      "title": "An unselected deep option appears as an offer anchor, so its reveal is observable",
+      "goal": "Make `docs/testing/at-least-parent-any-reveal` green: the report must carry an offer anchor for the `Wolf Lord` option in rosters where nothing in its group chain is selected, so the `set hidden=\"false\"` gated on `atLeast 1` in the parent frame can be seen flipping at all. This is criterion 2 of the issue. It goes first because the offer layer projects every scenario's anchors: whatever widens the projection here can add or move anchors across the whole suite, and that is the risk this round has to learn early.",
+      "criteria": [
+        "`npx vitest run src/evaluator` passes the cases `Szenario: at-least-parent-any-reveal > rosters/01-empty-frame-wolf-lord-hidden.ros`, `> rosters/02-one-selection-reveals-wolf-lord.ros` and `> rosters/03-two-selections-reveal-unchanged.ros`.",
+        "In those three rosters the report carries a slot with `anchorKind=\"offerAnchor\"` for the pair defId `b8be-a71f-569c-5cdc` / targetDefId `66bc-8fc1-81a2-9cd4`, reporting `isHidden` true at the empty frame and false at one resp. two selections, `current` 0 throughout.",
+        "Rosters `04-wolf-lord-selected-self-reveal.ros` and `05-wolf-lord-twice-max-fires.ros` keep resolving the same pair as `anchorKind=\"occupied\"` and stay green.",
+        "The whole `npx vitest run src/evaluator` run is green - every scenario the earlier rounds closed included, and the second pinned scenario no worse than it is today.",
+        "Nothing outside `src/evaluator/` and its unit tests changes; no file under `docs/testing/` is touched."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "unlimited-slot-count",
+      "title": "An occupied slot keeps its count when its max bound is lifted to unlimited",
+      "goal": "Make `docs/testing/greater-than-force-unlimited-gate` green: the occupied Slaughtermaster slot must keep reporting how many selections its frame holds after the `set -1` modifier has opened its only max limit. This is criterion 1 of the issue.",
+      "criteria": [
+        "`npx vitest run src/evaluator` passes the cases `Szenario: greater-than-force-unlimited-gate > rosters/02-tyrant-one-slaughtermaster-unlimited.ros` and `> rosters/03-tyrant-two-slaughtermasters-unlimited.ros`.",
+        "In those two rosters the slot defId `0ff3-ec4d-1c6b-6d53` in frame `729f-9246-5cd3-5044` reports `current` 1 resp. 2, with `effectiveMax` null, `headroom` null and `isBlocked` false.",
+        "Roster `01-no-tyrant-slaughtermaster-max0.ros` keeps reporting `current` 1 with `effectiveMax` 0, and the firing and the silence of limit `c70d-c292-36ee-21b5` are unchanged in all four rosters.",
+        "The whole `npx vitest run src/evaluator` run is green - the scenarios the earlier rounds closed, and the unlimited-sentinel unit tests, included.",
+        "Nothing outside `src/evaluator/` and its unit tests changes; no file under `docs/testing/` is touched."
+      ],
+      "status": "todo",
+      "note": "",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-10T10:39:32.592Z",
+        "return": {
+          "summary": "Round 6 of issue 0147 is cut into two increments, one per acceptance criterion: `parent-any-offer-anchor` delivers criterion 2 (the missing offer anchor for the unselected, four-groups-deep `Wolf Lord` option in `docs/testing/at-least-parent-any-reveal`) and `unlimited-slot-count` delivers criterion 1 (an occupied slot losing its `current` once its max limit is lifted to the written `-1` sentinel in `docs/testing/greater-than-force-unlimited-gate`). The offer-anchor increment runs first because the offer layer projects the anchors of every scenario in the suite, so a widening there is the round's load-bearing risk and has to be learned early; the sentinel count is the narrower change and sits downstream of the same `report.js` `current` derivation an earlier round already widened for category anchors. The two are not merged into one increment: they touch different layers (offer projection and visibility vs. constraint results and the count fallback), each is separately reviewable, and each leaves the suite green on its own. Both criteria state the observation to reach but not the cause - the issue itself defers the diagnosis of the missing projection to this round - so each increment's researcher answers that when its turn comes; no code fact had to be settled to decide the cut. The codemap is written into the backlog and names eight evaluator modules and unit files for the offer increment and five for the count increment, plus the read-only scenario data, the manifest runner and the fixture corpus, and it records that `docs/evaluator-architecture.md` will drift further while the issue's own out-of-scope rule bars touching it.",
+          "questions": []
+        },
+        "prompt": "Issue directory: docs/issues/0147-evaluator-coverage-gaps\nOpen the run state for docs/issues/0147-evaluator-coverage-gaps/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0147-evaluator-coverage-gaps/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0147-evaluator-coverage-gaps/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
