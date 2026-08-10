@@ -49,11 +49,11 @@
   "parkedQuestions": [],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-ipuqwm",
+    "branch": "claude/evaluator-abschluss-kampagne-4rq45b",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 8,
-    "lastRunAt": "2026-08-10T05:01:55Z",
-    "lastRunOutcome": "stopped-by-human",
+    "runs": 9,
+    "lastRunAt": "2026-08-10T06:27:42Z",
+    "lastRunOutcome": "rearmed",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
