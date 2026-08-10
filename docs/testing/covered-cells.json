@@ -254,6 +254,27 @@
         "docs/testing/unconditional-modifier-group"
       ],
       "rationale": "GREEN: rosters 01/02 falsify 'a condition-less bracket never applies' (its unconditional modifiers do apply, and a bracket and a plain <modifiers> list on the same entry agree); roster 03 falsifies 'a condition-less bracket applies everything inside it' (none of the five bracketed modifiers applies because each one's own condition fails); rosters 04/05 pick out exactly the two whose own condition holds."
+    },
+    {
+      "key": "condition|lessThan|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The `set 0` modifier on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 is gated by an or-group whose first member is `lessThan 1000 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=model`; rosters 01 (1000 pts) and 03 (500 pts) differ only in the configured cost limit, so the effectiveMax 1 -> 0 flip isolates that member."
+    },
+    {
+      "key": "condition|greaterThan|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-roster-category-count"
+      ],
+      "rationale": "The same or-group's second member is `greaterThan 0 field=selections scope=roster childId=d4a7-5999-8207-4efe`; rosters 01 and 02 (both 1000 pts) differ only in whether the chosen character carries the Orc category, so the effectiveMax 1 -> 0 flip isolates that member."
+    },
+    {
+      "key": "condition|instanceOf|primary-catalogue|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/primary-catalogue-scope"
+      ],
+      "rationale": "Ten rosters place the same Mercenaries selections in Ogre, Vampire-Counts and Orcs forces: the Extra-Special minimum fires only in the Ogre army, the Extra-Rare minima only outside it, the force-scoped max is lifted only on the Ogre hit, and roster 10 shows the .ros catalogueId attribute does not decide the army book."
     }
   ]
 }
