@@ -118,7 +118,44 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`parent-costsum-magic-items-budget`](testing/parent-costsum-magic-items-budget/) | Definitive Ogre + Mercenaries | 5 |
 | [`decrement-cost-bloodline-casting-dice`](testing/decrement-cost-bloodline-casting-dice/) | ergofang VC (ohne Mercenaries) | 8 |
 | [`modifier-unresolved-target-inert`](testing/modifier-unresolved-target-inert/) | Definitive O&G + Mercenaries | 5 |
-| **Summe** | | **187** |
+| [`force-instance-gated-rename`](testing/force-instance-gated-rename/) | Definitive VC + Mercenaries | 2 |
+| [`set-hidden-force-gate`](testing/set-hidden-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-constraint-value-force-gate`](testing/set-constraint-value-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`dispel-scroll-repeat-group-max`](testing/dispel-scroll-repeat-group-max/) | Definitive VC + Mercenaries | 2 |
+| [`at-least-force-toggle-gate`](testing/at-least-force-toggle-gate/) | Definitive Ogre + Mercenaries | 2 |
+| [`at-least-roster-border-patrols-gate`](testing/at-least-roster-border-patrols-gate/) | Definitive VC + Mercenaries | 2 |
+| [`condition-group-or-force-gate`](testing/condition-group-or-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`condition-group-and-points-bracket`](testing/condition-group-and-points-bracket/) | Definitive VC + Mercenaries | 3 |
+| [`parent-scope-per-model-cost`](testing/parent-scope-per-model-cost/) | Definitive Ogre + Mercenaries | 2 |
+| [`remove-category-force-gate`](testing/remove-category-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`group-max-increment-on-choice`](testing/group-max-increment-on-choice/) | Definitive VC + Mercenaries | 2 |
+| [`set-characteristic-force-gate`](testing/set-characteristic-force-gate/) | Definitive VC + Mercenaries | 2 |
+| [`less-than-force-min-drop`](testing/less-than-force-min-drop/) | Definitive VC + Mercenaries | 3 |
+| [`at-least-unit-upgrade-gate`](testing/at-least-unit-upgrade-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-primary-category-membership`](testing/set-primary-category-membership/) | Definitive Ogre + Mercenaries | 3 |
+| [`unit-scope-instance-of-category`](testing/unit-scope-instance-of-category/) | Definitive VC + Mercenaries | 4 |
+| [`less-than-roster-category-count`](testing/less-than-roster-category-count/) | Definitive O&G + Mercenaries | 5 |
+| [`greater-than-parent-upgrade-gate`](testing/greater-than-parent-upgrade-gate/) | Definitive VC + Mercenaries | 2 |
+| [`set-cost-value-force-gate`](testing/set-cost-value-force-gate/) | Definitive VC + Mercenaries | 4 |
+| [`force-id-scope-instance-of`](testing/force-id-scope-instance-of/) | Definitive O&G + Mercenaries | 3 |
+| [`at-least-self-model-count`](testing/at-least-self-model-count/) | Definitive VC + Mercenaries | 3 |
+| [`at-least-roster-points-limit`](testing/at-least-roster-points-limit/) | Definitive O&G + Mercenaries | 3 |
+| [`parent-max-include-child-selections`](testing/parent-max-include-child-selections/) | Definitive O&G + Mercenaries | 5 |
+| [`parent-repeat-item-count`](testing/parent-repeat-item-count/) | Definitive Ogre + Mercenaries | 5 |
+| [`unconditional-modifier-group`](testing/unconditional-modifier-group/) | Definitive VC + Mercenaries | 5 |
+| [`parent-repeat-model-include-children`](testing/parent-repeat-model-include-children/) | Definitive O&G + Mercenaries | 5 |
+| [`parent-repeat-item-include-children`](testing/parent-repeat-item-include-children/) | Definitive Ogre + Mercenaries | 6 |
+| [`nested-modifier-group`](testing/nested-modifier-group/) | Definitive VC + Mercenaries | 4 |
+| [`not-instance-of-force-gate`](testing/not-instance-of-force-gate/) | Definitive Ogre + Mercenaries | 5 |
+| [`roster-repeat-category-count`](testing/roster-repeat-category-count/) | Definitive O&G + Mercenaries | 6 |
+| [`modifier-group-repeats`](testing/modifier-group-repeats/) | Definitive VC + Mercenaries | 9 |
+| [`condition-group-or-nested`](testing/condition-group-or-nested/) | Definitive O&G + Mercenaries | 6 |
+| [`category-scope-ancestor-frame`](testing/category-scope-ancestor-frame/) | Definitive VC + Mercenaries | 4 |
+| [`condition-group-not`](testing/condition-group-not/) | Definitive VC + Mercenaries | 6 |
+| [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
+| [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
+| [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
+| **Summe** | | **323** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1375,3 +1412,178 @@ Roster einen **echten** Modifikator derselben Einheit bei der Arbeit.
 | 03 | Dieselbe Einheit mit 45 Fanatics | Alle drei bedingten Gruppen halten zugleich — dieselben Werte wie bei 02 |
 | 04 | 20 Modelle, 6 Netter, keine Fanatics | Gegenprobe: die Netter-Grenze **wird** von einem echten Modifikator auf 5 gehoben und meldet Ist 6 |
 | 05 | 24 Modelle, 6 Netter, 15 Fanatics | Beide Hälften in einem Roster: Netter-Grenze 6, exakt eingehalten |
+
+## `modifier-group-repeats`
+
+Prüft die `<repeats>`-Liste an einer **Modifikator-Klammer** (`modifierGroup`,
+§7.7 der Formatdoku, Issue 0116) — und vor allem, wie **mehrere** `<repeat>` in
+**einer** Liste zusammenwirken: ihre Anwendungen **addieren** sich, sie
+multiplizieren sich nicht. Beleg: „Grave markers" (`f899-4fbd-db93-629e`,
+Vampire Counts) trägt `min 2` (`5c4a-c8ea-073d-909c`) und `max 2`
+(`1b4e-3003-8b78-4be6`), beide `scope="parent"`; die Klammer erhöht je Anwendung
+beide um 1 und zählt dabei mit dem einen `<repeat>` die Vampire Counts
+(`6822-0110-a7c9-cbb0`) und mit dem anderen die „0-1 Vampire Lord"
+(`b77b-88d5-5e80-e178`) im Kontingent. Erwartete Grenze = 2 + Counts + Lords;
+eine multiplizierende Lesart ergäbe 2 + Counts × Lords und fällt in den Rostern
+04–08 auf.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Vampire, 2 Grave markers | Keine Wiederholung: beide Grenzen bleiben bei 2, Ist 2 liegt genau dazwischen — still |
+| 02 | Keine Vampire, 3 Grave markers | Die Obergrenze steht unverändert auf 2 und feuert mit Ist 3 |
+| 03 | Keine Vampire, 1 Grave marker | Die Untergrenze steht unverändert auf 2 und feuert mit Ist 1 |
+| 04 | Ein Vampire Count, kein Lord, 3 Marker | Addierend eine Anwendung: beide Grenzen 3, exakt erlaubt — multiplizierend wäre die Obergrenze bei 2 geblieben und hätte angeschlagen |
+| 05 | Ein Vampire Count, kein Lord, 2 Marker | Die Untergrenze steht auf 3 und feuert mit Ist 2 — multiplizierend schwiege sie ganz |
+| 06 | Ein Vampire Count, kein Lord, 4 Marker | Die Obergrenze steht auf 3 und feuert mit Ist 4; die gemeldete Grenze unterscheidet die Lesarten auch im Verletzungsfall |
+| 07 | Zwei Counts und ein Lord, 5 Marker | Addierend drei Anwendungen: beide Grenzen 5, exakt erlaubt |
+| 08 | Zwei Counts und ein Lord, 4 Marker | Die Untergrenze steht auf 5 und feuert mit Ist 4 — multiplizierend läge sie bei 4 und schwiege |
+| 09 | Dieselbe Rechnung im Kontingent „Clan Von Carstein (VC-AB)" | Der Träger bleibt dort verborgen; Höchstgrenzen gelten unabhängig von der Sichtbarkeit und die Obergrenze feuert wie in Roster 02 |
+
+## `condition-group-or-nested`
+
+Prüft eine **verschachtelte** `conditionGroup type="or"` (§7.7 der Formatdoku):
+sie hält, sobald **mindestens eines** ihrer Mitglieder hält — sie ist kein
+„und", keine Summe über ihre Mitglieder und kein „entweder oder". Beleg: der
+`add error`-Modifikator an „Tournament rules: Uprising (2026)"
+(`4bc4-8781-2091-d9df`, Orcs and Goblins) trägt einen drei Ebenen tiefen
+Bedingungsbaum — eine äußere `or`-Gruppe über einer `and`-Gruppe, die einerseits
+`instanceOf` auf das Kontingent „Standard (OG-AB)" (`2bfa-e64a-7123-895f`)
+verlangt und andererseits **diese** innere `or`-Gruppe, deren zwei Mitglieder je
+`greaterThan 1` armeeweit zählen: „Savage Orc Boar Big 'Uns"
+(`c679-3389-ca76-2ea1`) und „Stone Trolls" (`4112-026b-500a-b6fd`). Alle Roster
+stehen im selben Kontingent, sodass die `instanceOf`-Hälfte konstant hält und
+die beobachtete Autor-Meldung der reine Wahrheitswert der inneren Gruppe ist.
+Das Budget von 2000 Punkten hält das Sichtbarkeits- und Grenzen-Gatter des
+Trägers offen, sodass dessen eigene Grenze (`00f6-c1b3-ee85-5c02`) in keinem
+Roster dazwischenfunkt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Big 'Uns, keine Stone Trolls | Ein einzelnes haltendes Mitglied genügt: die Meldung liegt an — eine „und"-Lesart schwiege hier |
+| 02 | Keine Big 'Uns, zwei Stone Trolls | Dieselbe Meldung über das **zweite** Mitglied — es wird nicht nur das erste gelesen |
+| 03 | Je eines von beiden | **Keine** Meldung: kein Mitglied hält für sich; eine summierende Lesart (1+1 > 1) meldete hier fälschlich |
+| 04 | Zwei und zwei | Genau **eine** Meldung: beide Mitglieder halten — kein „entweder oder", und die Meldung wird nicht je Mitglied wiederholt |
+| 05 | Ein einzelnes Big 'Uns | **Keine** Meldung: `greaterThan 1` ist nicht `atLeast 1` |
+| 06 | Keine der beiden Einheiten | **Keine** Meldung: „kein Mitglied hält" ist nicht leer-wahr |
+
+## `category-scope-ancestor-frame`
+
+Prüft, was der `scope` einer Grenze bedeutet, wenn er eine **Kategorie-Id**
+nennt: der Bezugsrahmen ist der nächste **Vorfahre** der tragenden Auswahl (den
+Träger eingeschlossen), der diese Kategorie trägt — **kein** armeeweiter Rahmen.
+Beleg: die auf „Strigoi" skopierte Reittier-Sperre `6afc-566e-34d4-d35c` des
+Master Necromancer (Vampire Counts) kann daher nie feuern, denn kein Vorfahre
+seiner Gruppe „Mounts" trägt die Kategorie Strigoi — auch dann nicht, wenn im
+selben Kontingent ein Strigoi-Vampir steht. Damit „schweigt" nicht mit „wird gar
+nicht gezählt" verwechselt werden kann, belegt die `parent`-skopierte
+Gruppengrenze `7e5f-f372-f244-a864` derselben Gruppe im Gegenzug, dass die
+Gruppe sehr wohl gezählt wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Master Necromancer mit genau einem Reittier | Der Kategorie-Rahmen löst nicht auf: die Strigoi-Sperre schweigt, die Gruppengrenze ist eingehalten |
+| 02 | Wie 01, zusätzlich ein Strigoi-Vampir im selben Kontingent | Der Strigoi ist Geschwister, nicht Vorfahre: die Sperre schweigt weiter — eine armeeweite Lesart schlüge hier an |
+| 03 | Derselbe Necromancer mit **zwei** Reittieren | Die `parent`-skopierte Gruppengrenze feuert mit Ist 2 / Grenze 1 — die Gegenprobe, dass überhaupt gezählt wird |
+| 04 | Strigoi im Kontingent **und** zwei Reittiere | Schärfster Kontrast: die Gruppengrenze feuert, die Strigoi-Sperre bleibt still |
+
+## `condition-group-not`
+
+Prüft die `conditionGroup type="not"` als **Negation**: sie hält genau dann,
+wenn **keines** ihrer Mitglieder hält (§7.7 der Formatdoku, Issue 0115). Beleg
+ist das einzige reale Vorkommen im Datensatz — der `set`-Modifikator, der im
+Kontingent „Army of the Lichemaster" die Pflicht-Untergrenzen von Heinrich
+Kemmler (`8461-3eab-e5ac-1636`) und Krell (`60a8-5b49-6b81-7c84`) von 0 auf 1
+hebt. Sein Wächter ist eine `and`-Gruppe aus (a) `instanceOf` auf das Kontingent
+`f37a-a93e-fa22-61a8` und (b) einer `not`-Gruppe über genau einer
+`and`-Untergruppe (Punktelimit < 2000 **und** mindestens eine Kampagnen-Auswahl
+`14fb-dd39-08e7-cbde` im Kontingent). Die Roster variieren Budget,
+Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart der Negation sichtbar
+wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Leeres Lichemaster-Kontingent, 3000 Punkte | Die innere Untergruppe scheitert doppelt, die Negation hält: beide Pflichtgrenzen stehen auf 1 und feuern mit Ist 0 |
+| 02 | Wie 01, aber Kemmler und Krell gewählt | Die Pflicht gilt weiter und ist erfüllt — die Gegenprobe, dass die Stille in 03/06 nicht „gar nicht ausgewertet" heißt |
+| 03 | 1500 Punkte **und** Kampagnen-Auswahl | Beide Mitglieder halten, die Negation hält **nicht**: der Modifikator greift nicht, beide Grenzen bleiben bei 0 und schweigen |
+| 04 | 1500 Punkte, **ohne** Kampagnen-Auswahl | Nur eine Hälfte hält: die Negation hält, beide Pflichtgrenzen feuern — das Budget allein schaltet die Pflicht nicht ab |
+| 05 | 3000 Punkte **mit** Kampagnen-Auswahl | Die andere Hälfte: die Negation hält, beide Pflichtgrenzen feuern — auch die Kampagnen-Auswahl allein schaltet sie nicht ab |
+| 06 | Leeres Kontingent „Clan Von Carstein (VC-AB)", 3000 Punkte | Schon das `instanceOf` scheitert: der Modifikator greift unabhängig von der Negation nicht, beide Grenzen schweigen |
+
+## `greater-than-force-unlimited-gate`
+
+Prüft die `greaterThan`-Bedingung mit `scope="force"` und Eintrags-`childId`
+(§7.7 der Formatdoku) zusammen mit dem Sentinel `-1` (§7.6): Die Bedingung hält,
+sobald das Kontingent **echt mehr** Auswahlen des benannten Eintrags führt als
+ihr `value`. Beleg: der „Slaughtermaster" (`0ff3-ec4d-1c6b-6d53`, Ogre Kingdoms)
+trägt `max 0` armeeweit (`c70d-c292-36ee-21b5`) — er ist also zunächst gar nicht
+wählbar — und einen `set -1` auf genau diese Grenze, gegated auf
+`greaterThan value="0"` über den „Tyrant" (`2679-58f4-1771-662d`) im Kontingent.
+Ein Tyrant öffnet damit das Tor, und der geschriebene `-1` bedeutet
+**unbegrenzt**, nicht „eins". Alle Roster stehen im Kontingent
+„Standard (OK-AB)", damit die auf das Ironskin-Kontingent gegatterte
+Verbergung nicht dazwischenfunkt; die armeeweite Pflichteinheit ist überall
+erfüllt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein Tyrant, ein Slaughtermaster | Das Tor bleibt zu: die Grenze steht auf 0 und feuert mit Ist 1; der Slot meldet ein Höchstmaß von 0 und ist gesperrt |
+| 02 | Ein Tyrant, ein Slaughtermaster | Das Tor öffnet: die Grenze schweigt, der Slot meldet **eine** Auswahl bei aufgehobenem Höchstmaß |
+| 03 | Ein Tyrant, zwei Slaughtermaster in **einer** Selektion | Trennt „unbegrenzt" von einer still als 1 gelesenen Kappe: die Grenze schweigt weiter, der Slot meldet **zwei** Auswahlen |
+| 04 | Dieselbe Zahl als **zwei** Selektionen | Dieselbe armeeweite Summe in der anderen Kodierung — die Grenze schweigt |
+
+> **Offene Lücke (Kampagne).** Die Roster 02 und 03 sind rot: der belegte Slot
+> meldet dort **null** Auswahlen statt einer bzw. zweier, obwohl Roster 01 mit
+> derselben Behauptung grün ist. Die Zählung geht also genau dann verloren, wenn
+> die Obergrenze auf „unbegrenzt" gehoben wurde. Das Gatter selbst wertet die
+> Engine in allen vier Rostern korrekt aus.
+
+## `at-most-roster-points-limit`
+
+Prüft die `atMost`-Bedingung auf dem **eingestellten Punktebudget**
+(`limit::ecfa-8486-4f6c-c249`, `scope="roster"`, `childId="any"`) — die
+Geschwisterhälfte des bereits gepinnten `atLeast 2000` am „Tournament rules:
+Uprising (2026)" (`4bc4-8781-2091-d9df`, Orcs and Goblins). Sie liest das
+**Budget**, nicht die verplante Summe, und schließt ihren Grenzwert **ein**.
+Alle vier Roster tragen denselben Inhalt — eine Uprising-Selektion, Ist also
+konstant 1 —, sodass sich nur das Budget ändert; die `atLeast`-Hälfte hält
+überall, der Umschlag ist damit allein der `atMost`-Hälfte zuzurechnen.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 2500 — der Grenzwert selbst | Eingeschlossen: das Tor bleibt offen, die eigene Grenze schweigt, der Slot meldet Höchstmaß 1 |
+| 02 | Budget 2501 — ein Punkt darüber | Das Tor kippt: die Basisgrenze 0 feuert mit Ist 1, der Slot ist gesperrt |
+| 03 | Budget 3000 | Dasselbe Urteil deutlich außerhalb — kein Ein-Punkt-Artefakt |
+| 04 | Budget 2500, verplante Summe 3000 | Die Bedingung liest das Budget, nicht die Summe: das Tor bleibt offen, während das Roster-Budget selbst als überschritten meldet |
+
+## `at-least-parent-any-reveal`
+
+Prüft die `atLeast`-Bedingung mit `scope="parent"` und `childId="any"` (§7.6/§7.7
+der Formatdoku): Sie zählt im **Eltern-Rahmen** des Trägers die Auswahlen von
+**irgendetwas** und hält, sobald dort mindestens eine steht. Beleg: der „Wolf
+Lord" (`66bc-8fc1-81a2-9cd4`, Vampire Counts) ist `hidden="true"` und trägt
+genau **einen** Modifikator — `set hidden="false"`, allein auf diese Bedingung
+gegated. Er hängt vier Gruppenebenen unter dem Vampir; Gruppen sind in einer
+`.ros` keine Auswahlen, der Rahmen ist also die umschließende Einheiten-Auswahl
+(hier ein Vampire Thrall). Die Blutlinie „Von Carstein" steht in allen Rostern,
+damit das Gatter der umschließenden Gruppe konstant bleibt und sich nur der
+Rahmeninhalt ändert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Thrall ohne jede Unterauswahl | Der Rahmen zählt 0: die Bedingung hält nicht, die Option bleibt verborgen |
+| 02 | Nur die Pflicht-Handwaffe darunter | Der Rahmen zählt 1: die Option wird sichtbar — obwohl in ihrer eigenen Gruppe nichts gewählt ist |
+| 03 | Zusätzlich eine Great Weapon | Der Rahmen zählt 2: `atLeast` heißt „mindestens", mehr verhält sich exakt wie eines |
+| 04 | Wolf Lord selbst gewählt | Der Träger zählt im eigenen Rahmen mit — das Aufdecken trägt sich selbst; seine Obergrenze 1 ist bei Ist 1 exakt eingehalten |
+| 05 | Wolf Lord mit Stückzahl 2 | Die Obergrenze feuert mit Ist 2 / Grenze 1 — Höchstgrenzen gelten unabhängig von der Sichtbarkeit |
+
+> **Offene Lücke (Kampagne).** Die Roster 01–03 sind rot: der Bericht führt für
+> die **ungewählte** Option überhaupt keinen Angebots-Anker, sodass ihre
+> Sichtbarkeit gar nicht beobachtbar ist. Dasselbe Verweis-/Ziel-Paar löst in
+> den Rostern 04 und 05 als belegter Anker auf, und ein Nachbarszenario zeigt
+> den Angebots-Anker einer ungewählten Option an flacherer Stelle. Ohne diesen
+> Anker wird dem Nutzer die Option nie angeboten.
+
+> **Nicht abgedeckt:** das zweite Vorkommen der Zelle, „From Death Awakened"
+> (`c791-87b9-b00a-ddb4`). Kein `entryLink` zeigt darauf und es ist kein
+> Inline-Kind einer Gruppe — kein Roster kann es in einen legalen Eltern-Rahmen
+> stellen.

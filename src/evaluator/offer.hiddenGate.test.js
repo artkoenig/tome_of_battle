@@ -178,6 +178,95 @@ describe('Sichtbarkeits-Klammer: Option einer versteckten Gruppe (Kriterium 2)',
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Issue 0147, defect 3 — a member carries its own `hidden` INDEPENDENTLY of
+// the visibility bracket it descended through. A revealed bracket does not
+// make a self-hidden member visible, and a hidden bracket keeps a
+// self-visible member hidden: both tracks must AND together, neither
+// replaces the other.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Sichtbarkeits-Klammer UND eigenes hidden: beide Spuren muessen gelten (Kriterium 2, Defekt 3)', () => {
+  it('haelt ein Mitglied mit eigenem hidden="true" versteckt, obwohl seine Klammer durch einen feuernden Modifikator sichtbar wird', () => {
+    const report = evaluate(catalogueWith({
+      squadBody: `<entryLinks>
+        <entryLink id="${GROUP_LINK_ID}" name="Hidden Group" hidden="false"
+                   targetId="${SHARED_GROUP_ID}" type="selectionEntryGroup"/>
+      </entryLinks>`,
+      sharedGroups: `<selectionEntryGroup id="${SHARED_GROUP_ID}" name="Hidden Group" hidden="true">
+        <selectionEntries>
+          <selectionEntry id="${MEMBER_ID}" name="Member" type="upgrade" hidden="true"/>
+        </selectionEntries>
+        <modifiers>
+          <modifier type="set" field="hidden" value="false"/>
+        </modifiers>
+      </selectionEntryGroup>`,
+    }), armyWithSquad());
+
+    expect(offerCapabilityOf(report, MEMBER_ID)).not.toBeNull();
+    expect(offerCapabilityOf(report, MEMBER_ID).isHidden).toBe(true);
+  });
+
+  it('macht ein Mitglied mit eigenem feuerndem Aufdeck-Modifikator sichtbar, obwohl es selbst hidden="true" traegt, in einer sichtbaren Klammer', () => {
+    const report = evaluate(catalogueWith({
+      squadBody: `<selectionEntryGroups>
+        <selectionEntryGroup id="${INNER_GROUP_ID}" name="Visible Group" hidden="false">
+          <selectionEntries>
+            <selectionEntry id="${MEMBER_ID}" name="Member" type="upgrade" hidden="true">
+              <modifiers>
+                <modifier type="set" field="hidden" value="false"/>
+              </modifiers>
+            </selectionEntry>
+          </selectionEntries>
+        </selectionEntryGroup>
+      </selectionEntryGroups>`,
+    }), armyWithSquad());
+
+    expect(offerCapabilityOf(report, MEMBER_ID)).not.toBeNull();
+    expect(offerCapabilityOf(report, MEMBER_ID).isHidden).toBe(false);
+  });
+
+  it('versteckt ein Mitglied mit eigenem hidden="false", wenn ein Modifikator die Klammer per hidden="true" versteckt', () => {
+    const report = evaluate(catalogueWith({
+      squadBody: `<selectionEntryGroups>
+        <selectionEntryGroup id="${INNER_GROUP_ID}" name="Gated Group" hidden="false">
+          <selectionEntries>
+            <selectionEntry id="${MEMBER_ID}" name="Member" type="upgrade" hidden="false"/>
+          </selectionEntries>
+          <modifiers>
+            <modifier type="set" field="hidden" value="true"/>
+          </modifiers>
+        </selectionEntryGroup>
+      </selectionEntryGroups>`,
+    }), armyWithSquad());
+
+    expect(offerCapabilityOf(report, MEMBER_ID)).not.toBeNull();
+    expect(offerCapabilityOf(report, MEMBER_ID).isHidden).toBe(true);
+  });
+
+  it('haelt ein Mitglied versteckt, dessen innere Klammer per feuerndem Modifikator aufgedeckt wird, solange die aeussere Klammer versteckt bleibt', () => {
+    const report = evaluate(catalogueWith({
+      squadBody: `<selectionEntryGroups>
+        <selectionEntryGroup id="${INNER_GROUP_ID}" name="Outer Hidden" hidden="true">
+          <selectionEntryGroups>
+            <selectionEntryGroup id="group-inner-revealed" name="Inner Revealed" hidden="true">
+              <selectionEntries>
+                <selectionEntry id="${INNER_MEMBER_ID}" name="Inner Member" type="upgrade"/>
+              </selectionEntries>
+              <modifiers>
+                <modifier type="set" field="hidden" value="false"/>
+              </modifiers>
+            </selectionEntryGroup>
+          </selectionEntryGroups>
+        </selectionEntryGroup>
+      </selectionEntryGroups>`,
+    }), armyWithSquad());
+
+    expect(offerCapabilityOf(report, INNER_MEMBER_ID)).not.toBeNull();
+    expect(offerCapabilityOf(report, INNER_MEMBER_ID).isHidden).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Kriterium 3 — an den echten DE-Katalogdaten des Repos
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -221,11 +310,13 @@ function capabilitiesOf(report, defId) {
 }
 
 /** Der aufbereitete DE-Datensatz (gst + Vampire Counts) — einmal je Lauf. */
+let cachedVampireCounts = null;
 function preparedVampireCounts() {
-  return prepareDataset({
+  cachedVampireCounts ??= prepareDataset({
     gameSystem: fixture('Warhammer Fantasy Battles (6th definitive edition).gst'),
     catalogues: [fixture('Vampire Counts (6th definitive edition).cat')],
   });
+  return cachedVampireCounts;
 }
 
 /** Wertet einen Vampirgrafen im gegebenen Kontingent gegen gst + Vampire Counts aus. */

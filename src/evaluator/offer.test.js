@@ -33,6 +33,28 @@ const SHIELD_RUNE_ID = 'entry-shield-rune';
 const SWORD_LINK_ID = 'link-sword';
 const SHARED_SWORD_ID = 'shared-sword';
 
+// Issue 0147, defect 1: a second `<entryLinks>` level declared locally on an
+// `entryLink` is swallowed during the descent through a group — only the
+// direct target's members appear, not those of the locally nested second
+// link target.
+const DEEP_UNIT_ID = 'entry-deep-unit';
+const OUTER_LINK_ID = 'link-outer-group';
+const MID_LINK_ID = 'link-mid-group';
+const INNER_LINK_ID = 'link-inner-group';
+const SHARED_GROUP_A_ID = 'shared-group-a';
+const GROUP_A_MEMBER_ID = 'entry-group-a-member';
+const SHARED_GROUP_B_ID = 'shared-group-b';
+const GROUP_B_MEMBER_ID = 'entry-group-b-member';
+const DEEPEST_MEMBER_ID = 'entry-deepest-member';
+const ENTRY_LINK_WITH_CHILDREN_ID = 'link-entry-with-children';
+const SHARED_ENTRY_TARGET_ID = 'shared-entry-target';
+const CHILD_OF_LINKED_ENTRY_ID = 'entry-child-of-linked-entry';
+const DUP_LINK_1_ID = 'link-dup-1';
+const DUP_LINK_2_ID = 'link-dup-2';
+const SHARED_GROUP_CYCLE_ID = 'shared-group-cycle';
+const CYCLE_MEMBER_ID = 'entry-cycle-member';
+const CYCLE_BACK_LINK_ID = 'link-cycle-back';
+
 /**
  * Ein Kontingent, das **nur** die Kategorie „Core" fuehrt, und drei
  * Wurzeldefinitionen: eine mit Core (angeboten), eine mit Rare (nicht gefuehrt,
@@ -177,6 +199,213 @@ describe('Angebot unter einer belegten Auswahl: die direkten Optionen, nicht meh
 
     expect(withoutUnit.anchors.some(anchor => anchor.def.id === SHIELD_ID)).toBe(false);
     expect(withUnit.anchors.some(anchor => anchor.def.id === SHIELD_ID)).toBe(true);
+  });
+
+  // Issue 0147, defect 1: an `entryLink type="selectionEntryGroup"` can itself
+  // declare an `<entryLinks>` level locally — exactly the shape the real
+  // catalogues use (`2e0c` -> local `85fb` -> `0719` -> `614f` -> `84fd` ->
+  // `b8be`).
+
+  it('bietet das Mitglied einer lokal am Gruppen-Verweis deklarierten zweiten Verweiskette zusaetzlich zu den Mitgliedern des direkten Ziels an', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-nested-link" name="Offer Nested Link Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntryGroups>
+          <selectionEntryGroup id="${SHARED_GROUP_A_ID}" name="Group A">
+            <selectionEntries>
+              <selectionEntry id="${GROUP_A_MEMBER_ID}" name="Group A Member" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+          <selectionEntryGroup id="${SHARED_GROUP_B_ID}" name="Group B">
+            <selectionEntries>
+              <selectionEntry id="${GROUP_B_MEMBER_ID}" name="Group B Member" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+        </sharedSelectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${OUTER_LINK_ID}" name="Outer Group" targetId="${SHARED_GROUP_A_ID}" type="selectionEntryGroup">
+                <entryLinks>
+                  <entryLink id="${INNER_LINK_ID}" name="Inner Group" targetId="${SHARED_GROUP_B_ID}" type="selectionEntryGroup"/>
+                </entryLinks>
+              </entryLink>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const { root } = buildTreeWithOffer(armyWith([selection(DEEP_UNIT_ID)]), catalogueXml);
+
+    const offered = offeredIdsUnder(root, DEEP_UNIT_ID);
+    expect(offered).toContain(GROUP_A_MEMBER_ID);
+    expect(offered).toContain(GROUP_B_MEMBER_ID);
+  });
+
+  it('steigt durch eine zweite Verschachtelungsebene lokal deklarierter Gruppen-Verweise ab', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-nested-link-deep" name="Offer Nested Link Deep Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntryGroups>
+          <selectionEntryGroup id="${SHARED_GROUP_A_ID}" name="Group A"/>
+          <selectionEntryGroup id="${SHARED_GROUP_B_ID}" name="Group B">
+            <selectionEntries>
+              <selectionEntry id="${DEEPEST_MEMBER_ID}" name="Deepest Member" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+        </sharedSelectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${OUTER_LINK_ID}" name="Outer Group" targetId="${SHARED_GROUP_A_ID}" type="selectionEntryGroup">
+                <entryLinks>
+                  <entryLink id="${MID_LINK_ID}" name="Mid Group" targetId="${SHARED_GROUP_A_ID}" type="selectionEntryGroup">
+                    <entryLinks>
+                      <entryLink id="${INNER_LINK_ID}" name="Inner Group" targetId="${SHARED_GROUP_B_ID}" type="selectionEntryGroup"/>
+                    </entryLinks>
+                  </entryLink>
+                </entryLinks>
+              </entryLink>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const { root } = buildTreeWithOffer(armyWith([selection(DEEP_UNIT_ID)]), catalogueXml);
+
+    expect(offeredIdsUnder(root, DEEP_UNIT_ID)).toContain(DEEPEST_MEMBER_ID);
+  });
+
+  it('bietet einen Verweis auf eine Auswahl mit eigenen lokalen Kindern nur als Verweis an — die Kinder bleiben der inneren Auswahl (Grenze bleibt bestehen)', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-entry-link-children" name="Offer Entry Link Children Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntries>
+          <selectionEntry id="${SHARED_ENTRY_TARGET_ID}" name="Shared Entry Target" type="upgrade"/>
+        </sharedSelectionEntries>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${ENTRY_LINK_WITH_CHILDREN_ID}" name="Linked Entry" targetId="${SHARED_ENTRY_TARGET_ID}" type="selectionEntry">
+                <selectionEntries>
+                  <selectionEntry id="${CHILD_OF_LINKED_ENTRY_ID}" name="Child Of Linked Entry" type="upgrade"/>
+                </selectionEntries>
+              </entryLink>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const { root } = buildTreeWithOffer(armyWith([selection(DEEP_UNIT_ID)]), catalogueXml);
+
+    const offered = offeredIdsUnder(root, DEEP_UNIT_ID);
+    expect(offered).toContain(ENTRY_LINK_WITH_CHILDREN_ID);
+    expect(offered).not.toContain(SHARED_ENTRY_TARGET_ID);
+    expect(offered).not.toContain(CHILD_OF_LINKED_ENTRY_ID);
+  });
+
+  it('laesst die Abstiegsschleife an einem Zyklus enden und vergibt trotz zweier Verweise auf dieselbe Gruppe nur einen Anker', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-cycle" name="Offer Cycle Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntryGroups>
+          <selectionEntryGroup id="${SHARED_GROUP_CYCLE_ID}" name="Cycle Group">
+            <selectionEntries>
+              <selectionEntry id="${CYCLE_MEMBER_ID}" name="Cycle Member" type="upgrade"/>
+            </selectionEntries>
+            <entryLinks>
+              <entryLink id="${CYCLE_BACK_LINK_ID}" name="Back To Self" targetId="${SHARED_GROUP_CYCLE_ID}" type="selectionEntryGroup"/>
+            </entryLinks>
+          </selectionEntryGroup>
+        </sharedSelectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${DUP_LINK_1_ID}" name="Dup 1" targetId="${SHARED_GROUP_CYCLE_ID}" type="selectionEntryGroup"/>
+              <entryLink id="${DUP_LINK_2_ID}" name="Dup 2" targetId="${SHARED_GROUP_CYCLE_ID}" type="selectionEntryGroup"/>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const { root } = buildTreeWithOffer(armyWith([selection(DEEP_UNIT_ID)]), catalogueXml);
+
+    const cycleMemberAnchors = offeredIdsUnder(root, DEEP_UNIT_ID)
+      .filter(id => id === CYCLE_MEMBER_ID);
+    expect(cycleMemberAnchors).toHaveLength(1);
+  });
+
+  it('vererbt an den Anker eines ueber die neue Abstiegskette erreichten Mitglieds dieselbe Sichtbarkeits-Klammer wie die alte Kette', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-nested-link-hidden" name="Offer Nested Link Hidden Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntryGroups>
+          <selectionEntryGroup id="${SHARED_GROUP_A_ID}" name="Group A"/>
+          <selectionEntryGroup id="${SHARED_GROUP_B_ID}" name="Group B">
+            <selectionEntries>
+              <selectionEntry id="${GROUP_B_MEMBER_ID}" name="Group B Member" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+        </sharedSelectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${OUTER_LINK_ID}" name="Outer Group" targetId="${SHARED_GROUP_A_ID}" type="selectionEntryGroup" hidden="true">
+                <entryLinks>
+                  <entryLink id="${INNER_LINK_ID}" name="Inner Group" targetId="${SHARED_GROUP_B_ID}" type="selectionEntryGroup"/>
+                </entryLinks>
+              </entryLink>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const report = evaluateDataset(
+      prepareDataset({ catalogues: [catalogueXml] }),
+      armyWith([selection(DEEP_UNIT_ID)]),
+    );
+
+    const memberCapability = [...report.capabilities.values()]
+      .find(capability => capability.defId === GROUP_B_MEMBER_ID && capability.anchorKind === AnchorKind.OFFER_ANCHOR);
+    expect(memberCapability).toBeDefined();
+    expect(memberCapability.isHidden).toBe(true);
+  });
+
+  it('KONTROLLE: ein Gruppen-Verweis ohne eigene lokale Kinder bietet weiterhin nur die Mitglieder seines Ziels an', () => {
+    const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-offer-empty-group-link" name="Offer Empty Group Link Catalogue">
+        <forceEntries>
+          <forceEntry id="${FORCE_ID}" name="Army"/>
+        </forceEntries>
+        <sharedSelectionEntryGroups>
+          <selectionEntryGroup id="${SHARED_GROUP_A_ID}" name="Group A">
+            <selectionEntries>
+              <selectionEntry id="${GROUP_A_MEMBER_ID}" name="Group A Member" type="upgrade"/>
+            </selectionEntries>
+          </selectionEntryGroup>
+        </sharedSelectionEntryGroups>
+        <selectionEntries>
+          <selectionEntry id="${DEEP_UNIT_ID}" name="Deep Unit" type="unit">
+            <entryLinks>
+              <entryLink id="${OUTER_LINK_ID}" name="Group A Link" targetId="${SHARED_GROUP_A_ID}" type="selectionEntryGroup"/>
+            </entryLinks>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+
+    const { root } = buildTreeWithOffer(armyWith([selection(DEEP_UNIT_ID)]), catalogueXml);
+
+    expect(offeredIdsUnder(root, DEEP_UNIT_ID)).toEqual([GROUP_A_MEMBER_ID]);
   });
 });
 

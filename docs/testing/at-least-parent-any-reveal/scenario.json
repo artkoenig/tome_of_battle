@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-parent-any-reveal",
+  "description": "Eine condition type=atLeast value=1 field=selections scope=parent childId=any zaehlt im Eltern-Rahmen ihres Traegers die Selektionen von IRGENDETWAS (childId=any ist der unbeschraenkte Zaehler) und haelt, sobald diese Zahl 1 erreicht. Konkret: Im Vampire-Counts-Katalog traegt das geteilte Upgrade 'Wolf Lord' (66bc-8fc1-81a2-9cd4, Basis hidden=true) genau EINEN Modifier - set hidden=false - gegatet durch genau diese eine Bedingung, ohne repeats und ohne modifierGroup. Erreichbar ist der Eintrag ausschliesslich ueber vier ineinandergeschachtelte selectionEntryGroups (Magic selection 53e8 -> Bloodline 0719 -> Vampiric Powers Von Carstein 84fd -> entryLink b8be-a71f-569c-5cdc); Gruppen erscheinen in der .ros nicht als eigene selection, der Eltern-Rahmen ist deshalb die umschliessende Auswahl - der Vampire Thrall e37b-c827-99ac-b706. Fuenf Roster variieren allein, was diese Thrall-Auswahl haelt: 0 (Bedingung haelt nicht -> isHidden true), 1, 2, sowie der Traeger selbst ein- und zweifach (Bedingung haelt -> isHidden false). Die eigene Obergrenze des Traegers (06c5-d960-2b4d-399a, max 1, field=selections, scope=parent) wird dort behauptet, wo die Roster sie sprechen lassen: still bei Ist 0 und 1, feuernd bei Ist 2 (bound 1). Jedes Roster fuehrt die Blutlinie 'Von Carstein' (f557-097a-d26b-9363), damit der umschliessende, per Basis versteckte Gruppen-Verweis 614f-c7bb-2050-c603 in allen Faellen aufgedeckt ist und die Sichtbarkeit des Slots einzig von dessen eigenem hidden-Flag abhaengt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-empty-frame-wolf-lord-hidden.ros",
+      "description": "Standard (VC-AB) mit Bloodlines (Von Carstein) und einem Vampire Thrall OHNE jede Unterauswahl. Der Eltern-Rahmen der Bedingung (die Thrall-Auswahl) zaehlt 0 Selektionen: atLeast 1 haelt nicht, der einzige Modifier des Ziels bleibt aus, der Wolf-Lord-Slot behaelt sein geschriebenes hidden=true. Die eigene Obergrenze max 1 ist bei Ist 0 eingehalten und feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "06c5-d960-2b4d-399a",
+          "a06b-caa9-8f13-c480",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "b8be-a71f-569c-5cdc",
+            "targetDefId": "66bc-8fc1-81a2-9cd4",
+            "anchorKind": "offerAnchor",
+            "name": "Wolf Lord",
+            "current": 0,
+            "isHidden": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-selection-reveals-wolf-lord.ros",
+      "description": "Identisch zu Roster 01, zusaetzlich die Pflicht-Handweapon (9dfd-134c-53c1-7181) unter dem Thrall - das einzige Delta. Der Eltern-Rahmen zaehlt jetzt 1 Selektion: atLeast 1 haelt, set hidden=false greift, der Wolf-Lord-Slot ist sichtbar (isHidden false), obwohl in der Gruppe 'Vampiric Powers' selbst nichts gewaehlt ist. Wolf Lord bleibt ungewaehlt (Ist 0), die eigene Obergrenze feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "06c5-d960-2b4d-399a",
+          "e2bd-1d63-464c-5b6a",
+          "a66c-1bfe-738d-e621",
+          "a06b-caa9-8f13-c480",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "b8be-a71f-569c-5cdc",
+            "targetDefId": "66bc-8fc1-81a2-9cd4",
+            "anchorKind": "offerAnchor",
+            "name": "Wolf Lord",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-selections-reveal-unchanged.ros",
+      "description": "Wie Roster 02, zusaetzlich eine Great Weapon (Verweis cbd9-0b5f-9a0e-37a1 in der Gruppe Weapons ce21-4504-871f-b034, Ziel 1eb7-3f36-8cf7-e0ba). Der Eltern-Rahmen zaehlt 2. Die Grenze ist ein atLeast 1 - mehr als eins verhaelt sich exakt wie eins: der Wolf-Lord-Slot bleibt sichtbar (isHidden false) und weiterhin ungewaehlt (Ist 0). Da Wolf Lord nicht gewaehlt ist, kann das Aufdecken nicht am Traeger selbst haengen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "06c5-d960-2b4d-399a",
+          "e2bd-1d63-464c-5b6a",
+          "a66c-1bfe-738d-e621",
+          "c40e-ba85-3b7e-9483",
+          "7807-a031-bb3e-370c",
+          "a06b-caa9-8f13-c480",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "b8be-a71f-569c-5cdc",
+            "targetDefId": "66bc-8fc1-81a2-9cd4",
+            "anchorKind": "offerAnchor",
+            "name": "Wolf Lord",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-wolf-lord-selected-self-reveal.ros",
+      "description": "Wie Roster 02, zusaetzlich der Wolf Lord selbst (entryId 66bc-8fc1-81a2-9cd4 via Verweis b8be-a71f-569c-5cdc, Gruppe 84fd-049b-21b4-9075, number=1). Der Eltern-Rahmen zaehlt 2 (Handweapon + Wolf Lord); der Traeger zaehlt in seinem eigenen Rahmen mit, das Aufdecken traegt sich also auch selbst. Der Slot ist belegt (Ist 1) und sichtbar. Die eigene Obergrenze 06c5-d960-2b4d-399a (max 1) ist mit Ist 1 exakt eingehalten und feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "06c5-d960-2b4d-399a",
+          "e2bd-1d63-464c-5b6a",
+          "a66c-1bfe-738d-e621",
+          "a06b-caa9-8f13-c480",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "b8be-a71f-569c-5cdc",
+            "targetDefId": "66bc-8fc1-81a2-9cd4",
+            "anchorKind": "occupied",
+            "name": "Wolf Lord",
+            "current": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-wolf-lord-twice-max-fires.ros",
+      "description": "Wie Roster 04, aber die Wolf-Lord-Selektion traegt number=2. Der Eltern-Rahmen zaehlt 3 (Handweapon + 2x Wolf Lord); die Bedingung atLeast 1 haelt unveraendert, der Slot bleibt sichtbar. Die eigene Obergrenze 06c5-d960-2b4d-399a (max 1, field=selections, scope=parent, shared=true, includeChildSelections=false) zaehlt im selben Rahmen 2 Wolf-Lord-Selektionen und feuert mit actual 2 / bound 1 - Max-Grenzen gelten unabhaengig von der Sichtbarkeit (Formatdoku 8).",
+      "expect": {
+        "firing": [
+          { "limitId": "06c5-d960-2b4d-399a", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "e2bd-1d63-464c-5b6a",
+          "a66c-1bfe-738d-e621",
+          "a06b-caa9-8f13-c480",
+          "4a0a-b107-e726-da32"
+        ],
+        "capabilities": [
+          {
+            "defId": "b8be-a71f-569c-5cdc",
+            "targetDefId": "66bc-8fc1-81a2-9cd4",
+            "anchorKind": "occupied",
+            "name": "Wolf Lord",
+            "current": 2,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}

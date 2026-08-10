@@ -48,6 +48,17 @@ const Bucket = Object.freeze({
   BOTH: 'both',
 });
 
+/**
+ * The frame node's **own** share under the `null` target — deliberately *not* a
+ * crossing bucket: {@link bucketFor} never returns it and it is no member of
+ * {@link Bucket}, whose values mean "boundary crossed on the way to the frame".
+ * {@link indexNodeContribution} writes it by explicit key, and only a read that
+ * asks for it ({@link combineBuckets} with `includeFrameOwn`) sees it — the
+ * query at the frame node itself (`scope="self"`), never a query from an
+ * ancestor frame.
+ */
+const FRAME_OWN = 'frameOwn';
+
 /** Waehlt den Eimer eines Beitrags aus den beiden gekreuzten Grenzen. */
 function bucketFor(crossedSelection, crossedForce) {
   if (crossedSelection && crossedForce) return Bucket.BOTH;
@@ -71,6 +82,7 @@ function emptyBuckets() {
     [Bucket.SELECTION]: emptyTally(),
     [Bucket.FORCE]: emptyTally(),
     [Bucket.BOTH]: emptyTally(),
+    [FRAME_OWN]: emptyTally(),
   };
 }
 
@@ -106,6 +118,12 @@ function contributionOf(node, effective) {
  * Ein **Kontingent-Knoten** ist nur unter seiner eigenen Definitions-ID
  * (fuer Grenzen am Force-Typ) und seinen Kategorie-IDs zaehlbar. Es ist keine
  * generische Selektion "im Rahmen" und traegt daher nicht zum `null`-Ziel bei.
+ *
+ * Das `null`-Ziel meint **alles im Rahmen**, also die Nachfahren — nicht den
+ * Rahmen selbst, sobald ein *anderer* Knoten fragt. Eine Selektion fuehrt es
+ * hier zwar, legt ihre eigene Anzahl im **eigenen** Rahmen aber getrennt ab, wo
+ * nur die Query am Rahmenknoten selbst sie liest ({@link indexNodeContribution},
+ * {@link FRAME_OWN}).
  *
  * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
@@ -239,6 +257,37 @@ function indexNodeContribution(tallies, node, effective) {
       let c = contribution;
       if (node.isForce && targetId === node.def.id) {
         c = { selectionCount: node.instance.count, forceCount: node.instance.count, costSums: contribution.costSums };
+      } else if (isImmediate && targetId === null) {
+        // In its **own** frame a node's count moves out of the crossing bucket
+        // and into the separate FRAME_OWN slot, because one index key answers
+        // two different questions: `catalogReader.js` maps `childId="any"` and a
+        // missing `childId` alike to the target `null`.
+        //
+        // - Asked from an **ancestor** frame (`scope="parent"`, `roster`,
+        //   `force`, `unit`, an ancestor id), `childId="any"` asks for what is
+        //   *inside* the frame (§7.6 — die Bezugsgroesse summiert die
+        //   **Nachfahren**), and the frame is not inside itself. Otherwise an
+        //   `atLeast 1 scope="parent" childId="any"` could never be unmet,
+        //   because the empty frame counted itself. A force node is not
+        //   countable under `null` at all, for the same reason
+        //   ({@link targetsOf}).
+        // - Asked at the frame node **itself** (`scope="self"`, or any scope
+        //   with `shared="false"`, which binds the frame to the carrier
+        //   instance), it is the identity reading Battlescribe gives `self`,
+        //   and the node's own count is the answer. `query.js` opens the slot
+        //   for exactly that case.
+        //
+        // Die **Kosten** bleiben unbedingt im Kreuzungs-Eimer: eine
+        // Prozentgrenze auf ein Kostenfeld liest ihren Nenner mit dem Ziel
+        // `null` im Rahmen ihres Traegers (`constraints.js`), und dort gehoert
+        // der Eigenanteil des Traegers dazu — so aendert sich kein Nenner und
+        // nichts wird doppelt gezaehlt.
+        c = { selectionCount: 0, forceCount: 0, costSums: contribution.costSums };
+        addContribution(tallies, scopeKey(frameKey, targetId), FRAME_OWN, {
+          selectionCount: contribution.selectionCount,
+          forceCount: contribution.forceCount,
+          costSums: new Map(),
+        });
       }
       addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
     }
@@ -273,10 +322,16 @@ function indexNodeContribution(tallies, node, effective) {
  * erzwungen — nur in den Eimern SELECTION und BOTH und werden von dort in die
  * gelieferte `costSums`-Summe gemischt, wenn das Gate offen ist (BOTH weiterhin
  * nur mit `includeChildForces`).
+ *
+ * Der **Eigenanteil des Rahmenknotens** unter dem `null`-Ziel ({@link FRAME_OWN})
+ * ist kein Kreuzungs-Eimer und haengt an keinem der drei Flags: er zaehlt genau
+ * dann mit, wenn `includeFrameOwn` gesetzt ist — die Query wird am Rahmenknoten
+ * selbst gestellt.
  */
-function combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts) {
+function combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts, includeFrameOwn) {
   const result = emptyTally();
   addTally(result, buckets[Bucket.BASE]);
+  if (includeFrameOwn) addTally(result, buckets[FRAME_OWN]);
   if (includeChildSelections) addTally(result, buckets[Bucket.SELECTION]);
   if (includeChildForces) addTally(result, buckets[Bucket.FORCE]);
   if (includeChildSelections && includeChildForces) addTally(result, buckets[Bucket.BOTH]);
@@ -301,12 +356,17 @@ const ZERO_TALLY = Object.freeze({ selectionCount: 0, forceCount: 0, costSums: n
  *
  * @param {object} root Wurzel des Evaluationsbaums.
  * @param {import('./effectiveState.js').EffectiveState} effective effektive Kosten und Kategorien je Knoten.
- * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean) => { selectionCount: number, forceCount: number, costSums: Map<string, number> } }}
+ * @returns {{ get: (key: string, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean, includeFrameOwn?: boolean) => { selectionCount: number, forceCount: number, costSums: Map<string, number> } }}
  *   `get` liefert den nach den beiden `includeChild…`-Flags zusammengesetzten
  *   Zaehler eines Schluessels (Vorgabe: nur der BASE-Eimer). Das dritte Flag
  *   gatet die **aufgestiegenen** Nachfahren-Kosten getrennt (Issue 0113) und
  *   faellt ohne Angabe auf `includeChildSelections` zurueck — fuer jeden Leser
- *   ohne eigene Angabe bleibt das Verhalten damit unveraendert.
+ *   ohne eigene Angabe bleibt das Verhalten damit unveraendert. Das vierte Flag
+ *   gatet den Eigenanteil des Rahmenknotens unter dem `null`-Ziel
+ *   ({@link FRAME_OWN}); es ist **vorgabegemaess offen**, sodass nur ein Leser,
+ *   der es ausdruecklich schliesst, den Rahmenknoten aus „alles im Rahmen"
+ *   heraushaelt — das tut die Query, wenn der Rahmen ein anderer Knoten ist als
+ *   der fragende (`query.js`).
  */
 export function buildIndex(root, effective) {
   const tallies = new Map();
@@ -314,10 +374,10 @@ export function buildIndex(root, effective) {
     indexNodeContribution(tallies, node, effective);
   }
   return {
-    get: (key, includeChildSelections = false, includeChildForces = false, includeClimbedCosts = includeChildSelections) => {
+    get: (key, includeChildSelections = false, includeChildForces = false, includeClimbedCosts = includeChildSelections, includeFrameOwn = true) => {
       const buckets = tallies.get(key);
       if (buckets === undefined) return ZERO_TALLY;
-      return combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts);
+      return combineBuckets(buckets, includeChildSelections, includeChildForces, includeClimbedCosts, includeFrameOwn);
     },
   };
 }

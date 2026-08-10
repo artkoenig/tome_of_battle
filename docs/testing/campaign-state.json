@@ -44,6 +44,29 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "A single selection of 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, nested under the group 43b3-35c6-d7cc-e3c6 below the hidden entry 6fcf-b33d-3cf5-b56a) must be counted: its occupied slot must report current 1, and its own force-scoped limit 00f6-c1b3-ee85-5c02 (max 0, raised to 1 only while the and-group of atLeast 2000 / atMost 2500 on limit::ecfa-8486-4f6c-c249 holds) must fire with actual 1 against bound 0 at a costLimit of 1999 — the report carries current 0 and no message for that limit at all. Roster 03 additionally demands that limit:: reads the configured budget and not the spent sum."
+    },
+    {
+      "cellKey": "condition|greaterThan|force|selectionCount|child=id",
+      "scenario": "docs/testing/greater-than-force-unlimited-gate",
+      "failingCases": [
+        "Szenario: greater-than-force-unlimited-gate > rosters/02-tyrant-one-slaughtermaster-unlimited.ros",
+        "Szenario: greater-than-force-unlimited-gate > rosters/03-tyrant-two-slaughtermasters-unlimited.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "An occupied slot must keep reporting how many selections it holds when its max limit has been lifted to the written sentinel -1 (unlimited). The Slaughtermaster slot (0ff3-ec4d-1c6b-6d53, frame Standard (OK-AB) 729f-9246-5cd3-5044) reports current 0 in rosters 02 and 03 where the roster holds 1 resp. 2 of them and the set--1 modifier on c70d-c292-36ee-21b5 has opened the cap; roster 01 is the control and passes with current 1 while the same limit still stands at max 0. So the count is lost exactly when the bound becomes unlimited, not in general. The limit's own firing/silence is already correct in all four rosters."
+    },
+    {
+      "cellKey": "condition|atLeast|parent|selectionCount|child=any",
+      "scenario": "docs/testing/at-least-parent-any-reveal",
+      "failingCases": [
+        "Szenario: at-least-parent-any-reveal > rosters/01-empty-frame-wolf-lord-hidden.ros",
+        "Szenario: at-least-parent-any-reveal > rosters/02-one-selection-reveals-wolf-lord.ros",
+        "Szenario: at-least-parent-any-reveal > rosters/03-two-selections-reveal-unchanged.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "An option that exists in the catalogue but is not selected must appear in the report as an offer anchor, so its visibility is observable at all: 'Wolf Lord' (link b8be-a71f-569c-5cdc, target 66bc-8fc1-81a2-9cd4) carries hidden=true plus a single set hidden=false gated on atLeast 1 selection of anything in its parent frame, and rosters 01-03 assert exactly that flip (isHidden true at an empty frame, false once the frame holds one resp. two selections, current 0 throughout). The report carries no anchorKind=offerAnchor slot for that defId/targetDefId pair at all in those three rosters, so the flip cannot be seen; the same pair resolves as anchorKind=occupied in rosters 04 and 05, which pass, and the sibling scenario at-least-unit-upgrade-gate shows an unselected option's offerAnchor being projected in a shallower position. The option sits four selectionEntryGroup levels below the unit; whether the missing projection is the depth, the fact that nothing in that group chain is selected, or something else, is for the implementation round to diagnose. Without the anchor a user is never offered the option at all (ADR 0034: the report is the sole source of the surface)."
     }
   ],
   "parkedQuestions": [
@@ -62,10 +85,10 @@
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-4rq45b",
+    "branch": "claude/evaluator-abschluss-kampagne-tk44u4",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 10,
-    "lastRunAt": "2026-08-10T08:16:17Z",
+    "runs": 11,
+    "lastRunAt": "2026-08-10T09:20:00Z",
     "lastRunOutcome": "stopped-by-human",
     "reArmedFor": null,
     "gaps": {
@@ -104,7 +127,26 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/greater-than-force-unlimited-gate": {
+        "cellKey": "condition|greaterThan|force|selectionCount|child=id",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/at-least-parent-any-reveal": {
+        "cellKey": "condition|atLeast|parent|selectionCount|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
-    }
+    },
+    "reArmNote": "Run 11: the human instructed no re-arming and asked for a pull request instead. The campaign is NOT closed - 23 cells remain uncovered in docs/testing/worklist.json. A later run must be started by the human; do not treat the missing send_later as termination."
   }
 }

@@ -409,11 +409,18 @@ export function query(ctx, field, scope, targetId, flags) {
   }
 
   const key = scopeKey(frameKeyOf(frame), targetId);
+  // Der Eigenanteil des Rahmenknotens unter dem `null`-Ziel (`childId="any"`
+  // oder gar kein `childId`) gehoert nur dann zur Antwort, wenn die Query am
+  // Rahmen selbst gestellt wird — `scope="self"` und jedes `shared="false"`,
+  // wo {@link resolveFrame} den Rahmen an den fragenden Knoten bindet. Ist der
+  // Rahmen ein anderer, stets ein echter Vorfahre, fragt `childId="any"` nach
+  // dem, was *im* Rahmen steht, und der Rahmen steht nicht in sich selbst.
   const tally = ctx.index.get(
     key,
     effectiveFlags.includeChildSelections,
     effectiveFlags.includeChildForces,
     flags?.includeClimbedCosts ?? effectiveFlags.includeChildSelections,
+    frame === ctx.node,
   );
 
   if (field.kind === CountedFieldKind.SELECTION_COUNT) {

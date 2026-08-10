@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="alpar-02" name="ALPAR 02 – Vampire Thrall mit genau einer Auswahl (Handweapon): der Eltern-Rahmen zaehlt 1, Wolf Lord wird aufgedeckt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored at-least-parent-any-reveal E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-von-carstein" name="Bloodline of Clan Von Carstein" entryId="f557-097a-d26b-9363" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- IDENTISCH zu Roster 01 - das EINZIGE Delta ist die Pflicht-Handweapon
+             unter dem Thrall. Der Eltern-Rahmen der Bedingung
+             atLeast 1 / selections / scope=parent / childId=any zaehlt damit
+             genau 1: die Bedingung haelt, der Modifier set hidden="false"
+             greift, der Wolf-Lord-Slot ist sichtbar - OBWOHL in der Gruppe
+             "Vampiric Powers" selbst nichts gewaehlt ist. Genau daran haengt
+             die Aussage, dass der Rahmen die UMSCHLIESSENDE AUSWAHL ist
+             (der Thrall), nicht die Gruppe. -->
+        <selection id="sel-thrall" name="Vampire Thrall" entryId="e37b-c827-99ac-b706" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-handweapon" name="Handweapon" entryId="9dfd-134c-53c1-7181" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

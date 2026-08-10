@@ -123,6 +123,126 @@ describe('Bericht: Faehigkeitsdatensatz einer MAX-Grenze', () => {
   });
 });
 
+describe('Bericht: ein belegter Slot behaelt seinen Stand, wenn sein einziges Max per set -1 zu unbegrenzt wird', () => {
+  // Issue 0147, Kriterium 1: die Unit-Analogie der Rosters 01/03 des Szenarios
+  // `greater-than-force-unlimited-gate` — derselbe Rohwert-Max mit demselben
+  // bedingten `set -1`, hier isoliert an einem Minimal-Katalog.
+  const ARCHER_DEF_ID = 'entry-archer';
+  const LIMIT_ID = 'max-warriors';
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-cap-unlimited-gate" name="Capability Unlimited Gate Catalogue">
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit">
+          <constraints>
+            <constraint id="${LIMIT_ID}" type="max" value="1" field="selections" scope="roster"/>
+          </constraints>
+          <modifiers>
+            <modifier type="set" field="${LIMIT_ID}" value="-1">
+              <conditions>
+                <condition type="atLeast" field="selections" scope="roster" childId="${ARCHER_DEF_ID}" value="1"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+        <selectionEntry id="${ARCHER_DEF_ID}" name="Archer" type="unit"/>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** Ein Roster aus Kriegern und optional einem Schuetzen (dem Bedingungs-Ausloeser). */
+  function warriorsAndMaybeArcher(warriorCount, { withArcher }) {
+    const forces = [{ defId: WARRIOR_DEF_ID, count: warriorCount, children: [] }];
+    if (withArcher) forces.push({ defId: ARCHER_DEF_ID, count: 1, children: [] });
+    return { forces };
+  }
+
+  it('haelt den Stand eines belegten Slots, nachdem set -1 sein einziges Max zu unbegrenzt gehoben hat', () => {
+    const report = evaluate(CATALOGUE_XML, warriorsAndMaybeArcher(2, { withArcher: true }));
+
+    const { capability } = slotByDefId(report, WARRIOR_DEF_ID);
+    expect(capability).toMatchObject({
+      current: 2,
+      effectiveMax: null,
+      headroom: null,
+      isBlocked: false,
+      isMandatoryUnmet: false,
+      anchorKind: AnchorKind.OCCUPIED,
+    });
+  });
+
+  it('KONTROLLE: bei geschlossenem Tor liefert das Grenzergebnis den Stand weiterhin (Analogie Roster 01)', () => {
+    const report = evaluate(CATALOGUE_XML, warriorsAndMaybeArcher(2, { withArcher: false }));
+
+    const { capability } = slotByDefId(report, WARRIOR_DEF_ID);
+    expect(capability).toMatchObject({
+      current: 2,
+      effectiveMax: 1,
+      isBlocked: true,
+    });
+  });
+});
+
+describe('Bericht: der Stand eines Slots ohne jede Grenze', () => {
+  const FORCE_ID = 'force-no-limit-army';
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-cap-no-limit" name="Capability No Limit Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit"/>
+      </selectionEntries>
+    </catalogue>`;
+
+  it('meldet an einem belegten Slot ohne jede Grenze trotzdem seinen Stand', () => {
+    const report = evaluate(CATALOGUE_XML, rosterOf(WARRIOR_DEF_ID, 3));
+
+    const { capability } = slotByDefId(report, WARRIOR_DEF_ID);
+    expect(capability.current).toBe(3);
+  });
+
+  it('GEGENPROBE: jede Instanz meldet ihren eigenen Stand, nicht die Summe des Rahmens', () => {
+    const report = evaluate(CATALOGUE_XML, {
+      forces: [
+        { defId: WARRIOR_DEF_ID, count: 1, children: [] },
+        { defId: WARRIOR_DEF_ID, count: 2, children: [] },
+      ],
+    });
+
+    // Absichtlich nicht ueber slotByDefId (liefert nur den ersten Treffer):
+    // hier zaehlt das Multiset der Staende beider belegten Slots.
+    const occupiedCounts = [...report.capabilities.values()]
+      .filter(capability => capability.defId === WARRIOR_DEF_ID && capability.anchorKind === AnchorKind.OCCUPIED)
+      .map(capability => capability.current)
+      .sort();
+    expect(occupiedCounts).toEqual([1, 2]);
+  });
+
+  it('KONTROLLE: der Angebots-Anker einer nicht gewaehlten Instanz meldet Stand 0', () => {
+    const report = evaluate(CATALOGUE_XML, { forces: [{ defId: FORCE_ID, count: 1, children: [] }] });
+
+    const offer = slotByDefId(report, WARRIOR_DEF_ID, { phantom: true });
+    expect(offer).not.toBeNull();
+    expect(offer.capability.current).toBe(0);
+  });
+});
+
+describe('Bericht: Faehigkeitsdatensatz eines Kontingent-Slots ohne jede Grenze', () => {
+  const FORCE_ID = 'force-plain-army';
+  const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-cap-force-slot" name="Capability Force Slot Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army"/>
+      </forceEntries>
+    </catalogue>`;
+
+  it('meldet an seinem Kontingent-Slot dessen Stand, obwohl das Kontingent keine eigene Grenze traegt', () => {
+    const report = evaluate(CATALOGUE_XML, { forces: [{ defId: FORCE_ID, count: 1, children: [] }] });
+
+    const { capability } = slotByDefId(report, FORCE_ID);
+    expect(capability.current).toBe(1);
+  });
+});
+
 describe('Bericht: Faehigkeitsdatensatz einer MIN-Grenze am realen Knoten', () => {
   const MIN_WARRIORS = 2;
   const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
