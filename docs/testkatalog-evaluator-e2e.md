@@ -153,7 +153,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`category-scope-ancestor-frame`](testing/category-scope-ancestor-frame/) | Definitive VC + Mercenaries | 4 |
 | [`condition-group-not`](testing/condition-group-not/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
-| **Summe** | | **314** |
+| [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
+| **Summe** | | **318** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1534,3 +1535,21 @@ erfüllt.
 > derselben Behauptung grün ist. Die Zählung geht also genau dann verloren, wenn
 > die Obergrenze auf „unbegrenzt" gehoben wurde. Das Gatter selbst wertet die
 > Engine in allen vier Rostern korrekt aus.
+
+## `at-most-roster-points-limit`
+
+Prüft die `atMost`-Bedingung auf dem **eingestellten Punktebudget**
+(`limit::ecfa-8486-4f6c-c249`, `scope="roster"`, `childId="any"`) — die
+Geschwisterhälfte des bereits gepinnten `atLeast 2000` am „Tournament rules:
+Uprising (2026)" (`4bc4-8781-2091-d9df`, Orcs and Goblins). Sie liest das
+**Budget**, nicht die verplante Summe, und schließt ihren Grenzwert **ein**.
+Alle vier Roster tragen denselben Inhalt — eine Uprising-Selektion, Ist also
+konstant 1 —, sodass sich nur das Budget ändert; die `atLeast`-Hälfte hält
+überall, der Umschlag ist damit allein der `atMost`-Hälfte zuzurechnen.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 2500 — der Grenzwert selbst | Eingeschlossen: das Tor bleibt offen, die eigene Grenze schweigt, der Slot meldet Höchstmaß 1 |
+| 02 | Budget 2501 — ein Punkt darüber | Das Tor kippt: die Basisgrenze 0 feuert mit Ist 1, der Slot ist gesperrt |
+| 03 | Budget 3000 | Dasselbe Urteil deutlich außerhalb — kein Ein-Punkt-Artefakt |
+| 04 | Budget 2500, verplante Summe 3000 | Die Bedingung liest das Budget, nicht die Summe: das Tor bleibt offen, während das Roster-Budget selbst als überschritten meldet |

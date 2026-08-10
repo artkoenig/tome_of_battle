@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 80,
-    "uncovered": 25
+    "covered": 81,
+    "uncovered": 24
   },
   "cells": [
     {
@@ -70,82 +70,6 @@
             "type": "atLeast",
             "field": "selections",
             "scope": "parent",
-            "childId": "any"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|atMost|roster|limitValue|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "atMost",
-        "scope": "roster",
-        "field": "limitValue",
-        "childId": "any"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4bc4-8781-2091-d9df",
-            "name": "Tournament rules: Uprising (2026)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atMost",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
-            "childId": "any"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4bc4-8781-2091-d9df",
-            "name": "Tournament rules: Uprising (2026)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atMost",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
             "childId": "any"
           }
         }

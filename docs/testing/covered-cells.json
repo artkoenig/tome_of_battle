@@ -429,6 +429,13 @@
         "docs/testing/greater-than-force-unlimited-gate"
       ],
       "rationale": "Der set--1-Modifier am 'Slaughtermaster' (0ff3-ec4d-1c6b-6d53, Ogre Kingdoms) ist auf genau diese Bedingung gegated: greaterThan value=0, field=selections, scope=force, childId=2679-58f4-1771-662d (Tyrant). Roster 01 (kein Tyrant) laesst die Basisgrenze max 0 stehen und feuert mit Ist 1 / Grenze 0, Roster 02-04 (ein Tyrant) heben sie auf den geschriebenen Sentinel -1 = unbegrenzt, und die Grenze schweigt in beiden Kodierungen der Stueckzahl. Das Gatter selbst wertet die Engine korrekt aus; rot sind allein die Slot-Zaehlungen der Roster 02 und 03 — siehe den pinnedGaps-Eintrag zu diesem Szenario."
+    },
+    {
+      "key": "condition|atMost|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/at-most-roster-points-limit"
+      ],
+      "rationale": "Die atMost-Haelfte des and-Gatters am 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins): atMost 2500 auf limit::ecfa-8486-4f6c-c249, scope=roster, childId=any, Geschwister des bereits gepinnten atLeast 2000. Vier Roster mit identischem Inhalt (eine Uprising-Selektion, Ist konstant 1) variieren allein das eingestellte Budget: 2500 ist der Grenzwert selbst und wird eingeschlossen (Gatter offen, 00f6-c1b3-ee85-5c02 still, wirksame Grenze 1), 2501 und 3000 kippen es (Basisgrenze 0 feuert mit Ist 1). Roster 04 haelt das Budget bei 2500 und treibt die verplante Summe auf 3000: die Bedingung liest weiter das Budget, nicht die Summe — das Gatter bleibt offen, waehrend das Roster-Budget selbst ueberschritten meldet. Der atLeast-Partner haelt in allen vier Rostern, sodass der Umschlag allein der atMost-Haelfte zuzurechnen ist. Szenario ist gruen."
     }
   ]
 }
