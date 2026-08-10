@@ -82,6 +82,15 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/at-least-roster-points-limit": {
+        "cellKey": "condition|atLeast|roster|limitValue|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     }
   }

@@ -233,6 +233,13 @@
         "docs/testing/less-than-roster-category-count"
       ],
       "rationale": "The and-group on Extra Goblin Hero's limit 186c-6345-5b25-5aa2 holds `greaterThan 999 field=limit::ecfa-8486-4f6c-c249 scope=roster childId=model`; rosters 01 (1000 pts) and 03 (500 pts) are identical apart from the configured cost limit and straddle that threshold, so the effectiveMax flip from 1 to 0 isolates this member, while roster 04 (2000 pts) shows it holding across two repeat applications."
+    },
+    {
+      "key": "condition|equalTo|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/numeric-conditions"
+      ],
+      "rationale": "The increment on the Orcs-and-Goblins limit 4928-8a21-ef4a-3007 is gated by a single `condition type=equalTo value=1 field=selections scope=parent childId=c5c1-60aa-745f-c9d3`; rosters equal-to-true.ros and equal-to-false.ros differ only in whether that count equals 1, and the limit stays silent in one and fires with actual 2 / bound 1 in the other."
     }
   ]
 }
