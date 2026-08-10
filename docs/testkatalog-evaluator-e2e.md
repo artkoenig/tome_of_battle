@@ -158,7 +158,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`less-than-unit-wizard-level-gate`](testing/less-than-unit-wizard-level-gate/) | Definitive VC + Mercenaries | 6 |
 | [`not-instance-of-unit-category-gate`](testing/not-instance-of-unit-category-gate/) | Definitive VC + Mercenaries | 6 |
 | [`add-info-and-warning-campaign-gate`](testing/add-info-and-warning-campaign-gate/) | Definitive O&G + Mercenaries | 3 |
-| **Summe** | | **338** |
+| [`append-characteristic-zacharias-spell`](testing/append-characteristic-zacharias-spell/) | Definitive VC + Mercenaries | 2 |
+| **Summe** | | **340** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1677,3 +1678,26 @@ die dritte Meldung derselben Einheit — ein `add error` — schweigt.
 > vorhanden, die ungesternte und die rohe `{this}`-Fassung als abwesend
 > behauptet. Damit schließt es die Lücke, die `author-message-tokens` offen
 > gelassen hat.
+
+## `append-characteristic-zacharias-spell`
+
+Prüft den `append`-Modifikator auf ein **Merkmal** (§7.7 der Formatdoku): Er
+hängt seinen `value` an den Text des benannten Merkmals an, getrennt durch das
+`join`-Attribut, das verbatim übernommen wird. Beide Vorkommen der Zelle hängen
+am geteilten Spruchprofil „1. Invocation of Nehek" (`6484-4a1a-e62b-2ce1`,
+Vampire Counts) und sind auf dieselbe Bedingung gegated — `instanceOf`,
+`scope="unit"`, `childId="1c05-5813-2f0c-f878"` („Zacharias the Everliving").
+Beide Roster tragen dieselbe „Lore of Necromancy" und tauschen allein den
+Zauberer.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zacharias the Everliving mit der Lore | Das Merkmal „Effect" trägt die angehängte 15+-Zeile, getrennt durch das eine Leerzeichen aus `join=" "` — und weil der Basistext **nicht** mit einem Umbruch endet, landet sie in derselben Textzeile |
+| 02 | Ein Necromancer mit derselben Lore | Beide Merkmale stehen auf ihren Basistexten: der Modifikator gehört zum Profil, greift aber nur unter seiner Einheit |
+
+> **Offene Frage (Kampagne).** Der zweite Modifikator trägt `position="-1"` — ein
+> Attribut, das weder die Formatdoku noch das Wiki kennt und das die vendorte
+> `Catalogue.xsd` nicht zulässt. Es kommt genau einmal im ganzen Korpus vor,
+> seine Bedeutung ist aus den Daten nicht erschließbar. Das Szenario behauptet
+> das betroffene Merkmal „Cast" deshalb nur im **nicht** greifenden Roster, wo
+> jede Lesart denselben Basistext ergibt.

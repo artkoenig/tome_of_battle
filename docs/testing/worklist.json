@@ -7,64 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 86,
-    "uncovered": 19
+    "covered": 87,
+    "uncovered": 18
   },
   "cells": [
-    {
-      "key": "modifier|append|characteristic",
-      "kind": "modifier",
-      "axes": {
-        "type": "append",
-        "targetField": "characteristic"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "profile",
-            "id": "6484-4a1a-e62b-2ce1",
-            "name": "1. Invocation of Nehek"
-          },
-          "path": [
-            "catalogue",
-            "sharedProfiles",
-            "profile",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "append",
-            "field": "7d21-349e-b0a8-fc7d"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "profile",
-            "id": "6484-4a1a-e62b-2ce1",
-            "name": "1. Invocation of Nehek"
-          },
-          "path": [
-            "catalogue",
-            "sharedProfiles",
-            "profile",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "append",
-            "field": "f1e6-8816-26e0-8a70"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|set|unresolvedTarget",
       "kind": "modifier",

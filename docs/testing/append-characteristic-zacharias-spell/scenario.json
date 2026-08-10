@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "name": "append-characteristic-zacharias-spell",
+  "description": "Ein <modifier type=\"append\" field=\"<characteristicTypeId>\"> haengt seinen value an den TEXT genau jenes Merkmals des Profil-Vorkommens an, an dem er haengt, getrennt durch das verbatim uebernommene join (Formatdoku 7.7). Beide Vorkommen des Konstrukts im Definitive-Korpus sitzen am geteilten Spruchprofil \"1. Invocation of Nehek\" (6484-4a1a-e62b-2ce1, Vampire Counts, <sharedProfiles>, typeName=\"Spell\") und sind auf dieselbe einzige Bedingung instanceOf scope=\"unit\" childId=\"1c05-5813-2f0c-f878\" (Zacharias the Everliving) gegatet. Zwei Roster, die sich NUR im tragenden Zauberer unterscheiden, pinnen beide Zweige ueber expect.capabilities[].infoElements[].characteristics: bei Zacharias traegt das Merkmal Effect (7d21-349e-b0a8-fc7d) die angehaengte vierte Tabellenzeile, beim Necromancer den unveraenderten Basistext; das Merkmal Cast (f1e6-8816-26e0-8a70) wird nur im Necromancer-Roster behauptet, weil der zweite append ein im Datenformat, im BSData-Wiki UND in der vendorten Catalogue.xsd unbekanntes Attribut position=\"-1\" traegt (siehe README, Abschnitt 'Die Luecke position=\"-1\"'). Das Merkmal Range (42e6-553f-842f-0b91) dient in beiden Rostern als Kontrolle: sein bedingter set-Modifikator haelt nirgends, es bleibt auf dem Basiswert. Merkmalstexte sind keine zaehlende Schranke - firing bleibt leer.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-zacharias-append-fires.ros",
+      "description": "Kontingent \"Standard (VC-AB)\" mit dem Schalter \"Allow special characters?\" und Zacharias the Everliving (1c05-5813-2f0c-f878), der als einzige Unterauswahl die Lore of Necromancy (f7e9-c0a4-549e-33e0, ueber entryLink 8634-66c5-4d08-03fb) traegt. Deren infoGroup 4489-d8e2-ff78-1a27 zieht per infoLink cb2b-7a42-2b40-f03d das geteilte Spruchprofil 6484-4a1a-e62b-2ce1 herein. Der scope=\"unit\"-Rahmen dieses Vorkommens ist Zacharias selbst, die instanceOf-Bedingung haelt: der append auf das Merkmal Effect greift und haengt - getrennt durch das eine Leerzeichen aus join=\" \" - die vierte Tabellenzeile an den Basistext an. Weil der Basistext NICHT mit einem Zeilenumbruch endet, landet die neue Zeile in derselben Textzeile wie die 11+-Zeile. Das Merkmal Cast wird hier bewusst NICHT behauptet (Attribut position=\"-1\", Luecke). Range bleibt auf 18\", weil \"Master of the Black Arts\" (e5b7-4a3d-b074-24ad) nicht gewaehlt ist.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f74f-ffa2-0ea8-22cb",
+          "9149-ce10-44d6-2d99",
+          "1f96-fe8f-c0cc-9bc7",
+          "629d-e0ba-6ead-f0ef",
+          "17fe-00e4-f83e-ad6e"
+        ],
+        "capabilities": [
+          {
+            "defId": "8634-66c5-4d08-03fb",
+            "targetDefId": "f7e9-c0a4-549e-33e0",
+            "anchorKind": "occupied",
+            "name": "Lore of Necromancy",
+            "infoElements": [
+              {
+                "id": "cb2b-7a42-2b40-f03d",
+                "kind": "profile",
+                "name": "1. Invocation of Nehek",
+                "profileTypeId": "07eb-6084-5f84-a505",
+                "profileTypeName": "Spell",
+                "characteristics": [
+                  {
+                    "typeId": "7d21-349e-b0a8-fc7d",
+                    "name": "Effect",
+                    "value": "|Casting Value|Models Created|Wounds Restored|\n|---|---|---|\n| 3+|D6 Skeletons or D6+1 Zombies |1 Wound|\n| 7+|2D6 Skeletons or 2D6+2 Zombies|2 Wounds|\n| 11+|3D6 Skeletons or 3D6+3 Zombies|3 Wounds| | 15+|4D6 Skeletons or 4D6+4 Zombies|4 Wounds|"
+                  },
+                  {
+                    "typeId": "42e6-553f-842f-0b91",
+                    "name": "Range",
+                    "value": "18\""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-necromancer-append-silent.ros",
+      "description": "Derselbe Aufbau mit demselben Schalter, aber ein Necromancer (b5d8-db21-a4b7-9e94) statt Zacharias; die Lore of Necromancy kommt hier ueber den entryLink 9958-1cdd-fdc9-3781. Ziel-Eintrag, infoGroup und infoLink sind dieselben wie in Roster 01, das Profil-Vorkommen also dasselbe geteilte Profil. Der scope=\"unit\"-Rahmen loest auf den Necromancer auf; dessen Definitions-Id ist nicht 1c05-5813-2f0c-f878, er traegt sie auch nicht als Kategorie oder Typ - beide instanceOf-Bedingungen halten NICHT. Beide Merkmale stehen deshalb auf ihrem Katalog-Basistext, und zwar unabhaengig davon, was position=\"-1\" bedeutet: ein nicht greifender Modifikator veraendert nichts. Range bleibt ebenfalls auf 18\".",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "9149-ce10-44d6-2d99",
+          "8229-3e03-bacd-24db",
+          "17fe-00e4-f83e-ad6e"
+        ],
+        "capabilities": [
+          {
+            "defId": "9958-1cdd-fdc9-3781",
+            "targetDefId": "f7e9-c0a4-549e-33e0",
+            "anchorKind": "occupied",
+            "name": "Lore of Necromancy",
+            "infoElements": [
+              {
+                "id": "cb2b-7a42-2b40-f03d",
+                "kind": "profile",
+                "name": "1. Invocation of Nehek",
+                "profileTypeId": "07eb-6084-5f84-a505",
+                "profileTypeName": "Spell",
+                "characteristics": [
+                  {
+                    "typeId": "7d21-349e-b0a8-fc7d",
+                    "name": "Effect",
+                    "value": "|Casting Value|Models Created|Wounds Restored|\n|---|---|---|\n| 3+|D6 Skeletons or D6+1 Zombies |1 Wound|\n| 7+|2D6 Skeletons or 2D6+2 Zombies|2 Wounds|\n| 11+|3D6 Skeletons or 3D6+3 Zombies|3 Wounds|"
+                  },
+                  {
+                    "typeId": "f1e6-8816-26e0-8a70",
+                    "name": "Cast",
+                    "value": "3+/7+/11+"
+                  },
+                  {
+                    "typeId": "42e6-553f-842f-0b91",
+                    "name": "Range",
+                    "value": "18\""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

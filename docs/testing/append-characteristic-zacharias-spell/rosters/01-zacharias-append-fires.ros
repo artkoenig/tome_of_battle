@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="acz-01" name="ACZ 01 – Zacharias the Everliving: append greift am Spruchprofil" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored append-characteristic E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <!-- "Allow special characters?" (.gst-Eintrag 8923-5946-7b10-8957, hereingezogen
+             ueber den VC-Wurzel-entryLink 6411-4be3-864f-a963). Er hebt die Roster-Grenze
+             f74f-ffa2-0ea8-22cb des Sonderchakters von max 0 auf max 1 und unterdrueckt
+             die Autor-Fehlermeldung "Please enable ...". Er steht ABSICHTLICH auch in
+             Roster 02, damit der einzige Unterschied zwischen beiden Rostern der
+             tragende Zauberer ist. -->
+        <selection id="sel-special-characters" name="Allow special characters?" entryId="8923-5946-7b10-8957" entryLinkId="6411-4be3-864f-a963" number="1" type="upgrade" collective="false"/>
+        <!-- Zacharias the Everliving (1c05-5813-2f0c-f878, type="unit"). Er ist die
+             childId der beiden instanceOf-Bedingungen am geteilten Spruchprofil
+             6484-4a1a-e62b-2ce1 und zugleich der naechste Vorfahre vom Typ unit fuer
+             das Profil-Vorkommen darunter (scope="unit").
+             BEWUSST MINIMAL: die zahlreichen Pflicht-Unterauswahlen (Mount, Wizard
+             Level, Handweapon, vier magische Gegenstaende, sechs Necrarch-Blutlinien-
+             Faehigkeiten) fehlen. Die daraus entstehenden min-Verletzungen sind fuer
+             dieses Szenario ohne Belang (selektive Erwartung) — insbesondere bleibt
+             "Master of the Black Arts" (e5b7-4a3d-b074-24ad) UNGEWAEHLT, damit der
+             bedingte set-Modifikator auf das Merkmal Range nicht greift und Range als
+             Kontrolle auf seinem Basiswert steht. -->
+        <selection id="sel-zacharias" name="Zacharias the Everliving" entryId="1c05-5813-2f0c-f878" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="0644-bfcd-32c2-21dc" name="Special Characters" entryId="0644-bfcd-32c2-21dc" primary="true"/>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="false"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="fc4b-a86d-5897-9e4c" name="Necrarch" entryId="fc4b-a86d-5897-9e4c" primary="false"/>
+          </categories>
+          <selections>
+            <!-- Lore of Necromancy (f7e9-c0a4-549e-33e0), hereingezogen ueber den
+                 entryLink 8634-66c5-4d08-03fb in der Gruppe "Lores of Magic"
+                 (3240-32da-ecd5-ee0f). Der Eintrag traegt die infoGroup
+                 4489-d8e2-ff78-1a27 mit dem infoLink cb2b-7a42-2b40-f03d auf das
+                 Spruchprofil 6484-4a1a-e62b-2ce1 — das ist das Vorkommen, an dem die
+                 beiden append-Modifikatoren sichtbar werden. -->
+            <selection id="sel-lore" name="Lore of Necromancy" entryId="f7e9-c0a4-549e-33e0" entryLinkId="8634-66c5-4d08-03fb" entryGroupId="3240-32da-ecd5-ee0f" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

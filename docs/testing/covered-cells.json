@@ -471,6 +471,13 @@
         "docs/testing/add-info-and-warning-campaign-gate"
       ],
       "rationale": "Der warning-Modifikator derselben Einheit steht in einer modifierGroup, deren and-Klammer die komplementaere Haelfte desselben Schalters prueft (lessThan 1 auf 7d87-7436-5341-bbc0) und zusaetzlich eine or-Gruppe von sieben instanceOf-Pruefungen auf scope=primary-catalogue verlangt; das Kontingent des Szenarios ist im Katalog 4049-c46d-7f80-44fb (Orcs and goblins) deklariert und erfuellt sie. Roster 02 und 03 lassen den Kampagneneintrag weg: die Warnung liegt an, und dieselbe Klammer haengt sichtbar ein '*' an den Namen. Roster 01 waehlt ihn: die Warnung fehlt und der Name bleibt ungesternt. Szenario ist gruen."
+    },
+    {
+      "key": "modifier|append|characteristic",
+      "evidence": [
+        "docs/testing/append-characteristic-zacharias-spell"
+      ],
+      "rationale": "Beide Vorkommen der Zelle haengen am geteilten Spruchprofil '1. Invocation of Nehek' (6484-4a1a-e62b-2ce1, Vampire Counts) und sind auf dieselbe Bedingung gegated: instanceOf, scope=unit, childId=1c05-5813-2f0c-f878 ('Zacharias the Everliving'). Zwei sonst gleiche Roster tragen dieselbe 'Lore of Necromancy' und tauschen allein den Zauberer: bei Zacharias haengt der append das Merkmal Effect (7d21-349e-b0a8-fc7d) um die 15+-Zeile an, getrennt durch das eine Leerzeichen aus join=' '; beim Necromancer bleiben Effect und Cast auf ihren Basistexten. Das Merkmal Cast (f1e6-8816-26e0-8a70) wird im greifenden Roster bewusst nicht behauptet, weil sein Modifikator das nirgends spezifizierte Attribut position='-1' traegt — siehe den parkedQuestions-Eintrag dazu. Szenario ist gruen."
     }
   ]
 }

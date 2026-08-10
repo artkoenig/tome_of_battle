@@ -81,6 +81,18 @@
       "parkedAt": "2026-08-10",
       "status": "answered",
       "answer": "Extend the allow-list: the scenario author may read the upstream corpus src/__fixtures__/whfb6/ as well, so cells occurring only there can be pinned. Recorded in docs/agents/e2e-testcase-author.md; a scenario still names the files of one fixture set only and never mixes the two."
+    },
+    {
+      "cellKey": "modifier|append|characteristic",
+      "question": "Der zweite append-Modifikator am Spruchprofil '1. Invocation of Nehek' (Vampire Counts) traegt das Attribut position=\"-1\", das weder die Formatdoku noch das BSData-Wiki kennt und das die vendorte Catalogue.xsd nicht zulaesst (der Modifier-Typ deklariert nur type, field, value und join, ohne anyAttribute). Es kommt genau einmal im ganzen Fixture-Korpus vor, sodass sich seine Bedeutung nicht aus den Daten erschliessen laesst. Soll die Auswertung das Attribut als Einfuegeposition unterstuetzen (und die XSD wie bei multiply/prepend/join dokumentiert erweitert werden), oder gilt es als Datenfehler und wird ignoriert? Die Zelle selbst ist bereits gepinnt; offen ist allein das Merkmal Cast im greifenden Roster.",
+      "sourcesChecked": [
+        "docs/battlescribe-data-format.md 7.7 (modifier append/join) und 15 (Luecken der Quelle)",
+        "src/parser/schema/Catalogue.xsd (Modifier complexType)",
+        "docs/bsdata-catalogue-development-wiki/Data-structure-overview.md (Abschnitt Modifier)"
+      ],
+      "parkedAt": "2026-08-10",
+      "status": "open",
+      "answer": null
     }
   ],
   "driver": {
