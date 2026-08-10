@@ -408,6 +408,13 @@
         "docs/testing/modifier-group-repeats"
       ],
       "rationale": "Dieselbe Fundstelle ist zugleich die einzige <repeats>-Liste mit mehr als einem <repeat> an einer modifierGroup im Korpus. Das Szenario ist genau darauf gebaut: die Roster 04-08 unterscheiden die addierende von der multiplizierenden Lesart der Liste (04: 1+0=1 Anwendung gegen 1*0=0; 07/08: 2+1=3 gegen 2*1=2), sodass die Zusammenfassung mehrerer Wiederholungen einer Liste festgenagelt ist. Szenario ist gruen."
+    },
+    {
+      "key": "conditionGroup|or|nested",
+      "evidence": [
+        "docs/testing/condition-group-or-nested"
+      ],
+      "rationale": "Die innere or-Gruppe am add-error-Modifikator von 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins) steckt zwei Ebenen tief: aeussere or-Gruppe > and-Gruppe (instanceOf auf das Kontingent Standard (OG-AB)) > diese or-Gruppe mit zwei greaterThan-1-Mitgliedern (Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1, Stone Trolls 4112-026b-500a-b6fd, scope=roster). Sechs Roster halten das instanceOf konstant wahr, sodass die Autor-Meldung am Toggle-Slot der reine Wahrheitswert der inneren Gruppe ist: 2/0 und 0/2 zeigen je ein einzelnes haltendes Mitglied (gegen eine and-Lesart), 1/1 muss schweigen (gegen eine summierende Lesart), 2/2 meldet genau einmal (gegen XOR und gegen eine Anwendung je Mitglied), 1/0 und 0/0 schweigen (gegen atLeast statt greaterThan und gegen 'kein Mitglied haelt ist vakuum-wahr'). Szenario ist gruen."
     }
   ]
 }

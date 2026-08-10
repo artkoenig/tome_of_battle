@@ -1401,3 +1401,30 @@ eine multiplizierende Lesart ergäbe 2 + Counts × Lords und fällt in den Roste
 | 07 | Zwei Counts und ein Lord, 5 Marker | Addierend drei Anwendungen: beide Grenzen 5, exakt erlaubt |
 | 08 | Zwei Counts und ein Lord, 4 Marker | Die Untergrenze steht auf 5 und feuert mit Ist 4 — multiplizierend läge sie bei 4 und schwiege |
 | 09 | Dieselbe Rechnung im Kontingent „Clan Von Carstein (VC-AB)" | Der Träger bleibt dort verborgen; Höchstgrenzen gelten unabhängig von der Sichtbarkeit und die Obergrenze feuert wie in Roster 02 |
+
+## `condition-group-or-nested`
+
+Prüft eine **verschachtelte** `conditionGroup type="or"` (§7.7 der Formatdoku):
+sie hält, sobald **mindestens eines** ihrer Mitglieder hält — sie ist kein
+„und", keine Summe über ihre Mitglieder und kein „entweder oder". Beleg: der
+`add error`-Modifikator an „Tournament rules: Uprising (2026)"
+(`4bc4-8781-2091-d9df`, Orcs and Goblins) trägt einen drei Ebenen tiefen
+Bedingungsbaum — eine äußere `or`-Gruppe über einer `and`-Gruppe, die einerseits
+`instanceOf` auf das Kontingent „Standard (OG-AB)" (`2bfa-e64a-7123-895f`)
+verlangt und andererseits **diese** innere `or`-Gruppe, deren zwei Mitglieder je
+`greaterThan 1` armeeweit zählen: „Savage Orc Boar Big 'Uns"
+(`c679-3389-ca76-2ea1`) und „Stone Trolls" (`4112-026b-500a-b6fd`). Alle Roster
+stehen im selben Kontingent, sodass die `instanceOf`-Hälfte konstant hält und
+die beobachtete Autor-Meldung der reine Wahrheitswert der inneren Gruppe ist.
+Das Budget von 2000 Punkten hält das Sichtbarkeits- und Grenzen-Gatter des
+Trägers offen, sodass dessen eigene Grenze (`00f6-c1b3-ee85-5c02`) in keinem
+Roster dazwischenfunkt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Big 'Uns, keine Stone Trolls | Ein einzelnes haltendes Mitglied genügt: die Meldung liegt an — eine „und"-Lesart schwiege hier |
+| 02 | Keine Big 'Uns, zwei Stone Trolls | Dieselbe Meldung über das **zweite** Mitglied — es wird nicht nur das erste gelesen |
+| 03 | Je eines von beiden | **Keine** Meldung: kein Mitglied hält für sich; eine summierende Lesart (1+1 > 1) meldete hier fälschlich |
+| 04 | Zwei und zwei | Genau **eine** Meldung: beide Mitglieder halten — kein „entweder oder", und die Meldung wird nicht je Mitglied wiederholt |
+| 05 | Ein einzelnes Big 'Uns | **Keine** Meldung: `greaterThan 1` ist nicht `atLeast 1` |
+| 06 | Keine der beiden Einheiten | **Keine** Meldung: „kein Mitglied hält" ist nicht leer-wahr |

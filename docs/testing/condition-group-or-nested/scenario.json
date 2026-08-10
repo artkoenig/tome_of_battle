@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "name": "condition-group-or-nested",
+  "description": "Eine conditionGroup type=\"or\", die INNERHALB einer anderen Bedingungsgruppe steht, haelt, sobald MINDESTENS EINES ihrer eigenen Mitglieder haelt - sie ist weder ein \"and\" noch eine Summe ueber ihre Mitglieder -, und ihr Urteil geht anschliessend nach der Regel der umschliessenden Gruppe weiter. Zelle ist die innere or-Gruppe des Modifikators modifier type=\"add\" field=\"error\" am Uprising-Toggle 4bc4-8781-2091-d9df der Orcs-and-Goblins-.cat (.cat:11545-11550): zwei greaterThan-value=1-Zaehlungen auf Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1 bzw. Stone Trolls 4112-026b-500a-b6fd, field=selections, scope=roster. Jedes Mitglied traegt allein (Roster 01/02), beide zusammen erzeugen genau eine Meldung (Roster 04), je eine Auswahl beider Ziele traegt NICHT (Roster 03 - der Summen-Falsifikator 1+1=2), und bei 1/0 bzw. 0/0 bleibt es still (Roster 05/06). Beobachtbar ist die Autor-Meldung (expect.messages mit origin=authorMessage); eine Bedingung ist keine zaehlende Grenze und erscheint darum nicht als feuernde limitId.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-first-member-two-big-uns-message.ros",
+      "description": "Kontingent Standard (OG-AB) 2bfa-e64a-7123-895f, Uprising-Toggle gewaehlt, ZWEI getrennte Auswahlen von Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1 (je number=1), KEINE Stone Trolls. Erstes Mitglied der inneren or-Gruppe: 2 > 1 haelt; zweites Mitglied: 0 > 1 haelt nicht. Ein einziges haltendes Mitglied genuegt - die Gruppe haelt, die umschliessende and-Gruppe haelt (instanceOf Standard ebenfalls), die aeussere or-Gruppe reicht das Urteil durch, die Autor-Meldung liegt am Toggle-Slot an. Budget 2000 pts haelt das Uprising-Gatter offen (atLeast 2000 / atMost 2500), darum bleibt die eigene Grenze des Toggles 00f6-c1b3-ee85-5c02 still (Ist 1, wirksame Grenze 1).",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "name": "Tournament rules: Uprising (2026)",
+            "authorMessages": [
+              { "severity": "error", "text": "No more than 2 of the same Special Choice are allowed! See [PDF, p.X]" }
+            ]
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "No more than 2 of the same Special Choice are allowed! See [PDF, p.X]",
+            "count": 1,
+            "severity": "error",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "anchorName": "Tournament rules: Uprising (2026)"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-second-member-two-stone-trolls-message.ros",
+      "description": "Derselbe Aufbau, aber ZWEI getrennte Auswahlen von Stone Trolls 4112-026b-500a-b6fd und KEINE Big 'Uns. Jetzt traegt allein das ZWEITE Mitglied der inneren or-Gruppe (2 > 1), waehrend das erste bei Ist 0 nicht haelt. Ergebnis identisch zu Roster 01 - die Gruppe darf nicht nur ihr erstes Mitglied lesen. Bewusst textfrei gepinnt (Anker + Anzahl + Schweregrad), damit die or-Aussage unabhaengig von der Textfrage aus Roster 01 steht.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 1,
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Tournament rules: Uprising (2026)"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-one-of-each-no-member-holds-silent.ros",
+      "description": "Kontingent Standard (OG-AB), Uprising-Toggle gewaehlt, je EINE Auswahl von Savage Orc Boar Big 'Uns und Stone Trolls. Beide Mitglieder der inneren or-Gruppe zaehlen 1, greaterThan 1 haelt in keinem der beiden Faelle - die Gruppe faellt, und mit ihr die umschliessende and-Gruppe und die aeussere or-Gruppe. Dieses Roster trennt \"mindestens ein Mitglied haelt\" von einer Lesart, die die Mitglieder-Zaehler SUMMIERT (1 + 1 = 2 > 1 wuerde faelschlich melden). Am belegten Toggle-Slot liegt keine einzige Autor-Meldung an.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-both-members-hold-message.ros",
+      "description": "Kontingent Standard (OG-AB), Uprising-Toggle gewaehlt, ZWEI Savage Orc Boar Big 'Uns UND ZWEI Stone Trolls. Beide Mitglieder der inneren or-Gruppe halten gleichzeitig (2 > 1 und 2 > 1). Eine or-Gruppe ist inklusiv, kein exklusives Entweder-Oder: sie haelt weiterhin. Und sie ist ein Urteil, kein Zaehler - der Modifikator greift GENAU EINMAL, am Toggle-Slot liegt genau EINE Autor-Meldung an (authorMessages ist vollstaendig).",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": [
+              { "severity": "error", "text": "No more than 2 of the same Special Choice are allowed! See [PDF, p.X]" }
+            ]
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 1,
+            "severity": "error",
+            "anchorKind": "occupied"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-single-big-uns-boundary-silent.ros",
+      "description": "Kontingent Standard (OG-AB), Uprising-Toggle gewaehlt, EINE Auswahl Savage Orc Boar Big 'Uns, keine Stone Trolls. Der Schwellenwert-Randfall des ersten Mitglieds ohne Beitrag des zweiten: greaterThan value=1 ist der ECHT groessere Vergleich, 1 > 1 ist falsch. Die innere or-Gruppe faellt, es liegt keine Autor-Meldung an. Falsifiziert eine Lesart von greaterThan 1 als atLeast 1.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-neither-target-empty-or-silent.ros",
+      "description": "Kontingent Standard (OG-AB), Uprising-Toggle gewaehlt, WEDER Savage Orc Boar Big 'Uns NOCH Stone Trolls - im Kontingent steht nur der Traeger samt Elterneintrag. Beide Mitglieder der inneren or-Gruppe zaehlen 0. Nullpunkt-Gegenprobe: eine or-Gruppe, in der KEIN Mitglied haelt, haelt nicht (sie ist nicht leer und darf auch nicht als leer-also-wahr gelesen werden). Keine Autor-Meldung am Toggle-Slot.",
+      "expect": {
+        "firing": [],
+        "absent": ["00f6-c1b3-ee85-5c02"],
+        "capabilities": [
+          {
+            "defId": "4bc4-8781-2091-d9df",
+            "anchorKind": "occupied",
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4bc4-8781-2091-d9df",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}
