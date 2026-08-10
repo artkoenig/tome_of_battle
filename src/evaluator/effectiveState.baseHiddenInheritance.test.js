@@ -31,6 +31,12 @@ function evaluate(catalogXml, roster) {
 //     ihrer „true"-Haelfte; siehe den Kommentar am Kriterium-2-Block unten.
 //  3. `hidden`-Modifikatoren behalten ihren Vorrang vor beiden Basiswerten.
 //
+// Since issue 0147 this is only ONE of two tracks: the offer anchor of a
+// member that descended through a group/bracket ANDs this own `hidden`,
+// pinned here, with the visibility of the bracket it descended through
+// itself (`offer.js`, `visibilityGates`) — a second track foreign to this
+// file, pinned in `offer.hiddenGate.test.js`.
+//
 // Beobachtbar an der Fassade: der Faehigkeitsdatensatz (`capability.isHidden`)
 // des belegten Slots im Bericht — dieselbe Beobachtungsstelle, die auch
 // `report.test.js` fuer Sichtbarkeit nutzt.
