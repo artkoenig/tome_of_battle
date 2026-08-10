@@ -111,7 +111,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`root-entrylink-mandatory-catalogue-scope`](testing/root-entrylink-mandatory-catalogue-scope/) | Definitive Ogre + VC + O&G + Mercenaries | 4 |
 | [`roster-scope-mandatory-chariot`](testing/roster-scope-mandatory-chariot/) | Definitive O&G + Mercenaries | 7 |
 | [`parent-min-unshared-unit-size`](testing/parent-min-unshared-unit-size/) | Definitive O&G + Mercenaries | 6 |
-| **Summe** | | **147** |
+| [`condition-group-and-nested`](testing/condition-group-and-nested/) | Definitive O&G + Mercenaries | 5 |
+| **Summe** | | **152** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1222,3 +1223,23 @@ rider" (`e603-749c-713c-3d36`).
 | 04 | **Zwei** Einheiten mit je 15 Modellen | **Zwei** Meldungen mit je Ist 15 — die Summe 30 rettet keine der beiden |
 | 05 | Eine Einheit mit 20, eine mit 15 Modellen | Genau eine Meldung — die Instanzen werden getrennt beurteilt |
 | 06 | Zwei Wolfsreiter-Einheiten mit je 3 Modellen | Dasselbe Muster an einer zweiten Einheit: zwei Meldungen, Ist 3 gegen Grenze 5 |
+
+## `condition-group-and-nested`
+
+Prüft eine **verschachtelte** `and`-Gruppe: sie hält nur, wenn **jedes** ihrer
+Mitglieder hält — die eigene Bedingung ebenso wie die eigene Untergruppe —, und
+die umschließende Gruppe sieht davon nur dieses eine Urteil. Beleg: der
+Umschalter „Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`, Orcs and
+Goblins) trägt einen `add error`-Modifikator, dessen äußere `or`-Gruppe genau
+ein Mitglied hat — eine `and`-Gruppe aus einer `instanceOf`-Bedingung auf das
+Kontingent „Standard (OG-AB)" und einer eigenen `or`-Untergruppe aus zwei
+armeeweiten Zählungen (`greaterThan 1`) auf „Savage Orc Boar Big 'Uns" bzw.
+„Stone Trolls".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Standard-Kontingent, Umschalter, zwei Big 'Uns | Die Autor-Meldung erscheint |
+| 02 | Standard-Kontingent, Umschalter, zwei Stone Trolls | Dasselbe über das zweite Mitglied der Untergruppe |
+| 03 | Standard-Kontingent, Umschalter, je eines | Keine Meldung — die Untergruppe hält nicht, also hält die `and`-Gruppe nicht |
+| 04 | „Savage Orc Horde", Umschalter, zwei Big 'Uns | Keine Meldung — die Untergruppe hält, die eigene Bedingung nicht: der Beweis der Konjunktion |
+| 05 | Standard-Kontingent **ohne** Umschalter, zwei Big 'Uns | Keine Meldung — der Träger des Modifikators liegt gar nicht in der Liste |

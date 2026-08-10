@@ -352,6 +352,13 @@
         "docs/testing/dispel-scroll-repeat-group-max"
       ],
       "rationale": "The shared group 'Arcane Items (VC)' (2f34-a145-911a-fa00, Vampire Counts) carries max 1 (fa59-e6b8-9523-3510) and an increment 1 whose single repeat counts the selected copies of the Dispel Scroll link adb3-9853-d566-e432 with scope=parent, shared=true, includeChildSelections=true, includeChildForces=true. Roster 01 (two scrolls under the Master Necromancer 4ee2-ac3a-3cc6-11af) asserts effectiveMax 3, so the repetition applied twice; roster 02 without any arcane item asserts the base effectiveMax 1. The counted copies sit directly under the group, so the two include-flags of this repeat are exercised but not separately discriminated by the pair. Scenario is green."
+    },
+    {
+      "key": "conditionGroup|and|nested",
+      "evidence": [
+        "docs/testing/condition-group-and-nested"
+      ],
+      "rationale": "The first error modifier of the tournament toggle 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins) carries an outer or group whose only member is a nested and group: one plain instanceOf condition on the force Standard (OG-AB) plus its own nested or sub-group of two roster-wide greaterThan 1 counts. Five rosters falsify each half on its own — two Savage Orc Boar Big 'Uns and two Stone Trolls each produce the author message, one of each produces none (the inner or fails), the same two Big 'Uns in the Savage Orc Horde force produce none (the and group's own condition fails while its sub-group holds), and without the toggle nothing fires at all. Scenario is green."
     }
   ]
 }
