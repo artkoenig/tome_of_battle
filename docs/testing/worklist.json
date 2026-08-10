@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 75,
-    "uncovered": 30
+    "covered": 77,
+    "uncovered": 28
   },
   "cells": [
     {
@@ -186,105 +186,6 @@
             "field": "selections",
             "scope": "force",
             "childId": "2679-58f4-1771-662d"
-          }
-        }
-      ]
-    },
-    {
-      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "force",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": true,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 3,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 3
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "f899-4fbd-db93-629e",
-            "name": "Grave markers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "6822-0110-a7c9-cbb0",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "f899-4fbd-db93-629e",
-            "name": "Grave markers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "b77b-88d5-5e80-e178",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryLink",
-            "id": "4292-f5de-24ff-93a7",
-            "name": "Core"
-          },
-          "path": [
-            "catalogue",
-            "forceEntries",
-            "forceEntry",
-            "categoryLinks",
-            "categoryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "8b63-3344-e972-cd0d",
-            "repeats": "1"
           }
         }
       ]
@@ -1548,43 +1449,6 @@
           "raw": {
             "type": "decrement",
             "field": "ce6e-afde-2ed1-aac2"
-          }
-        }
-      ]
-    },
-    {
-      "key": "repeatList|n=gt1|on=modifierGroup",
-      "kind": "repeatList",
-      "axes": {
-        "count": "gt1",
-        "on": "modifierGroup"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "f899-4fbd-db93-629e",
-            "name": "Grave markers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "repeats"
-          ],
-          "raw": {
-            "count": 2,
-            "on": "modifierGroup"
           }
         }
       ]

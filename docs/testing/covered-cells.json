@@ -394,6 +394,20 @@
         "docs/testing/modifier-unresolved-target-inert"
       ],
       "rationale": "The four 'Swedish Comp System' modifiers of the Orcs-and-Goblins book (one unconditional decrement on Fanatics 18f4-ad33-69ca-e327, three gated increments on Night Goblins 79af-55cb-9761-f0be) address ce6e-afde-2ed1-aac2, which the data set defines nowhere. Rosters 02/03 satisfy one and then all three gates and assert the neighbouring bounds unmoved (Fanatics max 3, Netters effectiveMax, model min 20) with ce6e-afde-2ed1-aac2 absent from every report; rosters 04/05 show a real modifier on the same unit does move the Netters bound by floor(models/4), so 'nothing happened' is distinguishable from 'nothing was evaluated'. Whether a dangling field should also raise a diagnostic is left open by the format spec and is asserted neither way. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/modifier-group-repeats"
+      ],
+      "rationale": "Die zwei <repeat> der modifierGroup an 'Grave markers' (f899-4fbd-db93-629e, Vampire Counts) tragen genau diese Achsen: field=selections, scope=force, childId=<Eintrags-Id> (Vampire Count 6822-0110-a7c9-cbb0 bzw. 0-1 Vampire Lord b77b-88d5-5e80-e178), repeats=1, shared=true, includeChildSelections=true, includeChildForces und percentValue nicht gesetzt, roundUp=false. Die Roster 01-08 des Szenarios variieren die gezaehlten Vampire ueber 0, 1 und 3 Treffer und pinnen die daraus folgenden Grenzwerte 2, 3 und 5 an beiden Grenzen (5c4a-c8ea-073d-909c, 1b4e-3003-8b78-4be6) exakt fest. Szenario ist gruen."
+    },
+    {
+      "key": "repeatList|n=gt1|on=modifierGroup",
+      "evidence": [
+        "docs/testing/modifier-group-repeats"
+      ],
+      "rationale": "Dieselbe Fundstelle ist zugleich die einzige <repeats>-Liste mit mehr als einem <repeat> an einer modifierGroup im Korpus. Das Szenario ist genau darauf gebaut: die Roster 04-08 unterscheiden die addierende von der multiplizierenden Lesart der Liste (04: 1+0=1 Anwendung gegen 1*0=0; 07/08: 2+1=3 gegen 2*1=2), sodass die Zusammenfassung mehrerer Wiederholungen einer Liste festgenagelt ist. Szenario ist gruen."
     }
   ]
 }

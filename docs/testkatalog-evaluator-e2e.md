@@ -1375,3 +1375,29 @@ Roster einen **echten** Modifikator derselben Einheit bei der Arbeit.
 | 03 | Dieselbe Einheit mit 45 Fanatics | Alle drei bedingten Gruppen halten zugleich — dieselben Werte wie bei 02 |
 | 04 | 20 Modelle, 6 Netter, keine Fanatics | Gegenprobe: die Netter-Grenze **wird** von einem echten Modifikator auf 5 gehoben und meldet Ist 6 |
 | 05 | 24 Modelle, 6 Netter, 15 Fanatics | Beide Hälften in einem Roster: Netter-Grenze 6, exakt eingehalten |
+
+## `modifier-group-repeats`
+
+Prüft die `<repeats>`-Liste an einer **Modifikator-Klammer** (`modifierGroup`,
+§7.7 der Formatdoku, Issue 0116) — und vor allem, wie **mehrere** `<repeat>` in
+**einer** Liste zusammenwirken: ihre Anwendungen **addieren** sich, sie
+multiplizieren sich nicht. Beleg: „Grave markers" (`f899-4fbd-db93-629e`,
+Vampire Counts) trägt `min 2` (`5c4a-c8ea-073d-909c`) und `max 2`
+(`1b4e-3003-8b78-4be6`), beide `scope="parent"`; die Klammer erhöht je Anwendung
+beide um 1 und zählt dabei mit dem einen `<repeat>` die Vampire Counts
+(`6822-0110-a7c9-cbb0`) und mit dem anderen die „0-1 Vampire Lord"
+(`b77b-88d5-5e80-e178`) im Kontingent. Erwartete Grenze = 2 + Counts + Lords;
+eine multiplizierende Lesart ergäbe 2 + Counts × Lords und fällt in den Rostern
+04–08 auf.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Vampire, 2 Grave markers | Keine Wiederholung: beide Grenzen bleiben bei 2, Ist 2 liegt genau dazwischen — still |
+| 02 | Keine Vampire, 3 Grave markers | Die Obergrenze steht unverändert auf 2 und feuert mit Ist 3 |
+| 03 | Keine Vampire, 1 Grave marker | Die Untergrenze steht unverändert auf 2 und feuert mit Ist 1 |
+| 04 | Ein Vampire Count, kein Lord, 3 Marker | Addierend eine Anwendung: beide Grenzen 3, exakt erlaubt — multiplizierend wäre die Obergrenze bei 2 geblieben und hätte angeschlagen |
+| 05 | Ein Vampire Count, kein Lord, 2 Marker | Die Untergrenze steht auf 3 und feuert mit Ist 2 — multiplizierend schwiege sie ganz |
+| 06 | Ein Vampire Count, kein Lord, 4 Marker | Die Obergrenze steht auf 3 und feuert mit Ist 4; die gemeldete Grenze unterscheidet die Lesarten auch im Verletzungsfall |
+| 07 | Zwei Counts und ein Lord, 5 Marker | Addierend drei Anwendungen: beide Grenzen 5, exakt erlaubt |
+| 08 | Zwei Counts und ein Lord, 4 Marker | Die Untergrenze steht auf 5 und feuert mit Ist 4 — multiplizierend läge sie bei 4 und schwiege |
+| 09 | Dieselbe Rechnung im Kontingent „Clan Von Carstein (VC-AB)" | Der Träger bleibt dort verborgen; Höchstgrenzen gelten unabhängig von der Sichtbarkeit und die Obergrenze feuert wie in Roster 02 |
