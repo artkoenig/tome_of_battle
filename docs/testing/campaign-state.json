@@ -54,7 +54,7 @@
     "runs": 5,
     "lastRunAt": "2026-08-09T23:41:59Z",
     "lastRunOutcome": "rearmed",
-    "reArmedFor": null,
+    "reArmedFor": "2026-08-10T01:19:00Z",
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
