@@ -170,9 +170,10 @@ Keines dieser vier Glieder trägt jemals `4cae…`, `fc4b…` oder `bf30…`:
   `<constraints>` folgen `<infoLinks>`, `<categoryLinks>`, `<selectionEntries>`,
   `<selectionEntryGroups>`, `<entryLinks>`, `<costs>` — kein `<modifiers>` auf
   Entitätsebene).
-- **Kontingent „Standard "** `7d9d-6c8d-4ea0-b7ad`: seine `categoryLink`s
-  (`.gst:62-251`) zielen auf Lord, Heroes, Core, Special, Rare, Detachment — die
-  drei Clan-Ids kommen in der `.gst` **überhaupt nicht** vor.
+- **Kontingent „Standard "** `7d9d-6c8d-4ea0-b7ad`: seine sieben `categoryLink`s
+  (`.gst:63`, `:87`, `:88`, `:139`, `:177`, `:215`, `:250`) zielen auf Lord,
+  Heroes, Core, Special, Rare, Characters und Special Characters — die drei
+  Clan-Ids kommen in der `.gst` **überhaupt nicht** vor.
 - **Roster:** trägt keine Kategorien.
 
 **Der Kategorie-Rahmen löst also in keinem baubaren Roster auf** — und die
