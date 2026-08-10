@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "name": "add-info-and-warning-campaign-gate",
+  "description": "modifier type=\"add\" field=\"info\" und field=\"warning\" tragen keinen Feldwert, sondern einen Klartext-Hinweis an den Spieler (Format-Doku 7.7): die Meldung erreicht den Bericht genau dann, wenn die Bedingungen des Modifikators halten, und sie ist rein informativ statt blockierend. Der geteilte Eintrag '0-1 Amazon Serpent Priestess' (9ddd-69c8-644d-abc2, Mercenaries) traegt beide, gegatet auf die KOMPLEMENTAEREN Haelften desselben Schalters - des .gst-Eintrags 'Campaign: A Dark Conspiracy - 30th anniversary' (7d87-7436-5341-bbc0): die info-Meldung an atLeast 1 (scope=force), die warning-Meldung an lessThan 1 (scope=force) UND an eine oder-Gruppe von sieben instanceOf-Bedingungen mit scope=primary-catalogue, unter deren childIds das Armeebuch Orcs and Goblins (4049-c46d-7f80-44fb) steht. Dieselbe modifierGroup, die die warning-Meldung traegt, haengt zugleich per append (ohne join) ein '*' an den Namen - der Slot-Name ist damit die zweite, unabhaengig beobachtbare Wirkung derselben Klammer, und er entscheidet zugleich, wozu das Text-Token {this} in der warning-Meldung aufgeloest wird. Der dritte Meldungs-Modifikator desselben Eintrags (field=\"error\", gegatet auf den .gst-Schalter 'Allow special characters?' 8923-5946-7b10-8957) bleibt in Roster 01/02 still, weil der Schalter dort gewaehlt ist; Roster 03 laesst ihn als Kontrolle feuern und belegt zugleich, dass derselbe Schalter die Force-Obergrenze f706-5d39-7bf7-5f7b von max 0 auf max 1 hebt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-campaign-selected-info-fires.ros",
+      "description": "Orcs-and-Goblins-Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f, deklariert im Katalog 4049-c46d-7f80-44fb) mit dem .gst-Schalter 'Allow special characters?', dem .gst-Kampagneneintrag 'Campaign: A Dark Conspiracy - 30th anniversary' und einer '0-1 Amazon Serpent Priestess'. Die Bedingung des info-Modifikators (atLeast 1, selections, scope=force, childId=7d87-7436-5341-bbc0) haelt bei Ist 1 - die info-Meldung liegt an. Die Klammer der warning-Meldung verlangt am selben childId lessThan 1 und haelt daher NICHT: kein '*' am Namen, keine warning-Meldung. Der error-Modifikator schweigt, weil der Schalter gewaehlt ist; derselbe Schalter hebt die Force-Obergrenze der Priesterin per set 1 auf 1, sie feuert bei Ist 1 nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["f706-5d39-7bf7-5f7b", "c654-8498-0ed5-e41a", "5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "9ddd-69c8-644d-abc2",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "0-1 Amazon Serpent Priestess",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "9ddd-69c8-644d-abc2",
+            "text": "During \"A Dark Conspiracy\" campaign, 0-1 Amazon Serpent Priestess if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "severity": "info",
+            "anchorKind": "occupied",
+            "anchorName": "0-1 Amazon Serpent Priestess"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, {this} if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You need to provide another 0-1 Amazon Serpent Priestess for your opponent at no cost too (still takes Hero+Rare choice)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You need to provide another 0-1 Amazon Serpent Priestess* for your opponent at no cost too (still takes Hero+Rare choice)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You need to provide another {this} for your opponent at no cost too (still takes Hero+Rare choice)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "Please enable \"Allow special characters?\"",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-campaign-absent-warning-fires.ros",
+      "description": "DASSELBE Kontingent mit derselben Priesterin und demselben Schalter, aber OHNE den Kampagneneintrag - die einzige Variation gegenueber Roster 01. Jetzt haelt die Klammer der warning-Meldung: lessThan 1 auf 7d87-7436-5341-bbc0 (Ist 0) UND die oder-Gruppe der sieben instanceOf-Bedingungen mit scope=primary-catalogue, weil das Kontingent aus dem Armeebuch 4049-c46d-7f80-44fb stammt. Damit liegen beide unbedingten Wirkungen derselben Klammer an: das per append (ohne join, also ohne Trennzeichen) angehaengte '*' am Namen und die warning-Meldung, deren Token {this} den so entstandenen wirksamen Namen einsetzt. Die info-Meldung schweigt (atLeast 1 haelt bei Ist 0 nicht). Der error-Modifikator schweigt weiterhin.",
+      "expect": {
+        "firing": [],
+        "absent": ["f706-5d39-7bf7-5f7b", "5036-e10c-2fd8-f135"],
+        "capabilities": [
+          {
+            "defId": "9ddd-69c8-644d-abc2",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "0-1 Amazon Serpent Priestess*",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "9ddd-69c8-644d-abc2",
+            "text": "You need to provide another 0-1 Amazon Serpent Priestess* for your opponent at no cost too (still takes Hero+Rare choice)",
+            "severity": "warning",
+            "anchorKind": "occupied",
+            "anchorName": "0-1 Amazon Serpent Priestess*"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You need to provide another 0-1 Amazon Serpent Priestess for your opponent at no cost too (still takes Hero+Rare choice)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You need to provide another {this} for your opponent at no cost too (still takes Hero+Rare choice)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, 0-1 Amazon Serpent Priestess if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, 0-1 Amazon Serpent Priestess* if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, {this} if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "Please enable \"Allow special characters?\"",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-no-toggle-error-and-warning.ros",
+      "description": "Kontrolle: dasselbe Kontingent nur mit der Priesterin - weder Kampagneneintrag noch Schalter 'Allow special characters?'. Damit haelt zusaetzlich der error-Modifikator (lessThan 1, scope=force, childId=8923-5946-7b10-8957, Ist 0), und die blockierende Meldung liegt neben der rein informativen warning-Meldung am selben Slot: beide Schweregrade koexistieren an einer Auswahl. Zugleich bleibt die Force-Obergrenze f706-5d39-7bf7-5f7b beim Rohwert max 0, weil der sie hebende set 1 denselben Schalter verlangt - sie feuert bei Ist 1 gegen Grenze 0. Der Name traegt weiterhin das '*' der warning-Klammer; die info-Meldung schweigt.",
+      "expect": {
+        "firing": [
+          { "limitId": "f706-5d39-7bf7-5f7b", "actual": 1, "bound": 0 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "9ddd-69c8-644d-abc2",
+            "anchorKind": "occupied",
+            "frameDefId": "2bfa-e64a-7123-895f",
+            "name": "0-1 Amazon Serpent Priestess*",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "9ddd-69c8-644d-abc2",
+            "text": "Please enable \"Allow special characters?\"",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "0-1 Amazon Serpent Priestess*"
+          },
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "9ddd-69c8-644d-abc2",
+            "text": "You need to provide another 0-1 Amazon Serpent Priestess* for your opponent at no cost too (still takes Hero+Rare choice)",
+            "severity": "warning",
+            "anchorKind": "occupied",
+            "anchorName": "0-1 Amazon Serpent Priestess*"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, 0-1 Amazon Serpent Priestess* if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "During \"A Dark Conspiracy\" campaign, {this} if 3+ other Amazons, it may consume 2 Heroes (<2000 pts) or Lord slot (2000+ pts)",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

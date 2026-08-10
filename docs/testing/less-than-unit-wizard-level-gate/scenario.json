@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "name": "less-than-unit-wizard-level-gate",
+  "description": "Eine condition type=lessThan mit field=selections, scope=unit, includeChildSelections=true und einer Eintrags-Id in childId haelt genau dann, wenn die umschliessende Einheit ECHT WENIGER als value Selektionen dieses Eintrags fuehrt. Konkret: Im Vampire-Counts-Katalog traegt der entryLink 'Magic Level 3' (9dc7-b9d7-4e92-4cda -> .gst-Upgrade cb6c-c69a-5c73-97e8) in der Gruppe 'Wizard Level' (43b8-dacd-f09f-37c3) des Units '0-1 Vampire Lord ' (b77b-88d5-5e80-e178) einen modifierGroup type=and, dessen conditionGroup type=and aus genau zwei Gliedern besteht: lessThan 1 x 'Magic Level 4' (fc28-3af2-d37a-d07e) UND atLeast 1 x 'Nehekhara's Noble Blood' (32d0-a151-94a3-aa54), beide scope=unit. Haelt die Klammer, setzt ihr modifier set value=1 field=4d5e-8101-e8d4-d7ad die eigene min-Grenze des Links (Basis min 0, scope=parent) auf 1; ein zweiter modifier setzt die pts-Kosten des Links (ecfa-8486-4f6c-c249, Basis 50) auf 0. Vier Vampire-Lord-Roster halten 'Nehekhara's Noble Blood' konstant und variieren allein die Magic-Level-4-Zahl (und, orthogonal dazu, ob 'Magic Level 3' selbst gewaehlt ist); zwei weitere Roster pinnen dasselbe Konstrukt am zweiten, unabhaengigen Vorkommen: entryLink 'Magic Level 2' (5a5f-aaf8-868f-9630) am Vampire Count (6822-0110-a7c9-cbb0), gegatet auf weniger als 1 x 'Magic Level 3', mit der min-Grenze 5e9b-7594-02cb-0bad. Der beobachtbare Zeuge ist jeweils der effectiveMin des gegateten Slots; die Kostenwirkung des zweiten Modifiers ist ueber expect.capabilities nicht aussagbar und bleibt unassertiert.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lord-noble-blood-no-level-4.ros",
+      "description": "Standard (VC-AB) mit Bloodlines (Clan Necrarch) und einem '0-1 Vampire Lord ' mit Pflicht-Handweapon, Lord-hero-choice-Slot und Nehekhara's Noble Blood - OHNE Magic Level 4 und ohne Magic Level 3. Die lessThan-Bedingung zaehlt 0 Magic Level 4 in der umschliessenden Einheit: 0 < 1 haelt, und das zweite Glied (atLeast 1 Noble Blood) haelt ebenfalls -> die and-Klammer greift und hebt die eigene Mindestgrenze 4d5e-8101-e8d4-d7ad des Slots 'Magic Level 3' von 0 auf 1. Der Slot ist leer (Ist 0) und nicht versteckt -> die Mindestgrenze feuert mit actual 0 / bound 1. Zusaetzlich feuert die Gruppen-Pflicht 769e-ff2d-6795-86cb (min 1) der Gruppe 'Wizard Level', weil kein Mitglied gewaehlt ist.",
+      "expect": {
+        "firing": [
+          { "limitId": "4d5e-8101-e8d4-d7ad", "actual": 0, "bound": 1 },
+          { "limitId": "769e-ff2d-6795-86cb", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "f66f-32f7-5f65-14a7",
+          "8fb8-7bf0-d992-c1dd",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "d830-89e1-7573-92e7",
+          "0780-5a76-9d51-e9ea"
+        ],
+        "capabilities": [
+          {
+            "defId": "9dc7-b9d7-4e92-4cda",
+            "targetDefId": "cb6c-c69a-5c73-97e8",
+            "name": "Magic Level 3",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": 1,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-lord-noble-blood-with-level-4.ros",
+      "description": "Identischer Aufbau wie Roster 01, zusaetzlich MIT einer Auswahl 'Magic Level 4' (entryLink c5d1-4b7d-c96b-2fb9 -> fc28-3af2-d37a-d07e) in derselben Gruppe 'Wizard Level' derselben Einheit. Die lessThan-Bedingung zaehlt jetzt 1: 1 < 1 ist falsch, die and-Klammer faellt, KEIN gegateter Modifier greift -> die Mindestgrenze 4d5e-8101-e8d4-d7ad behaelt ihren geschriebenen Basiswert 0 und feuert nicht. Die Gruppe fuehrt genau ein Mitglied: weder ihre min- noch ihre max-Grenze feuert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4d5e-8101-e8d4-d7ad",
+          "769e-ff2d-6795-86cb",
+          "f66f-32f7-5f65-14a7",
+          "8fb8-7bf0-d992-c1dd",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "d830-89e1-7573-92e7",
+          "0780-5a76-9d51-e9ea"
+        ],
+        "capabilities": [
+          {
+            "defId": "9dc7-b9d7-4e92-4cda",
+            "targetDefId": "cb6c-c69a-5c73-97e8",
+            "name": "Magic Level 3",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-lord-level-3-chosen-no-level-4.ros",
+      "description": "Wie Roster 01, aber 'Magic Level 3' ist selbst gewaehlt (entryLink 9dc7-b9d7-4e92-4cda, Gruppe 43b8-dacd-f09f-37c3). Die and-Klammer haelt weiterhin (0 x Magic Level 4 < 1, 1 x Noble Blood >= 1): das effektive Mindestmass des Slots ist 1 - und mit genau einer Auswahl erfuellt. Katalogkonformes Gegenstueck zu Roster 01: keine der beobachteten Grenzen feuert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4d5e-8101-e8d4-d7ad",
+          "769e-ff2d-6795-86cb",
+          "f66f-32f7-5f65-14a7",
+          "8fb8-7bf0-d992-c1dd",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "d830-89e1-7573-92e7",
+          "0780-5a76-9d51-e9ea"
+        ],
+        "capabilities": [
+          {
+            "defId": "9dc7-b9d7-4e92-4cda",
+            "targetDefId": "cb6c-c69a-5c73-97e8",
+            "anchorKind": "occupied",
+            "name": "Magic Level 3",
+            "current": 1,
+            "isHidden": false,
+            "effectiveMin": 1,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-lord-level-3-and-level-4-group-overfull.ros",
+      "description": "Bis auf 'Magic Level 4' identisch mit Roster 03. Die lessThan-Bedingung zaehlt 1 und haelt nicht mehr: das effektive Mindestmass des belegten Slots 'Magic Level 3' faellt auf den Basiswert 0 zurueck, obwohl der Slot belegt bleibt. Aus dem bewussten Ueberfuellen folgt genau eine zusaetzliche, aus den Daten abgeleitete Erwartung: die Gruppe 'Wizard Level' (max 1, scope=parent, includeChildSelections=false) fuehrt zwei Mitglieder -> f66f-32f7-5f65-14a7 feuert mit actual 2 / bound 1.",
+      "expect": {
+        "firing": [
+          { "limitId": "f66f-32f7-5f65-14a7", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "4d5e-8101-e8d4-d7ad",
+          "769e-ff2d-6795-86cb",
+          "8fb8-7bf0-d992-c1dd",
+          "8975-9aca-1463-1a1f",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "d830-89e1-7573-92e7",
+          "0780-5a76-9d51-e9ea"
+        ],
+        "capabilities": [
+          {
+            "defId": "9dc7-b9d7-4e92-4cda",
+            "targetDefId": "cb6c-c69a-5c73-97e8",
+            "anchorKind": "occupied",
+            "name": "Magic Level 3",
+            "current": 1,
+            "isHidden": false,
+            "effectiveMin": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-count-noble-blood-no-level-3.ros",
+      "description": "Zweites, unabhaengiges Vorkommen: Vampire Count (6822-0110-a7c9-cbb0) mit Pflicht-Handweapon und Nehekhara's Noble Blood, OHNE Magic Level 3. Der entryLink 'Magic Level 2' (5a5f-aaf8-868f-9630 -> fbc2-5115-f240-7367) traegt denselben modifierGroup-Block, gegatet auf lessThan 1 x 'Magic Level 3' (cb6c-c69a-5c73-97e8) UND atLeast 1 x Noble Blood, beide scope=unit. Beide Glieder halten -> die Mindestgrenze 5e9b-7594-02cb-0bad steigt von 0 auf 1 und feuert bei leerem Slot mit actual 0 / bound 1; zusaetzlich feuert die Gruppen-Pflicht 19ba-de18-6ad7-2825 der Gruppe 'Wizard Level' (7ab1-d9dc-6124-443f).",
+      "expect": {
+        "firing": [
+          { "limitId": "5e9b-7594-02cb-0bad", "actual": 0, "bound": 1 },
+          { "limitId": "19ba-de18-6ad7-2825", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "436d-44fa-86cf-bf42",
+          "0885-9b48-f6d0-241e",
+          "8fb8-7bf0-d992-c1dd",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "3a5f-f22c-f213-581e"
+        ],
+        "capabilities": [
+          {
+            "defId": "5a5f-aaf8-868f-9630",
+            "targetDefId": "fbc2-5115-f240-7367",
+            "name": "Magic Level 2",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": 1,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-count-noble-blood-with-level-3.ros",
+      "description": "Identisch zu Roster 05, zusaetzlich MIT 'Magic Level 3' am Vampire Count (entryLink 15f0-88b7-5fcc-061b -> cb6c-c69a-5c73-97e8, Gruppe 7ab1-d9dc-6124-443f). Die lessThan-Bedingung zaehlt 1: 1 < 1 ist falsch -> die and-Klammer faellt, die Mindestgrenze 5e9b-7594-02cb-0bad bleibt bei 0 und feuert nicht. Die Gruppe fuehrt genau ein Mitglied: weder min noch max feuert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5e9b-7594-02cb-0bad",
+          "19ba-de18-6ad7-2825",
+          "436d-44fa-86cf-bf42",
+          "0885-9b48-f6d0-241e",
+          "8fb8-7bf0-d992-c1dd",
+          "e8e0-d7f1-f9a4-a8c0",
+          "4a0a-b107-e726-da32",
+          "3a5f-f22c-f213-581e"
+        ],
+        "capabilities": [
+          {
+            "defId": "5a5f-aaf8-868f-9630",
+            "targetDefId": "fbc2-5115-f240-7367",
+            "name": "Magic Level 2",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": 0,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

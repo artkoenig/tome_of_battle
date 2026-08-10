@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="eaism-05" name="EAISM 05 - Kontrolle: derselbe Bigboss ohne Reittier im Kontingent Standard (OG-AB) - die zweite Halbklammer faellt, Pflicht min 1 feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored equal-to-ancestor-id-scope-mount-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-bigboss" name="Black Orc Bigboss" entryId="febe-2170-775b-0d13" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-bb-heroes" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="cat-bb-characters" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="cat-bb-orc" name="Orc" entryId="d4a7-5999-8207-4efe" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-bb-choppa" name="Choppa" entryId="fc44-61e2-499b-da8d" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

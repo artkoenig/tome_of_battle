@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="sutil-04" name="SUTIL 04 – Vampire Coast, 3000 Punkte, Luthor Harkon (Lord): der echte Lord-Mindestwert schweigt, die haltlose set-Id bleibt abwesend" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored set-unresolved-target-inert-lord-slot E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Dasselbe Kontingent wie 03, nun mit seiner Pflicht-Einheit „Luthor Harkon,
+         Arch Grand Commodore" f9bc-3250-464c-1740 (260 pts, categoryLink „Lord"
+         3809-e26d-2360-8293 -> d024-d25b-a9b4-73b6). Genau eine Lord-Auswahl:
+         8471-437a-59d6-bc3d ist erfuellt (1 >= 1) und schweigt; zugleich ist Luthors
+         eigene, im Vampire-Coast-Kontingent auf 1 gehobene Pflichtgrenze
+         6476-ebd7-6fae-8d90 erfuellt und seine Obergrenze f460-f7d0-e0ed-689f (max 1)
+         eingehalten. Sein Pflicht-Kind „General" (entryLink 95d8-3d53-2165-2303 auf
+         1b7c-2c90-6d96-28c9, min 1 = 76c2-0b65-ca83-69b9) ist mitgewaehlt. -->
+    <force id="force-1" name="Vampire Coast (WD#306-UK)" entryId="bf46-ee85-7c10-ba98" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-luthor" name="Luthor Harkon, Arch Grand Commodore" entryId="f9bc-3250-464c-1740" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-luthor-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="95d8-3d53-2165-2303" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

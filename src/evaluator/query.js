@@ -14,7 +14,8 @@
  *
  * Drei Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
  * Indexarbeit beantwortet: das Feld `limit::<costTypeId>` liest die eingestellte
- * Kostengrenze aus dem Budget ({@link resolveLimitValue}),
+ * Kostengrenze aus dem Budget und beantwortet `scope="roster"` wie
+ * `scope="force"` mit derselben Zahl ({@link resolveLimitValue}, Issue 0147),
  * `scope="primary-catalogue"` prueft die Identitaet des Armeebuchs, aus dem das
  * umschliessende Kontingent stammt ({@link resolvePrimaryCatalogue}, Issue 077),
  * und `scope="ancestor"` prueft die Mitgliedschaft eines Ziels in der strikten
@@ -218,20 +219,48 @@ function resolveFrame(ctx, scope, targetId, flags) {
 
 /**
  * Loest ein `LIMIT_VALUE(costTypeId)`-Feld aus dem Roster-Budget auf — **nicht**
- * aus dem Zaehlindex. Die eingestellte Grenze ist roster-weit: ein Scope ungleich
- * `roster` wird nicht still umgedeutet, sondern als Diagnose gemeldet. Eine nicht
- * budgetierte Kostenart liefert ebenfalls keine `0`, sondern den
- * {@link UNRESOLVED_BUDGET}-Sentinel samt Diagnose — der Konsument feuert dann
- * **fail-closed** nicht (`design.md`, Kontrakt `query.js`).
+ * aus dem Zaehlindex.
+ *
+ * Die eingestellte Grenze steht an **zwei** Rahmen: `roster` und `force`. Ein
+ * `.ros` deklariert seine `<costLimits>` nur an der Roster-Wurzel — das Format
+ * kennt keine Stelle, an der ein einzelnes Kontingent seine eigene Kostengrenze
+ * setzt (BSData §5.6/§7.6) —, also liegt jedes Kontingent in genau einem Roster
+ * und traegt dessen eingestellte Grenze. Beide Scopes beantworten deshalb
+ * dieselbe Zahl (Issue 0147). Ein Scope ausserhalb dieser beiden wird nicht still
+ * umgedeutet, sondern als Diagnose gemeldet.
+ *
+ * Drei Lagen liefern statt einer Zahl den {@link UNRESOLVED_BUDGET}-Sentinel samt
+ * Diagnose — nie eine `0` —, der Konsument feuert dann **fail-closed** nicht
+ * (`design.md`, Kontrakt `query.js`):
+ *
+ * | Lage                                                   | Grund |
+ * | ---                                                    | ---   |
+ * | Scope ausserhalb von `roster`/`force`                  | `UNSUPPORTED_SCOPE` |
+ * | Scope `force`, aber der Knoten liegt ueber keinem Kontingent | `UNRESOLVED_FRAME` |
+ * | Kostenart im Budget nicht deklariert (auch `-1`)       | `NOT_BUDGETED` |
+ *
+ * Die Reihenfolge ist Teil des Kontrakts: der Rahmen wird vor dem Budget geprueft,
+ * ein unaufloesbares Kontingent meldet also `UNRESOLVED_FRAME` auch dann, wenn die
+ * Kostenart budgetiert waere.
  *
  * @returns {number|typeof UNRESOLVED_BUDGET} der eingestellte Grenzwert, oder der Sentinel.
  */
 function resolveLimitValue(ctx, field, scope) {
   const { costTypeId } = field;
-  if (scope !== ScopeKeyword.ROSTER) {
+  if (scope !== ScopeKeyword.ROSTER && scope !== ScopeKeyword.FORCE) {
     ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_BUDGET_LIMIT, {
       costTypeId,
-      reason: BudgetLimitUnresolvedReason.NON_ROSTER_SCOPE,
+      reason: BudgetLimitUnresolvedReason.UNSUPPORTED_SCOPE,
+      scope,
+    }));
+    return UNRESOLVED_BUDGET;
+  }
+  // Der Force-Rahmen liest nichts am Kontingent-Knoten; er muss nur **existieren**,
+  // damit die Frage „die Grenze dieses Kontingents" ueberhaupt einen Bezug hat.
+  if (scope === ScopeKeyword.FORCE && !ctx.node.forceRoot) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_BUDGET_LIMIT, {
+      costTypeId,
+      reason: BudgetLimitUnresolvedReason.UNRESOLVED_FRAME,
       scope,
     }));
     return UNRESOLVED_BUDGET;
@@ -370,7 +399,8 @@ function resolveAncestor(ctx, field, targetId) {
  */
 export function query(ctx, field, scope, targetId, flags) {
   // Ein `LIMIT_VALUE`-Feld kommt aus dem Budget, nicht aus dem Zaehlindex — daher
-  // vor jeder Rahmen-/Index-Arbeit aufloesen (das Budget ist rahmen-unabhaengig).
+  // vor jeder Rahmen-/Index-Arbeit aufloesen. Der Wert haengt an keinem Rahmenknoten
+  // und an keinem Flag; `roster` und `force` liefern dieselbe eingestellte Grenze.
   if (field.kind === CountedFieldKind.LIMIT_VALUE) {
     return resolveLimitValue(ctx, field, scope);
   }

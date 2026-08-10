@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-force-points-limit-border-patrol",
+  "description": "equalTo auf ein Kostenlimit (6th Definitive Edition): Der geteilte Aufwertungseintrag \"Border Patrol (500pts)\" (2066-082d-a465-4baf, Mercenaries-.cat, <sharedSelectionEntries>) traegt die einzige Bedingung des Korpus mit type=\"equalTo\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"force\" childId=\"any\". Sie hebt per set-Modifikator seine eigene Untergrenze 1a97-1579-ab05-a6d7 (Basis min 0, scope=parent) auf 1 — aber NUR bei einem eingestellten Punktebudget von exakt 500. Die vier Roster variieren AUSSCHLIESSLICH den <costLimits>-Wert (500 / 499 / 501 / 500) bei identischem Inhalt: bei 500 meldet der besetzte Slot effectiveMin 1, bei 499 und 501 effectiveMin 0. Ein Roster auf jeder Seite trennt \"equalTo\" damit sowohl von \"atLeast\" als auch von \"atMost\". Weil die Roster 0 Punkte verplanen, belegt das angehobene Minimum bei 500 zugleich, dass die Bedingung das KONFIGURIERTE Budget liest und nicht die verplante Summe (die waere 0). Roster 04 haelt das Budget 500 ohne die Auswahl: die Definition liegt in <sharedSelectionEntries> und wird im ganzen Datensatz von KEINEM entryLink referenziert, ist im Kontingent also nicht waehlbar — es entsteht kein Anker, und 1a97-1579-ab05-a6d7 bleibt still. Die Core-Pflicht 35c2-d478-392a-aeb1 (min 2, budgetunabhaengig unterhalb 2000 pts) dient in allen vier Rostern als Kontrolle, dass die reine Budget-Aenderung sonst nichts verschiebt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-budget-500-selected-min-raised.ros",
+      "description": "Kontingent \"Standard (OG-AB)\" (2bfa-e64a-7123-895f), costLimit pts = 500 (EXAKT der Vergleichswert), genau eine Wurzel-Auswahl \"Border Patrol (500pts)\" (2066-082d-a465-4baf, number=1, ohne eigene <costs> -> 0 verplante Punkte). Die equalTo-Bedingung haelt (500 = 500): der set-Modifikator hebt 1a97-1579-ab05-a6d7 von min 0 auf min 1 -> der besetzte Slot meldet effectiveMin 1. Ist 1 >= 1, die Grenze ist erfuellt und feuert nicht. Beide max-1-Grenzen (parent ac2c…, force 73ff…) sind mit einer Auswahl ausgeschoepft, aber nicht ueberschritten -> headroom 0, isBlocked true, still.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "1a97-1579-ab05-a6d7",
+          "ac2c-85cb-fdd9-9fe0",
+          "73ff-2023-7f30-cefa",
+          "budget::ecfa-8486-4f6c-c249",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "c3c3-a80c-e026-200f",
+          "7fca-63fb-63d2-9dad"
+        ],
+        "capabilities": [
+          {
+            "defId": "2066-082d-a465-4baf",
+            "anchorKind": "occupied",
+            "name": "Border Patrol (500pts)",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-budget-499-selected-min-unraised.ros",
+      "description": "IDENTISCHER Inhalt wie Roster 01, einziger Unterschied: costLimit pts = 499 — einen Punkt UNTERHALB des Vergleichswerts. Die equalTo-Bedingung haelt nicht (499 != 500), der set-Modifikator greift nicht: 1a97-1579-ab05-a6d7 behaelt seinen Basiswert min 0 -> effectiveMin 0. Damit ist \"equalTo\" von \"atMost 500\" getrennt (das bei 499 halten wuerde). Die budgetabhaengigen .gst-Kategoriegrenzen wechseln zwischen 499 und 500 zwar ihren Wert (Lord fda5… 0 statt 1, Special 16f0… 2 statt 3, Characters c3c3… 2 statt 3), sind aber allesamt max-Grenzen ohne passende Auswahl und bleiben still.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "1a97-1579-ab05-a6d7",
+          "ac2c-85cb-fdd9-9fe0",
+          "73ff-2023-7f30-cefa",
+          "budget::ecfa-8486-4f6c-c249",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "c3c3-a80c-e026-200f",
+          "7fca-63fb-63d2-9dad"
+        ],
+        "capabilities": [
+          {
+            "defId": "2066-082d-a465-4baf",
+            "anchorKind": "occupied",
+            "name": "Border Patrol (500pts)",
+            "current": 1,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-budget-501-selected-min-unraised.ros",
+      "description": "IDENTISCHER Inhalt wie Roster 01, einziger Unterschied: costLimit pts = 501 — einen Punkt OBERHALB des Vergleichswerts. Die equalTo-Bedingung haelt nicht (501 != 500): 1a97-1579-ab05-a6d7 behaelt min 0 -> effectiveMin 0. Damit ist \"equalTo\" von \"atLeast 500\" getrennt (das bei 501 halten wuerde). Zusammen mit Roster 02 ist die Gleichheit beidseitig eingeklemmt.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "1a97-1579-ab05-a6d7",
+          "ac2c-85cb-fdd9-9fe0",
+          "73ff-2023-7f30-cefa",
+          "budget::ecfa-8486-4f6c-c249",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "c3c3-a80c-e026-200f",
+          "7fca-63fb-63d2-9dad"
+        ],
+        "capabilities": [
+          {
+            "defId": "2066-082d-a465-4baf",
+            "anchorKind": "occupied",
+            "name": "Border Patrol (500pts)",
+            "current": 1,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-budget-500-unselected-no-anchor.ros",
+      "description": "Dasselbe Kontingent, costLimit pts = 500, aber LEER — \"Border Patrol (500pts)\" ist nicht gewaehlt. Fachlich waere der Eintrag hier Pflicht (angehobenes min 1). Beobachtbar ist das jedoch nicht: die Definition liegt in den <sharedSelectionEntries> der Mercenaries-.cat und wird im gesamten Datensatz von KEINEM entryLink referenziert (genau eine Fundstelle der Id im Korpus, naemlich die Definition selbst). Sie ist im Kontingent damit nicht waehlbar, bekommt weder Angebots- noch Pflicht-Anker und wird nicht ausgewertet -> 1a97-1579-ab05-a6d7 bleibt still. Die Core-Pflicht feuert unveraendert mit Ist 0 / Grenze 2 (der Eintrag ist NICHT \"Border Patrols rules\" 4e15-0353-165f-5528 und senkt sie darum nicht auf 1).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "1a97-1579-ab05-a6d7",
+          "ac2c-85cb-fdd9-9fe0",
+          "73ff-2023-7f30-cefa",
+          "budget::ecfa-8486-4f6c-c249",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "c3c3-a80c-e026-200f",
+          "7fca-63fb-63d2-9dad"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_BUDGET_LIMIT" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "name": "set-unresolved-target-inert-lord-slot",
+  "description": "Ein <modifier type=\"set\">, dessen field eine Id nennt, die der geladene Datensatz NIRGENDS definiert - weder als constraint-id noch als costType noch als characteristicType - und die keines der Schluesselwoerter hidden|name|category|error|warning|info ist, hat kein Ziel und damit keine Wirkung: er legt keine eigene Grenze an, verschiebt keine fremde und stoert weder seinen Traeger noch seine Nachbarn. Gepinnt an den beiden einzigen Vorkommen dieser Konstruktion im eingefrorenen Korpus: dem unbedingten <modifier type=\"set\" value=\"1\" field=\"a59d-2ddb-429c-1aca\"/> am Lord-categoryLink der Sonderheere \"Army of the Lichemaster\" (Kontingent f37a-a93e-fa22-61a8, categoryLink 7a76-8153-c4b2-9fee, echte Grenze 760d-2352-9fac-0e46) und \"Vampire Coast\" (Kontingent bf46-ee85-7c10-ba98, categoryLink aa77-6ac1-ba5c-5646, echte Grenze 8471-437a-59d6-bc3d). Die Id a59d-2ddb-429c-1aca kommt im gesamten Fixture-Korpus AUSSCHLIESSLICH als field dieser zwei Modifikatoren vor und nie als id=. Je Kontingent ein Paar: ohne Lord-Auswahl feuert die echte min-1-Grenze mit Ist 0 / Grenze 1, mit genau einer Lord-Auswahl schweigt sie - unveraendert, als gaebe es den haltlosen Modifikator nicht. Gegenprobe im selben Rahmen (Roster 05): der ECHTE Modifikator am Core-categoryLink des Vampire-Coast-Kontingents (increment 1 je Bloated Corpse auf 35c2-d478-392a-aeb1) bewegt seine Grenze nachweislich von 4 auf 5.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lichemaster-empty-lord-min-fires.ros",
+      "description": "Leeres Kontingent \"Army of the Lichemaster\" (f37a-a93e-fa22-61a8), Budget 3000. Der unbedingte set 1 auf die haltlose Id a59d-2ddb-429c-1aca am Lord-categoryLink 7a76-8153-c4b2-9fee ist aktiv (er traegt weder conditions noch conditionGroups noch repeats) und bleibt folgenlos: keine Grenze dieser Id im Bericht. Die echte Grenze desselben Links, 760d-2352-9fac-0e46 (min 1, field=selections, scope=parent, shared=true), feuert mit Ist 0 / Grenze 1 - also mit ihrem GESCHRIEBENEN Wert. Mitfeuernd und bewusst deklariert: die beiden Sonderheer-Pflichten Kemmler 8461-3eab-e5ac-1636 und Krell 60a8-5b49-6b81-7c84 (Basis min 0, per set 1 gehoben, weil das Budget 3000 nicht < 2000 ist und keine Kampagne gewaehlt ist), die Core-Pflicht 35c2-d478-392a-aeb1 (.gst-Klasse 3000-3999 = 4) und die General-Pflicht 1077-7379-f142-f382. Abwesend bleiben die gleichartigen Grenzen des ANDEREN Sonderheeres - sie gehoeren einem Kontingent, das hier nicht gewaehlt ist.",
+      "expect": {
+        "firing": [
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "a59d-2ddb-429c-1aca",
+          "8471-437a-59d6-bc3d",
+          "6476-ebd7-6fae-8d90",
+          "f460-f7d0-e0ed-689f"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Lord",
+            "current": 0,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Heroes",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-lichemaster-kemmler-krell-lord-min-silent.ros",
+      "description": "Dasselbe Kontingent mit genau einer Lord-Auswahl: Heinrich Kemmler 595f-a4e4-5cbc-dab4 traegt den categoryLink \"Lord\" 5def-cdef-a98d-9a86 -> d024-d25b-a9b4-73b6; Krell 2d17-c7be-5fd6-f1a3 ist Heroes/Characters/Special Characters und kein Lord. Ist 1 >= Grenze 1: 760d-2352-9fac-0e46 schweigt, ebenso beide Sonderheer-Pflichten. Der haltlose set 1 ist unveraendert aktiv und aendert nichts: die Lord-Kapazitaet zeigt weiterhin effectiveMin 1. Der \"General\"-Verweis unter Kemmler erfuellt 1077-7379-f142-f382 und haelt d818-c60d-b1f8-8aaa (max 1) ein.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 }
+        ],
+        "absent": [
+          "a59d-2ddb-429c-1aca",
+          "760d-2352-9fac-0e46",
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84",
+          "8471-437a-59d6-bc3d",
+          "6476-ebd7-6fae-8d90",
+          "f460-f7d0-e0ed-689f",
+          "1077-7379-f142-f382",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Lord",
+            "current": 1,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "f37a-a93e-fa22-61a8",
+            "name": "Heroes",
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-vampire-coast-empty-lord-min-fires.ros",
+      "description": "Das zweite Vorkommen derselben Konstruktion, leeres Kontingent \"Vampire Coast\" (bf46-ee85-7c10-ba98), Budget 3000. Wortgleicher unbedingter set 1 auf a59d-2ddb-429c-1aca am Lord-categoryLink aa77-6ac1-ba5c-5646; die echte Grenze desselben Links, 8471-437a-59d6-bc3d (min 1, scope=parent), feuert mit Ist 0 / Grenze 1. Mitfeuernd und deklariert: Luthor Harkons Pflichtgrenze 6476-ebd7-6fae-8d90 (Basis min 0, per set 1 gehoben, weil das Kontingent bf46 ist und keine Border-Patrols-Auswahl im Kontingent steht), Core 35c2-d478-392a-aeb1 (4, denn ohne Bloated Corpse greift der echte increment am Core-Link nicht) und General 1077-7379-f142-f382. Die Grenzen des Lichemaster-Kontingents bleiben abwesend, ebenso die min-0-Grenze c456-6da8-2246-62db des im Kontingent aufgedeckten \"Vampire Fleet Captain\": sie wird von KEINEM Modifikator gehoben und darf deshalb nie feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "8471-437a-59d6-bc3d", "actual": 0, "bound": 1 },
+          { "limitId": "6476-ebd7-6fae-8d90", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "a59d-2ddb-429c-1aca",
+          "760d-2352-9fac-0e46",
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84",
+          "f460-f7d0-e0ed-689f",
+          "c456-6da8-2246-62db"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Lord",
+            "current": 0,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Core",
+            "current": 0,
+            "effectiveMin": 4,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "targetDefId": "c16b-f319-2c62-2c12",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Heroes",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-vampire-coast-luthor-lord-min-silent.ros",
+      "description": "Dasselbe Kontingent mit genau einer Lord-Auswahl: \"Luthor Harkon, Arch Grand Commodore\" f9bc-3250-464c-1740 traegt den categoryLink \"Lord\" 3809-e26d-2360-8293 -> d024-d25b-a9b4-73b6. Ist 1 >= Grenze 1: 8471-437a-59d6-bc3d schweigt; zugleich sind Luthors eigene Pflichtgrenze 6476-ebd7-6fae-8d90 (1 >= 1) und seine Obergrenze f460-f7d0-e0ed-689f (max 1, Ist 1) eingehalten und sein Pflicht-Kind \"General\" 76c2-0b65-ca83-69b9 erfuellt. Der haltlose set 1 bleibt aktiv und wirkungslos: effectiveMin des Lord-Slots unveraendert 1, Core unveraendert 4.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 }
+        ],
+        "absent": [
+          "a59d-2ddb-429c-1aca",
+          "8471-437a-59d6-bc3d",
+          "6476-ebd7-6fae-8d90",
+          "f460-f7d0-e0ed-689f",
+          "76c2-0b65-ca83-69b9",
+          "c456-6da8-2246-62db",
+          "760d-2352-9fac-0e46",
+          "1077-7379-f142-f382",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Lord",
+            "current": 1,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Core",
+            "current": 0,
+            "effectiveMin": 4,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-vampire-coast-bloated-corpse-core-min-raised.ros",
+      "description": "GEGENPROBE (Lebendigkeit) im selben Rahmen: wie 04, zusaetzlich ein \"Bloated Corpse\" 8b63-3344-e972-cd0d (Kategorie Core). Der ECHTE Modifikator am Core-categoryLink 4292-f5de-24ff-93a7 desselben Kontingents (increment 1 auf 35c2-d478-392a-aeb1, repeat je Bloated Corpse im Kontingent) hebt die Core-Untergrenze von 4 auf 5; sie feuert mit Ist 1 / Grenze 5. Damit ist \"der haltlose Modifikator hat nichts bewirkt\" messbar von \"in diesem Rahmen wurde ueberhaupt kein Modifikator angewandt\" getrennt - und zugleich belegt, dass ein Nachbar-categoryLink desselben Kontingents seine Grenze sehr wohl verschiebt, waehrend der Lord-Slot bei effectiveMin 1 bleibt.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 1, "bound": 5 }
+        ],
+        "absent": [
+          "a59d-2ddb-429c-1aca",
+          "8471-437a-59d6-bc3d",
+          "6476-ebd7-6fae-8d90",
+          "f460-f7d0-e0ed-689f",
+          "76c2-0b65-ca83-69b9",
+          "c456-6da8-2246-62db",
+          "1077-7379-f142-f382",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Lord",
+            "current": 1,
+            "effectiveMin": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "bf46-ee85-7c10-ba98",
+            "name": "Core",
+            "current": 1,
+            "effectiveMin": 5,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -443,6 +443,111 @@
         "docs/testing/at-least-parent-any-reveal"
       ],
       "rationale": "Der einzige Modifier des 'Wolf Lord' (66bc-8fc1-81a2-9cd4, Vampire Counts, hidden=true) ist ein set hidden=false, gegated auf genau diese Bedingung: atLeast 1, field=selections, scope=parent, childId=any. Fuenf Roster variieren allein, was der Eltern-Rahmen (die Vampire-Thrall-Auswahl) enthaelt: 0 Selektionen, 1, 2, sowie den Traeger selbst ein- und zweimal. Die Roster 04 und 05 sind gruen und pinnen, dass der Traeger im eigenen Rahmen mitzaehlt und dass seine Obergrenze 06c5-d960-2b4d-399a unabhaengig von der Sichtbarkeit bei Ist 2 / Grenze 1 feuert. Die Roster 01-03 sind rot, weil der Bericht fuer die ungewaehlte Option gar keinen Angebots-Anker fuehrt — siehe den pinnedGaps-Eintrag zu diesem Szenario."
+    },
+    {
+      "key": "condition|lessThan|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-unit-wizard-level-gate"
+      ],
+      "rationale": "Die and-Klammer am entryLink 'Magic Level 3' (9dc7-b9d7-4e92-4cda, Vampire Counts) haengt an genau dieser Bedingung: lessThan value=1, field=selections, scope=unit, childId=fc28-3af2-d37a-d07e (Magic Level 4), includeChildSelections=true. Die Roster 01/02 halten Nehekhara's Noble Blood am '0-1 Vampire Lord' konstant und variieren allein die Zahl der Magic-Level-4-Auswahlen in der umschliessenden Einheit: bei 0 haelt 0 < 1, die Klammer hebt die eigene Mindestgrenze 4d5e-8101-e8d4-d7ad des Slots von 0 auf 1 und diese feuert mit Ist 0 / Grenze 1; bei 1 kippt die Bedingung und die Grenze schweigt. Die Roster 03/04 wiederholen den Umschlag am besetzten Slot (Ist konstant 1), wobei 04 zusaetzlich die Gruppen-Obergrenze f66f-32f7-5f65-14a7 mit Ist 2 / Grenze 1 feuern laesst; 05/06 wiederholen dieselbe Form am 'Vampire Count' (5a5f-aaf8-868f-9630, Gatter auf Magic Level 3, Mindestgrenze 5e9b-7594-02cb-0bad). Szenario ist gruen."
+    },
+    {
+      "key": "condition|notInstanceOf|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/not-instance-of-unit-category-gate"
+      ],
+      "rationale": "Beide Vorkommen der Zelle stehen in der geteilten Gruppe 'Magic Weapons (VC)' (bf27-6ca6-5c3a-3449, Vampire Counts) und benennen eine Kategorie: der 'Blood Drinker' (8427-3c8d-f4af-8af3) traegt einen set hidden=true, allein gegated auf notInstanceOf gegen die Kategorie Vampire (017d-3857-a815-782f), das 'Sword of the Kings' (2749-9013-530a-a980) denselben Modifikator gegen die Kategorie Wight (5c44-3a90-6b26-bc32). Sechs Roster kreuzen die beiden Traeger: der 'Wight Lord' (b9c6-93fb-ce3c-965a) fuehrt Wight und nicht Vampire, der 'Vampire Count' (6822-0110-a7c9-cbb0) Vampire und nicht Wight — je Einheit ist genau ein Gegenstand sichtbar und der andere verborgen, gespiegelt im Paar. Die Roster 03/04 wiederholen das am besetzten Slot, 05/06 zeigen, dass die Sichtbarkeit von der Stueckzahl unabhaengig ist, waehrend die eigenen Hoechstgrenzen der Verweise (8f7d-d49e-d74c-81b3, ff3a-8103-8351-eba5, 17dc-3976-7dfc-5700) mit Ist 2 / Grenze 1 feuern. Drei Kontroll-Slots belegen, dass der Rahmen selbst nichts verbirgt. Szenario ist gruen."
+    },
+    {
+      "key": "modifier|add|info",
+      "evidence": [
+        "docs/testing/add-info-and-warning-campaign-gate"
+      ],
+      "rationale": "Der info-Modifikator der '0-1 Amazon Serpent Priestess' (9ddd-69c8-644d-abc2, Mercenaries) traegt keinen Feldwert, sondern einen Klartext-Hinweis, und haengt an einer einzigen Bedingung: atLeast 1, field=selections, scope=force, childId=7d87-7436-5341-bbc0 (der .gst-Kampagneneintrag 'A Dark Conspiracy'). Roster 01 waehlt den Kampagneneintrag: die Meldung liegt mit origin=authorMessage am Slot der Priesterin an. Roster 02 und 03 lassen ihn weg: die Meldung fehlt (count 0, in allen drei Textlesarten). Szenario ist gruen."
+    },
+    {
+      "key": "modifier|add|warning",
+      "evidence": [
+        "docs/testing/add-info-and-warning-campaign-gate"
+      ],
+      "rationale": "Der warning-Modifikator derselben Einheit steht in einer modifierGroup, deren and-Klammer die komplementaere Haelfte desselben Schalters prueft (lessThan 1 auf 7d87-7436-5341-bbc0) und zusaetzlich eine or-Gruppe von sieben instanceOf-Pruefungen auf scope=primary-catalogue verlangt; das Kontingent des Szenarios ist im Katalog 4049-c46d-7f80-44fb (Orcs and goblins) deklariert und erfuellt sie. Roster 02 und 03 lassen den Kampagneneintrag weg: die Warnung liegt an, und dieselbe Klammer haengt sichtbar ein '*' an den Namen. Roster 01 waehlt ihn: die Warnung fehlt und der Name bleibt ungesternt. Szenario ist gruen."
+    },
+    {
+      "key": "modifier|append|characteristic",
+      "evidence": [
+        "docs/testing/append-characteristic-zacharias-spell"
+      ],
+      "rationale": "Beide Vorkommen der Zelle haengen am geteilten Spruchprofil '1. Invocation of Nehek' (6484-4a1a-e62b-2ce1, Vampire Counts) und sind auf dieselbe Bedingung gegated: instanceOf, scope=unit, childId=1c05-5813-2f0c-f878 ('Zacharias the Everliving'). Zwei sonst gleiche Roster tragen dieselbe 'Lore of Necromancy' und tauschen allein den Zauberer: bei Zacharias haengt der append das Merkmal Effect (7d21-349e-b0a8-fc7d) um die 15+-Zeile an, getrennt durch das eine Leerzeichen aus join=' '; beim Necromancer bleiben Effect und Cast auf ihren Basistexten. Das Merkmal Cast (f1e6-8816-26e0-8a70) wird im greifenden Roster bewusst nicht behauptet, weil sein Modifikator das nirgends spezifizierte Attribut position='-1' traegt — siehe den parkedQuestions-Eintrag dazu. Szenario ist gruen."
+    },
+    {
+      "key": "modifier|set|unresolvedTarget",
+      "evidence": [
+        "docs/testing/set-unresolved-target-inert-lord-slot"
+      ],
+      "rationale": "Beide Vorkommen der Zelle sind unbedingte set-1-Modifikatoren auf die Id a59d-2ddb-429c-1aca, die im ganzen eingefrorenen Korpus nur als ihr eigenes field vorkommt und nirgends als id definiert ist; sie haengen an den Lord-categoryLinks der beiden Vampire-Counts-Sonderheere 'Army of the Lichemaster' (7a76-8153-c4b2-9fee) und 'Vampire Coast' (aa77-6ac1-ba5c-5646). Fuenf Roster zeigen, dass der Modifikator folgenlos bleibt: die haltlose Id taucht in keinem Bericht als Grenze auf, waehrend die echte Mindestgrenze desselben Links (760d-2352-9fac-0e46 bzw. 8471-437a-59d6-bc3d) mit ihrem geschriebenen Wert 1 arbeitet — leer feuert sie mit Ist 0 / Grenze 1, mit Kemmler bzw. Luthor Harkon schweigt sie. Roster 05 belegt am Nachbar-Link, dass ein ECHTER Modifikator im selben Rahmen sehr wohl verschiebt (Core-Pflicht 35c2-d478-392a-aeb1 von 4 auf 5). Szenario ist gruen."
+    },
+    {
+      "key": "repeat|selectionCount|unit|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/unit-model-repeat-shield-markup"
+      ],
+      "rationale": "Beide Vorkommen der Zelle sind Kostenaufschlaege je Modell in Mercenaries: der Shield-Link der 'Manbiters' (a7e5-d466-038a-a9d6) traegt increment 1 auf die pts-Kostenart, wiederholt je gezaehltem Modell im unit-Rahmen, der Barding-Link der 'Heavy Cavalry' (19d1-de95-644d-00a7) dasselbe mit increment 2. Sechs Roster variieren allein die Modellzahl (20/25/30) und die Wahl des Schildes: die Summe waechst exakt linear (120/150/180 mit Schild gegen 100/150 ohne), was die Roster ueber das Punktebudget beobachtbar machen — ein Aufschlag je Auswahl statt je Modell laege in jedem Fall daneben. Roster 06 zeigt am Barding, dass der Faktor 2 aus dem increment kommt und nicht aus dem value='1' des repeat. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|force|limitValue|child=any",
+      "evidence": [
+        "docs/testing/equal-to-force-points-limit-border-patrol"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle gattert die Mindestgrenze 1a97-1579-ab05-a6d7 des geteilten Eintrags 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries): equalTo 500 auf limit::ecfa-8486-4f6c-c249, scope=force, childId=any. Vier Roster mit identischem Inhalt variieren allein das eingestellte Budget (500 / 499 / 501 sowie 500 ohne Auswahl) und klemmen die Gleichheit beidseitig ein. Das Szenario ist ROT: die Engine hebt die Grenze bei exakt 500 nicht und meldet in den Rostern 02 und 03 die Diagnose UNRESOLVED_BUDGET_LIMIT — siehe den pinnedGaps-Eintrag zu diesem Szenario. Roster 04 ist gruen."
+    },
+    {
+      "key": "condition|equalTo|force|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-force-toggle-count-gotrek"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle hebt die Roster-Obergrenze von 'Gotrek Gurnisson & Felix Jaeger' (ef9d-ae15-cc43-f2d6, Mercenaries): der Constraint e3c5-278b-09bc-84cf steht auf max 0 und wird per set 1 gehoben, sobald das Kontingent GENAU EINE Selektion des .gst-Schalters 'Allow special characters?' (8923-5946-7b10-8957) fuehrt. Drei Roster halten je einen Gotrek und variieren allein die Zahl der Schalter-Selektionen: bei 0 feuert die Grenze mit Ist 1 / Grenze 0 und die error-Meldung des Eintrags liegt an, bei 1 schweigt beides, bei 2 faellt die Grenze auf 0 zurueck und feuert erneut — waehrend die Meldung stumm bleibt, weil ihr eigenes Gatter lessThan 1 lautet. Genau diese Kombination trennt equalTo von atLeast. Die Roster-Obergrenze des Schalters selbst (5036-e10c-2fd8-f135) feuert im dritten Roster offen mit Ist 2 / Grenze 1. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-ancestor-id-scope-mount-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle traegt als scope keine Schluesselwort-Reichweite, sondern die Id eines Vorfahren: die Aufwertung 'Additional Hero choice' (e3cf-e551-eb3d-852e, Orcs and goblins) zaehlt per equalTo 0 die Auswahlen der Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des benannten 'Black Orc Bigboss' (febe-2170-775b-0d13). Haelt die Gleichheit — der Bigboss hat kein Reittier —, setzen zwei Modifikatoren Mindest- und Hoechstgrenze der Aufwertung auf 0, sie kostet also keine Heldenwahl; mit einem Boar bleiben die geschriebenen 1/1 stehen. Sechs Roster zeigen beide Seiten je einmal mit und ohne gewaehlte Aufwertung, dazu ein Kontrollroster im Kontingent 'Standard (OG-AB)', das die zweite Haelfte der and-Klammer (instanceOf auf 'Grimgor's Ardboyz') isoliert, und ein Roster mit zwei Bigbossen, das die Breite des Rahmens von einer roster-weiten Lesart trennt. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle deckt den .gst-Eintrag 'Border Patrols rules' (4e15-0353-165f-5528, Basis hidden=true) per set hidden=false auf, sobald das eingestellte Budget EXAKT 500 Punkte betraegt (equalTo 500 auf limit::ecfa-8486-4f6c-c249, scope=roster, childId=any). Drei inhaltsgleiche Roster variieren allein das Budget: bei 500 meldet der Slot isHidden false, bei 499 und 501 bleibt er verborgen — damit ist die Gleichheit beidseitig von atMost und atLeast getrennt. Szenario ist gruen."
+    },
+    {
+      "key": "condition|greaterThan|force|selectionCount|child=unit",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Die Autor-Meldung 'The army must consist of at least TWO units but no more than FOUR units' desselben Eintrags haengt an einer or-Gruppe, deren obere Haelfte genau diese Zelle ist: greaterThan 4, field=selections, scope=force, childId='unit' als Typ-Schluesselwort, includeChildSelections=false. Roster 04 mit vier Einheiten laesst sie schweigen (4 ist nicht > 4), Roster 05 mit fuenf Einheiten laesst sie anliegen. Szenario ist gruen."
+    },
+    {
+      "key": "condition|lessThan|force|selectionCount|child=unit",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Die untere Haelfte derselben or-Gruppe: lessThan 2, field=selections, scope=force, childId='unit'. Roster 01 mit zwei Einheiten laesst die Meldung schweigen, Roster 06 mit einer Einheit laesst sie anliegen — bei sonst gleichem Inhalt und gleichem Budget. Zusammen mit der greaterThan-Haelfte ist damit das ganze Fenster 2..4 abgesteckt. Szenario ist gruen."
+    },
+    {
+      "key": "condition|greaterThan|roster|costSum|child=any",
+      "evidence": [
+        "docs/testing/greater-than-roster-casting-dice-sum"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle vergleicht keine Auswahlzahl, sondern eine KOSTENSUMME: field ist die Kostenart ' Casting Dice' (fcec-2340-6368-a2ba), scope=roster, childId=any. Die Autor-Meldung 'No more than 10 power die are allowed!' des Eintrags 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and goblins) liegt an, sobald die Summe echt groesser als 10 ist. Fuenf Roster variieren allein die Magic-Level-Wahl der Schamanen: Summe 0 und Summe 10 lassen die Meldung schweigen (10 ist nicht > 10), Summe 11 und 12 lassen sie anliegen, und ein fuenftes Roster mit Summe 11 ohne den Traeger zeigt, dass die Meldung an ihm haengt. Die Kategorie-Obergrenze c3c3-a80c-e026-200f feuert in den Rostern 02-05 konstant mit Ist 5 / Grenze 4 und ist offen deklariert. Szenario ist gruen."
+    },
+    {
+      "key": "condition|instanceOf|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/instance-of-parent-sky-chariot-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle deckt den 'Sky Chariot' (33bd-1a1e-a286-60ac, Vampire Counts, Basis hidden=true) auf: eine and-Gruppe aus instanceOf gegen den Eltern-Rahmen (childId 0b24e6f4-0f37-4243-a0a5-99e723692dc3, 'Tomb Prince [KHEMRI]') und instanceOf gegen das Kontingent 'Army of the Lichemaster'. Erreichbar ist der Gegenstand nur ueber die geteilte Gruppe 'Enchanted Items (Lichemaster)' (81c5-7ea4-7cb5-61d4), die genau zwei Einheiten verlinken — Tomb Prince und Necromancer. Sechs Roster kreuzen beide Haelften: unter dem Tomb Prince ist der Slot sichtbar, unter dem Necromancer verborgen (Roster 01/02 als Angebot, 03/04 mit gewaehltem Gegenstand), und Roster 05 stellt denselben Tomb Prince ins Kontingent 'Clan Lahmia', wo die force-Haelfte faellt. Roster 06 belegt am Nachbarn, dass die Gruppen-Obergrenze 7ef4-7ce1-e1da-22ea mit Ist 2 / Grenze 1 feuert. Szenario ist gruen."
     }
   ]
 }

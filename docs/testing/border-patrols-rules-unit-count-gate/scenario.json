@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "name": "border-patrols-rules-unit-count-gate",
+  "description": "Der .gst-Wurzeleintrag \"Border Patrols rules\" (4e15-0353-165f-5528, Basis hidden=\"true\", defaultAmount=\"1\", primaere Kategorie \"Special list rules\" 32f1-197f-d719-a393) traegt drei Konstrukte, die dieses Szenario zusammen festhaelt. (1) SICHTBARKEIT: ein set hidden=false-Modifikator, dessen einzige Bedingung equalTo 500 auf field=\"limit::ecfa-8486-4f6c-c249\" mit scope=\"roster\" und childId=\"any\" ist — der Eintrag wird bei einem eingestellten Budget von EXAKT 500 Punkten angeboten, bei 499 und bei 501 nicht. (2) OBERGRENZE: die Autor-Meldung \"The army must consist of at least TWO units but no more than FOUR units\" (modifier add field=\"error\") unter einer conditionGroup type=\"or\", deren erstes Mitglied greaterThan 4 selections mit scope=\"force\", childId=\"unit\" (Typ-Schluesselwort, kein Id-Verweis) und includeChildSelections=\"false\" zaehlt. (3) UNTERGRENZE: dasselbe or-Mitglied als lessThan 2 mit identischen Zaehlflags. Die zweite Autor-Meldung \"You must include at least ONE infantry unit of 10+ models.\" haengt an lessThan 1 der Kategorie \"BP Infantry 10+\" (6ad6-f54e-1867-00a7) im Kontingent; sie wird in ALLEN Rostern konstant gehalten (jede Skeletons-Einheit hat 10 Modelle und erhaelt die Kategorie per Modifikator) und ist darum ueberall mit count 0 als abwesend gepinnt, damit sie die anderen Aussagen nicht verunreinigt. Weil ein Angebots-Anker seine Autor-Meldungen laut Nachbarszenario violation-classification (Roster 07) NICHT zur Meldungsliste beitraegt, ist \"Border Patrols rules\" in jedem Roster tatsaechlich GEWAEHLT (occupied). Armeebuch ist Vampire Counts: die Einheit \"Skeletons\" (9ac2-f4c1-bcc3-3aee, type=\"unit\", primaer Core) ist mit 10 Modellen a 8 pts die billigste Bauform, die zugleich die Kategorie \"BP Infantry 10+\" traegt — damit lassen sich 1, 2, 4 und 5 Einheiten unterhalb von 500 Punkten bauen, ohne eine Kategorie-Obergrenze zu reissen (die .gst-Kategorie Core hat nur eine min-, keine max-Grenze).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-budget-500-two-units-offered.ros",
+      "description": "Kontingent \"Standard (VC-AB)\" (e989-15b8-7eb6-9668), costLimit pts = 500 (EXAKT der Vergleichswert), die Wurzel-Auswahl \"Border Patrols rules\" und ZWEI Skeletons-Einheiten zu je 10 Modellen (160 pts). Die equalTo-Bedingung haelt (500 = 500): der set-Modifikator ersetzt das Basis-hidden=\"true\" durch false, der besetzte Slot meldet isHidden false. Zugleich die stille Haelfte der lessThan-Zelle: die force-weite Zaehlung childId=\"unit\" ergibt 2 — weder greaterThan 4 noch lessThan 2 haelt, die or-Gruppe ist falsch, die Meldung erscheint nicht. Die Infanterie-Meldung ist ebenfalls still, weil beide Einheiten 10 Modelle fuehren und dadurch die Kategorie \"BP Infantry 10+\" erhalten.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-budget-499-hidden.ros",
+      "description": "INHALTLICH IDENTISCH mit Roster 01, einziger Unterschied: costLimit pts = 499 — einen Punkt UNTERHALB des Vergleichswerts. Die equalTo-Bedingung haelt nicht (499 != 500), der set-Modifikator greift nicht: der besetzte Slot behaelt den Basiswert hidden=\"true\" und meldet isHidden true. Damit ist equalTo von atMost 500 getrennt (das bei 499 halten wuerde). Beide Autor-Meldungen sind hier UNABHAENGIG von der Sichtbarkeit still, weil ihre Bedingungen bei 2 Einheiten und vorhandener Kategorie \"BP Infantry 10+\" ohnehin nicht halten — die Frage, ob ein verborgener Traeger seine Meldungen noch abgibt, wird von diesem Roster bewusst NICHT beruehrt.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": true
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-budget-501-hidden.ros",
+      "description": "INHALTLICH IDENTISCH mit Roster 01, einziger Unterschied: costLimit pts = 501 — einen Punkt OBERHALB des Vergleichswerts. Die equalTo-Bedingung haelt nicht (501 != 500): der Slot bleibt beim Basiswert, isHidden true. Damit ist equalTo von atLeast 500 getrennt (das bei 501 halten wuerde); zusammen mit Roster 02 ist die Gleichheit beidseitig eingeklemmt. Dass die Bedingung das KONFIGURIERTE Budget liest und nicht die verplante Summe, belegen alle drei Roster zusaetzlich: verplant sind konstant 160 Punkte, gekippt wird allein mit dem costLimit.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": true
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-four-units-silent.ros",
+      "description": "costLimit pts = 500, \"Border Patrols rules\" plus VIER Skeletons-Einheiten zu je 10 Modellen (320 pts). Die force-weite Zaehlung childId=\"unit\" ergibt 4: greaterThan 4 haelt NICHT (4 ist nicht > 4), lessThan 2 haelt nicht — die or-Gruppe ist falsch, die Meldung bleibt still. Das ist die stille Haelfte der greaterThan-Zelle und pinnt die Strenge des Vergleichs (kein atLeast/atMost) an der Grenze selbst.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-five-units-too-many.ros",
+      "description": "Derselbe Aufbau wie Roster 04 plus eine FUENFTE Skeletons-Einheit (400 pts). Die force-weite Zaehlung childId=\"unit\" ergibt 5: greaterThan 4 haelt, die or-Gruppe haelt, und am besetzten Slot \"Border Patrols rules\" liegt genau eine Autor-Meldung vom Schweregrad error mit dem unveraenderten Katalogtext an. Der Unterschied zu Roster 04 ist genau eine Einheit — die feuernde Haelfte der greaterThan-Zelle. Die Infanterie-Meldung bleibt still (alle fuenf Einheiten tragen \"BP Infantry 10+\"), es ist also genau EINE Autor-Meldung.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Border Patrols rules"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-one-unit-too-few.ros",
+      "description": "costLimit pts = 500, \"Border Patrols rules\" plus EINE Skeletons-Einheit zu 10 Modellen (80 pts). Die force-weite Zaehlung childId=\"unit\" ergibt 1: lessThan 2 haelt, die or-Gruppe haelt, dieselbe Autor-Meldung feuert am besetzten Slot — die feuernde Haelfte der lessThan-Zelle, deren stille Haelfte Roster 01 mit 2 Einheiten stellt. Die Core-Pflicht 35c2-d478-392a-aeb1 bleibt trotz nur einer Core-Auswahl still, weil \"Border Patrols rules\" ihren Grenzwert per set von 2 auf 1 senkt. Die Infanterie-Meldung bleibt still (die eine Einheit hat 10 Modelle).",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fbfc-d43f-396d-09cc",
+          "35c2-d478-392a-aeb1",
+          "ad1d-03cf-a16f-ae52",
+          "6679-1132-0a76-9ba3",
+          "77fc-39e4-00c0-4e3a",
+          "175c-13ab-b2bf-a749",
+          "c217-3344-da80-f974",
+          "0005-cca1-4c68-4bcf",
+          "d818-c60d-b1f8-8aaa",
+          "fda5-91c2-e17f-774c",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "2a1d-03a1-b48c-64ad",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "4e15-0353-165f-5528",
+            "anchorKind": "occupied",
+            "name": "Border Patrols rules",
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "4e15-0353-165f-5528",
+            "text": "The army must consist of at least TWO units but no more than FOUR units",
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Border Patrols rules"
+          },
+          {
+            "origin": "authorMessage",
+            "text": "You must include at least ONE infantry unit of 10+ models.",
+            "count": 0
+          }
+        ]
+      }
+    }
+  ]
+}

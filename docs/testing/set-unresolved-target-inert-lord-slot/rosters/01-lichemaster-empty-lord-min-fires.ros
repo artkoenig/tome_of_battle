@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="sutil-01" name="SUTIL 01 – Army of the Lichemaster, 3000 Punkte, leer: der echte Lord-Mindestwert feuert, die haltlose set-Id bleibt abwesend" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored set-unresolved-target-inert-lord-slot E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Leeres Kontingent „Army of the Lichemaster" (f37a-a93e-fa22-61a8). Sein Lord-
+         categoryLink 7a76-8153-c4b2-9fee traegt genau zwei Dinge: den unbedingten
+         <modifier type="set" value="1" field="a59d-2ddb-429c-1aca"/> (Ziel im ganzen
+         Datensatz nirgends definiert) und die echte Grenze 760d-2352-9fac-0e46
+         (min 1, field=selections, scope=parent). Ohne Lord-Auswahl feuert die echte
+         Grenze mit Ist 0 / Grenze 1; die haltlose Id darf nirgends im Bericht stehen.
+         Budget 3000, damit die Lord-Kategorie der .gst nicht per hidden-Modifikator
+         (< 2000 pts) abgeschaltet ist und ihr Hoechstmass bei 2 liegt. -->
+    <force id="force-1" name="Army of the Lichemaster (WD#309-UK)" entryId="f37a-a93e-fa22-61a8" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts"/>
+  </forces>
+</roster>

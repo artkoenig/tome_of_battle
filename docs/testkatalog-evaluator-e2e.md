@@ -155,7 +155,19 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
 | [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
 | [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
-| **Summe** | | **323** |
+| [`less-than-unit-wizard-level-gate`](testing/less-than-unit-wizard-level-gate/) | Definitive VC + Mercenaries | 6 |
+| [`not-instance-of-unit-category-gate`](testing/not-instance-of-unit-category-gate/) | Definitive VC + Mercenaries | 6 |
+| [`add-info-and-warning-campaign-gate`](testing/add-info-and-warning-campaign-gate/) | Definitive O&G + Mercenaries | 3 |
+| [`append-characteristic-zacharias-spell`](testing/append-characteristic-zacharias-spell/) | Definitive VC + Mercenaries | 2 |
+| [`set-unresolved-target-inert-lord-slot`](testing/set-unresolved-target-inert-lord-slot/) | Definitive VC + Mercenaries | 5 |
+| [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
+| [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
+| [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
+| [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
+| [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
+| [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
+| [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **381** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1587,3 +1599,311 @@ Rahmeninhalt ändert.
 > (`c791-87b9-b00a-ddb4`). Kein `entryLink` zeigt darauf und es ist kein
 > Inline-Kind einer Gruppe — kein Roster kann es in einen legalen Eltern-Rahmen
 > stellen.
+
+## `less-than-unit-wizard-level-gate`
+
+Prüft die `lessThan`-Bedingung mit `scope="unit"` und einer Eintrags-`childId`
+(§7.7 der Formatdoku, Kasten *`scope="unit"`*): Sie zählt in der **umschließenden
+Einheit** die Auswahlen des benannten Eintrags — `includeChildSelections="true"`,
+also auch verschachtelte — und hält, solange deren Zahl unter dem Wert liegt.
+Beleg: der `entryLink` „Magic Level 3" (`9dc7-b9d7-4e92-4cda`, Vampire Counts)
+trägt eine `modifierGroup type="and"`, deren `and`-Bedingungsgruppe aus genau
+zwei Gliedern besteht — `lessThan 1` auf „Magic Level 4"
+(`fc28-3af2-d37a-d07e`) und `atLeast 1` auf „Nehekhara's Noble Blood"
+(`32d0-a151-94a3-aa54`). Greift die Klammer, hebt sie die **eigene**
+Mindestgrenze des Verweises (`4d5e-8101-e8d4-d7ad`) von 0 auf 1. Die Noble-Blood-
+Auswahl steht in allen Rostern, sodass sich allein das erste Glied ändert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord mit Noble Blood, kein Magic Level 4 | Die Einheit zählt 0: die Bedingung hält, die Pflichtgrenze des leeren Slots feuert mit Ist 0 / Grenze 1 |
+| 02 | Derselbe Lord zusätzlich mit Magic Level 4 | Die Einheit zählt 1: die Bedingung kippt, die Klammer greift nicht, die Mindestgrenze schweigt |
+| 03 | Magic Level 3 selbst gewählt, kein Magic Level 4 | Derselbe Umschlag am **besetzten** Slot: die gehobene Pflicht ist bei Ist 1 erfüllt und schweigt |
+| 04 | Magic Level 3 **und** Magic Level 4 gewählt | Die Klammer greift nicht mehr; zugleich feuert die Obergrenze der Gruppe „Wizard Level" mit Ist 2 / Grenze 1 |
+| 05 | Vampire Count mit Noble Blood, kein Magic Level 3 | Dieselbe Form am zweiten Vorkommen: die Pflichtgrenze des Slots „Magic Level 2" feuert mit Ist 0 / Grenze 1 |
+| 06 | Derselbe Count zusätzlich mit Magic Level 3 | Die Bedingung kippt, die Mindestgrenze schweigt |
+
+> **Nicht abgedeckt:** der zweite Modifikator derselben Klammer (`set` der
+> pts-Kosten des Verweises von 50 auf 0) — der Bericht führt Grenzen, keine
+> Stückpreise. Ebenso wenig `unit` gegen `parent`: die Gruppe hängt direkt an
+> der Einheit, beide Rahmen fallen hier zusammen.
+
+## `not-instance-of-unit-category-gate`
+
+Prüft die `notInstanceOf`-Bedingung mit `scope="unit"` und einer
+**Kategorie**-`childId` (§7.7 der Formatdoku): Sie zählt nicht, sondern prüft
+Mitgliedschaft — sie hält genau dann, wenn die umschließende Einheit die
+benannte Kategorie **nicht** führt. Beleg: in der geteilten Gruppe „Magic
+Weapons (VC)" (`bf27-6ca6-5c3a-3449`, Vampire Counts) trägt der „Blood Drinker"
+(`8427-3c8d-f4af-8af3`) einen `set hidden="true"`, allein gegated auf
+`notInstanceOf` gegen die Kategorie „Vampire" (`017d-3857-a815-782f`), und das
+„Sword of the Kings " (`2749-9013-530a-a980`) denselben Modifikator gegen die
+Kategorie „Wight" (`5c44-3a90-6b26-bc32`). Zwei Einheiten derselben Gruppe
+kreuzen die Polarität: der „Wight Lord" führt Wight und nicht Vampire, der
+„Vampire Count" Vampire und nicht Wight.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Wight Lord, im Magic-Baum nichts gewählt | Das Schwert ist sichtbar, der Blood Drinker verborgen; drei Kontroll-Gegenstände zeigen, dass der Rahmen selbst nichts verbirgt |
+| 02 | Vampire Count, im Magic-Baum nichts gewählt | Exakt gespiegelt: Blood Drinker sichtbar, Schwert verborgen |
+| 03 | Wight Lord mit dem Schwert | Am besetzten Slot bleibt das Urteil dasselbe |
+| 04 | Vampire Count mit dem Blood Drinker | Gespiegelt am besetzten Slot |
+| 05 | Wight Lord mit dem Schwert, Stückzahl 2 | Die Sichtbarkeit hängt nicht an der Stückzahl; die beiden eigenen Höchstgrenzen des Verweises feuern mit Ist 2 / Grenze 1 |
+| 06 | Vampire Count mit dem Blood Drinker, Stückzahl 2 | Dasselbe gespiegelt, mit der einen Höchstgrenze dieses Verweises |
+
+> **Nicht abgedeckt:** `notInstanceOf` gegen eine Definitions-Id oder ein
+> Typ-Schlüsselwort und die Zählflaggen — beide Vorkommen der Zelle benennen
+> eine Kategorie und tragen `shared="true"` ohne `includeChildSelections`.
+> Ebenso wenig, ob die Kategorie aus dem Katalog stammt oder in der `.ros`
+> zwischengespeichert ist; das trennt das Nachbarszenario
+> `unit-scope-instance-of-category`.
+
+## `add-info-and-warning-campaign-gate`
+
+Prüft die beiden Autor-Meldungen `add info` und `add warning` (§7.7 der
+Formatdoku): Ein solcher Modifikator trägt keinen Feldwert, sondern einen
+Klartext-Hinweis an den Spieler, und erreicht den Bericht genau dann, wenn seine
+Bedingungen halten. Beleg: die „0-1 Amazon Serpent Priestess"
+(`9ddd-69c8-644d-abc2`, Mercenaries) trägt beide — und sie hängen an den
+**komplementären** Hälften desselben Schalters, des `.gst`-Eintrags „Campaign: A
+Dark Conspiracy" (`7d87-7436-5341-bbc0`): die Info an `atLeast 1`, die Warnung
+an `lessThan 1` (zusätzlich verlangt ihre Klammer per `or`-Gruppe eines von
+sieben Armeebüchern im `scope="primary-catalogue"`). Dieselbe Klammer hängt
+sichtbar ein `*` an den Namen, sodass ihr Greifen nicht nur an der Meldung
+hängt. Der Schalter „Allow special characters?" steht in den Rostern 01/02, damit
+die dritte Meldung derselben Einheit — ein `add error` — schweigt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kampagneneintrag gewählt, Sonderfiguren erlaubt | Die Info liegt an, die Warnung fehlt, der Name bleibt ungesternt |
+| 02 | Kampagneneintrag entfernt, Sonderfiguren erlaubt | Gespiegelt: die Warnung liegt an, die Info fehlt, der Name trägt das `*` |
+| 03 | Ohne den Schalter „Allow special characters?" | Kontrolle: Fehler **und** Warnung liegen gleichzeitig am selben Slot, und die Force-Obergrenze der Priesterin feuert mit Ist 1 / Grenze 0 |
+
+> **Bewusste Entscheidung:** Ob der Platzhalter `{this}` im Meldungstext den
+> Katalognamen oder den **wirksamen** Namen einsetzt, ist aus den Katalogdaten
+> nicht ableitbar. Das Szenario folgt dem Vertrag des Manifests (wirksamer Name)
+> und stellt beide Lesarten gegeneinander: die gesternte Fassung wird als
+> vorhanden, die ungesternte und die rohe `{this}`-Fassung als abwesend
+> behauptet. Damit schließt es die Lücke, die `author-message-tokens` offen
+> gelassen hat.
+
+## `append-characteristic-zacharias-spell`
+
+Prüft den `append`-Modifikator auf ein **Merkmal** (§7.7 der Formatdoku): Er
+hängt seinen `value` an den Text des benannten Merkmals an, getrennt durch das
+`join`-Attribut, das verbatim übernommen wird. Beide Vorkommen der Zelle hängen
+am geteilten Spruchprofil „1. Invocation of Nehek" (`6484-4a1a-e62b-2ce1`,
+Vampire Counts) und sind auf dieselbe Bedingung gegated — `instanceOf`,
+`scope="unit"`, `childId="1c05-5813-2f0c-f878"` („Zacharias the Everliving").
+Beide Roster tragen dieselbe „Lore of Necromancy" und tauschen allein den
+Zauberer.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zacharias the Everliving mit der Lore | Das Merkmal „Effect" trägt die angehängte 15+-Zeile, getrennt durch das eine Leerzeichen aus `join=" "` — und weil der Basistext **nicht** mit einem Umbruch endet, landet sie in derselben Textzeile |
+| 02 | Ein Necromancer mit derselben Lore | Beide Merkmale stehen auf ihren Basistexten: der Modifikator gehört zum Profil, greift aber nur unter seiner Einheit |
+
+> **Offene Frage (Kampagne).** Der zweite Modifikator dieses Szenarios trägt `position="-1"` — ein
+> Attribut, das weder die Formatdoku noch das Wiki kennt und das die vendorte
+> `Catalogue.xsd` nicht zulässt. Es kommt genau einmal im ganzen Korpus vor,
+> seine Bedeutung ist aus den Daten nicht erschließbar. Das Szenario behauptet
+> das betroffene Merkmal „Cast" deshalb nur im **nicht** greifenden Roster, wo
+> jede Lesart denselben Basistext ergibt.
+
+## `set-unresolved-target-inert-lord-slot`
+
+Prüft, dass ein `modifier`, dessen `field` eine im Datensatz **nirgends
+definierte** Id nennt, wirkungslos ist (§7.6/§7.7 der Formatdoku: die Wirkung
+eines Modifikators ist allein als Änderung eines benannten Ziels definiert, und
+Grenzen entstehen nur aus `constraint`-Elementen). Beleg: die Id
+`a59d-2ddb-429c-1aca` kommt im ganzen eingefrorenen Korpus **nur** als `field`
+zweier unbedingter `set`-Modifikatoren vor — an den Lord-`categoryLink`s der
+beiden Vampire-Counts-Sonderheere „Army of the Lichemaster" und „Vampire
+Coast" — und nie als `id=`. Das Schwesterszenario
+`modifier-unresolved-target-inert` zeigt dieselbe Regel für `increment` und
+`decrement`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | „Army of the Lichemaster", leer, Budget 3000 | Keine Grenze der haltlosen Id im Bericht; die echte Lord-Pflicht desselben Links feuert mit ihrem geschriebenen Wert (Ist 0 / Grenze 1), daneben die deklarierten Sonderheer-Pflichten |
+| 02 | Dasselbe Heer mit Kemmler und Krell | Die Lord-Pflicht und beide Sonderheer-Pflichten schweigen |
+| 03 | „Vampire Coast", leer | Dasselbe Urteil am zweiten Vorkommen |
+| 04 | Dasselbe Heer mit Luthor Harkon | Die Pflichten schweigen |
+| 05 | Zusätzlich ein Bloated Corpse | Gegenprobe am Nachbar-Link: ein **echter** Modifikator verschiebt sehr wohl — die Core-Pflicht steigt von 4 auf 5 |
+
+> **Grenze der Beobachtbarkeit:** Der wirkungslose `set` trägt den Wert 1, und
+> die echte Nachbargrenze steht ebenfalls auf 1 — eine Fehlleitung genau auf
+> diese Nachbarin wäre in den realen Daten unsichtbar. Das Szenario behauptet
+> deshalb nur, was beobachtbar ist: keine Grenze der haltlosen Id, alle
+> erreichbaren Nachbarn auf ihren geschriebenen bzw. regulär modifizierten
+> Werten.
+
+## `unit-model-repeat-shield-markup`
+
+Prüft den `repeat` mit `scope="unit"` und `childId="model"` (§7.7 der
+Formatdoku, Kasten `scope="unit"`): Er wendet seinen Modifikator **einmal je
+Modell der umschließenden Einheit** an — das idiomatische Muster des
+Kostenaufschlags je Modell. Beleg: der Shield-Verweis der „Manbiters"
+(`a7e5-d466-038a-a9d6`, Mercenaries) trägt ein `increment 1` auf die
+pts-Kostenart mit genau diesem `repeat`, der Barding-Verweis der „Heavy
+Cavalry" (`19d1-de95-644d-00a7`) dasselbe mit `increment 2`. Weil eine Summe
+kein Feld des Slots ist, machen die Roster den Aufschlag über das **Punktebudget**
+beobachtbar: das Limit ist je Roster einen Punkt unter der abgeleiteten Summe
+gesetzt, sodass es mit genau dieser Summe feuert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 20 Manbiters mit Schild | Summe 120 — 100 für die Modelle plus 20 Aufschlag |
+| 02 | 25 Manbiters mit Schild | Summe 150: der Aufschlag wächst mit der Modellzahl |
+| 03 | 30 Manbiters mit Schild | Summe 180 — die Staffel ist linear, nicht einmalig |
+| 04 | 20 Manbiters ohne Schild | Summe 100: ohne die Auswahl kein Aufschlag, dafür feuert ihre Pflichtgrenze |
+| 05 | 30 Manbiters ohne Schild | Summe 150 — die Gegenprobe zur dritten Größe |
+| 06 | 8 Heavy Cavalry mit Barding | Summe 168: der Faktor 2 kommt aus dem `increment`, nicht aus dem `value` des `repeat` |
+
+## `equal-to-force-points-limit-border-patrol`
+
+Prüft die `equalTo`-Bedingung auf dem **eingestellten Punktebudget**
+(`limit::ecfa-8486-4f6c-c249`) mit `scope="force"` und `childId="any"`: Sie hält
+nur bei exakter Gleichheit, ein Punkt darüber oder darunter kippt sie. Beleg:
+der geteilte Eintrag „Border Patrol (500pts)" (`2066-082d-a465-4baf`,
+Mercenaries) hängt seine Pflicht — `set 1` auf die Mindestgrenze
+`1a97-1579-ab05-a6d7`, Basis 0 — an genau diese Bedingung mit dem Wert 500. Alle
+vier Roster tragen denselben Inhalt; nur die eine Zahl im `costLimit` ändert sich.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget exakt 500, der Eintrag gewählt | Die Bedingung hält: der Slot meldet Mindestmaß 1, und weil eine Auswahl liegt, schweigt die Grenze |
+| 02 | Budget 499 — ein Punkt darunter | Die Bedingung kippt: Mindestmaß 0. Damit ist `equalTo` von `atMost` getrennt |
+| 03 | Budget 501 — ein Punkt darüber | Dasselbe nach oben: `equalTo` ist auch von `atLeast` getrennt |
+| 04 | Budget 500, nichts gewählt | Der Eintrag ist im Katalog verwaist — kein Verweis zeigt auf ihn —, also trägt der Bericht keine Grenze dieser Id |
+
+> **Offene Lücke (Kampagne).** Die Roster 01–03 sind rot. Das `.ros`-Format kennt
+> ein Budget nur an der Roster-Wurzel, der Rahmen `force` ist also auflösbar und
+> liefert genau dieses Budget — die Engine liest es hier aber nicht: bei exakt
+> 500 bleibt das Mindestmaß auf 0, und bei 499 wie 501 meldet der Bericht
+> zusätzlich die Diagnose `UNRESOLVED_BUDGET_LIMIT`. Unter der jetzigen
+> Auswertung ist die Regel des Katalogautors tot.
+
+## `equal-to-force-toggle-count-gotrek`
+
+Prüft die `equalTo`-Bedingung auf einer **Auswahlzählung** im Kontingent
+(`field="selections"`, `scope="force"`, `childId` = eine Eintrags-Id): Sie hält
+nur bei exakter Gleichheit. Beleg: „Gotrek Gurnisson & Felix Jaeger"
+(`ef9d-ae15-cc43-f2d6`, Mercenaries) trägt eine Roster-Obergrenze `max 0`
+(`e3c5-278b-09bc-84cf`), die per `set 1` gehoben wird, sobald das Kontingent
+**genau eine** Selektion des `.gst`-Schalters „Allow special characters?"
+(`8923-5946-7b10-8957`) führt. Derselbe Zähler trägt zusätzlich die Autor-Meldung
+des Eintrags — aber mit `lessThan 1` als Gatter, und genau diese Kombination
+trennt `equalTo` von `atLeast`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Gotrek, kein Schalter | Die Obergrenze bleibt 0 und feuert mit Ist 1; die Fehlermeldung „Please enable …" liegt an |
+| 02 | Ein Gotrek, ein Schalter | Die Obergrenze ist 1: alles schweigt |
+| 03 | Ein Gotrek, zwei Schalter | Die Gleichheit kippt: die Obergrenze fällt auf 0 zurück und feuert erneut — die Meldung bleibt jedoch stumm, denn ihr Gatter ist `lessThan 1`. Offen deklariert: die Roster-Obergrenze des Schalters selbst feuert mit Ist 2 / Grenze 1 |
+
+## `equal-to-ancestor-id-scope-mount-gate`
+
+Prüft eine Bedingung, deren `scope` **kein Schlüsselwort, sondern die Id eines
+Vorfahren** ist (§7.6/§7.7 der Formatdoku nennen Vorfahren-Ids in der
+Scope-Aufzählung, ohne sie zu beschreiben): gezählt wird im Rahmen der benannten
+Entität. Beleg: die Aufwertung „Additional Hero choice" (`e3cf-e551-eb3d-852e`,
+Orcs and goblins) zählt per `equalTo 0` die Auswahlen der Mounts-Gruppe
+(`8a7a-d454-ad84-6f7e`) im Rahmen des sie tragenden „Black Orc Bigboss"
+(`febe-2170-775b-0d13`). Hält die Gleichheit, setzen zwei Modifikatoren Mindest-
+**und** Höchstgrenze der Aufwertung auf 0 — der Kommentar des Katalogautors sagt
+warum: ein Black Orc Bigboss kostet nur dann eine weitere Heldenwahl, wenn er
+beritten ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Grimgors 'Ardboyz, kein Reittier, Aufwertung nicht gewählt | Beide Grenzen stehen auf 0: nichts feuert, der Bigboss zählt als eine Heldenwahl |
+| 02 | Dasselbe, Aufwertung aber gewählt | Die Obergrenze 0 feuert mit Ist 1 |
+| 03 | Mit Boar, Aufwertung nicht gewählt | Die geschriebenen 1/1 bleiben stehen: die Pflicht feuert mit Ist 0 / Grenze 1 |
+| 04 | Mit Boar und Aufwertung | Alles erfüllt — die legale Fassung des berittenen Bosses |
+| 05 | Kontrolle im Kontingent „Standard (OG-AB)" | Sonst identisch zu 01: die zweite Hälfte der `and`-Klammer (`instanceOf` auf das Sonderkontingent) hält nicht, die Grenzen bleiben bei 1/1 |
+| 06 | Zwei Bigbosse, einer beritten | Der Rahmen ist je Einheit, nicht rosterweit: die Kategorie-Anker zählen beide Bosse plus die eine Aufwertung |
+
+> **Was das Szenario nicht trennt:** Der benannte Vorfahre steht hier direkt über
+> dem Träger, `scope="febe-…"`, `parent` und `unit` bezeichnen also denselben
+> Knoten. Die Roster 01–05 nageln das Zählergebnis fest, nicht die
+> Unterscheidbarkeit der Rahmen; Roster 06 trennt immerhin die **Breite** des
+> Rahmens von einer rosterweiten Lesart.
+
+## `border-patrols-rules-unit-count-gate`
+
+Nagelt drei Konstrukte eines einzigen `.gst`-Eintrags fest — „Border Patrols
+rules" (`4e15-0353-165f-5528`, Basis `hidden="true"`):
+
+- die `equalTo`-Bedingung auf dem **Roster-Budget** (`limit::ecfa-8486-4f6c-c249`,
+  `scope="roster"`, `childId="any"`), die den Eintrag bei exakt 500 Punkten
+  aufdeckt;
+- die beiden Hälften der `or`-Gruppe seiner Autor-Meldung „The army must consist
+  of at least TWO units but no more than FOUR units": `greaterThan 4` und
+  `lessThan 2`, beide mit `childId="unit"` als **Typ-Schlüsselwort** und
+  `scope="force"`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 500, zwei Einheiten | Der Eintrag ist sichtbar, und beide Meldungen schweigen — die Untergrenze des Fensters ist erreicht |
+| 02 | Budget 499, sonst identisch | Der Eintrag bleibt verborgen |
+| 03 | Budget 501, sonst identisch | Ebenso — die Gleichheit ist beidseitig eingeklemmt |
+| 04 | Vier Einheiten | Die Meldung schweigt: 4 ist nicht mehr als 4 |
+| 05 | Fünf Einheiten | Die obere Hälfte greift, die Meldung liegt an |
+| 06 | Eine Einheit | Die untere Hälfte greift, dieselbe Meldung liegt an |
+
+> **Bewusst nicht behauptet:** ob ein effektiv versteckter Träger seine
+> Autor-Meldungen überhaupt noch abgibt — die Quelle schweigt dazu, und die
+> Roster 02/03 sind so gebaut, dass beide Meldungen ohnehin bedingungsfalsch
+> sind. Ebenso wenig die Wirkung von `includeChildSelections="false"`: kein
+> Roster enthält eine geschachtelte Einheit, beide Lesarten ergäben dieselbe
+> Zahl.
+
+## `greater-than-roster-casting-dice-sum`
+
+Prüft eine Bedingung, deren `field` eine **Kostenart** ist statt `selections`:
+verglichen wird dann die Kostensumme im Rahmen, nicht eine Auswahlzahl (§13.2
+der Formatdoku). Beleg: die Autor-Meldung „No more than 10 power die are
+allowed!" des Eintrags „Tournament rules: Uprising (2026)"
+(`4bc4-8781-2091-d9df`, Orcs and goblins) hängt an `greaterThan 10` auf der
+Kostenart „ Casting Dice" (`fcec-2340-6368-a2ba`), `scope="roster"`,
+`childId="any"`. Die Roster variieren allein die Magic-Level-Wahl der Schamanen,
+also die Summe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Nur der Träger, Summe 0 | Die Meldung schweigt |
+| 02 | Summe exakt 10 | Sie schweigt weiter: `greaterThan` ist strikt |
+| 03 | Summe 11 | Sie liegt an — ein Würfel über der Grenze genügt |
+| 04 | Summe 12 | Kontrolle deutlich außerhalb |
+| 05 | Summe 11, aber ohne den Träger | Die Meldung hängt am Träger: ohne ihn schweigt sie trotz überschrittener Summe |
+
+> **Offen deklariert:** In den Rostern 02–05 feuert konstant die
+> Charaktergrenze des Spielsystems mit Ist 5 / Grenze 4 — in diesem Katalog
+> tragen vier Charaktere zusammen höchstens 10 Würfel, die Elf ist also nur mit
+> einem fünften erreichbar. Weil sie in allen vier Rostern gleich feuert, bleibt
+> der Unterschied allein der Summe zuzurechnen.
+
+## `instance-of-parent-sky-chariot-gate`
+
+Prüft die `instanceOf`-Bedingung mit `scope="parent"` und einer Eintrags-Id:
+keine Zählung, sondern eine Prüfung, ob der **Eltern-Rahmen** die benannte
+Einheit ist. Beleg: der „Sky Chariot" (`33bd-1a1e-a286-60ac`, Vampire Counts,
+Basis `hidden="true"`) wird von einer `and`-Gruppe aufgedeckt — Eltern-Rahmen ist
+der „Tomb Prince [KHEMRI]" **und** das Kontingent ist „Army of the Lichemaster".
+Erreichbar ist der Gegenstand nur über die geteilte Gruppe „Enchanted Items
+(Lichemaster)", die genau zwei Einheiten verlinken; das ist das Paar.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lichemaster, Träger ist der Tomb Prince | Der Gegenstand wird angeboten |
+| 02 | Lichemaster, Träger ist ein Necromancer | Er bleibt verborgen — die Eltern-Hälfte fällt |
+| 03 / 04 | Dieselben beiden, Gegenstand gewählt | Das Urteil bleibt am besetzten Slot dasselbe |
+| 05 | Derselbe Tomb Prince im Kontingent „Clan Lahmia" | Die Kontingent-Hälfte fällt: verborgen |
+| 06 | Wie 03, dazu ein zweiter Gegenstand der Gruppe | Gegenprobe: die Gruppen-Obergrenze feuert mit Ist 2 / Grenze 1 |
+
+> **Bewusst offen:** In Roster 05 hängt der Tomb Prince über einen Verweis unter
+> einer anderen Einheit statt als Wurzelauswahl. Wie ein so erreichter Rahmen im
+> Bericht zu adressieren ist — über die Verweis-Id oder die Ziel-Id —, legt der
+> Manifest-Vertrag nicht fest, und kein anderes Szenario zeigt einen solchen
+> Fall. Der Slot wird dort deshalb ohne Rahmen-Koordinate benannt.

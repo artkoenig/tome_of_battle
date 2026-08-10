@@ -114,7 +114,7 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // evidence resolution is in place: the force/roster swap of the
     // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
     // though the specific covered/uncovered cell each resolves to changes.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 82, uncovered: 23 });
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 97, uncovered: 8 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -220,6 +220,11 @@ describe('coveredKeysFromManifests over the real corpus and manifests — resolu
         // reaches the report is the very thing the scenario pins, so this entry
         // is expected here and is not a wrong limitId.
         'ce6e-afde-2ed1-aac2',
+        // Same shape in the Vampire Counts catalogue: the two Lord categoryLinks
+        // of the special armies carry a bare `set 1` on this id, which nothing
+        // defines. set-unresolved-target-inert-lord-slot names it in
+        // expect.absent for the same reason as the id above.
+        'a59d-2ddb-429c-1aca',
       ]),
     );
   });
