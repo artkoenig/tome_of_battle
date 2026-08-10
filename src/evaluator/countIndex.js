@@ -107,6 +107,10 @@ function contributionOf(node, effective) {
  * (fuer Grenzen am Force-Typ) und seinen Kategorie-IDs zaehlbar. Es ist keine
  * generische Selektion "im Rahmen" und traegt daher nicht zum `null`-Ziel bei.
  *
+ * Das `null`-Ziel meint **alles im Rahmen**, also die Nachfahren — nicht den
+ * Rahmen selbst. Eine Selektion fuehrt es hier zwar, steuert im **eigenen**
+ * Rahmen aber keine Anzahl darunter bei ({@link indexNodeContribution}).
+ *
  * Ist der Knoten Member einer `selectionEntryGroup` (`memberGroupIds`, aus dem
  * Definitionsbaum abgeleitet), zaehlt er zusaetzlich unter jeder Gruppen-ID —
  * so liest die gruppen-skopierte Grenze (`scope=parent`, Ziel = Gruppen-ID) im
@@ -239,6 +243,19 @@ function indexNodeContribution(tallies, node, effective) {
       let c = contribution;
       if (node.isForce && targetId === node.def.id) {
         c = { selectionCount: node.instance.count, forceCount: node.instance.count, costSums: contribution.costSums };
+      } else if (isImmediate && targetId === null) {
+        // Im **eigenen** Rahmen zaehlt ein Knoten nicht unter „alles im Rahmen":
+        // `childId="any"` fragt nach dem Bestand *unterhalb* des Rahmens (§7.6 —
+        // die Bezugsgroesse summiert die **Nachfahren**), nicht nach dem Rahmen
+        // selbst. Ohne das koennte ein `atLeast 1 scope="parent" childId="any"`
+        // nie unerfuellt sein, weil der leere Rahmen sich selbst mitzaehlte.
+        // Ein Kontingent-Knoten ist aus demselben Grund gar nicht erst unter
+        // `null` zaehlbar ({@link targetsOf}).
+        //
+        // Die **Kosten** bleiben drin: eine Prozentgrenze auf ein Kostenfeld
+        // liest ihren Nenner mit dem Ziel `null` im Rahmen ihres Traegers
+        // (`constraints.js`), und dort gehoert der Eigenanteil des Traegers dazu.
+        c = { selectionCount: 0, forceCount: 0, costSums: contribution.costSums };
       }
       addContribution(tallies, scopeKey(frameKey, targetId), bucket, c);
     }

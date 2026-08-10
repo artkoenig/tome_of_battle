@@ -88,34 +88,28 @@ function isBaseHidden(subject) {
 }
 
 /**
- * Die Basis-Sichtbarkeit eines Traegers (XSD-Vorgabe: sichtbar). Versteckt ist ein
- * Vorkommen, wenn **eine** der Quellen es versteckt:
+ * Die Basis-Sichtbarkeit **einer** Spur (XSD-Vorgabe: sichtbar): versteckt ist
+ * sie, wenn der Traeger selbst oder sein (transitiv aufgeloestes) Verweisziel es
+ * sagt. Traeger ist der Knoten, eines seiner Info-Elemente oder — seit Issue
+ * 0147 — eine **Sichtbarkeits-Klammer** des Knotens.
  *
- * - der Traeger selbst oder sein (transitiv aufgeloestes) Verweisziel;
- * - eine **Sichtbarkeits-Klammer** des Knotens (`visibilityGates`) — die
- *   `selectionEntryGroup`s bzw. Gruppen-Verweise, durch die die Angebots-Schicht
- *   zu dieser Definition abgestiegen ist ({@link ../evaluator/offer.js}). Sie
- *   gelten nur fuer den Knoten selbst, nicht fuer seine Info-Elemente.
+ * Dass eine geerbte Angabe eine eigene ueberhaupt erreicht, ersetzt seit Issue
+ * 0135 die fruehere Vorrangregel „eigenes `hidden` vor dem geerbten" (Issue
+ * 0099, Kriterium 2). Sie war an echten Daten wirkungslos bis schaedlich:
+ * Battlescribe schreibt `hidden` an **jedem** `entryLink` (0 von 2302 in den
+ * DE-Fixtures lassen es weg), sodass das `hidden="true"` einer geteilten
+ * Definition ein Vorkommen nie erreichte — und damit das gaengigste
+ * Gatter-Muster der Kataloge (geteilte Definition `hidden="true"` plus bedingter
+ * Aufdeck-Modifikator, 37 von 42 Faellen in den Fixtures — der Aufdecker steht
+ * mal in `<modifiers>`, mal in einem bedingten `<modifierGroup>`) ins Gegenteil
+ * verkehrte.
  *
- * Die Oder-Verknuepfung ersetzt seit Issue 0135 die fruehere Vorrangregel „eigenes
- * `hidden` vor dem geerbten" (Issue 0099, Kriterium 2). Sie war an echten Daten
- * wirkungslos bis schaedlich: Battlescribe schreibt `hidden` an **jedem**
- * `entryLink` (0 von 2302 in den DE-Fixtures lassen es weg), sodass das
- * `hidden="true"` einer geteilten Definition ein Vorkommen nie erreichte — und
- * damit das gaengigste Gatter-Muster der Kataloge (geteilte Definition
- * `hidden="true"` plus bedingter Aufdeck-Modifikator, 37 von 42 Faellen in den
- * Fixtures — der Aufdecker steht mal in `<modifiers>`, mal in einem bedingten
- * `<modifierGroup>`) ins Gegenteil verkehrte.
- *
- * Modifikatoren ueberschreiben jeden dieser Basiswerte
- * ({@link EffectiveState#isHidden}) — auch die der Klammern, deren
- * `field="hidden"`-Modifikatoren am Knoten mitlaufen (`modifiers.js`).
+ * Modifikatoren ueberschreiben diesen Basiswert **je Spur**
+ * ({@link EffectiveState#isHidden}).
  */
 function baseHiddenOf(node, carrier) {
   const { own } = baseSourcesOf(node, carrier);
-  if (isBaseHidden(own)) return true;
-  if (carrier !== node) return false;
-  return (node.visibilityGates ?? []).some(isBaseHidden);
+  return isBaseHidden(own);
 }
 
 /** Die Basis-Merkmale eines Traegers (die des Verweisziels, wenn er selbst keine fuehrt). */
@@ -227,9 +221,28 @@ export class EffectiveState {
     return this.#limits.get(node)?.get(limitId) ?? null;
   }
 
-  /** True, wenn der Traeger effektiv versteckt ist (ohne Traeger: der Knoten selbst). */
+  /**
+   * True, wenn der Traeger effektiv versteckt ist (ohne Traeger: der Knoten
+   * selbst).
+   *
+   * Fuer den Knoten selbst ist das die **Oder-Verknuepfung zweier getrennt
+   * aufgeloester Spuren** (Issue 0147): seine eigene Sichtbarkeit — sein
+   * Basiswert samt seinen *eigenen* `hidden`-Modifikatoren — und die jeder
+   * seiner **Sichtbarkeits-Klammern** (`visibilityGates`, die von der
+   * Angebots-Schicht durchschrittenen `selectionEntryGroup`s und Gruppen-
+   * Verweise, {@link ../evaluator/offer.js}), jede aus ihrem eigenen Basiswert
+   * und ihren eigenen `hidden`-Modifikatoren.
+   *
+   * Getrennte Spuren, weil eine Klammer nur klammert: eine versteckte Klammer
+   * versteckt, was sie haelt, aber eine **aufgedeckte** Klammer hoert bloss auf
+   * zu verstecken — sie ueberschreibt nicht das `hidden`, das das Mitglied
+   * selbst traegt. Ebenso bleibt eine aeussere versteckte Klammer wirksam, wenn
+   * ein Modifikator die innere aufdeckt.
+   */
   isHidden(node, carrier = node) {
-    return this.#hidden.get(node)?.get(carrier) ?? baseHiddenOf(node, carrier);
+    const own = this.#hidden.get(node)?.get(carrier) ?? baseHiddenOf(node, carrier);
+    if (carrier !== node || own) return own;
+    return (node.visibilityGates ?? []).some(gate => this.isHidden(node, gate));
   }
 
   /** Der effektive Anzeigename eines Traegers (ohne Traeger: der des Knotens). */

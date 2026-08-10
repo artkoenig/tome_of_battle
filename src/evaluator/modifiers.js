@@ -764,9 +764,14 @@ export function applyModifiersOfNodes(nodes, state, { root, index, categoryIds, 
     // Die Sichtbarkeits-Klammern eines Angebots-Ankers (`offer.js`): ihre
     // `field="hidden"`-Modifikatoren laufen am Anker mit — nur so bleibt das
     // Aufdecken einer versteckten Gruppe dynamisch, statt am Basiswert zu
-    // erstarren. Aeusserste zuerst, damit die innerste Klammer zuletzt schreibt.
+    // erstarren. Jede Klammer schreibt dabei in ihre **eigene** Spur (Traeger =
+    // die Klammer, Issue 0147), nicht in die des Knotens: erst das laesst die
+    // Klammern und das eigene `hidden` des Mitglieds unabhaengig voneinander
+    // gelten ({@link EffectiveState#isHidden}). Ohne die Trennung deckte eine
+    // aufgedeckte Klammer ein selbst verstecktes Mitglied mit auf und eine
+    // aufgedeckte innere Klammer schluege die versteckte aeussere.
     for (const gate of node.visibilityGates ?? []) {
-      applyCarrierModifiers({ ctx, state, node, carrier: node, hiddenOnly: true }, gate);
+      applyCarrierModifiers({ ctx, state, node, carrier: gate, hiddenOnly: true }, gate);
     }
   }
 }

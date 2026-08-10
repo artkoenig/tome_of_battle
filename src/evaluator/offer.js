@@ -18,8 +18,9 @@
  *    Definition von R. Traegt D ueberhaupt keine Basis-Kategorie, kann keine
  *    Kategorie sie ausschliessen — sie gilt als waehlbar.
  * 2. **R ist eine belegte Auswahl.** D ist eine Auswahl-Definition in ihrem
- *    Definitionsteilbaum: durch `selectionEntryGroup`s hindurch und ueber
- *    `entryLink` auf das aufgeloeste Ziel beliebig tief absteigend, **aber
+ *    Definitionsteilbaum: durch `selectionEntryGroup`s hindurch und ueber einen
+ *    `entryLink` auf eine Gruppe sowohl in deren aufgeloestes Ziel als auch in
+ *    die am Verweis selbst deklarierten Kinder beliebig tief absteigend, **aber
  *    anhaltend beim ersten Eintrag** — die Optionen einer geschachtelten Auswahl
  *    gehoeren dieser, nicht dem aeusseren Rahmen.
  *
@@ -114,7 +115,16 @@ function occupiedIdsOf(frame) {
  * Ein `entryLink` auf einen *Eintrag* ist selbst der Auswahlpunkt und wird
  * geliefert (der Anker traegt den Link, damit die am Link deklarierten Grenzen
  * gelten); ein `entryLink` auf eine *Gruppe* ist nur die Klammer um deren Member
- * und wird durchschritten. `visited` haelt eine zyklische Verweiskette endlich.
+ * und wird durchschritten — und zwar **beidseitig**: durch die Member seines
+ * aufgeloesten Ziels **und** durch die am Link selbst deklarierten Kinder
+ * (`Catalogue.xsd`: `EntryLink` erweitert `SelectionEntryBase` und darf
+ * `selectionEntries`/`selectionEntryGroups`/`entryLinks` fuehren; die echten
+ * Kataloge nutzen das, z. B. die Vampir-Kette `2e0c` → lokal `85fb` → `0719`).
+ * Beide Abstiege stehen unter derselben Klammer, werden aber getrennt in
+ * `visited` vermerkt — das Ziel unter seiner Gruppen-ID, die lokalen Kinder unter
+ * der ID des Links —, sodass eine mehrfach verlinkte Gruppe jeden Link seine
+ * eigenen lokalen Member beitragen laesst. `visited` haelt dabei jede zyklische
+ * Verweiskette endlich.
  *
  * Geliefert wird jede Option zusammen mit den **Sichtbarkeits-Klammern**, durch die
  * der Abstieg zu ihr fuehrte (`gates`, aeusserste zuerst): die durchschrittenen
@@ -135,6 +145,9 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
     } else if (child.kind === DefinitionKind.ENTRY_LINK) {
       if (child.resolved?.kind === DefinitionKind.GROUP) {
         yield* optionDefinitionsUnder(child.resolved, visited, [...gates, child]);
+        // Die am Gruppen-Verweis selbst deklarierten Kinder: eigener
+        // `visited`-Schluessel (die ID des Links), dieselbe Klammerkette.
+        yield* optionDefinitionsUnder(child, visited, [...gates, child]);
       } else {
         yield { def: child, gates };
       }
