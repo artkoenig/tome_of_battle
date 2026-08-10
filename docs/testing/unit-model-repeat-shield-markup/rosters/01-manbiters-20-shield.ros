@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="umrsm-01" name="UMRSM 01 - Manbiters, 20 Modelle, mit Shield (Aufschlag 20 pts) - Summe 120, Limit 119" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored unit-model-repeat-shield-markup E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="119.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
+      <selections>
+        <selection id="sel-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="22a7-2e88-eaf1-49a9" number="1" type="upgrade"/>
+        <selection id="sel-manbiters" name="Manbiters" entryId="0efb-7f63-7932-0655" entryLinkId="e3c2-1778-d3d5-edd1" number="1" type="unit">
+          <selections>
+            <selection id="sel-models" name="Manbiters" entryId="45ff-9a9c-aa59-8c4c" entryLinkId="" number="20" type="model"/>
+            <selection id="sel-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="a7e5-d466-038a-a9d6" entryGroupId="7e37-3bee-16fc-5145" number="1" type="upgrade"/>
+            <selection id="sel-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="290f-b0ea-ed0f-27b4" entryGroupId="7e37-3bee-16fc-5145" number="1" type="upgrade"/>
+            <selection id="sel-lightarmour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="9b6d-1a85-e5dc-f1c9" entryGroupId="7e37-3bee-16fc-5145" number="1" type="upgrade"/>
+            <selection id="sel-flail" name="Flail" entryId="2eb9-be12-caec-57e8" entryLinkId="cc41-bc53-d81b-b58a" entryGroupId="7e37-3bee-16fc-5145" number="1" type="upgrade"/>
+            <selection id="sel-unitslot" name="Rare" entryId="75ab-2ebb-8c82-3286" entryLinkId="" entryGroupId="b63d-9c53-ef70-8723" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

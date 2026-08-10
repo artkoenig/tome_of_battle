@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "name": "unit-model-repeat-shield-markup",
+  "description": "Pinnt die LINEARE Skalierung eines <repeat field=\"selections\" scope=\"unit\" childId=\"model\" repeats=\"1\" value=\"1\"> auf einem increment-Modifikator der pts-Kostenart fest. Kern ist der Shield-entryLink a7e5-d466-038a-a9d6 der Söldnereinheit 'Manbiters' (Mercenaries): increment 1 je Modell der umschliessenden Einheit, Basis 0 pts (.gst-Shield 50e2-1873-a856-03e7). Über drei Roster wird ALLEIN die Modellzahl variiert (20/25/30) — der Aufschlag muss exakt 20/25/30 pts betragen, also 1 pt je Modell, nicht ein einmaliger Zuschlag und nicht ein Vielfaches davon. Zwei Kontroll-Roster mit derselben Modellzahl (20 bzw. 30), aber OHNE Shield, liefern den Nullpunkt der Geraden: die Differenz zum jeweiligen Shield-Roster ist genau die Modellzahl. Ein sechstes Roster wiederholt das Muster an seiner zweiten Fundstelle (Barding-entryLink 19d1-de95-644d-00a7 der 'Heavy Cavalry', increment 2) mit 8 Modellen und macht den Je-Modell-Faktor unabhängig vom repeat-eigenen value=\"1\" sichtbar. Beobachtbar gemacht wird die Summe über die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249, deren 'actual' die verplante Gesamtsumme trägt; das Punktelimit steht je Roster eine Einheit unter der korrekten Summe.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-manbiters-20-shield.ros",
+      "description": "Manbiters mit 20 Modellen (je 5 pts = 100) und der Pflichtausrüstung Shield/Hand Weapon/Light Armour/Flail (alle Basis 0 pts) sowie dem Unit-slot 'Rare' (0 pts) und dem Force-Schalter 'Allow experimental rules?' (0 pts). Der Shield-Link trägt increment 1 je gezähltem Modell im unit-Rahmen: 20 × 1 = 20 pts. Summe 120, Punktelimit 119 — das Budget feuert mit Ist 120. Ohne den Aufschlag (100), bei einmaliger Anwendung (101) oder bei je-Auswahl-statt-je-Modell-Zählung (101) bliebe es still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 120, "bound": 119 }
+        ],
+        "absent": [
+          "e6d2-9b61-a635-cd51",
+          "184f-af1f-b607-edf5",
+          "61e6-14a6-8422-d83a",
+          "5194-0651-556d-8143",
+          "9eae-88c9-5c5d-8a07",
+          "30f0-d417-2185-bf4a",
+          "ca73-afca-79f9-bfb6",
+          "c867-2baf-38f7-8679"
+        ],
+        "capabilities": [
+          {
+            "defId": "45ff-9a9c-aa59-8c4c",
+            "anchorKind": "occupied",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "50e2-1873-a856-03e7",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "0efb-7f63-7932-0655",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-manbiters-25-shield.ros",
+      "description": "Byte-gleicher Aufbau wie Roster 01, nur die Modellzahl steht auf 25 (125 pts). Der Aufschlag muss mitwachsen: 25 × 1 = 25 pts, Summe 150, Punktelimit 149 — das Budget feuert mit Ist 150. Gegenüber Roster 01 ist die Differenz der Aufschläge exakt 5 = die Differenz der Modellzahlen; ein konstanter Zuschlag ergäbe 145.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 150, "bound": 149 }
+        ],
+        "absent": [
+          "e6d2-9b61-a635-cd51",
+          "184f-af1f-b607-edf5",
+          "61e6-14a6-8422-d83a",
+          "5194-0651-556d-8143",
+          "9eae-88c9-5c5d-8a07",
+          "30f0-d417-2185-bf4a",
+          "ca73-afca-79f9-bfb6",
+          "c867-2baf-38f7-8679"
+        ],
+        "capabilities": [
+          {
+            "defId": "45ff-9a9c-aa59-8c4c",
+            "anchorKind": "occupied",
+            "current": 25,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "50e2-1873-a856-03e7",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-manbiters-30-shield.ros",
+      "description": "Byte-gleicher Aufbau, Modellzahl 30 (150 pts). Aufschlag 30 × 1 = 30 pts, Summe 180, Punktelimit 179 — das Budget feuert mit Ist 180. Drei Stützstellen (20/25/30 → 120/150/180) legen die Gerade eindeutig fest: Steigung 6 pts je Modell, davon 5 Modellkosten und 1 Aufschlag.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 180, "bound": 179 }
+        ],
+        "absent": [
+          "e6d2-9b61-a635-cd51",
+          "184f-af1f-b607-edf5",
+          "61e6-14a6-8422-d83a",
+          "5194-0651-556d-8143",
+          "9eae-88c9-5c5d-8a07",
+          "30f0-d417-2185-bf4a",
+          "ca73-afca-79f9-bfb6",
+          "c867-2baf-38f7-8679"
+        ],
+        "capabilities": [
+          {
+            "defId": "45ff-9a9c-aa59-8c4c",
+            "anchorKind": "occupied",
+            "current": 30,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "50e2-1873-a856-03e7",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-manbiters-20-no-shield.ros",
+      "description": "Kontrolle zu Roster 01: dieselben 20 Modelle, aber der Shield ist NICHT gewählt. Ohne den Träger des Modifikators entfällt der Aufschlag vollständig — Summe 100, Punktelimit 99, das Budget feuert mit Ist 100. Die Differenz zu Roster 01 ist damit exakt 20 = Modellzahl × increment 1. Zugleich feuert die Pflichtgrenze des Shield-Links (min 1, Ist 0) — der Shield ist an dieser Einheit keine freie Option, sondern Pflicht.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 100, "bound": 99 },
+          { "limitId": "e6d2-9b61-a635-cd51", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "184f-af1f-b607-edf5",
+          "61e6-14a6-8422-d83a",
+          "5194-0651-556d-8143",
+          "9eae-88c9-5c5d-8a07",
+          "30f0-d417-2185-bf4a",
+          "ca73-afca-79f9-bfb6",
+          "c867-2baf-38f7-8679"
+        ],
+        "capabilities": [
+          {
+            "defId": "45ff-9a9c-aa59-8c4c",
+            "anchorKind": "occupied",
+            "current": 20,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "50e2-1873-a856-03e7",
+            "anchorKind": "mandatoryPhantom",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isMandatoryUnmet": true
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-manbiters-30-no-shield.ros",
+      "description": "Kontrolle zu Roster 03: dieselben 30 Modelle ohne Shield. Summe 150, Punktelimit 149, Budget feuert mit Ist 150. Die Differenz zu Roster 03 ist exakt 30 = Modellzahl × increment 1 — zusammen mit Roster 01/04 (Differenz 20) ist damit belegt, dass der Aufschlag MIT der Modellzahl wächst und nicht konstant ist. Auch hier feuert die Pflichtgrenze des Shield-Links (min 1, Ist 0).",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 150, "bound": 149 },
+          { "limitId": "e6d2-9b61-a635-cd51", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "184f-af1f-b607-edf5",
+          "61e6-14a6-8422-d83a",
+          "5194-0651-556d-8143",
+          "9eae-88c9-5c5d-8a07",
+          "30f0-d417-2185-bf4a",
+          "ca73-afca-79f9-bfb6",
+          "c867-2baf-38f7-8679"
+        ],
+        "capabilities": [
+          {
+            "defId": "45ff-9a9c-aa59-8c4c",
+            "anchorKind": "occupied",
+            "current": 30,
+            "effectiveMin": 20,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "50e2-1873-a856-03e7",
+            "anchorKind": "mandatoryPhantom",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isMandatoryUnmet": true
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/06-heavy-cavalry-8-barding.ros",
+      "description": "Zweite Fundstelle derselben repeat-Zelle: 'Heavy Cavalry' mit 8 Modellen (je 19 pts = 152), Pflichtausrüstung Lance/Hand Weapon/Heavy Armour/Shield (alle 0 pts) und Warhorse (0 pts) mit Barding. Der Barding-Link trägt increment 2 auf Link-Kosten 0 mit derselben Wiederholung: 8 × 2 = 16 pts. Summe 168, Punktelimit 167 — das Budget feuert mit Ist 168. Der Faktor 2 gegenüber dem Shield zeigt, dass die Anwendungszahl aus der Modellzahl kommt (repeat value=\"1\", repeats=\"1\") und der Betrag aus dem increment-value.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 168, "bound": 167 }
+        ],
+        "absent": [
+          "b07b-fa16-2c95-94d3",
+          "f99b-486c-00f0-f2ef",
+          "5b41-8b42-ed3c-92a9",
+          "f1b8-305e-3543-0cdf",
+          "2766-029b-dfb4-a2b7",
+          "25b4-961d-adac-a9fe",
+          "0bdf-eb0b-7c64-1b49",
+          "7c9a-8406-5f84-70a4",
+          "ffd4-6f1b-e014-6708"
+        ],
+        "capabilities": [
+          {
+            "defId": "b576-acc9-fc91-617b",
+            "anchorKind": "occupied",
+            "current": 8,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "3211-d836-02f1-01d0",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -7,89 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 88,
-    "uncovered": 17
+    "covered": 89,
+    "uncovered": 16
   },
   "cells": [
-    {
-      "key": "repeat|selectionCount|unit|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "unit",
-        "childId": "model",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "a7e5-d466-038a-a9d6",
-            "name": "Shield"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "unit",
-            "childId": "model",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "19d1-de95-644d-00a7",
-            "name": "Barding"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "unit",
-            "childId": "model",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|equalTo|force|limitValue|child=any",
       "kind": "condition",

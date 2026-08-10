@@ -160,7 +160,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`add-info-and-warning-campaign-gate`](testing/add-info-and-warning-campaign-gate/) | Definitive O&G + Mercenaries | 3 |
 | [`append-characteristic-zacharias-spell`](testing/append-characteristic-zacharias-spell/) | Definitive VC + Mercenaries | 2 |
 | [`set-unresolved-target-inert-lord-slot`](testing/set-unresolved-target-inert-lord-slot/) | Definitive VC + Mercenaries | 5 |
-| **Summe** | | **345** |
+| [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
+| **Summe** | | **351** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1730,3 +1731,25 @@ Coast" — und nie als `id=`. Das Schwesterszenario
 > deshalb nur, was beobachtbar ist: keine Grenze der haltlosen Id, alle
 > erreichbaren Nachbarn auf ihren geschriebenen bzw. regulär modifizierten
 > Werten.
+
+## `unit-model-repeat-shield-markup`
+
+Prüft den `repeat` mit `scope="unit"` und `childId="model"` (§7.7 der
+Formatdoku, Kasten `scope="unit"`): Er wendet seinen Modifikator **einmal je
+Modell der umschließenden Einheit** an — das idiomatische Muster des
+Kostenaufschlags je Modell. Beleg: der Shield-Verweis der „Manbiters"
+(`a7e5-d466-038a-a9d6`, Mercenaries) trägt ein `increment 1` auf die
+pts-Kostenart mit genau diesem `repeat`, der Barding-Verweis der „Heavy
+Cavalry" (`19d1-de95-644d-00a7`) dasselbe mit `increment 2`. Weil eine Summe
+kein Feld des Slots ist, machen die Roster den Aufschlag über das **Punktebudget**
+beobachtbar: das Limit ist je Roster einen Punkt unter der abgeleiteten Summe
+gesetzt, sodass es mit genau dieser Summe feuert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 20 Manbiters mit Schild | Summe 120 — 100 für die Modelle plus 20 Aufschlag |
+| 02 | 25 Manbiters mit Schild | Summe 150: der Aufschlag wächst mit der Modellzahl |
+| 03 | 30 Manbiters mit Schild | Summe 180 — die Staffel ist linear, nicht einmalig |
+| 04 | 20 Manbiters ohne Schild | Summe 100: ohne die Auswahl kein Aufschlag, dafür feuert ihre Pflichtgrenze |
+| 05 | 30 Manbiters ohne Schild | Summe 150 — die Gegenprobe zur dritten Größe |
+| 06 | 8 Heavy Cavalry mit Barding | Summe 168: der Faktor 2 kommt aus dem `increment`, nicht aus dem `value` des `repeat` |
