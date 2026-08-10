@@ -157,7 +157,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
 | [`less-than-unit-wizard-level-gate`](testing/less-than-unit-wizard-level-gate/) | Definitive VC + Mercenaries | 6 |
 | [`not-instance-of-unit-category-gate`](testing/not-instance-of-unit-category-gate/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **335** |
+| [`add-info-and-warning-campaign-gate`](testing/add-info-and-warning-campaign-gate/) | Definitive O&G + Mercenaries | 3 |
+| **Summe** | | **338** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1647,3 +1648,32 @@ kreuzen die Polarität: der „Wight Lord" führt Wight und nicht Vampire, der
 > Ebenso wenig, ob die Kategorie aus dem Katalog stammt oder in der `.ros`
 > zwischengespeichert ist; das trennt das Nachbarszenario
 > `unit-scope-instance-of-category`.
+
+## `add-info-and-warning-campaign-gate`
+
+Prüft die beiden Autor-Meldungen `add info` und `add warning` (§7.7 der
+Formatdoku): Ein solcher Modifikator trägt keinen Feldwert, sondern einen
+Klartext-Hinweis an den Spieler, und erreicht den Bericht genau dann, wenn seine
+Bedingungen halten. Beleg: die „0-1 Amazon Serpent Priestess"
+(`9ddd-69c8-644d-abc2`, Mercenaries) trägt beide — und sie hängen an den
+**komplementären** Hälften desselben Schalters, des `.gst`-Eintrags „Campaign: A
+Dark Conspiracy" (`7d87-7436-5341-bbc0`): die Info an `atLeast 1`, die Warnung
+an `lessThan 1` (zusätzlich verlangt ihre Klammer per `or`-Gruppe eines von
+sieben Armeebüchern im `scope="primary-catalogue"`). Dieselbe Klammer hängt
+sichtbar ein `*` an den Namen, sodass ihr Greifen nicht nur an der Meldung
+hängt. Der Schalter „Allow special characters?" steht in den Rostern 01/02, damit
+die dritte Meldung derselben Einheit — ein `add error` — schweigt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kampagneneintrag gewählt, Sonderfiguren erlaubt | Die Info liegt an, die Warnung fehlt, der Name bleibt ungesternt |
+| 02 | Kampagneneintrag entfernt, Sonderfiguren erlaubt | Gespiegelt: die Warnung liegt an, die Info fehlt, der Name trägt das `*` |
+| 03 | Ohne den Schalter „Allow special characters?" | Kontrolle: Fehler **und** Warnung liegen gleichzeitig am selben Slot, und die Force-Obergrenze der Priesterin feuert mit Ist 1 / Grenze 0 |
+
+> **Bewusste Entscheidung:** Ob der Platzhalter `{this}` im Meldungstext den
+> Katalognamen oder den **wirksamen** Namen einsetzt, ist aus den Katalogdaten
+> nicht ableitbar. Das Szenario folgt dem Vertrag des Manifests (wirksamer Name)
+> und stellt beide Lesarten gegeneinander: die gesternte Fassung wird als
+> vorhanden, die ungesternte und die rohe `{this}`-Fassung als abwesend
+> behauptet. Damit schließt es die Lücke, die `author-message-tokens` offen
+> gelassen hat.
