@@ -159,7 +159,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`not-instance-of-unit-category-gate`](testing/not-instance-of-unit-category-gate/) | Definitive VC + Mercenaries | 6 |
 | [`add-info-and-warning-campaign-gate`](testing/add-info-and-warning-campaign-gate/) | Definitive O&G + Mercenaries | 3 |
 | [`append-characteristic-zacharias-spell`](testing/append-characteristic-zacharias-spell/) | Definitive VC + Mercenaries | 2 |
-| **Summe** | | **340** |
+| [`set-unresolved-target-inert-lord-slot`](testing/set-unresolved-target-inert-lord-slot/) | Definitive VC + Mercenaries | 5 |
+| **Summe** | | **345** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1695,9 +1696,37 @@ Zauberer.
 | 01 | Zacharias the Everliving mit der Lore | Das Merkmal „Effect" trägt die angehängte 15+-Zeile, getrennt durch das eine Leerzeichen aus `join=" "` — und weil der Basistext **nicht** mit einem Umbruch endet, landet sie in derselben Textzeile |
 | 02 | Ein Necromancer mit derselben Lore | Beide Merkmale stehen auf ihren Basistexten: der Modifikator gehört zum Profil, greift aber nur unter seiner Einheit |
 
-> **Offene Frage (Kampagne).** Der zweite Modifikator trägt `position="-1"` — ein
+> **Offene Frage (Kampagne).** Der zweite Modifikator dieses Szenarios trägt `position="-1"` — ein
 > Attribut, das weder die Formatdoku noch das Wiki kennt und das die vendorte
 > `Catalogue.xsd` nicht zulässt. Es kommt genau einmal im ganzen Korpus vor,
 > seine Bedeutung ist aus den Daten nicht erschließbar. Das Szenario behauptet
 > das betroffene Merkmal „Cast" deshalb nur im **nicht** greifenden Roster, wo
 > jede Lesart denselben Basistext ergibt.
+
+## `set-unresolved-target-inert-lord-slot`
+
+Prüft, dass ein `modifier`, dessen `field` eine im Datensatz **nirgends
+definierte** Id nennt, wirkungslos ist (§7.6/§7.7 der Formatdoku: die Wirkung
+eines Modifikators ist allein als Änderung eines benannten Ziels definiert, und
+Grenzen entstehen nur aus `constraint`-Elementen). Beleg: die Id
+`a59d-2ddb-429c-1aca` kommt im ganzen eingefrorenen Korpus **nur** als `field`
+zweier unbedingter `set`-Modifikatoren vor — an den Lord-`categoryLink`s der
+beiden Vampire-Counts-Sonderheere „Army of the Lichemaster" und „Vampire
+Coast" — und nie als `id=`. Das Schwesterszenario
+`modifier-unresolved-target-inert` zeigt dieselbe Regel für `increment` und
+`decrement`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | „Army of the Lichemaster", leer, Budget 3000 | Keine Grenze der haltlosen Id im Bericht; die echte Lord-Pflicht desselben Links feuert mit ihrem geschriebenen Wert (Ist 0 / Grenze 1), daneben die deklarierten Sonderheer-Pflichten |
+| 02 | Dasselbe Heer mit Kemmler und Krell | Die Lord-Pflicht und beide Sonderheer-Pflichten schweigen |
+| 03 | „Vampire Coast", leer | Dasselbe Urteil am zweiten Vorkommen |
+| 04 | Dasselbe Heer mit Luthor Harkon | Die Pflichten schweigen |
+| 05 | Zusätzlich ein Bloated Corpse | Gegenprobe am Nachbar-Link: ein **echter** Modifikator verschiebt sehr wohl — die Core-Pflicht steigt von 4 auf 5 |
+
+> **Grenze der Beobachtbarkeit:** Der wirkungslose `set` trägt den Wert 1, und
+> die echte Nachbargrenze steht ebenfalls auf 1 — eine Fehlleitung genau auf
+> diese Nachbarin wäre in den realen Daten unsichtbar. Das Szenario behauptet
+> deshalb nur, was beobachtbar ist: keine Grenze der haltlosen Id, alle
+> erreichbaren Nachbarn auf ihren geschriebenen bzw. regulär modifizierten
+> Werten.

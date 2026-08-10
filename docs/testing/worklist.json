@@ -7,68 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 87,
-    "uncovered": 18
+    "covered": 88,
+    "uncovered": 17
   },
   "cells": [
-    {
-      "key": "modifier|set|unresolvedTarget",
-      "kind": "modifier",
-      "axes": {
-        "type": "set",
-        "targetField": "unresolvedTarget"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryLink",
-            "id": "7a76-8153-c4b2-9fee",
-            "name": "Lord"
-          },
-          "path": [
-            "catalogue",
-            "forceEntries",
-            "forceEntry",
-            "categoryLinks",
-            "categoryLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "a59d-2ddb-429c-1aca"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryLink",
-            "id": "aa77-6ac1-ba5c-5646",
-            "name": "Lord"
-          },
-          "path": [
-            "catalogue",
-            "forceEntries",
-            "forceEntry",
-            "categoryLinks",
-            "categoryLink",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "set",
-            "field": "a59d-2ddb-429c-1aca"
-          }
-        }
-      ]
-    },
     {
       "key": "repeat|selectionCount|unit|child=model|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "kind": "repeat",

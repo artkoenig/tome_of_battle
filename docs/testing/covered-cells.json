@@ -478,6 +478,13 @@
         "docs/testing/append-characteristic-zacharias-spell"
       ],
       "rationale": "Beide Vorkommen der Zelle haengen am geteilten Spruchprofil '1. Invocation of Nehek' (6484-4a1a-e62b-2ce1, Vampire Counts) und sind auf dieselbe Bedingung gegated: instanceOf, scope=unit, childId=1c05-5813-2f0c-f878 ('Zacharias the Everliving'). Zwei sonst gleiche Roster tragen dieselbe 'Lore of Necromancy' und tauschen allein den Zauberer: bei Zacharias haengt der append das Merkmal Effect (7d21-349e-b0a8-fc7d) um die 15+-Zeile an, getrennt durch das eine Leerzeichen aus join=' '; beim Necromancer bleiben Effect und Cast auf ihren Basistexten. Das Merkmal Cast (f1e6-8816-26e0-8a70) wird im greifenden Roster bewusst nicht behauptet, weil sein Modifikator das nirgends spezifizierte Attribut position='-1' traegt — siehe den parkedQuestions-Eintrag dazu. Szenario ist gruen."
+    },
+    {
+      "key": "modifier|set|unresolvedTarget",
+      "evidence": [
+        "docs/testing/set-unresolved-target-inert-lord-slot"
+      ],
+      "rationale": "Beide Vorkommen der Zelle sind unbedingte set-1-Modifikatoren auf die Id a59d-2ddb-429c-1aca, die im ganzen eingefrorenen Korpus nur als ihr eigenes field vorkommt und nirgends als id definiert ist; sie haengen an den Lord-categoryLinks der beiden Vampire-Counts-Sonderheere 'Army of the Lichemaster' (7a76-8153-c4b2-9fee) und 'Vampire Coast' (aa77-6ac1-ba5c-5646). Fuenf Roster zeigen, dass der Modifikator folgenlos bleibt: die haltlose Id taucht in keinem Bericht als Grenze auf, waehrend die echte Mindestgrenze desselben Links (760d-2352-9fac-0e46 bzw. 8471-437a-59d6-bc3d) mit ihrem geschriebenen Wert 1 arbeitet — leer feuert sie mit Ist 0 / Grenze 1, mit Kemmler bzw. Luthor Harkon schweigt sie. Roster 05 belegt am Nachbar-Link, dass ein ECHTER Modifikator im selben Rahmen sehr wohl verschiebt (Core-Pflicht 35c2-d478-392a-aeb1 von 4 auf 5). Szenario ist gruen."
     }
   ]
 }
