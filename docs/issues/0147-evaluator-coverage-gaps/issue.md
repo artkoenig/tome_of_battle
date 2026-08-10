@@ -1,7 +1,7 @@
 ---
 status: active
 branch: claude/evaluator-abschluss-kampagne-ipuqwm
-pr:
+pr: 204
 ---
 
 # Evaluator gaps pinned by the coverage campaign
@@ -17,8 +17,7 @@ Make every scenario listed below green by changing `src/evaluator/` production c
 
 ## Acceptance criteria
 
-- `docs/testing/set-characteristic-force-gate` — failing case: `Szenario: set-characteristic-force-gate > rosters/02-standard-force-mv-base-7.ros`. What the catalog data demands: the Tomb stalker's unconditional Tomb-Scorpion `infoLink` (`fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32`) must yield a profile info occurrence on the unit slot in EVERY force — in Standard (VC-AB) with the base values (Mv 7, name "Tomb Scorpion", `isHidden` true), since no modifier of that infoLink is gated on that force; the report currently carries no info element with that id on the hidden unit's slot.
-- `docs/testing/set-primary-category-membership` — failing cases: `Szenario: set-primary-category-membership > rosters/01-kathleen-set-primary-regiment-of-renown.ros` and `Szenario: set-primary-category-membership > rosters/03-kathleen-and-slave-giant-rare-max.ros`. What the catalog data demands: a `modifier type="set-primary" field="category"` secures membership in the named category on its own. 'Kathleen' Halftank (`331a-3634-095a-574a`) carries an unconditional `set-primary` on Regiment of Renown (`ee09-9a50-ad78-9c32`) with no `categoryLink` to it and no accompanying `add`/`category`, so in the force Standard (OK-AB) — which links that category — her Regiment-of-Renown anchor must report `current` 1 (the report has 0). And since `set-primary` moves only the primary flag and removes nothing, Rare must still count her: with a second Rare unit the Rare anchor reaches `current` 2 and the `.gst` limit `0a44-2d3f-adfe-f3a1` fires with actual 2 / bound 1.
+- `docs/testing/at-least-roster-points-limit` — failing cases: `Szenario: at-least-roster-points-limit > rosters/01-limit-2000-gate-open.ros`, `rosters/02-limit-1999-gate-closed.ros` and `rosters/03-limit-1999-spent-2000-gate-closed.ros`. What the catalog data demands: a single selection of "Tournament rules: Uprising (2026)" (`4bc4-8781-2091-d9df`, reached through the group `43b3-35c6-d7cc-e3c6` below the entry `6fcf-b33d-3cf5-b56a`, which carries `hidden="true"`) must be counted. Its occupied slot must report `current` 1 — the report has 0 — and its own limit `00f6-c1b3-ee85-5c02` (`type="max" value="0" field="selections" scope="force"`, raised to 1 by a `set` only while the `and` group of `atLeast 2000` and `atMost 2500` on `limit::ecfa-8486-4f6c-c249` holds) must fire with actual 1 against bound 0 at a `costLimit` of 1999; the report carries no message for that limit at all. Roster 03 additionally demands that `limit::<costTypeId>` reads the roster's **configured** cost limit and not the summed cost of its selections: at `costLimit` 1999 with 2000 points spent, the gate stays closed.
 
 ## Out of scope
 
