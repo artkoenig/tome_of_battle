@@ -113,8 +113,8 @@
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
     "runs": 13,
     "lastRunAt": "2026-08-10T15:42:24Z",
-    "lastRunOutcome": "running",
-    "reArmedFor": null,
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": "2026-08-10T19:03:00Z",
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -180,6 +180,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 13 opened by the scheduled re-arm of run 12."
+    "reArmNote": "Run 13: six cells taken in two phase-A passes, eight cells covered (the border-patrols scenario pinned three at once). Phase B ran on the one gap of this run and closed it; the workflow opened PR #207 for the campaign branch. Re-armed for 19:03 UTC."
   }
 }
