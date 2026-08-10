@@ -46,6 +46,16 @@ function offerCapabilityOf(report, defId) {
   return null;
 }
 
+/** The capability record of a definition id, whichever anchor kind it holds — an occupied slot included. */
+function capabilityOf(report, defId) {
+  for (const capability of report.capabilities.values()) {
+    if (capability.defId === defId) {
+      return capability;
+    }
+  }
+  return null;
+}
+
 /** A force with one unit whose children are the given definition ids. */
 function armyWithUnit(childDefIds = []) {
   return {
@@ -129,11 +139,14 @@ describe('Aufdeck-Grenze mit scope="parent" childId="any": der leere Rahmen blei
     expect(offerCapabilityOf(report, OPTION_1_ID).isHidden).toBe(false);
   });
 
-  it('deckt bei genau einer Auswahl im Elternrahmen exakt die ersten beiden von drei gestaffelten Grenzen auf', () => {
+  it('deckt bei genau einer Auswahl im Elternrahmen exakt die erste von drei gestaffelten Grenzen auf', () => {
     const report = evaluate(PARENT_ANY_CATALOGUE_XML, armyWithUnit([SIBLING_A_ID]));
 
+    // Der Rahmen zaehlt sich unter dem "any"-Ziel nicht selbst mit, und die drei
+    // Optionen sind unausgewaehlte Angebots-Anker, die nie mitzaehlen — die
+    // Sibling-Auswahl allein bringt den Rahmen auf 1.
     expect(offerCapabilityOf(report, OPTION_1_ID).isHidden).toBe(false);
-    expect(offerCapabilityOf(report, OPTION_2_ID).isHidden).toBe(false);
+    expect(offerCapabilityOf(report, OPTION_2_ID).isHidden).toBe(true);
     expect(offerCapabilityOf(report, OPTION_3_ID).isHidden).toBe(true);
   });
 });
@@ -314,5 +327,59 @@ describe('Aufdeck-Grenze mit scope="parent" childId="any": Kontrollen, die der F
 
     expect(offerCapabilityOf(report, FORCE_OPTION_ID)).not.toBeNull();
     expect(offerCapabilityOf(report, FORCE_OPTION_ID).isHidden).toBe(false);
+  });
+
+  const SELF_SCOPE_NO_CHILDID_ID = 'entry-self-scope-no-childid';
+  const SELF_SCOPE_NO_CHILDID_THRESHOLD = 2;
+
+  /**
+   * A hidden entry revealed by `atLeast 2 field="selections" scope="self"` —
+   * no `childId` attribute at all, the exact shape that collides with
+   * `childId="any"` on the same `null` target (`catalogReader.js` maps both to
+   * `null`). Reveal it through the definition's own count, not a sibling's.
+   */
+  const SELF_SCOPE_NO_CHILDID_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
+    <catalogue id="cat-self-scope-no-childid" name="Self Scope No ChildId Catalogue">
+      <forceEntries>
+        <forceEntry id="${FORCE_ID}" name="Army"/>
+      </forceEntries>
+      <selectionEntries>
+        <selectionEntry id="${SELF_SCOPE_NO_CHILDID_ID}" name="Self Scope No ChildId" type="unit" hidden="true">
+          <modifiers>
+            <modifier type="set" field="hidden" value="false">
+              <conditions>
+                <condition type="atLeast" value="${SELF_SCOPE_NO_CHILDID_THRESHOLD}" field="selections" scope="self"/>
+              </conditions>
+            </modifier>
+          </modifiers>
+        </selectionEntry>
+      </selectionEntries>
+    </catalogue>`;
+
+  /** A force whose single child is the self-scope entry, selected the given number of times. */
+  function armyWithSelfScopeEntry(count) {
+    return {
+      forces: [{
+        defId: FORCE_ID,
+        count: 1,
+        children: [{ defId: SELF_SCOPE_NO_CHILDID_ID, count, children: [] }],
+      }],
+    };
+  }
+
+  it('KONTROLLE: eine Bedingung mit scope="self" und OHNE childId liest den eigenen Bestand, nicht die Konstante null', () => {
+    const report = evaluate(SELF_SCOPE_NO_CHILDID_CATALOGUE_XML, armyWithSelfScopeEntry(SELF_SCOPE_NO_CHILDID_THRESHOLD));
+
+    expect(capabilityOf(report, SELF_SCOPE_NO_CHILDID_ID)).not.toBeNull();
+    expect(capabilityOf(report, SELF_SCOPE_NO_CHILDID_ID).isHidden).toBe(false);
+  });
+
+  it('KONTROLLE: dieselbe Bedingung haelt die Auswahl versteckt, solange ihr eigener Bestand die Grenze verfehlt', () => {
+    const report = evaluate(
+      SELF_SCOPE_NO_CHILDID_CATALOGUE_XML,
+      armyWithSelfScopeEntry(SELF_SCOPE_NO_CHILDID_THRESHOLD - 1),
+    );
+
+    expect(capabilityOf(report, SELF_SCOPE_NO_CHILDID_ID).isHidden).toBe(true);
   });
 });

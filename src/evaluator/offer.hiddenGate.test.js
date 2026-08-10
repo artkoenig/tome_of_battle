@@ -310,11 +310,13 @@ function capabilitiesOf(report, defId) {
 }
 
 /** Der aufbereitete DE-Datensatz (gst + Vampire Counts) — einmal je Lauf. */
+let cachedVampireCounts = null;
 function preparedVampireCounts() {
-  return prepareDataset({
+  cachedVampireCounts ??= prepareDataset({
     gameSystem: fixture('Warhammer Fantasy Battles (6th definitive edition).gst'),
     catalogues: [fixture('Vampire Counts (6th definitive edition).cat')],
   });
+  return cachedVampireCounts;
 }
 
 /** Wertet einen Vampirgrafen im gegebenen Kontingent gegen gst + Vampire Counts aus. */
