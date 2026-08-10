@@ -1957,7 +1957,7 @@ das nur im Kontingent „Ironskin Tribe" greift.
 > Armeebuch und bleibt in allen vier Rostern verborgen — aufgedeckt wird also
 > nicht pauschal alles unter der Einheit.
 
-## `self-scope-max-house-rules` (ROT — gepinnter Gap)
+## `self-scope-max-house-rules`
 
 Prüft, dass eine `max`-Grenze mit `scope="self"` die tragende Auswahl **selbst**
 zum Zählrahmen macht: gezählt werden die Auswahlen unterhalb genau dieser
@@ -1973,7 +1973,8 @@ zwei direkte Kind-Einträge (zwei House Rules).
 | 05 | Der Eltern-Eintrag hält zwei Kinder, die „Allow Mercenaries" nur eines | Rahmen-Abgrenzung: eine Zählung im Eltern-Rahmen käme auf 2 und feuerte — gefordert ist Schweigen |
 | 06 | Ein Kind-Knoten mit Stückzahl 2 | Der Rahmen summiert Stückzahlen, nicht Knoten: die Grenze feuert ebenfalls |
 
-**Stand: rot.** Die Roster 01 und 06 schlagen fehl: der Bericht führt für
+**Stand: grün.** Beim Pinnen war das Szenario rot — der Bericht führte für
 `714b-5314-33d4-dd68` überhaupt keine Verletzung, während die vier stummen Fälle
-passen — die Grenze feuert also nie, statt im `self`-Rahmen zu zählen. Gepinnt
-als Phase-B-Aufgabe in `docs/testing/campaign-state.json`.
+passten: die Grenze feuerte also nie, statt im `self`-Rahmen zu zählen. Die
+Kampagne hat die Lücke in derselben Runde geschlossen (`constraints.js`,
+`query.js`); alle sechs Fälle sind grün.

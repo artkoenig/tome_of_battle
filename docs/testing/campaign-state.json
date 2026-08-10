@@ -189,6 +189,15 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/self-scope-max-house-rules": {
+        "cellKey": "constraint|max|selectionCount|self|s=true|ics=false|icf=false|pct=false",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     },
     "reArmNote": "Run 14: the previously recorded campaign branch claude/evaluator-abschluss-kampagne-6hzwh7 is merged and gone from the remote; the run continues on this session branch, which is level with main and carries all merged campaign work."
