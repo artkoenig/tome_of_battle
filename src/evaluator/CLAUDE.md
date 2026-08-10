@@ -14,7 +14,7 @@ covers.
 
 - A file that parses XML installs `globalThis.DOMParser = new
   JSDOM().window.DOMParser` at module top — the engine's own XML reader needs
-  this primitive under Node. Most do (74 of the 86 test files here); the rest
+  this primitive under Node. Most do (75 of the 87 test files here); the rest
   build their structures directly and need no parser.
 - Drive the engine only through its public facade: `prepareDataset` +
   `evaluate` from `./evaluator.js` (re-exported from `./datasetPreparation.js`
