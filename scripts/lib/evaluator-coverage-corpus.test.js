@@ -114,7 +114,7 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // evidence resolution is in place: the force/roster swap of the
     // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
     // though the specific covered/uncovered cell each resolves to changes.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 82, uncovered: 23 });
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 83, uncovered: 22 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {

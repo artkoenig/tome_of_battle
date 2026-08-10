@@ -155,7 +155,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`greater-than-force-unlimited-gate`](testing/greater-than-force-unlimited-gate/) | Definitive Ogre + Mercenaries | 4 |
 | [`at-most-roster-points-limit`](testing/at-most-roster-points-limit/) | Definitive O&G + Mercenaries | 4 |
 | [`at-least-parent-any-reveal`](testing/at-least-parent-any-reveal/) | Definitive VC + Mercenaries | 5 |
-| **Summe** | | **323** |
+| [`less-than-unit-wizard-level-gate`](testing/less-than-unit-wizard-level-gate/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **329** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1587,3 +1588,31 @@ Rahmeninhalt ändert.
 > (`c791-87b9-b00a-ddb4`). Kein `entryLink` zeigt darauf und es ist kein
 > Inline-Kind einer Gruppe — kein Roster kann es in einen legalen Eltern-Rahmen
 > stellen.
+
+## `less-than-unit-wizard-level-gate`
+
+Prüft die `lessThan`-Bedingung mit `scope="unit"` und einer Eintrags-`childId`
+(§7.7 der Formatdoku, Kasten *`scope="unit"`*): Sie zählt in der **umschließenden
+Einheit** die Auswahlen des benannten Eintrags — `includeChildSelections="true"`,
+also auch verschachtelte — und hält, solange deren Zahl unter dem Wert liegt.
+Beleg: der `entryLink` „Magic Level 3" (`9dc7-b9d7-4e92-4cda`, Vampire Counts)
+trägt eine `modifierGroup type="and"`, deren `and`-Bedingungsgruppe aus genau
+zwei Gliedern besteht — `lessThan 1` auf „Magic Level 4"
+(`fc28-3af2-d37a-d07e`) und `atLeast 1` auf „Nehekhara's Noble Blood"
+(`32d0-a151-94a3-aa54`). Greift die Klammer, hebt sie die **eigene**
+Mindestgrenze des Verweises (`4d5e-8101-e8d4-d7ad`) von 0 auf 1. Die Noble-Blood-
+Auswahl steht in allen Rostern, sodass sich allein das erste Glied ändert.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Vampire Lord mit Noble Blood, kein Magic Level 4 | Die Einheit zählt 0: die Bedingung hält, die Pflichtgrenze des leeren Slots feuert mit Ist 0 / Grenze 1 |
+| 02 | Derselbe Lord zusätzlich mit Magic Level 4 | Die Einheit zählt 1: die Bedingung kippt, die Klammer greift nicht, die Mindestgrenze schweigt |
+| 03 | Magic Level 3 selbst gewählt, kein Magic Level 4 | Derselbe Umschlag am **besetzten** Slot: die gehobene Pflicht ist bei Ist 1 erfüllt und schweigt |
+| 04 | Magic Level 3 **und** Magic Level 4 gewählt | Die Klammer greift nicht mehr; zugleich feuert die Obergrenze der Gruppe „Wizard Level" mit Ist 2 / Grenze 1 |
+| 05 | Vampire Count mit Noble Blood, kein Magic Level 3 | Dieselbe Form am zweiten Vorkommen: die Pflichtgrenze des Slots „Magic Level 2" feuert mit Ist 0 / Grenze 1 |
+| 06 | Derselbe Count zusätzlich mit Magic Level 3 | Die Bedingung kippt, die Mindestgrenze schweigt |
+
+> **Nicht abgedeckt:** der zweite Modifikator derselben Klammer (`set` der
+> pts-Kosten des Verweises von 50 auf 0) — der Bericht führt Grenzen, keine
+> Stückpreise. Ebenso wenig `unit` gegen `parent`: die Gruppe hängt direkt an
+> der Einheit, beide Rahmen fallen hier zusammen.

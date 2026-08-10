@@ -7,86 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 82,
-    "uncovered": 23
+    "covered": 83,
+    "uncovered": 22
   },
   "cells": [
-    {
-      "key": "condition|lessThan|unit|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "lessThan",
-        "scope": "unit",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "9dc7-b9d7-4e92-4cda",
-            "name": "Magic Level 3"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "fc28-3af2-d37a-d07e"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "5a5f-aaf8-868f-9630",
-            "name": "Magic Level 2"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "cb6c-c69a-5c73-97e8"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|notInstanceOf|unit|selectionCount|child=id",
       "kind": "condition",

@@ -443,6 +443,13 @@
         "docs/testing/at-least-parent-any-reveal"
       ],
       "rationale": "Der einzige Modifier des 'Wolf Lord' (66bc-8fc1-81a2-9cd4, Vampire Counts, hidden=true) ist ein set hidden=false, gegated auf genau diese Bedingung: atLeast 1, field=selections, scope=parent, childId=any. Fuenf Roster variieren allein, was der Eltern-Rahmen (die Vampire-Thrall-Auswahl) enthaelt: 0 Selektionen, 1, 2, sowie den Traeger selbst ein- und zweimal. Die Roster 04 und 05 sind gruen und pinnen, dass der Traeger im eigenen Rahmen mitzaehlt und dass seine Obergrenze 06c5-d960-2b4d-399a unabhaengig von der Sichtbarkeit bei Ist 2 / Grenze 1 feuert. Die Roster 01-03 sind rot, weil der Bericht fuer die ungewaehlte Option gar keinen Angebots-Anker fuehrt — siehe den pinnedGaps-Eintrag zu diesem Szenario."
+    },
+    {
+      "key": "condition|lessThan|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-unit-wizard-level-gate"
+      ],
+      "rationale": "Die and-Klammer am entryLink 'Magic Level 3' (9dc7-b9d7-4e92-4cda, Vampire Counts) haengt an genau dieser Bedingung: lessThan value=1, field=selections, scope=unit, childId=fc28-3af2-d37a-d07e (Magic Level 4), includeChildSelections=true. Die Roster 01/02 halten Nehekhara's Noble Blood am '0-1 Vampire Lord' konstant und variieren allein die Zahl der Magic-Level-4-Auswahlen in der umschliessenden Einheit: bei 0 haelt 0 < 1, die Klammer hebt die eigene Mindestgrenze 4d5e-8101-e8d4-d7ad des Slots von 0 auf 1 und diese feuert mit Ist 0 / Grenze 1; bei 1 kippt die Bedingung und die Grenze schweigt. Die Roster 03/04 wiederholen den Umschlag am besetzten Slot (Ist konstant 1), wobei 04 zusaetzlich die Gruppen-Obergrenze f66f-32f7-5f65-14a7 mit Ist 2 / Grenze 1 feuern laesst; 05/06 wiederholen dieselbe Form am 'Vampire Count' (5a5f-aaf8-868f-9630, Gatter auf Magic Level 3, Mindestgrenze 5e9b-7594-02cb-0bad). Szenario ist gruen."
     }
   ]
 }

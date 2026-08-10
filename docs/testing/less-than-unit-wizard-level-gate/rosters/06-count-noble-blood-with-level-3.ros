@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ltuwlg-06" name="LTUWLG 06 - derselbe Vampire Count MIT Magic Level 3: lessThan kippt, Magic-Level-2-Slot faellt auf Mindestmass 0 zurueck" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored less-than-unit-wizard-level-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-bloodlines" name="Bloodlines" entryId="a56a-eb32-5a45-16fd" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="32f1-197f-d719-a393" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-necrarch" name="Bloodline of Clan Necrarch" entryId="5017-296d-edef-4562" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Identisch zu Roster 05 - das EINZIGE Delta ist die zusaetzliche
+             Auswahl "Magic Level 3" am Vampire Count (entryLink
+             15f0-88b7-5fcc-061b -> .gst-Ziel cb6c-c69a-5c73-97e8, Gruppe
+             "Wizard Level" 7ab1-d9dc-6124-443f). Damit zaehlt die
+             lessThan-Bedingung 1: 1 < 1 ist falsch -> KEIN Modifier greift,
+             die Mindestgrenze 5e9b-7594-02cb-0bad bleibt bei 0. -->
+        <selection id="sel-vampire-count" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="d024-d25b-a9b4-73b6" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+            <category id="017d-3857-a815-782f" name="Vampire" entryId="017d-3857-a815-782f" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-handweapon" name="Handweapon" entryId="9e6c-19ea-19ad-7cbe" entryLinkId="" entryGroupId="06c9-c170-adb2-86f5" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-noble-blood" name="Nehekhara’s Noble Blood" entryId="32d0-a151-94a3-aa54" entryLinkId="75e7-b83e-a2b3-13af" entryGroupId="8627-7a0f-231c-7572" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-magic-level-3" name="Magic Level 3" entryId="cb6c-c69a-5c73-97e8" entryLinkId="15f0-88b7-5fcc-061b" entryGroupId="7ab1-d9dc-6124-443f" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
