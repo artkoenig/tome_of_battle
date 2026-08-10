@@ -7,106 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 70,
-    "uncovered": 35
+    "covered": 71,
+    "uncovered": 34
   },
   "cells": [
-    {
-      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "roster",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 6,
-      "files": {
-        "src/__fixtures__/whfb6/Ogre Kingdoms.cat": 2,
-        "src/__fixtures__/whfb6/Orcs and Goblins.cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "1e26-0d1a-bb3c-f47a",
-            "name": "Gnoblars"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "735e-2da1-6356-2fdb",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "041b-7d95-6ff9-754a",
-            "name": "Gnoblar Trappers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "735e-2da1-6356-2fdb",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "8787-293e-965a-f8c2",
-            "name": "Orc Big 'uns Boar Boyz"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "roster",
-            "childId": "375d-151a-4ba1-a4e6",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|lessThan|parent|selectionCount|child=id",
       "kind": "condition",

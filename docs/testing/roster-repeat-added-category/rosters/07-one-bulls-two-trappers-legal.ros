@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rrac-07" name="RRAC 07 - Standard (OK-AB): ein Ogre Bulls hebt das Trapper-Maximum auf 2" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-repeat-added-category E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Gegenprobe zu Roster 06: dieselben zwei Trapper-Einheiten, jetzt mit
+         einem Ogre Bulls ueber den Verweis d82e-111e-89b9-2be1. Der repeat zaehlt
+         1 Treffer => 28cd-8b7f-3d0f-1546 steigt von 1 auf 2, Ist 2 <= 2, die
+         Grenze schweigt. Beleg, dass die Wiederholung an BEIDEN Traegern
+         dieselbe ist und nur der geschriebene Basiswert sich unterscheidet. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-ogre-bulls-1" name="Ogre Bulls" entryId="d82e-111e-89b9-2be1" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-ogre-bulls-1-models" name="Bulls" entryId="411b-6f5f-06f1-be37" entryLinkId="" number="3" type="model" collective="false"/>
+            <selection id="sel-ogre-bulls-1-club" name="Ogre Club" entryId="8768-377c-88da-c3e8" entryLinkId="415f-94c9-571c-19c6" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-trappers" name="Gnoblar Trappers" entryId="041b-7d95-6ff9-754a" entryLinkId="" number="2" type="unit" collective="false">
+          <selections>
+            <selection id="sel-trappers-models" name="Trappers" entryId="a6fc-a76c-6d8d-31a0" entryLinkId="" number="8" type="model" collective="false"/>
+            <selection id="sel-trappers-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="76f8-9d1f-6e05-cef7" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-trappers-sharpstuff" name="Sharp Stuff" entryId="5545-fcf3-a765-9474" entryLinkId="2fbc-0257-8771-cf03" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

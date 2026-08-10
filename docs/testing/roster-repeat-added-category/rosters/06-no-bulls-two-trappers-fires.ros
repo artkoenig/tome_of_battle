@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rrac-06" name="RRAC 06 - Standard (OK-AB): zweiter Zeuge Gnoblar Trappers, Basiswert 1 feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-repeat-added-category E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Zweiter Zeuge derselben Zelle an einem anderen Traeger: "Gnoblar Trappers"
+         (041b-7d95-6ff9-754a) traegt denselben <repeat> auf childId
+         735e-2da1-6356-2fdb, aber seine Grenze 28cd-8b7f-3d0f-1546 hat den
+         geschriebenen Basiswert max 1 (nicht 0). Ohne Ogre Bulls zaehlt der
+         repeat 0 Treffer => bound bleibt 1, Ist 2 feuert. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-trappers" name="Gnoblar Trappers" entryId="041b-7d95-6ff9-754a" entryLinkId="" number="2" type="unit" collective="false">
+          <selections>
+            <selection id="sel-trappers-models" name="Trappers" entryId="a6fc-a76c-6d8d-31a0" entryLinkId="" number="8" type="model" collective="false"/>
+            <selection id="sel-trappers-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="76f8-9d1f-6e05-cef7" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-trappers-sharpstuff" name="Sharp Stuff" entryId="5545-fcf3-a765-9474" entryLinkId="2fbc-0257-8771-cf03" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

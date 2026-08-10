@@ -113,7 +113,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`parent-min-unshared-unit-size`](testing/parent-min-unshared-unit-size/) | Definitive O&G + Mercenaries | 6 |
 | [`condition-group-and-nested`](testing/condition-group-and-nested/) | Definitive O&G + Mercenaries | 5 |
 | [`category-id-scope-instance-of`](testing/category-id-scope-instance-of/) | ergofang VC (ohne Mercenaries) | 5 |
-| **Summe** | | **157** |
+| [`roster-repeat-added-category`](testing/roster-repeat-added-category/) | Definitive Ogre + Mercenaries | 7 |
+| **Summe** | | **164** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1267,3 +1268,25 @@ zugleich der erste Fall des Katalogs auf dem ergofang-Fixture-Satz.
 | 03 | Mit Blutlinie „Strigoi" | A bleibt 5 — dasselbe an der verschachtelten Modifikator-Klammer |
 | 04 | Mit Blutlinie „Necrach" | WS bleibt 8 statt 6 — die Gegenrichtung, eine Fehl-Lesart fiele hier nach unten aus |
 | 05 | Beide Blutlinien zugleich (regelwidrig) | Die Gruppen-Obergrenze meldet Ist 2 gegen Grenze 1; die Merkmale bleiben WS 8 / A 5 |
+
+## `roster-repeat-added-category`
+
+Prüft einen `repeat` mit `scope="roster"` und einer **Kategorie-Id** in
+`childId`: er wiederholt seinen Modifikator einmal je passender Auswahl im
+ganzen Roster — und zählt eine Kategorie, die eine Auswahl erst zur Laufzeit
+per `add category` erhält, genauso wie eine per `categoryLink` getragene. Beleg:
+die Obergrenze der „Gnoblars" (`a177-82fc-0b76-5b73`, Ogre Kingdoms) steht
+geschrieben auf 0 und steigt je Ogerbullen-Einheit um 1; die Kategorie
+„Bully Bully" (`735e-2da1-6356-2fdb`) hat im ganzen Datensatz **keinen**
+`categoryLink` — ihr einziger Träger ist der Wurzel-`entryLink` „Ogre Bulls"
+(`d82e-111e-89b9-2be1`) mit einem unbedingten `add category`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Gnoblar-Einheit, **keine** Ogerbullen | Obergrenze 0 — eine Meldung Ist 1; zugleich die verletzte Ogerbullen-Pflicht |
+| 02 | Eine Ogerbullen-, eine Gnoblar-Einheit | Obergrenze 1 — still |
+| 03 | Eine Ogerbullen-, zwei Gnoblar-Einheiten | Eine Meldung: Ist 2 gegen Grenze 1 |
+| 04 | **Zwei** Ogerbullen-, zwei Gnoblar-Einheiten | Obergrenze 2 — still: die zweite Wiederholung wirkt |
+| 05 | Zwei Ogerbullen-, drei Gnoblar-Einheiten | Eine Meldung: Ist 3 gegen Grenze 2 |
+| 06 | Zwei Gnoblar-Späher, keine Ogerbullen | Dasselbe Muster an der zweiten Einheit: Ist 2 gegen Grenze 1 |
+| 07 | Eine Ogerbullen-Einheit, zwei Gnoblar-Späher | Obergrenze 2 — still |

@@ -366,6 +366,13 @@
         "docs/testing/category-id-scope-instance-of"
       ],
       "rationale": "Roster set differing only in the chosen bloodline: the Vampire Lord's profile infoLink (e0f2-8568-15f0-a384, ergofang Vampire Counts) carries three characteristic modifiers whose condition is instanceOf(childId=model) at a category-id scope (Blood Dragon 4cae-a20e-8374-b6cb +2 WS, Necrach fc4b-a86d-5897-9e4c -2 WS, Strigoi bf30-4ff0-a4d8-3909 +1 A), while those categories hang on the bloodline options BELOW the unit. Rosters 02/03/04 select one bloodline each and assert the unmoved characteristics WS 8 / A 5 against roster 01's baseline, so the frame rule (nearest ancestor carrying the category, carrier included) is what the set measures; roster 04 makes a roster-wide misreading fall downwards and roster 05 has both bloodlines at once. First scenario on the upstream src/__fixtures__/whfb6/ set. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/roster-repeat-added-category"
+      ],
+      "rationale": "The Gnoblars max (a177-82fc-0b76-5b73, written 0, Ogre Kingdoms) carries an increment +1 whose single roster-scoped repeat counts the tag category 'Bully Bully' (735e-2da1-6356-2fdb). No categoryLink in the corpus targets that category: its only carrier is the root entryLink Ogre Bulls (d82e-111e-89b9-2be1) via an unconditional add-category modifier, so the repeat has to count an effective category. Rosters 01-05 step the Ogre Bulls count 0/1/1/2/2 and assert effectiveMax 0/1/1/2/2 on the Gnoblars slot, with the limit firing where the unit count over-runs it; roster 04 makes the second repetition measurable. Rosters 06/07 repeat the pattern on Gnoblar Trappers (28cd-8b7f-3d0f-1546). Scenario is green."
     }
   ]
 }

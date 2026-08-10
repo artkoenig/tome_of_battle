@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rrac-02" name="RRAC 02 - Standard (OK-AB): ein Ogre Bulls hebt das Gnoblar-Maximum auf 1" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-repeat-added-category E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- GENAU EINE Auswahl traegt die Kategorie "Bully Bully" (735e-2da1-6356-2fdb) -
+         und zwar ausschliesslich ueber den Laufzeit-Modifikator
+         <modifier type="add" value="735e-2da1-6356-2fdb" field="category"/> am
+         Ogre-Wurzel-entryLink d82e-111e-89b9-2be1. Die Auswahl benennt darum den
+         VERWEIS als entryId (entryId = entryLinkId = d82e-...), die Form, die die
+         am Verweis selbst deklarierten Modifikatoren traegt.
+         Der <repeat> zaehlt roster-weit 1 Treffer => 1 Anwendung von "increment +1"
+         auf a177-82fc-0b76-5b73 => effektives Maximum 0 + 1 = 1. Ist 1 <= 1. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-ogre-bulls-1" name="Ogre Bulls" entryId="d82e-111e-89b9-2be1" entryLinkId="d82e-111e-89b9-2be1" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-ogre-bulls-1-models" name="Bulls" entryId="411b-6f5f-06f1-be37" entryLinkId="" number="3" type="model" collective="false"/>
+            <selection id="sel-ogre-bulls-1-club" name="Ogre Club" entryId="8768-377c-88da-c3e8" entryLinkId="415f-94c9-571c-19c6" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-gnoblars" name="Gnoblars" entryId="1e26-0d1a-bb3c-f47a" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-gnoblars-models" name="Gnoblars" entryId="bf71-422e-240b-826a" entryLinkId="" number="20" type="model" collective="false"/>
+            <selection id="sel-gnoblars-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="248f-6615-7784-6ee2" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-gnoblars-sharpstuff" name="Sharp Stuff" entryId="5545-fcf3-a765-9474" entryLinkId="c417-d17b-7230-57bb" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

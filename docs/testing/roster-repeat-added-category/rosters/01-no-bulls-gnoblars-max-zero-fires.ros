@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rrac-01" name="RRAC 01 - Standard (OK-AB): kein Ogre Bulls, Gnoblar-Maximum bleibt 0" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-repeat-added-category E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- KEINE Auswahl traegt die Kategorie "Bully Bully" (735e-2da1-6356-2fdb):
+         ihr einziger Traeger im ganzen Fixture-Satz ist der Ogre-Wurzel-entryLink
+         "Ogre Bulls" (d82e-111e-89b9-2be1) ueber seinen unbedingten
+         <modifier type="add" value="735e-2da1-6356-2fdb" field="category"/>.
+         Der <repeat> des increment-Modifikators zaehlt roster-weit 0 Treffer =>
+         a177-82fc-0b76-5b73 behaelt seinen geschriebenen Basiswert max 0.
+         Ist 1 > 0 => die Grenze feuert.
+         Bewusst KEIN <categories>-Block: die Kategoriezugehoerigkeit muss aus den
+         Katalogdaten stammen, nicht aus der Roster-Datei. -->
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms">
+      <selections>
+        <selection id="sel-gnoblars" name="Gnoblars" entryId="1e26-0d1a-bb3c-f47a" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-gnoblars-models" name="Gnoblars" entryId="bf71-422e-240b-826a" entryLinkId="" number="20" type="model" collective="false"/>
+            <selection id="sel-gnoblars-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="248f-6615-7784-6ee2" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-gnoblars-sharpstuff" name="Sharp Stuff" entryId="5545-fcf3-a765-9474" entryLinkId="c417-d17b-7230-57bb" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
