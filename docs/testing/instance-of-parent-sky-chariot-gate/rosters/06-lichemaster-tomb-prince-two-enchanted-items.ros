@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="iopsc-06" name="IOPSC 06 – Gegenprobe (Lebendigkeit): Sky Chariot + Charm of Defiance reissen die max-1-Grenze der Gruppe" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored instance-of-parent-sky-chariot-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Wie 03, zusaetzlich der zweite Gruppen-Mitverweis „Charm of Defiance"
+         7014-1ec5-46b7-36e5 -> 94d1-a517-f236-7812 (15 pts, Basis
+         hidden="false", ohne jeden Modifikator). Beide sind DIREKTE Mitglieder
+         der geteilten Gruppe „Enchanted Items (Lichemaster)"
+         81c5-7ea4-7cb5-61d4, deren Grenze 7ef4-7ce1-e1da-22ea (max 1,
+         field=selections, scope=parent, shared=true) damit mit Ist 2 gegen
+         Grenze 1 feuert. Das belegt, dass der Rahmen ueberhaupt ausgewertet
+         wird und dass der Sky-Chariot-Slot in ihm zaehlt — waehrend seine
+         Sichtbarkeit unveraendert bleibt und der ungegatete Nachbar im selben
+         Rahmen sichtbar ist.
+         Punkte: 100 + 50 + 15 = 165 von 3000. -->
+    <force id="force-1" name="Army of the Lichemaster (WD#309-UK)" entryId="f37a-a93e-fa22-61a8" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-tomb-prince" name="Tomb Prince [KHEMRI]" entryId="0b24e6f4-0f37-4243-a0a5-99e723692dc3" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-sky-chariot" name="Sky Chariot" entryId="33bd-1a1e-a286-60ac" entryLinkId="472e-d107-b0dc-c51a" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-charm-of-defiance" name="Charm of Defiance" entryId="94d1-a517-f236-7812" entryLinkId="7014-1ec5-46b7-36e5" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

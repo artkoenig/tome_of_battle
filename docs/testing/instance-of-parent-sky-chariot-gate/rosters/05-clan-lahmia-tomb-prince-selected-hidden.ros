@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="iopsc-05" name="IOPSC 05 – Clan Lahmia, derselbe Tomb Prince als Traeger: Sky Chariot verborgen (die force-Haelfte faellt)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored instance-of-parent-sky-chariot-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Der einzige Weg, den (selbst hidden="true") Tomb Prince AUSSERHALB des
+         Lichemaster-Kontingents zu erreichen: das Kontingent „Clan Lahmia
+         (VC-AB)" 2102-34f1-c876-98c5. Dort ist die Einheit „Swain"
+         b920-b398-dc26-7f4d aufgedeckt (set hidden=false, Bedingung
+         instanceOf scope=force childId=2102-34f1-c876-98c5), und in ihrer
+         Gruppe „Hero from another faction" 09bf-a395-daf9-7e25 -> „Tomb Kings"
+         75da-b518-329e-5f55 traegt der Verweis c7e0-a4dc-65a2-7fd0 auf den Tomb
+         Prince denselben Aufdeck-Modifikator.
+         Der Eltern-Rahmen des Sky Chariot ist damit erneut der Tomb Prince —
+         die parent-Haelfte der and-Gruppe haelt —, aber das Kontingent ist
+         nicht f37a: die force-Haelfte faellt, der Slot bleibt hidden="true".
+         Punkte: 0 (Swain) + 100 (Tomb Prince) + 50 = 150 von 3000. -->
+    <force id="force-1" name="Clan Lahmia (VC-AB)" entryId="2102-34f1-c876-98c5" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-swain" name="Swain" entryId="b920-b398-dc26-7f4d" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-tomb-prince" name="Tomb Prince [KHEMRI]" entryId="0b24e6f4-0f37-4243-a0a5-99e723692dc3" entryLinkId="c7e0-a4dc-65a2-7fd0" number="1" type="unit" collective="false">
+              <selections>
+                <selection id="sel-sky-chariot" name="Sky Chariot" entryId="33bd-1a1e-a286-60ac" entryLinkId="472e-d107-b0dc-c51a" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

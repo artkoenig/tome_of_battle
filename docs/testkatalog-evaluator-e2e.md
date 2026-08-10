@@ -166,7 +166,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
 | [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
-| **Summe** | | **375** |
+| [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **381** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1882,3 +1883,27 @@ also die Summe.
 > tragen vier Charaktere zusammen höchstens 10 Würfel, die Elf ist also nur mit
 > einem fünften erreichbar. Weil sie in allen vier Rostern gleich feuert, bleibt
 > der Unterschied allein der Summe zuzurechnen.
+
+## `instance-of-parent-sky-chariot-gate`
+
+Prüft die `instanceOf`-Bedingung mit `scope="parent"` und einer Eintrags-Id:
+keine Zählung, sondern eine Prüfung, ob der **Eltern-Rahmen** die benannte
+Einheit ist. Beleg: der „Sky Chariot" (`33bd-1a1e-a286-60ac`, Vampire Counts,
+Basis `hidden="true"`) wird von einer `and`-Gruppe aufgedeckt — Eltern-Rahmen ist
+der „Tomb Prince [KHEMRI]" **und** das Kontingent ist „Army of the Lichemaster".
+Erreichbar ist der Gegenstand nur über die geteilte Gruppe „Enchanted Items
+(Lichemaster)", die genau zwei Einheiten verlinken; das ist das Paar.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lichemaster, Träger ist der Tomb Prince | Der Gegenstand wird angeboten |
+| 02 | Lichemaster, Träger ist ein Necromancer | Er bleibt verborgen — die Eltern-Hälfte fällt |
+| 03 / 04 | Dieselben beiden, Gegenstand gewählt | Das Urteil bleibt am besetzten Slot dasselbe |
+| 05 | Derselbe Tomb Prince im Kontingent „Clan Lahmia" | Die Kontingent-Hälfte fällt: verborgen |
+| 06 | Wie 03, dazu ein zweiter Gegenstand der Gruppe | Gegenprobe: die Gruppen-Obergrenze feuert mit Ist 2 / Grenze 1 |
+
+> **Bewusst offen:** In Roster 05 hängt der Tomb Prince über einen Verweis unter
+> einer anderen Einheit statt als Wurzelauswahl. Wie ein so erreichter Rahmen im
+> Bericht zu adressieren ist — über die Verweis-Id oder die Ziel-Id —, legt der
+> Manifest-Vertrag nicht fest, und kein anderes Szenario zeigt einen solchen
+> Fall. Der Slot wird dort deshalb ohne Rahmen-Koordinate benannt.

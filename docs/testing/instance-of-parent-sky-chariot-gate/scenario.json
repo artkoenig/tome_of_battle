@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "name": "instance-of-parent-sky-chariot-gate",
+  "description": "Eine condition type=\"instanceOf\" field=\"selections\" scope=\"parent\" childId=\"<Eintrags-Id>\" ist keine Zaehlung, sondern eine Mitgliedschaftspruefung des ELTERN-RAHMENS: sie haelt genau dann, wenn die Auswahl, unter der der Traeger haengt, auf den genannten Eintrag aufloest. Das einzige Vorkommen im eingefrorenen Korpus (Vampire Counts (6th definitive edition).cat:20469; die einzige weitere parent-skopierte Instanzpruefung ist ein notInstanceOf in Mercenaries:4101) sitzt am geteilten Upgrade \"Sky Chariot\" 33bd-1a1e-a286-60ac (Basis hidden=\"true\", 50 pts, sharedSelectionEntries). Sein einziger Modifikator setzt hidden=false unter einer and-Gruppe aus ZWEI Instanzpruefungen: parent = \"Tomb Prince [KHEMRI]\" 0b24e6f4-0f37-4243-a0a5-99e723692dc3 UND force = \"Army of the Lichemaster (WD#309-UK)\" f37a-a93e-fa22-61a8. Erreichbar ist der Sky Chariot ueber genau einen Verweis: entryLink 472e-d107-b0dc-c51a in der geteilten Gruppe \"Enchanted Items (Lichemaster)\" 81c5-7ea4-7cb5-61d4, die ihrerseits von genau ZWEI Einheiten verlinkt wird - vom Tomb Prince (Gruppe \"Magic Items\" 7611-df97-0864-39a3, Verweis d6b3-7aaa-5cd2-d026) und vom Necromancer b5d8-db21-a4b7-9e94 (Gruppe \"Magic Items\" b4e0-9f6b-30b0-346e, Verweis 0406-f097-c5d3-e51c). Genau dieses Paar spannt die Aussage auf: im selben Kontingent, an derselben Gruppe, mit derselben Verweis-Id ist der Slot unter dem Tomb Prince sichtbar und unter dem Necromancer verborgen (isoliert die parent-Haelfte); derselbe Tomb Prince im Kontingent \"Clan Lahmia (VC-AB)\" 2102-34f1-c876-98c5 - dem einzigen Ort, an dem er ausserhalb des Lichemaster-Kontingents ueberhaupt erreichbar ist, naemlich unter \"Swain\" b920-b398-dc26-7f4d - laesst den Slot verborgen (isoliert die force-Haelfte). Gepinnt wird der Slot ueber expect.capabilities[].isHidden, je Roster einmal als nicht gewaehltes Angebot und einmal als belegte Auswahl. Die Sichtbarkeit erzeugt dabei KEINE Grenze: weder Verweis noch Zieleintrag tragen ein constraint (effectiveMin/effectiveMax null), und im Verletzungsbericht taucht der Sky Chariot nie als limitId auf. Als Lebendigkeitsprobe reisst Roster 06 mit einem zweiten Gruppenmitglied die echte Grenze 7ef4-7ce1-e1da-22ea (max 1) derselben Gruppe.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lichemaster-tomb-prince-offer-visible.ros",
+      "description": "Kontingent \"Army of the Lichemaster\" (f37a-a93e-fa22-61a8), Budget 3000, einzige Auswahl: der Tomb Prince 0b24e6f4-0f37-4243-a0a5-99e723692dc3 (dort aufgedeckt und per 3d9d-764e-6661-91ed Pflicht). Der Sky Chariot ist NICHT gewaehlt; sein Angebots-Slot haengt ueber die Gruppen 7611-df97-0864-39a3 -> 81c5-7ea4-7cb5-61d4 unmittelbar an der Tomb-Prince-Auswahl. Beide Haelften der and-Gruppe halten (Eltern-Rahmen = Tomb Prince, Kontingent = f37a): der Modifikator ersetzt den Basiswert hidden=\"true\" durch false. Der ungegatete Nachbar \"Charm of Defiance\" derselben Gruppe ist unabhaengig davon sichtbar. Beide Slots tragen keinerlei Grenze (effectiveMin/effectiveMax null) - Sichtbarkeit ist kein Mindest- oder Hoechstmass. Mitfeuerndes, bewusst deklariertes Beiwerk des Sonderheeres: Lord-Mindestmass 760d-2352-9fac-0e46 (der Tomb Prince ist Heroes, kein Lord), die Pflichten Kemmler 8461-3eab-e5ac-1636 und Krell 60a8-5b49-6b81-7c84, die Core-Pflicht 35c2-d478-392a-aeb1 (.gst-Klasse 3000-3999 = 4) und die General-Pflicht 1077-7379-f142-f382.",
+      "expect": {
+        "firing": [
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "3d9d-764e-6661-91ed",
+          "7ef4-7ce1-e1da-22ea",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3",
+            "name": "Sky Chariot",
+            "current": 0,
+            "isHidden": false,
+            "effectiveMin": null,
+            "effectiveMax": null
+          },
+          {
+            "defId": "7014-1ec5-46b7-36e5",
+            "targetDefId": "94d1-a517-f236-7812",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3",
+            "name": "Charm of Defiance",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-lichemaster-necromancer-offer-hidden.ros",
+      "description": "Dasselbe Kontingent, derselbe Verweis 472e-d107-b0dc-c51a, dieselbe Gruppe 81c5-7ea4-7cb5-61d4 - nur ein anderer Traeger: der Necromancer b5d8-db21-a4b7-9e94, die einzige weitere Einheit, die diese Gruppe verlinkt (ueber ihre eigene, im Lichemaster-Kontingent aufgedeckte Gruppe b4e0-9f6b-30b0-346e). Die force-Haelfte der and-Gruppe haelt unveraendert, die parent-Haelfte nicht: der Eltern-Rahmen loest auf den Necromancer auf, nicht auf 0b24e6f4-0f37-4243-a0a5-99e723692dc3. Der Basiswert hidden=\"true\" bleibt stehen. Der ungegatete Nachbar \"Charm of Defiance\" bleibt im selben Rahmen sichtbar - der Unterschied liegt am Slot, nicht am Rahmen. Ohne Tomb Prince im Kontingent feuert zusaetzlich dessen im Lichemaster auf 1 gehobene Pflichtgrenze 3d9d-764e-6661-91ed.",
+      "expect": {
+        "firing": [
+          { "limitId": "3d9d-764e-6661-91ed", "actual": 0, "bound": 1 },
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "7ef4-7ce1-e1da-22ea",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "b5d8-db21-a4b7-9e94",
+            "name": "Sky Chariot",
+            "current": 0,
+            "isHidden": true,
+            "effectiveMin": null,
+            "effectiveMax": null
+          },
+          {
+            "defId": "7014-1ec5-46b7-36e5",
+            "targetDefId": "94d1-a517-f236-7812",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "b5d8-db21-a4b7-9e94",
+            "name": "Charm of Defiance",
+            "current": 0,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-lichemaster-tomb-prince-selected-visible.ros",
+      "description": "Wie 01, aber der Sky Chariot ist unter dem Tomb Prince tatsaechlich gewaehlt (entryId 33bd-1a1e-a286-60ac, entryLinkId 472e-d107-b0dc-c51a): derselbe Slot einmal als belegter statt als angebotener. Die Aussage der Bedingung haengt am Eltern-Rahmen, nicht an der Herkunft des Slots - isHidden bleibt false. Die max-1-Grenze der Gruppe 7ef4-7ce1-e1da-22ea schweigt bei genau einem gewaehlten Mitglied.",
+      "expect": {
+        "firing": [
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "3d9d-764e-6661-91ed",
+          "7ef4-7ce1-e1da-22ea",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "occupied",
+            "frameDefId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3",
+            "name": "Sky Chariot",
+            "current": 1,
+            "isHidden": false,
+            "effectiveMin": null,
+            "effectiveMax": null
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-lichemaster-necromancer-selected-hidden.ros",
+      "description": "Wie 02, aber der Sky Chariot ist unter dem Necromancer tatsaechlich gewaehlt. Der Katalog kennt keine zaehlende Schranke, die diese Wahl verboete - weder der Verweis 472e-d107-b0dc-c51a noch der Zieleintrag 33bd-1a1e-a286-60ac tragen ein constraint. Die Wahl ist also moeglich und erscheint im Bericht; was sie ausweist, ist allein die Verfuegbarkeit: der belegte Slot meldet isHidden true. Damit ist \"nicht anwaehlbar\" von \"nicht auswertbar\" getrennt.",
+      "expect": {
+        "firing": [
+          { "limitId": "3d9d-764e-6661-91ed", "actual": 0, "bound": 1 },
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "7ef4-7ce1-e1da-22ea",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "occupied",
+            "frameDefId": "b5d8-db21-a4b7-9e94",
+            "name": "Sky Chariot",
+            "current": 1,
+            "isHidden": true,
+            "effectiveMin": null,
+            "effectiveMax": null
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-clan-lahmia-tomb-prince-selected-hidden.ros",
+      "description": "Die force-Haelfte allein: derselbe Traeger wie in 01/03 - der Tomb Prince 0b24e6f4-0f37-4243-a0a5-99e723692dc3 - aber im Kontingent \"Clan Lahmia (VC-AB)\" 2102-34f1-c876-98c5. Das ist der einzige Ort, an dem der (selbst hidden=\"true\") Tomb Prince ausserhalb des Lichemaster-Kontingents erreichbar ist: unter der Einheit \"Swain\" b920-b398-dc26-7f4d, deren Verweis c7e0-a4dc-65a2-7fd0 nur fuer dieses Kontingent aufgedeckt wird. Die parent-Haelfte der and-Gruppe haelt damit, die force-Haelfte nicht - der Sky Chariot bleibt verborgen. Er ist hier doppelt verborgen: zusaetzlich bleibt die tragende Gruppe \"Magic Items\" 7611-df97-0864-39a3 ausserhalb des Lichemaster-Kontingents hidden=\"true\", weshalb der Slot GEWAEHLT statt bloss angeboten wird. Keine der Lichemaster-Eigenpflichten gilt hier: 3d9d-764e-6661-91ed bleibt auf seinem geschriebenen min 0, Kemmler, Krell und das Lord-Mindestmass gehoeren dem anderen Kontingent. ABWEICHUNG ZU 01-04 IN DER SLOT-ADRESSE: dieses Roster nennt bewusst KEIN frameDefId. Sein Rahmen - die Tomb-Prince-Auswahl - kommt hier ueber den entryLink c7e0-a4dc-65a2-7fd0 statt als Wurzel-Auswahl, und weder der Manifest-Vertrag noch irgendein bestehendes Szenario unter docs/testing/ sagt, ob ein ueber einen Verweis erreichter Rahmen mit der VERWEIS-Id oder mit der ZIEL-Id adressiert wird (der Vertrag trifft diese Unterscheidung nur fuer das defId des Slots selbst; alle frameDefId-Werte im Bestand benennen schlichte selectionEntry-Ids). Statt zu raten, waehlen defId + targetDefId + anchorKind den Slot aus: der Sky Chariot kommt in diesem Roster genau einmal vor, und zwar gewaehlt.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "3d9d-764e-6661-91ed",
+          "760d-2352-9fac-0e46",
+          "8461-3eab-e5ac-1636",
+          "60a8-5b49-6b81-7c84",
+          "7ef4-7ce1-e1da-22ea",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "occupied",
+            "name": "Sky Chariot",
+            "current": 1,
+            "isHidden": true,
+            "effectiveMin": null,
+            "effectiveMax": null
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-lichemaster-tomb-prince-two-enchanted-items.ros",
+      "description": "GEGENPROBE (Lebendigkeit) im selben Rahmen: wie 03, zusaetzlich das zweite direkte Mitglied derselben geteilten Gruppe, \"Charm of Defiance\" (Verweis 7014-1ec5-46b7-36e5 -> 94d1-a517-f236-7812, 15 pts, ohne jeden Modifikator). Die echte Grenze der Gruppe 81c5-7ea4-7cb5-61d4 - 7ef4-7ce1-e1da-22ea, max 1, field=selections, scope=parent, shared=true - feuert mit Ist 2 gegen Grenze 1. Damit ist belegt, dass der Rahmen wirklich ausgewertet wird und der Sky-Chariot-Slot in ihm mitzaehlt; \"kein Verstoss\" in den Rostern 01-05 ist also nicht \"nichts gemessen\". Die Sichtbarkeit beider Slots bleibt davon unberuehrt: der gegatete Sky Chariot sichtbar (parent = Tomb Prince, Kontingent = f37a), der ungegatete Nachbar ohnehin.",
+      "expect": {
+        "firing": [
+          { "limitId": "7ef4-7ce1-e1da-22ea", "actual": 2, "bound": 1 },
+          { "limitId": "760d-2352-9fac-0e46", "actual": 0, "bound": 1 },
+          { "limitId": "8461-3eab-e5ac-1636", "actual": 0, "bound": 1 },
+          { "limitId": "60a8-5b49-6b81-7c84", "actual": 0, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 4 },
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "3d9d-764e-6661-91ed",
+          "8471-437a-59d6-bc3d",
+          "d818-c60d-b1f8-8aaa"
+        ],
+        "capabilities": [
+          {
+            "defId": "472e-d107-b0dc-c51a",
+            "targetDefId": "33bd-1a1e-a286-60ac",
+            "anchorKind": "occupied",
+            "frameDefId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3",
+            "name": "Sky Chariot",
+            "current": 1,
+            "isHidden": false,
+            "effectiveMin": null,
+            "effectiveMax": null
+          },
+          {
+            "defId": "7014-1ec5-46b7-36e5",
+            "targetDefId": "94d1-a517-f236-7812",
+            "anchorKind": "occupied",
+            "frameDefId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3",
+            "name": "Charm of Defiance",
+            "current": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}

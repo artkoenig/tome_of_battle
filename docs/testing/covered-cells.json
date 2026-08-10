@@ -541,6 +541,13 @@
         "docs/testing/greater-than-roster-casting-dice-sum"
       ],
       "rationale": "Das einzige Vorkommen der Zelle vergleicht keine Auswahlzahl, sondern eine KOSTENSUMME: field ist die Kostenart ' Casting Dice' (fcec-2340-6368-a2ba), scope=roster, childId=any. Die Autor-Meldung 'No more than 10 power die are allowed!' des Eintrags 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and goblins) liegt an, sobald die Summe echt groesser als 10 ist. Fuenf Roster variieren allein die Magic-Level-Wahl der Schamanen: Summe 0 und Summe 10 lassen die Meldung schweigen (10 ist nicht > 10), Summe 11 und 12 lassen sie anliegen, und ein fuenftes Roster mit Summe 11 ohne den Traeger zeigt, dass die Meldung an ihm haengt. Die Kategorie-Obergrenze c3c3-a80c-e026-200f feuert in den Rostern 02-05 konstant mit Ist 5 / Grenze 4 und ist offen deklariert. Szenario ist gruen."
+    },
+    {
+      "key": "condition|instanceOf|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/instance-of-parent-sky-chariot-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle deckt den 'Sky Chariot' (33bd-1a1e-a286-60ac, Vampire Counts, Basis hidden=true) auf: eine and-Gruppe aus instanceOf gegen den Eltern-Rahmen (childId 0b24e6f4-0f37-4243-a0a5-99e723692dc3, 'Tomb Prince [KHEMRI]') und instanceOf gegen das Kontingent 'Army of the Lichemaster'. Erreichbar ist der Gegenstand nur ueber die geteilte Gruppe 'Enchanted Items (Lichemaster)' (81c5-7ea4-7cb5-61d4), die genau zwei Einheiten verlinken — Tomb Prince und Necromancer. Sechs Roster kreuzen beide Haelften: unter dem Tomb Prince ist der Slot sichtbar, unter dem Necromancer verborgen (Roster 01/02 als Angebot, 03/04 mit gewaehltem Gegenstand), und Roster 05 stellt denselben Tomb Prince ins Kontingent 'Clan Lahmia', wo die force-Haelfte faellt. Roster 06 belegt am Nachbarn, dass die Gruppen-Obergrenze 7ef4-7ce1-e1da-22ea mit Ist 2 / Grenze 1 feuert. Szenario ist gruen."
     }
   ]
 }
