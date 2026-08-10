@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 78,
-    "uncovered": 27
+    "covered": 79,
+    "uncovered": 26
   },
   "cells": [
     {
@@ -96,66 +96,6 @@
             "field": "selections",
             "scope": "force",
             "childId": "2679-58f4-1771-662d"
-          }
-        }
-      ]
-    },
-    {
-      "key": "conditionGroup|not|nested",
-      "kind": "conditionGroup",
-      "axes": {
-        "type": "not",
-        "nesting": "nested"
-      },
-      "occurrences": 2,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat": 2
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "595f-a4e4-5cbc-dab4",
-            "name": "Heinrich Kemmler (WD#309-UK)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditionGroups",
-            "conditionGroup"
-          ],
-          "raw": {
-            "type": "not"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "2d17-c7be-5fd6-f1a3",
-            "name": "Krell, King of Wights (WD#309-UK)"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditionGroups",
-            "conditionGroup"
-          ],
-          "raw": {
-            "type": "not"
           }
         }
       ]

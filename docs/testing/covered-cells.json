@@ -415,6 +415,13 @@
         "docs/testing/condition-group-or-nested"
       ],
       "rationale": "Die innere or-Gruppe am add-error-Modifikator von 'Tournament rules: Uprising (2026)' (4bc4-8781-2091-d9df, Orcs and Goblins) steckt zwei Ebenen tief: aeussere or-Gruppe > and-Gruppe (instanceOf auf das Kontingent Standard (OG-AB)) > diese or-Gruppe mit zwei greaterThan-1-Mitgliedern (Savage Orc Boar Big 'Uns c679-3389-ca76-2ea1, Stone Trolls 4112-026b-500a-b6fd, scope=roster). Sechs Roster halten das instanceOf konstant wahr, sodass die Autor-Meldung am Toggle-Slot der reine Wahrheitswert der inneren Gruppe ist: 2/0 und 0/2 zeigen je ein einzelnes haltendes Mitglied (gegen eine and-Lesart), 1/1 muss schweigen (gegen eine summierende Lesart), 2/2 meldet genau einmal (gegen XOR und gegen eine Anwendung je Mitglied), 1/0 und 0/0 schweigen (gegen atLeast statt greaterThan und gegen 'kein Mitglied haelt ist vakuum-wahr'). Szenario ist gruen."
+    },
+    {
+      "key": "conditionGroup|not|nested",
+      "evidence": [
+        "docs/testing/condition-group-not"
+      ],
+      "rationale": "Beide Vorkommen der not-Gruppe im Korpus stecken verschachtelt in den conditionGroups einer and-Gruppe: am set-Modifikator, der die Pflicht-Untergrenzen von Heinrich Kemmler (Traeger 595f-a4e4-5cbc-dab4, Grenze 8461-3eab-e5ac-1636) und Krell (Traeger 2d17-c7be-5fd6-f1a3, Grenze 60a8-5b49-6b81-7c84) im Kontingent 'Army of the Lichemaster' von 0 auf 1 hebt. Das Szenario variiert Budget, Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart sichtbar wird: Roster 03 laesst beide Mitglieder der inneren and-Untergruppe halten (die Negation faellt, die Grenzen schweigen), 04 und 05 lassen je genau eines halten (die Negation haelt, beide Grenzen feuern mit Ist 0 / Grenze 1), 01 keines, und 06 belegt ueber das scheiternde instanceOf, dass die aeussere Klammer unabhaengig davon greift. Szenario ist gruen."
     }
   ]
 }
