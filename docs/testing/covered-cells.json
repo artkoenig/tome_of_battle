@@ -513,6 +513,27 @@
         "docs/testing/equal-to-ancestor-id-scope-mount-gate"
       ],
       "rationale": "Das einzige Vorkommen der Zelle traegt als scope keine Schluesselwort-Reichweite, sondern die Id eines Vorfahren: die Aufwertung 'Additional Hero choice' (e3cf-e551-eb3d-852e, Orcs and goblins) zaehlt per equalTo 0 die Auswahlen der Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des benannten 'Black Orc Bigboss' (febe-2170-775b-0d13). Haelt die Gleichheit — der Bigboss hat kein Reittier —, setzen zwei Modifikatoren Mindest- und Hoechstgrenze der Aufwertung auf 0, sie kostet also keine Heldenwahl; mit einem Boar bleiben die geschriebenen 1/1 stehen. Sechs Roster zeigen beide Seiten je einmal mit und ohne gewaehlte Aufwertung, dazu ein Kontrollroster im Kontingent 'Standard (OG-AB)', das die zweite Haelfte der and-Klammer (instanceOf auf 'Grimgor's Ardboyz') isoliert, und ein Roster mit zwei Bigbossen, das die Breite des Rahmens von einer roster-weiten Lesart trennt. Szenario ist gruen."
+    },
+    {
+      "key": "condition|equalTo|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Das einzige Vorkommen der Zelle deckt den .gst-Eintrag 'Border Patrols rules' (4e15-0353-165f-5528, Basis hidden=true) per set hidden=false auf, sobald das eingestellte Budget EXAKT 500 Punkte betraegt (equalTo 500 auf limit::ecfa-8486-4f6c-c249, scope=roster, childId=any). Drei inhaltsgleiche Roster variieren allein das Budget: bei 500 meldet der Slot isHidden false, bei 499 und 501 bleibt er verborgen — damit ist die Gleichheit beidseitig von atMost und atLeast getrennt. Szenario ist gruen."
+    },
+    {
+      "key": "condition|greaterThan|force|selectionCount|child=unit",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Die Autor-Meldung 'The army must consist of at least TWO units but no more than FOUR units' desselben Eintrags haengt an einer or-Gruppe, deren obere Haelfte genau diese Zelle ist: greaterThan 4, field=selections, scope=force, childId='unit' als Typ-Schluesselwort, includeChildSelections=false. Roster 04 mit vier Einheiten laesst sie schweigen (4 ist nicht > 4), Roster 05 mit fuenf Einheiten laesst sie anliegen. Szenario ist gruen."
+    },
+    {
+      "key": "condition|lessThan|force|selectionCount|child=unit",
+      "evidence": [
+        "docs/testing/border-patrols-rules-unit-count-gate"
+      ],
+      "rationale": "Die untere Haelfte derselben or-Gruppe: lessThan 2, field=selections, scope=force, childId='unit'. Roster 01 mit zwei Einheiten laesst die Meldung schweigen, Roster 06 mit einer Einheit laesst sie anliegen — bei sonst gleichem Inhalt und gleichem Budget. Zusammen mit der greaterThan-Haelfte ist damit das ganze Fenster 2..4 abgesteckt. Szenario ist gruen."
     }
   ]
 }

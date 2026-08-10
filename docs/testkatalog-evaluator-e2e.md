@@ -164,7 +164,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
 | [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
 | [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
-| **Summe** | | **364** |
+| [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
+| **Summe** | | **370** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -1826,3 +1827,32 @@ beritten ist.
 > Knoten. Die Roster 01–05 nageln das Zählergebnis fest, nicht die
 > Unterscheidbarkeit der Rahmen; Roster 06 trennt immerhin die **Breite** des
 > Rahmens von einer rosterweiten Lesart.
+
+## `border-patrols-rules-unit-count-gate`
+
+Nagelt drei Konstrukte eines einzigen `.gst`-Eintrags fest — „Border Patrols
+rules" (`4e15-0353-165f-5528`, Basis `hidden="true"`):
+
+- die `equalTo`-Bedingung auf dem **Roster-Budget** (`limit::ecfa-8486-4f6c-c249`,
+  `scope="roster"`, `childId="any"`), die den Eintrag bei exakt 500 Punkten
+  aufdeckt;
+- die beiden Hälften der `or`-Gruppe seiner Autor-Meldung „The army must consist
+  of at least TWO units but no more than FOUR units": `greaterThan 4` und
+  `lessThan 2`, beide mit `childId="unit"` als **Typ-Schlüsselwort** und
+  `scope="force"`.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Budget 500, zwei Einheiten | Der Eintrag ist sichtbar, und beide Meldungen schweigen — die Untergrenze des Fensters ist erreicht |
+| 02 | Budget 499, sonst identisch | Der Eintrag bleibt verborgen |
+| 03 | Budget 501, sonst identisch | Ebenso — die Gleichheit ist beidseitig eingeklemmt |
+| 04 | Vier Einheiten | Die Meldung schweigt: 4 ist nicht mehr als 4 |
+| 05 | Fünf Einheiten | Die obere Hälfte greift, die Meldung liegt an |
+| 06 | Eine Einheit | Die untere Hälfte greift, dieselbe Meldung liegt an |
+
+> **Bewusst nicht behauptet:** ob ein effektiv versteckter Träger seine
+> Autor-Meldungen überhaupt noch abgibt — die Quelle schweigt dazu, und die
+> Roster 02/03 sind so gebaut, dass beide Meldungen ohnehin bedingungsfalsch
+> sind. Ebenso wenig die Wirkung von `includeChildSelections="false"`: kein
+> Roster enthält eine geschachtelte Einheit, beide Lesarten ergäben dieselbe
+> Zahl.

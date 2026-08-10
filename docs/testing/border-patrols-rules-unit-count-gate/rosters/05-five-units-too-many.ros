@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="bpu-05" name="BPU 05 – Budget 500, FÜNF Einheiten: greaterThan 4 hält, die Autor-Meldung feuert" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored border-patrols-rules-unit-count-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="500.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (VC-AB)" entryId="e989-15b8-7eb6-9668" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-border-patrols" name="Border Patrols rules" entryId="4e15-0353-165f-5528" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+        <selection id="unit-skeletons-1" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="skel-models-1" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="skel-handweapon-1" name="Handweapon" entryId="565b-37e6-290b-e040" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+        <selection id="unit-skeletons-2" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="skel-models-2" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="skel-handweapon-2" name="Handweapon" entryId="565b-37e6-290b-e040" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+        <selection id="unit-skeletons-3" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="skel-models-3" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="skel-handweapon-3" name="Handweapon" entryId="565b-37e6-290b-e040" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+        <selection id="unit-skeletons-4" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="skel-models-4" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="skel-handweapon-4" name="Handweapon" entryId="565b-37e6-290b-e040" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+        <selection id="unit-skeletons-5" name="Skeletons" entryId="9ac2-f4c1-bcc3-3aee" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="skel-models-5" name="Skeletons" entryId="eaa1-c6a6-9aae-ae9a" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="skel-handweapon-5" name="Handweapon" entryId="565b-37e6-290b-e040" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

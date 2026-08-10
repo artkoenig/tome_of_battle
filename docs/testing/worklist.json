@@ -7,92 +7,10 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 92,
-    "uncovered": 13
+    "covered": 95,
+    "uncovered": 10
   },
   "cells": [
-    {
-      "key": "condition|equalTo|roster|limitValue|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "roster",
-        "field": "limitValue",
-        "childId": "any"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4e15-0353-165f-5528",
-            "name": "Border Patrols rules"
-          },
-          "path": [
-            "gameSystem",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "limit::ecfa-8486-4f6c-c249",
-            "scope": "roster",
-            "childId": "any"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|greaterThan|force|selectionCount|child=unit",
-      "kind": "condition",
-      "axes": {
-        "type": "greaterThan",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "unit"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4e15-0353-165f-5528",
-            "name": "Border Patrols rules"
-          },
-          "path": [
-            "gameSystem",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "greaterThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "unit"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|greaterThan|roster|costSum|child=any",
       "kind": "condition",
@@ -175,48 +93,6 @@
             "field": "selections",
             "scope": "parent",
             "childId": "0b24e6f4-0f37-4243-a0a5-99e723692dc3"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|lessThan|force|selectionCount|child=unit",
-      "kind": "condition",
-      "axes": {
-        "type": "lessThan",
-        "scope": "force",
-        "field": "selectionCount",
-        "childId": "unit"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "4e15-0353-165f-5528",
-            "name": "Border Patrols rules"
-          },
-          "path": [
-            "gameSystem",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "force",
-            "childId": "unit"
           }
         }
       ]
