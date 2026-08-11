@@ -16,8 +16,9 @@ import {
 } from './evaluator-coverage-corpus.js';
 import { extractCells, coveredKeysFromManifests, diffCells, keysFromCoveredRecord } from './evaluator-coverage-cells.js';
 
-// Integration level: this file parses the real, frozen fixture corpus
-// (about 2s) instead of synthetic XML — the module-level extraction rules
+// Integration level: this file parses the real, frozen fixture corpus (the
+// seventeen-file whfb6-definitive + whfb6 set, seconds rather than
+// milliseconds) instead of synthetic XML — the module-level extraction rules
 // themselves are pinned in evaluator-coverage-cells.test.js.
 const RULE_KINDS = ['constraint', 'condition', 'conditionGroup', 'modifier', 'modifierGroup', 'repeat', 'repeatList'];
 
@@ -27,7 +28,7 @@ let inventory;
 beforeAll(() => {
   corpus = loadCorpus([WHFB6_DEFINITIVE_DIR, WHFB6_DIR]);
   inventory = extractCells(corpus.sources);
-});
+}, 120_000);
 
 function totalOccurrencesByKind(cells, kind) {
   return cells.filter(c => c.key.startsWith(`${kind}|`)).reduce((sum, c) => sum + c.occurrences, 0);
@@ -35,13 +36,13 @@ function totalOccurrencesByKind(cells, kind) {
 
 // ── Case 21 ───────────────────────────────────────────────────────────────
 describe('loadCorpus — static walk of both fixture sets', () => {
-  it('returns exactly ten catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
+  it('returns exactly seventeen catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
     expect(corpus.failures).toEqual([]);
-    expect(corpus.sources).toHaveLength(10);
+    expect(corpus.sources).toHaveLength(17);
 
     const definitiveFiles = corpus.sources.filter(s => s.file.includes('whfb6-definitive'));
     const whfb6Files = corpus.sources.filter(s => !s.file.includes('whfb6-definitive'));
-    expect(definitiveFiles).toHaveLength(5);
+    expect(definitiveFiles).toHaveLength(12);
     expect(whfb6Files).toHaveLength(5);
 
     expect(corpus.sources.some(s => s.file.toLowerCase().endsWith('readme.md'))).toBe(false);
@@ -56,23 +57,22 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
   // elements such as `<modifierGroup>`. The fixtures are frozen, so a mismatch
   // is a real extraction bug and the grep is the arbiter — re-run it before
   // touching the extraction if this fails.
-  // Issue 0148: recomputed for the ten-file corpus once Dogs of War.cat joined
-  // src/__fixtures__/whfb6/ — constraint, condition, modifier, repeat and
-  // repeatList all move; conditionGroup and modifierGroup don't change because
-  // Dogs of War has none of either.
+  // Issue 0148, increment 2: recomputed for the seventeen-file corpus once the
+  // seven definitive books joined src/evaluator/__fixtures__/whfb6-definitive/
+  // — every kind moves, conditionGroup and modifierGroup included.
   it.each([
-    ['constraint', 5652],
-    ['condition', 1791],
-    ['conditionGroup', 261],
-    ['modifier', 1842],
-    ['modifierGroup', 121],
-    ['repeat', 244],
-    // (C2, round 3 correction) repeatList reads 213 under the corrected
-    // character-class grep (`<repeats[ />]`); a trailing-space pattern misses
-    // the attribute-less `<repeats>` tag the same way it misses
-    // `<modifierGroup>`. totalOccurrencesByKind keys off the cell-key prefix,
-    // so this counts every `repeatList|...` cell, not the `<repeat>` tag.
-    ['repeatList', 243],
+    ['constraint', 10287],
+    ['condition', 4426],
+    ['conditionGroup', 792],
+    ['modifier', 4755],
+    ['modifierGroup', 417],
+    ['repeat', 506],
+    // (C2, round 3 correction) repeatList is arbitrated with `<repeats[ />]`;
+    // a trailing-space pattern misses the attribute-less `<repeats>` tag the
+    // same way it misses `<modifierGroup>`. totalOccurrencesByKind keys off
+    // the cell-key prefix, so this counts every `repeatList|...` cell, not
+    // the `<repeat>` tag.
+    ['repeatList', 496],
   ])('totals %s occurrences to %i', (kind, expected) => {
     expect(totalOccurrencesByKind(inventory.cells, kind)).toBe(expected);
   });
@@ -80,10 +80,10 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
 
 // ── Case 23 ───────────────────────────────────────────────────────────────
 describe('extractCells over the real corpus — known landmark cells', () => {
-  it('contains conditionGroup|not|nested with 2 occurrences (Vampire Counts)', () => {
+  it('contains conditionGroup|not|nested with 4 occurrences (Vampire Counts, Lizardmen, Skaven)', () => {
     const cell = inventory.cells.find(c => c.key === 'conditionGroup|not|nested');
     expect(cell).toBeDefined();
-    expect(cell.occurrences).toBe(2);
+    expect(cell.occurrences).toBe(4);
   });
 
   it('contains a condition|greaterThanOrEqualTo|... cell with 1 occurrence', () => {
@@ -122,12 +122,16 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // (repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false)
     // is covered by src/evaluator/modifiers.repeatParentAny.test.js, so cells
     // stays 105 (the corpus is frozen) and covered/uncovered move to 105/0.
-    // Issue 0148: Dogs of War.cat adds one new cell to the corpus,
-    // repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false,
+    // Issue 0148, increment 1: Dogs of War.cat added one new cell to the
+    // corpus, repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false,
     // uncovered by design — closing it is the coverage campaign's work, out of
-    // scope for issue 0148 — so cells moves to 106 while covered stays 105 and
-    // uncovered becomes 1.
-    expect(recomputed.totals).toEqual({ cells: 106, covered: 105, uncovered: 1 });
+    // scope for issue 0148.
+    // Issue 0148, increment 2: the seven definitive books add 24 further
+    // cells, all uncovered by design (closing them is out of scope here too),
+    // so the worklist holds 25 entries — the 24 definitive additions plus the
+    // Dogs of War cell from increment 1. covered stays 105 because no
+    // scenario's dataset names any of the added files.
+    expect(recomputed.totals).toEqual({ cells: 130, covered: 105, uncovered: 25 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -217,22 +221,32 @@ describe('coveredKeysFromManifests / diffCells over the real corpus — covered 
 
 // ── Case B5 (round 3 correction) ────────────────────────────────────────────
 describe('coveredKeysFromManifests over the real corpus and manifests — resolution failures', () => {
-  it('reports zero outside-dataset entries and exactly the five known unknown-id ids (B5)', () => {
+  it('reports exactly two outside-dataset entries and exactly the four remaining known unknown-id ids (B5)', () => {
     const manifests = loadManifests(TESTING_DIR);
     const { unmatched } = coveredKeysFromManifests(manifests, inventory.index);
 
     const outsideDataset = unmatched.filter(u => u.reason === 'outside-dataset');
     const unknownIds = new Set(unmatched.filter(u => u.reason === 'unknown-id').map(u => u.id));
 
-    expect(outsideDataset).toEqual([]);
+    // Issue 0148, increment 2: The Empire (6th definitive edition).cat defines
+    // both ids below (one `id="..."` occurrence each), while the two scenarios
+    // that name them run against
+    // scripts/__fixtures__/showcase-empire/Empire.cat, which the corpus does
+    // not hold. The id now resolves somewhere in the corpus but outside the
+    // scenario's own dataset, so the dataset-scoped resolution refuses to
+    // credit it — the same rule B1/B2 pin — and that refusal is why covered
+    // stays 105. loadManifests sorts directory names, so this order is
+    // deterministic.
+    expect(outsideDataset).toEqual([
+      { id: '02cd-cabf-7e25-2b09', evidence: 'docs/testing/group-scope-missing-mandatory', reason: 'outside-dataset' },
+      { id: 'd96c-c95f-8224-7c87', evidence: 'docs/testing/parent-scope-missing-mandatory', reason: 'outside-dataset' },
+    ]);
     // The two budget:: ids are the runner's synthetic roster-budget limits, one
     // per cost type a scenario budgets — they name no corpus constraint by
     // construction, and a new one appears whenever a scenario budgets a further
     // cost type (here: Casting Dice).
     expect(unknownIds).toEqual(
       new Set([
-        '02cd-cabf-7e25-2b09',
-        'd96c-c95f-8224-7c87',
         'budget::ecfa-8486-4f6c-c249',
         'budget::fcec-2340-6368-a2ba',
         // The Orcs-and-Goblins "Swedish Comp System" modifiers address this id
@@ -253,28 +267,28 @@ describe('coveredKeysFromManifests over the real corpus and manifests — resolu
 
 // ── Case 27 (round 2 correction, Finding 1 — repeat flags) ─────────────────
 describe('extractCells over the real corpus — repeat cell count once shared/includeChildSelections/includeChildForces separate cells', () => {
-  it('yields exactly 12 distinct repeat| cells (R7)', () => {
+  it('yields exactly 16 distinct repeat| cells (R7)', () => {
     const repeatCells = inventory.cells.filter(c => c.key.startsWith('repeat|'));
-    expect(repeatCells).toHaveLength(12);
+    expect(repeatCells).toHaveLength(16);
   });
 });
 
 // ── Case 28 (round 2 correction, Finding 1) ─────────────────────────────────
 describe('extractCells over the real corpus — landmark flagged repeat cells (R8)', () => {
-  it('contains repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false with 16 occurrences', () => {
+  it('contains repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false with 34 occurrences', () => {
     const cell = inventory.cells.find(
       c => c.key === 'repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false',
     );
     expect(cell).toBeDefined();
-    expect(cell.occurrences).toBe(16);
+    expect(cell.occurrences).toBe(34);
   });
 
-  it('contains repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false with 12 occurrences', () => {
+  it('contains repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false with 13 occurrences', () => {
     const cell = inventory.cells.find(
       c => c.key === 'repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false',
     );
     expect(cell).toBeDefined();
-    expect(cell.occurrences).toBe(12);
+    expect(cell.occurrences).toBe(13);
   });
 });
 
@@ -287,6 +301,37 @@ describe('extractCells over the real corpus — Dogs of War carries a construct 
     expect(cell).toBeDefined();
     expect(cell.occurrences).toBe(3);
     expect(cell.files).toEqual({ 'src/__fixtures__/whfb6/Dogs of War.cat': 3 });
+  });
+});
+
+// ── Case 36 (issue 0148, increment 2 — why each definitive book is in the
+// corpus) ────────────────────────────────────────────────────────────────
+describe('extractCells over the real corpus — each of the seven added definitive books carries a construct no other book of either set carries', () => {
+  it.each([
+    [
+      'The Empire (6th definitive edition).cat',
+      'repeat|selectionCount|unit|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false',
+      51,
+    ],
+    ['Bretonnia (6th definitive edition).cat', 'condition|notEqualTo|roster|limitValue|child=any', 1],
+    ['Dark Elves (6th definitive edition).cat', 'constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false', 1],
+    ['Dwarfs (2005) (6th definitive edition).cat', 'modifier|multiply|costValue', 3],
+    [
+      'Skaven (6th definitive edition).cat',
+      'repeat|selectionCount|id|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false',
+      6,
+    ],
+    ['Lizardmen (6th definitive edition).cat', 'condition|greaterThan|self|selectionCount|child=id', 7],
+    [
+      'Forces of Chaos (6th definitive edition).cat',
+      'repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false',
+      9,
+    ],
+  ])('%s owns cell %s with %i occurrences and no other file', (file, key, occurrences) => {
+    const cell = inventory.cells.find(c => c.key === key);
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(occurrences);
+    expect(cell.files).toEqual({ [`src/evaluator/__fixtures__/whfb6-definitive/${file}`]: occurrences });
   });
 });
 
