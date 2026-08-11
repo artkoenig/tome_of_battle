@@ -114,8 +114,8 @@
         "docs/bsdata-catalogue-development-wiki/Data-structure-overview.md (Abschnitt Modifier)"
       ],
       "parkedAt": "2026-08-10",
-      "status": "open",
-      "answer": null
+      "status": "answered",
+      "answer": "Treat position=\"-1\" as a data error: the evaluation ignores the attribute, so the append applies with its join separator and Cast becomes the base value, one space, then the appended fragment. The vendored Catalogue.xsd stays unchanged. The scenario may now assert the Cast characteristic on the holding roster; what it pins is that an attribute no source specifies is inert. Decision by the maintainer, 2026-08-11, transcribed from the session chat by the campaign driver."
     },
     {
       "cellKey": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
@@ -126,8 +126,8 @@
         "docs/battlescribe-data-format.md 7.7 (childId values) and 5.6/8 (force slots resolve through categoryLinks)"
       ],
       "parkedAt": "2026-08-10",
-      "status": "open",
-      "answer": null
+      "status": "answered",
+      "answer": "Cover the cell on the synthetic unit-test track under src/evaluator/, do not waive it. The maintainer's source https://6th.whfb.app/appendix-four-rules-of-siege/grappling-hooks shows the entry models a real rule - 1 point per grappling hook and rope, every model of a skirmishing infantry unit carries exactly one - which matches the entry's own comment \"1p/model\" and its increment of 1 pts repeated per counted selection, so the missing incoming link is an upstream data gap and not a meaningless construct. The counting rule for scope=parent with childId=any is already pinned from real data by the green scenario docs/testing/at-least-parent-any-reveal; the unit test carries that rule over to the repeat axis on a synthetic dataset. Decision by the maintainer, 2026-08-11, transcribed from the session chat by the campaign driver."
     }
   ],
   "driver": {
