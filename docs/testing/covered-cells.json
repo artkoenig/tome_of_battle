@@ -604,6 +604,20 @@
         "docs/testing/unit-scope-repeat-knight-markup"
       ],
       "rationale": "Six rosters over 'Knights of the Knightly Orders' (1d77-9e6e-a6ab-573f, The Empire). The entryLink 'Exemplars of Sigmar (Knights)' (dcf8-3a0e-7f04-4dd4) carries increment 2 pts repeated once per Knight model (7b8d-8405-0e74-9f46) counted with scope=\"unit\", and the surcharge is measured through the roster budget budget::ecfa-8486-4f6c-c249, whose limit is set one point below the derived sum in every roster. Rosters 01/02/03 give three support points at 5, 8 and 12 knights, so a single application or a missing one is excluded; 04 is the zero point without the advantage and 05 the sibling advantage that carries no repeat. Roster 06 is the frame witness: a second knight regiment without the advantage leaves the surcharge untouched, where a force-wide count would raise it. Scenario is green."
+    },
+    {
+      "key": "condition|atLeast|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/at-least-roster-limit-lord-slots"
+      ],
+      "rationale": "Six rosters over the Bretonnian force 'Standard (BR-AB)', whose Lord categoryLink d1d3-6362-e2f7-23c9 carries the limit d7e7-599d-12cf-1fd1 (max 0) plus a decrement gated on atLeast 1000 and an increment gated on atLeast 2000, both on limit::ecfa-8486-4f6c-c249 with childId=\"model\". The rosters hold byte-identical selections within each family and move nothing but the configured costLimit: 999 against 1000 straddles the first threshold, 1999 against 2000 the second, and 2999 against 3000 the third rung. That pins three things at once - the condition reads the configured budget and not the spent sum (at most 131 points are ever spent), the threshold is inclusive, and childId=\"model\" is inert for a limit query. Scenario is green."
+    },
+    {
+      "key": "repeat|limitValue|roster|child=any|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/at-least-roster-limit-lord-slots"
+      ],
+      "rationale": "Pinned by the same scenario as the sibling condition cell: the increment on the Lord limit d7e7-599d-12cf-1fd1 carries the repeat <repeat value=\"1000\" repeats=\"1\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"roster\" childId=\"any\" ics=\"true\" icf=\"true\"/>, and rosters 04 (costLimit 2000, bound 1) and 06 (costLimit 3000, bound 2) are two support points of its arithmetic - the modifier is applied floor(budget/1000) times, so a single application or a missing repetition would give a different bound in at least one of them. Scenario is green."
     }
   ]
 }

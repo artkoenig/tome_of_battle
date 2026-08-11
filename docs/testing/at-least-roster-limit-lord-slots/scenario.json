@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-roster-limit-lord-slots",
+  "description": "Eine condition type=\"atLeast\" mit field=\"limit::ecfa-8486-4f6c-c249\" und scope=\"roster\" vergleicht das im Roster EINGESTELLTE Punktebudget (<costLimits>) mit ihrem value und haelt ab dem Schwellenwert EINSCHLIESSLICH (>=); ihr childId benennt bei dieser Feldart nichts Zaehlbares, childId=\"model\" aendert daran nichts. Traeger ist der categoryLink \"Lord\" d1d3-6362-e2f7-23c9 im Kontingent \"Standard (BR-AB)\" 3a8b-8c11-beff-0534 (Bretonnia) mit der einen Grenze max 0 selections scope=force (d7e7-599d-12cf-1fd1) und drei Modifikatoren darauf: decrement 1 ab Budget 1000, increment 1 ab Budget 2000 mit repeat je 1000 Punkte (Faktor floor(Budget/1000)), set -1 bei Budget < 0 (nie erfuellt). Daraus folgt die wirksame Lord-Grenze allein aus dem Budget: 0 (unter 1000), -1 (1000 bis 1999), 1 (2000 bis 2999), 2 (ab 3000). Sechs Roster, die sich innerhalb ihrer Familie NUR im costLimit unterscheiden, straddeln beide geschriebenen Schwellen von unten und exakt auf ihnen: 999/1000, 1999/2000 (ein Lord) sowie 2999/3000 (zwei Lords). Ein rechnerisch auf -1 gefallenes Maximum ist KEIN Unbegrenzt-Sentinel, sondern \"nichts erlaubt\" - der Sentinel gilt laut docs/battlescribe-data-format.md 7.6 nur als hingeschriebener Wert; deshalb feuert die Grenze bei Budget 1000 und 1999 mit bound -1. Die zweite Grenze auf derselben Kategorie (fda5-91c2-e17f-774c an der categoryEntry d024-d25b-a9b4-73b6 im .gst) und die Charaktergrenze c3c3-a80c-e026-200f sind mitgeprueft, damit kein zweites Limit die Erwartung ueberrascht. Das budgetabhaengige hidden-Flag der Lord-Kategorie (set true bei Budget < 2000) wird bewusst NICHT behauptet - eigene lessThan-Zelle; Max-Grenzen gelten ohnehin unabhaengig von der Sichtbarkeit.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-limit-999-lord-max-0.ros",
+      "description": "Kontingent \"Standard (BR-AB)\" mit genau einem katalogkonformen Bretonnian Lord (Knights Vow, Hand Weapon, Heavy Armour, Bretonnian Warhorse), costLimit pts = 999. Beide atLeast-Bedingungen am Lord-categoryLink halten nicht (999 < 1000 und 999 < 2000): kein Modifikator greift, die Grenze d7e7-599d-12cf-1fd1 behaelt ihren geschriebenen Basiswert max 0. Die eine Lord-Auswahl im Kontingent feuert sie mit Ist 1 / Grenze 0. Die zweite Kategoriegrenze fda5-91c2-e17f-774c steht bei diesem Budget auf ihrem Basiswert 1 (keiner ihrer set-Modifikatoren trifft zu) und feuert deshalb nicht; die Charaktergrenze c3c3-a80c-e026-200f liegt bei mindestens 3 und ebenfalls ueber dem Ist 1. Verplant sind hoechstens 131 pts.",
+      "expect": {
+        "firing": [
+          { "limitId": "d7e7-599d-12cf-1fd1", "actual": 1, "bound": 0 }
+        ],
+        "absent": [
+          "fda5-91c2-e17f-774c",
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249",
+          "5352-910f-fe13-a8f5",
+          "d7b1-1663-7bd9-d8c4",
+          "8f92-2c89-5335-8ce8",
+          "bb04-e762-5ef0-a6bc",
+          "1d32-3280-ccc4-5f89",
+          "ce85-f523-bccd-ba01",
+          "fbf1-0ef9-150e-90da",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "dde3-d464-c6d0-8ec8"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Lord",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-limit-1000-lord-max-minus-1.ros",
+      "description": "IDENTISCHER Aufbau wie Roster 01, costLimit pts = 1000 - der Schwellenwert der ersten atLeast-Bedingung selbst. Sie haelt an der Kante (1000 >= 1000), die zweite nicht (1000 < 2000): allein der decrement-1-Modifikator greift und zieht die Grenze d7e7-599d-12cf-1fd1 von 0 auf -1. Dieser Wert ist errechnet, nicht hingeschrieben, also kein Unbegrenzt-Sentinel, sondern \"nichts erlaubt\": die eine Lord-Auswahl feuert die Grenze mit Ist 1 / Grenze -1. Das Messpaar 01/02 unterscheidet sich um genau einen Punkt im costLimit und um nichts sonst.",
+      "expect": {
+        "firing": [
+          { "limitId": "d7e7-599d-12cf-1fd1", "actual": 1, "bound": -1 }
+        ],
+        "absent": [
+          "fda5-91c2-e17f-774c",
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249",
+          "5352-910f-fe13-a8f5",
+          "d7b1-1663-7bd9-d8c4",
+          "8f92-2c89-5335-8ce8",
+          "bb04-e762-5ef0-a6bc",
+          "1d32-3280-ccc4-5f89",
+          "ce85-f523-bccd-ba01",
+          "fbf1-0ef9-150e-90da",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "dde3-d464-c6d0-8ec8"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-limit-1999-lord-max-minus-1.ros",
+      "description": "IDENTISCHER Aufbau, costLimit pts = 1999 - ein Punkt unter dem Schwellenwert der zweiten atLeast-Bedingung. Die erste haelt weiter (1999 >= 1000), die zweite nicht (1999 < 2000): es bleibt beim decrement, die Grenze steht weiter auf -1 und feuert mit Ist 1 / Grenze -1. Das obere Ende des Plateaus 1000-1999; zusammen mit Roster 04 das zweite Messpaar.",
+      "expect": {
+        "firing": [
+          { "limitId": "d7e7-599d-12cf-1fd1", "actual": 1, "bound": -1 }
+        ],
+        "absent": [
+          "fda5-91c2-e17f-774c",
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249",
+          "5352-910f-fe13-a8f5",
+          "d7b1-1663-7bd9-d8c4",
+          "8f92-2c89-5335-8ce8",
+          "bb04-e762-5ef0-a6bc",
+          "1d32-3280-ccc4-5f89",
+          "ce85-f523-bccd-ba01",
+          "fbf1-0ef9-150e-90da",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "dde3-d464-c6d0-8ec8"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-limit-2000-lord-max-1.ros",
+      "description": "IDENTISCHER Aufbau, costLimit pts = 2000 - der Schwellenwert der zweiten atLeast-Bedingung selbst. Beide Bedingungen halten (2000 >= 1000 und 2000 >= 2000): decrement 1 zieht die Basis 0 auf -1, der increment-1-Modifikator wird per repeat je 1000 Punkte floor(2000/1000) = 2 mal angewendet, macht -1 + 2 = 1. Die eine Lord-Auswahl passt damit genau in den geoeffneten Slot: d7e7-599d-12cf-1fd1 feuert NICHT, der Kategorie-Anker meldet Ist 1 bei effectiveMax 1. Ab diesem Budget greift auch das hidden-Gatter der Lord-categoryEntry nicht mehr.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "d7e7-599d-12cf-1fd1",
+          "fda5-91c2-e17f-774c",
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249",
+          "5352-910f-fe13-a8f5",
+          "d7b1-1663-7bd9-d8c4",
+          "8f92-2c89-5335-8ce8",
+          "bb04-e762-5ef0-a6bc",
+          "1d32-3280-ccc4-5f89",
+          "ce85-f523-bccd-ba01",
+          "fbf1-0ef9-150e-90da",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "dde3-d464-c6d0-8ec8"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Lord",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-lords-limit-2999-max-1.ros",
+      "description": "Zwei gleich aufgebaute Bretonnian Lords im selben Kontingent, costLimit pts = 2999 - das obere Ende des Plateaus 2000-2999. Der repeat-Faktor ist floor(2999/1000) = 2, die wirksame Grenze also weiterhin -1 + 2 = 1. Zwei Lord-Auswahlen sprengen sie: d7e7-599d-12cf-1fd1 feuert mit Ist 2 / Grenze 1, der Kategorie-Anker meldet Ist 2 bei effectiveMax 1. Die zweite Kategoriegrenze fda5-91c2-e17f-774c steht bei diesem Budget ebenfalls auf 1; ob sie mit ihrem scope=\"parent\" denselben Rahmen zaehlt, ist aus den erlaubten Quellen nicht entscheidbar, sie steht deshalb weder in firing noch in absent (siehe README). Verplant sind hoechstens 262 pts.",
+      "expect": {
+        "firing": [
+          { "limitId": "d7e7-599d-12cf-1fd1", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Lord",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-two-lords-limit-3000-max-2.ros",
+      "description": "IDENTISCHER Aufbau wie Roster 05 (dieselben zwei Lords), costLimit pts = 3000 - ein Punkt darueber. Die Bedingung des increment-Modifikators haelt unveraendert; erst der repeat zaehlt eine Wiederholung mehr: floor(3000/1000) = 3, also -1 + 3 = 2. Damit passen beide Lords: d7e7-599d-12cf-1fd1 feuert NICHT, der Kategorie-Anker meldet Ist 2 bei effectiveMax 2. Die zweite Kategoriegrenze fda5-91c2-e17f-774c steht hier per set auf 2 und kann bei Ist 2 unter keiner Lesart feuern - sie steht deshalb in absent. Das Messpaar 05/06 zeigt den Schritt der Punkteleiter, ohne dass sich eine einzige Auswahl aendert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "d7e7-599d-12cf-1fd1",
+          "fda5-91c2-e17f-774c",
+          "c3c3-a80c-e026-200f",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Lord",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 2,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    }
+  ]
+}

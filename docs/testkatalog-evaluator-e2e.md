@@ -170,7 +170,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-self-equipment-save`](testing/at-least-self-equipment-save/) | Definitive Bretonnia + Mercenaries | 7 |
 | [`less-than-self-mount-and-weapon-gate`](testing/less-than-self-mount-and-weapon-gate/) | Definitive Dark Elves + Mercenaries | 5 |
 | [`unit-scope-repeat-knight-markup`](testing/unit-scope-repeat-knight-markup/) | Definitive Empire + Mercenaries | 6 |
-| **Summe** | | **399** |
+| [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
+| **Summe** | | **405** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2126,3 +2127,30 @@ Summe.
 | 04 | 8 Ritter **ohne** den Vorteil | Nullpunkt: kein Aufschlag, die Differenz zu Roster 02 ist genau der Aufschlag |
 | 05 | 8 Ritter mit dem Schwester-Vorteil „Blessed" | Der trägt keine Wiederholung: ebenfalls kein Aufschlag |
 | 06 | Zwei Regimenter — 5 Ritter mit Vorteil, 8 ohne | Rahmen-Beweis: nur die eigene Einheit zählt. Kontingentweit wären es 13 Ritter und der Aufschlag entsprechend höher |
+
+## `at-least-roster-limit-lord-slots`
+
+Prüft die `atLeast`-Bedingung auf das **eingestellte Kostenlimit** mit
+`childId="model"` (§7.7/§13.2 der Formatdoku) und zugleich die Wiederholung
+je 1000 Punkte an derselben Grenze. Beleg: der Lord-`categoryLink`
+(`d1d3-6362-e2f7-23c9`) des bretonischen Kontingents „Standard (BR-AB)" trägt
+die Grenze `d7e7-599d-12cf-1fd1` (`max 0`), einen `decrement` ab 1000 Punkten
+und einen `increment` ab 2000 Punkten, der sich je angefangener 1000 Punkte
+wiederholt. Innerhalb einer Roster-Familie sind die Auswahlen identisch —
+allein die eingestellte Punktgrenze bewegt sich, verplant sind nie mehr als
+131 Punkte.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Lord, Budget 999 | Keine der beiden Schwellen erreicht: die Grenze steht auf ihrem geschriebenen Wert und der Lord verletzt sie |
+| 02 | Ein Lord, Budget 1000 | Die erste Schwelle greift exakt auf dem Wert — die Schranke wird rechnerisch negativ |
+| 03 | Ein Lord, Budget 1999 | Unverändert: die zweite Schwelle ist noch nicht erreicht |
+| 04 | Ein Lord, Budget 2000 | Zweite Schwelle erreicht, die Wiederholung greift zweimal: genau ein Lord ist erlaubt, die Grenze schweigt |
+| 05 | Zwei Lords, Budget 2999 | Immer noch nur einer erlaubt — die Grenze feuert |
+| 06 | Zwei Lords, Budget 3000 | Eine Wiederholung mehr: zwei Lords sind erlaubt, die Grenze schweigt |
+
+> **Rechnerisch negative Schranke:** Die Roster 02 und 03 nageln fest, dass ein
+> aus Modifikatoren *errechneter* Wert `-1` **nicht** der Sentinel
+> „unbegrenzt" ist — der gilt laut Formatdoku §7.6 nur für hingeschriebene
+> Werte. Eine Lesart, die hier auf „unbegrenzt" umschaltete, erlaubte bei 1500
+> Punkten beliebig viele Lords.
