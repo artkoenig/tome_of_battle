@@ -167,7 +167,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
 | [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **381** |
+| [`at-least-self-equipment-save`](testing/at-least-self-equipment-save/) | Definitive Bretonnia + Mercenaries | 7 |
+| **Summe** | | **388** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2050,3 +2051,31 @@ Eltern-Rahmen **genau einen** Standartenträger führt.
 > Grenzwert und die Rahmen-Lesart der Kopplung fest; ein Roster zu erfinden, der
 > die Senkung auslöst, wäre kein Beleg aus den Daten. Ob diese Zelle stattdessen
 > als dauerhaft unprüfbar erklärt werden sollte, ist eine Frage an den Menschen.
+
+## `at-least-self-equipment-save`
+
+Prüft die `atLeast`-Bedingung mit `scope="self"` und einer **Eintrags-Id** als
+`childId` (§7.7/§13.2 der Formatdoku): Zählrahmen ist die Auswahl, die die
+Abfrage trägt, gezählt wird, was **unter** ihr steht — mit
+`includeChildSelections="true"` auch tiefer Verschachteltes. Beleg: der
+Bretonnian Lord (`bf54-da29-921a-e457`, Bretonnia) trägt an seinem
+Profil-Verweis (`c2cae708-0b6f-4553-9adc-754be21e3d2e`) vier
+`decrement`-Modifikatoren auf den Rüstungswurf `Sv`, jeder an genau ein
+Ausrüstungsstück gekoppelt: Schild, Barding, Streitross und schwere Rüstung.
+Der geschriebene Basiswert ist 7.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lord ohne jede Ausrüstung | Keine Bedingung hält — der Rüstungswurf steht auf dem geschriebenen Basiswert |
+| 02 | Lord mit Schild | Genau ein Abzug greift |
+| 03 | Lord mit schwerer Rüstung | Der doppelte Abzug greift — der einzige Modifikator mit Wert 2 |
+| 04 | Lord auf dem Streitross, ohne Barding | Das Reittier zählt, die Barding noch nicht |
+| 05 | Lord auf dem Streitross **mit** Barding | Die Barding hängt eine Ebene unter dem Reittier: sie zählt mit. Eine Lesart, die nur direkte Kinder zählte, käme hier auf einen zu hohen Wert |
+| 06 | Lord mit allen vier Stücken | Alle vier Abzüge summieren sich; katalogkonform gebaut, alle Pflichten erfüllt |
+| 07 | Nackter Lord neben voll ausgerüsteten Rittern derselben Armee | Unverändert Basiswert: der Rahmen ist der Träger, nicht das Kontingent oder die Armee |
+
+> **Bewusst nicht katalogkonform:** Die Roster 01–05 und 07 lassen die
+> Pflichten des Lords (Gelübde, Reittier-Wahl, Handwaffe, schwere Rüstung)
+> offen — ein Lord *ohne* schwere Rüstung ist sonst nicht baubar, und der
+> Basiswert wäre nie sichtbar. Diese Grenzen stehen deshalb in keiner der
+> beiden Erwartungslisten; Roster 06 ist das konforme Gegenstück.
