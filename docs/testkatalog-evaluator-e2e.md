@@ -176,7 +176,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-id-scope-inner-circle-champion`](testing/at-least-id-scope-inner-circle-champion/) | Definitive Empire + Mercenaries | 4 |
 | [`equal-to-self-general-black-arc`](testing/equal-to-self-general-black-arc/) | Definitive Dark Elves + Mercenaries | 4 |
 | [`force-repeat-bloodletters-flesh-hound-slots`](testing/force-repeat-bloodletters-flesh-hound-slots/) | Definitive Forces of Chaos + Mercenaries | 7 |
-| **Summe** | | **429** |
+| [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
+| **Summe** | | **435** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2274,3 +2275,29 @@ laufen dieselben Auswahlen im anderen Kontingent.
 | 05 | Legion, drei Bloodletters-Einheiten, drei Meuten | Dritte Wiederholung: passt wieder |
 | 06 | Standard-Kontingent, keine Bloodletters, zwei Meuten | Statt der Anhebung greift die Aufhebung: keine Obergrenze |
 | 07 | Standard-Kontingent, auswahlgleich zu 04 | Gegenprobe: dieselben Auswahlen, aber stumm — das Gatter am `increment` hängt am Kontingent |
+
+## `repeat-list-two-repeats-regiment-of-renown`
+
+Prüft, was passiert, wenn ein Modifikator **mehrere** `<repeat>` trägt: jede
+Wiederholung ist eine eigene Abfrage und steuert ihre eigenen Anwendungen bei
+— sie **addieren** sich. Beleg: im Kontingent „Marienburger Mercenary Army
+(EM-AB)" (`d1ca-0d07-b9d2-0ff1`) hängen am Kategorie-Verweis „Regiment of
+Renown" zwei Obergrenzen mit dem geschriebenen Wert 0, jede angehoben um eins
+je Auswahl der Kategorie „State troops" **und** je Auswahl der Kategorie
+„Militia".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Weder Staatstruppen noch Miliz, ein Söldnerregiment | Beide Wiederholungen zählen null: der Basiswert 0 steht, die Grenze feuert |
+| 02 | Zwei Staatstruppen, **keine** Miliz, zwei Söldnerregimenter | Entscheidender Fall: additiv passt es, multiplikativ wäre gar keines erlaubt |
+| 03 | Dieselbe Armee mit einem Regiment zu viel | Die Grenze feuert bei drei |
+| 04 | Gespiegelt: zwei Miliz, keine Staatstruppen | Dieselbe Rechnung von der anderen Seite |
+| 05 | Zwei Staatstruppen **und** eine Miliz, drei Regimenter | Beide Beiträge stapeln sich |
+| 06 | Eine Staatstruppe, zwei Regimenter | Ein einzelner Schritt: genau eines wäre erlaubt |
+
+> **Wo die Quelle schweigt:** Weder Wiki noch XSD sagen ausdrücklich, wie
+> mehrere Wiederholungen eines Modifikators zusammenwirken. Das Szenario
+> leitet die additive Lesart aus der Wiki-Formulierung („ancestor of **one or
+> more** Repeats", „each time the Query is met") und aus drei weiteren
+> Fundstellen desselben Musters im Korpus ab — darunter eine mit **drei**
+> Wiederholungen —, die unter einer multiplikativen Lesart sinnlos würden.

@@ -653,6 +653,13 @@
         "docs/testing/force-repeat-bloodletters-flesh-hound-slots"
       ],
       "rationale": "Seven rosters over the Forces of Chaos unit Flesh Hounds (eaf6-a701-f67e-7c26), whose force-scoped max 7f35-5f3f-42c9-be19 is written as 0 and raised by an increment 1 whose <repeat> counts the Bloodletters unit (7dc4-fb32-003b-c289) with scope=\"force\", repeats=1, includeChildSelections and includeChildForces true. Inside the contingent Daemonic Legion (SoC) 93f4-7522-86e9-7d45 the rosters walk the repetition ladder: 0 Bloodletters leaves the base value and fires at 1/0, one allows one and fires at 2/1, two allow two - silent at 2/2, firing at 3/2 - and three allow three, silent at 3/3. Two more rosters run the identical selections in a contingent that is not the Daemonic Legion, where the sibling set -1 lifts the limit instead and the gated increment never applies, so effectiveMax is unbounded; roster 07 is selection-identical to the firing roster 04 and stays silent. The bound is read off the limit itself (actual/bound) and off effectiveMax on the slot. Scenario is green."
+    },
+    {
+      "key": "repeatList|n=gt1|on=modifier",
+      "evidence": [
+        "docs/testing/repeat-list-two-repeats-regiment-of-renown"
+      ],
+      "rationale": "Six rosters over the Empire contingent Marienburger Mercenary Army (d1ca-0d07-b9d2-0ff1), whose categoryLink Regiment of Renown carries two max 0 limits (51f7-4cc5-fad2-1f91, c13f-1ee8-e81a-01ae), each raised by an unconditional increment 1 whose <repeats> holds TWO repeats - one counting the category State troops (2067-05d1-55c9-f09f), one the category Militia (bdb0-067d-c73e-2eb2). The rosters separate every combination rule the source leaves open: with two State-troops units and no Militia two Regiments of Renown stay silent and a third fires, the mirrored Militia-only roster does the same, one State-troops unit allows exactly one, and a roster with two State troops plus one Militia allows three, so the two contributions stack. A multiplying reading, a reading where a zero repeat cancels the modifier, and readings that honour only the first or only the last repeat each break at least two of these rosters. Both limit ids are asserted together, which pins that the repetition is computed per limit and not once for the categoryLink. The additive reading is derived in the scenario README from the wiki wording (a modifier may be the ancestor of one or more repeats; Repeats is the number of times the modifier applies each time the query is met) and from three further corpus sites that become nonsensical under multiplication, including a three-repeat variant in the Dwarfs catalogue. Scenario is green."
     }
   ]
 }

@@ -7,90 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 115,
-    "uncovered": 15
+    "covered": 116,
+    "uncovered": 14
   },
   "cells": [
-    {
-      "key": "repeatList|n=gt1|on=modifier",
-      "kind": "repeatList",
-      "axes": {
-        "count": "gt1",
-        "on": "modifier"
-      },
-      "occurrences": 8,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 1,
-        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 7
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0cea-8641-a1ca-ae06",
-            "name": "Dwarf Warriors"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats"
-          ],
-          "raw": {
-            "count": 3,
-            "on": "modifier"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "categoryEntry",
-            "id": "03f5-490b-d79d-08a2",
-            "name": "Knight  of Inner Circle"
-          },
-          "path": [
-            "catalogue",
-            "categoryEntries",
-            "categoryEntry",
-            "modifiers",
-            "modifier",
-            "repeats"
-          ],
-          "raw": {
-            "count": 2,
-            "on": "modifier"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "6e1d-9e41-114f-8128",
-            "name": "Knights of the Inner Circle"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "repeats"
-          ],
-          "raw": {
-            "count": 2,
-            "on": "modifier"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|greaterThan|self|selectionCount|child=id",
       "kind": "condition",

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rltr-01" name="RLTR 01 - Marienburger Mercenary Army: weder State troops noch Militia, ein Regiment of Renown (Grenze 0, feuert)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored repeat-list-two-repeats-regiment-of-renown E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000"/>
+  </costLimits>
+  <forces>
+    <!-- Grundlinie: BEIDE <repeat> zaehlen 0 Treffer (keine State-troops- und
+         keine Militia-Auswahl im Kontingent) => der increment 1 wird nie
+         angewendet => die beiden Grenzen 51f7-4cc5-fad2-1f91 und
+         c13f-1ee8-e81a-01ae behalten ihren geschriebenen Basiswert max 0.
+         Ein einziges Regiment of Renown feuert damit bereits. -->
+    <force id="force-1" name="Marienburger Mercenary Army (EM-AB)" entryId="d1ca-0d07-b9d2-0ff1" catalogueId="3938-8369-a300-4a03" catalogueRevision="1" catalogueName="The Empire">
+      <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="98a8-944c-e737-3674" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-ror-bearmen" name="Bearmen of Urslo" entryId="ab79-9343-3a3d-ff06" entryLinkId="3ed2-7775-d217-14c2" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-ror-bearmen-models" name="Bearmen" entryId="a7c7-5257-8b73-af45" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-ror-bearmen-hw" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="5136-27e1-577c-1ab3" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
