@@ -101,6 +101,16 @@
       "pinnedAt": "2026-08-11",
       "status": "open",
       "note": "An author message carried by a selectionEntryGroup must reach the report at that group anchor when its gate holds: the group \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138, Dark Elves) carries a modifier type=\"add\" field=\"warning\" gated on an and-group of atLeast 1 selections scope=\"self\" childId=\"any\" (the group itself is the counting frame) and lessThan 1 selections scope=\"force\" of the toggle \"Allow experimental rules?\" (e28d-f278-f209-63bd); a roster that chooses one member of that group without the toggle (roster 01) and one that chooses two (roster 05) must each carry exactly one authorMessage of severity warning at anchorDefId 7f4e-4b7b-fbc4-a138, but the report carries no author message at that anchor at all, while the three rosters demanding silence (empty group, populated frame with empty group, member plus toggle) are already correct — so the gate is not read too eagerly, the message is never projected at a group carrier."
+    },
+    {
+      "cellKey": "constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false",
+      "scenario": "docs/testing/parent-min-include-children-bolt-thrower",
+      "failingCases": [
+        "Szenario: parent-min-include-children-bolt-thrower > rosters/04-three-teams-max-fires.ros"
+      ],
+      "pinnedAt": "2026-08-11",
+      "status": "open",
+      "note": "A shared parent-scoped limit must report ONE violation for its counting frame, not one per counted selection: the Dark Elves unit \"Reaper Bolt Thrower\" (a757-462a-11d5-9636) holds three copies of the model entry \"Reaper Bolt Thrower team\" (8d99-db74-0051-4a45), whose max constraint ccf9-fefc-71c8-bd73 (max 2, field=selections, scope=parent, shared=true, includeChildSelections=true) counts 3 in that one frame and must therefore fire exactly once with actual 3 against bound 2; the report carries three violations of that same limit instead of one. The sibling minimum 41ec-bee5-0865-0448 of the same pair already reports exactly once in the four other rosters, including the frame-separating roster 05 with two units, so the duplication is on the max side of this pair, not a general one."
     }
   ],
   "parkedQuestions": [

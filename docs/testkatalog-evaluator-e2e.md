@@ -194,7 +194,10 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-parent-model-champion-gate`](testing/at-least-parent-model-champion-gate/) | Definitive Dwarfs + Mercenaries | 4 |
 | [`at-least-self-any-experimental-hydra-warning`](testing/at-least-self-any-experimental-hydra-warning/) | Definitive Dark Elves + Mercenaries | 5 |
 | [`not-equal-to-parent-lance-pistol-gate`](testing/not-equal-to-parent-lance-pistol-gate/) | Definitive Empire + Mercenaries | 7 |
-| **Summe** | | **522** |
+| [`not-equal-to-roster-limit-paladin-bsb`](testing/not-equal-to-roster-limit-paladin-bsb/) | Definitive Bretonnia + Mercenaries | 6 |
+| [`not-equal-to-roster-experimental-rat-riders`](testing/not-equal-to-roster-experimental-rat-riders/) | Definitive Skaven + Mercenaries | 5 |
+| [`parent-min-include-children-bolt-thrower`](testing/parent-min-include-children-bolt-thrower/) | Definitive Dark Elves + Mercenaries | 5 |
+| **Summe** | | **538** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2556,3 +2559,68 @@ einer Pistole zurück.
 > **Offen erklärt:** Die Reihenfolge der beiden `modifierGroup`s und der
 > Unterschied `shared="false"` (Mindestmaß) gegen `shared="true"` (Höchstmaß)
 > sind mit einer Einheit und einer Verweis-Instanz nicht beobachtbar.
+
+## `not-equal-to-roster-limit-paladin-bsb`
+
+Prüft eine `<condition type="notEqualTo" value="500" field="limit::…"
+scope="roster">`: sie liest das **eingestellte Punktebudget** — nicht die
+verplante Summe — und hält bei jedem Budget außer genau 500. Beleg: die
+Bretonnia-Einheit „Paladin Battle Standard Bearer" (`2f57-db88-56b5-180f`) trägt
+eine force-skopierte Pflichtgrenze (`49e3-c542-6bff-9805`), die „Border Patrols
+rules" auf 0 setzt und eine `or`-Gruppe wieder auf 1 hebt, deren erster Zweig
+genau diese Bedingung ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Border Patrols, Budget **exakt 500** | Beide `or`-Zweige fallen: die Pflicht bleibt bei 0 |
+| 02/03 | Dasselbe bei Budget 499 und 501 | Ein Punkt in jede Richtung genügt: die Pflicht steht wieder auf 1 — die Gleichheit ist von beiden Seiten geklammert |
+| 04 | Budget 500, **kein** Border Patrols | Der zweite `or`-Zweig hält: die Pflicht steht auf 1 und feuert mit Ist 0 |
+| 05 | Border Patrols, Budget 500, davon 50 verplant | Gelesen wird das Budget, nicht die Summe — die Pflicht bleibt bei 0 |
+| 06 | Kein Border Patrols, die Einheit ist gewählt | Positivprobe: die Pflicht ist erfüllt |
+
+> **Offen erklärt:** In den Rostern mit „Border Patrols rules" ist die Einheit
+> zugleich versteckt; die Mindestgrenze einer versteckten Entität wird nicht
+> validiert (Formatdoku §5.6/§8), deshalb wird die verschobene Grenze dort über
+> `effectiveMin` gepinnt statt über eine Verletzung.
+
+## `not-equal-to-roster-experimental-rat-riders`
+
+Prüft eine `<condition type="notEqualTo" value="0" … scope="roster">` auf ein
+**Kategorie-Ziel**: gezählt wird armeeweit, und die Bedingung hält bei jedem
+Zählstand außer null. Beleg: die versteckte Skaven-Einheit „Rat Riders"
+(`d0aa-b183-877e-e731`) wird sichtbar, sobald die Armee mindestens eine Auswahl
+der Kategorie „Experimental rules" (`4fed-b911-e6e0-927b`) führt und das
+Kontingent nicht das Hell-Pit-Sonderheer ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Auswahl dieser Kategorie | Zählstand 0 — die Einheit bleibt versteckt |
+| 02 | Genau eine solche Auswahl | Die Einheit wird sichtbar |
+| 03 | Zählstand 2 | „Ungleich null", nicht „gleich eins" — sie bleibt sichtbar |
+| 04 | Die Auswahl steht im **zweiten** Kontingent | Der Rahmen ist die ganze Armee: sie wird trotzdem sichtbar |
+| 05 | Dieselbe Auswahl im Hell-Pit-Kontingent | Der `notInstanceOf`-Zweig der and-Gruppe fällt — versteckt |
+
+## `parent-min-include-children-bolt-thrower`
+
+Prüft eine `min`-Grenze mit `scope="parent"` und
+`includeChildSelections="true"`: gezählt wird im Eltern-Rahmen, jede Einheit ist
+ihr eigener Rahmen. Beleg: das Modell „Reaper Bolt Thrower team"
+(`8d99-db74-0051-4a45`) der Dark-Elves-Einheit `a757-462a-11d5-9636` trägt
+`min 1` (`41ec-bee5-0865-0448`) direkt neben `max 2` (`ccf9-fefc-71c8-bd73`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne Team | Die Pflicht feuert mit Ist 0 gegen 1 |
+| 02/03 | Ein bzw. zwei Teams | Beide Grenzen schweigen — das Paar ist von beiden Seiten geklammert |
+| 04 | Drei Teams | Das Höchstmaß feuert **genau einmal** mit Ist 3 gegen 2 |
+| 05 | Einheit A mit Team, Einheit B ohne | Rahmentrennung: das fremde Team rettet B nicht — genau eine Verletzung |
+
+> **Status: rot.** Vier der fünf Roster stimmen; in Roster 04 meldet der Bericht
+> das Höchstmaß **dreimal** statt einmal — eine Verletzung je gezählter
+> Selektion statt einer je Rahmen. Der Befund ist als Phase-B-Aufgabe in
+> `docs/testing/campaign-state.json` (`pinnedGaps`) festgehalten.
+
+> **Offen erklärt:** `includeChildSelections="true"` ist an dieser Fundstelle
+> nicht gegen `false` trennbar — der gezählte Eintrag kommt im Fixture-Satz genau
+> einmal vor und kann unterhalb desselben Rahmens nicht tiefer verschachtelt
+> auftreten.

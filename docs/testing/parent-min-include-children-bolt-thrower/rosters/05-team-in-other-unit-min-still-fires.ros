@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmicb-05" name="PMICB 05 - Zwei Reaper Bolt Thrower: das Team der einen Einheit erfuellt die Pflicht der anderen NICHT (41ec feuert genau einmal, Ist 0 / Grenze 1)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-min E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+  </costLimits>
+  <forces>
+    <!-- Kontingent "Standard (DE-AB)": Einheit sichtbar, Kategorie "Rare"
+         (siehe Kommentar in Roster 01). Bei 2000 pts erlaubt die Rare-Grenze
+         0a44-2d3f-adfe-f3a1 der .gst zwei Rare-Auswahlen (set 2 fuer
+         2000-2999 pts) — die beiden Einheiten sind also katalog-legal
+         nebeneinander waehlbar. -->
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <!-- EINHEIT A: vollstaendig, mit einem Team. In IHREM Rahmen steht die
+             Zaehlung des Traegers auf 1 — 41ec ist hier erfuellt. -->
+        <selection id="sel-rbt-unit-a" name="Reaper Bolt Thrower" entryId="a757-462a-11d5-9636" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare-a" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-team-a" name="Reaper Bolt Thrower team" entryId="8d99-db74-0051-4a45" entryLinkId="" number="1" type="model" collective="false">
+              <costs>
+                <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100"/>
+              </costs>
+              <selections>
+                <selection id="sel-team-a-crew-a" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-a-crew-a-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-a-crew-a-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-a-crew-b" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-a-crew-b-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-a-crew-b-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-a-reaper" name="Reaper" entryId="0137-be86-e4e7-d374" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+        <!-- EINHEIT B: dieselbe Definition, aber OHNE Team. scope="parent"
+             macht jede Einheiten-Instanz zu ihrem eigenen Rahmen: das Team
+             der Einheit A zaehlt hier nicht mit, die Zaehlung steht auf 0 und
+             41ec feuert — genau einmal, naemlich fuer diesen Rahmen. Eine
+             roster-weite Lesart von shared="true" saehe dagegen ein Team im
+             Roster und bliebe still. -->
+        <selection id="sel-rbt-unit-b" name="Reaper Bolt Thrower" entryId="a757-462a-11d5-9636" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare-b" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

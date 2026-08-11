@@ -737,6 +737,20 @@
         "docs/testing/not-equal-to-parent-lance-pistol-gate"
       ],
       "rationale": "Sieben Roster ueber die Empire-Einheit Knights of the Knightly Orders (1d77-9e6e-a6ab-573f). Der Lance-Verweis e082-13b2-e746-34e0 traegt min 1 und max 1; eine modifierGroup setzt beide auf 0, gegatet auf atLeast 1 Signature Weapon UND notEqualTo 1 Pistol im Eltern-Rahmen, eine zweite setzt sie bei equalTo 1 Pistol zurueck. Roster 01/02 (Zaehlstand 1) halten die Bedingung nicht, Roster 03 (Zaehlstand 0) und 04/05 (Zaehlstand 2) halten sie - der Zaehlstand 2 trennt notEqualTo von lessThan. Roster 06 zeigt die and-Gruppe: derselbe Zaehlstand 0 ohne Signature-Weapon-Auswahl laesst die geschriebenen Grenzen stehen. Roster 07 trennt den Rahmen: ein Pistol in einer anderen Einheit desselben Kontingents zaehlt nicht mit. Szenario ist gruen."
+    },
+    {
+      "key": "condition|notEqualTo|roster|limitValue|child=any",
+      "evidence": [
+        "docs/testing/not-equal-to-roster-limit-paladin-bsb"
+      ],
+      "rationale": "Sechs Roster ueber die Bretonnia-Einheit Paladin Battle Standard Bearer (2f57-db88-56b5-180f). Ihre force-skopierte Mindestgrenze 49e3-c542-6bff-9805 wird von Border Patrols auf 0 gesetzt und von einer or-Gruppe wieder auf 1 gehoben, deren erster Zweig die Bedingung notEqualTo 500 auf limit::ecfa-8486-4f6c-c249 ist. Roster 01 (Budget exakt 500) haelt sie nicht: effectiveMin 0. Roster 02 (499) und 03 (501) klammern die Gleichheit von beiden Seiten: effectiveMin 1. Roster 05 zeigt, dass das eingestellte Budget gelesen wird und nicht die verplante Summe (Budget 500, verplant 50). Roster 04 trennt die or-Zweige: ohne Border Patrols bei Budget 500 greift der zweite Zweig, die Grenze feuert mit Ist 0 gegen 1. In den Rostern mit Border Patrols ist die Einheit zugleich versteckt, dort wird die verschobene Grenze ueber effectiveMin gepinnt statt ueber eine Verletzung (Formatdoku 5.6/8). Szenario ist gruen."
+    },
+    {
+      "key": "condition|notEqualTo|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/not-equal-to-roster-experimental-rat-riders"
+      ],
+      "rationale": "Fuenf Roster ueber die versteckte Skaven-Einheit Rat Riders (d0aa-b183-877e-e731). Ihr set hidden=false haengt an einer and-Gruppe aus notInstanceOf des Kontingents 9f0b-5346-a3bc-b5fe und der Bedingung notEqualTo 0 auf die roster-weite Zahl der Auswahlen der Kategorie Experimental rules (4fed-b911-e6e0-927b). Roster 01 (kein Traeger) laesst sie versteckt, Roster 02 (ein Traeger) macht sie sichtbar, Roster 03 (Zaehlstand 2) zeigt, dass die Bedingung ungleich null und nicht gleich eins meint, Roster 04 traegt den Traeger in einem ZWEITEN Kontingent und belegt damit den armeeweiten Rahmen, Roster 05 laesst den notInstanceOf-Zweig im Hell-Pit-Kontingent fallen. Gepinnt ueber isHidden am Angebots- bzw. besetzten Slot. Szenario ist gruen."
     }
   ]
 }

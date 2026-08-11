@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="nertr-04" name="NERTR 04 - zwei Kontingente: die Auswahl der Kategorie &quot;Experimental rules&quot; steht im ZWEITEN, Rat Riders wird im ERSTEN sichtbar" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-equal-to-roster-experimental-rat-riders E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Kontingent 1 ist leer und identisch zu Roster 01; die eine
+         kategorie-tragende Auswahl steht allein in Kontingent 2. Die
+         Bedingung hat scope="roster" und ihr childId ist eine KATEGORIE -
+         gezaehlt wird armeeweit, ueber die Kontingentsgrenze hinweg. Der
+         Zaehler steht also auf NICHT NULL und der Rat-Riders-Slot des ERSTEN
+         Kontingents ist sichtbar.
+         Gegenprobe im selben Roster: der zweite Modifier des Eintrags zaehlt
+         mit scope="force" ein EINTRAGS-Ziel (8b76-...) - er zaehlt je
+         Kontingent. In Kontingent 1 steht davon nichts, das Hoechstmass der
+         Einheit bleibt dort 0. -->
+    <force id="force-1" name="Standard (SK-AB)" entryId="f143-b4f7-0151-8478" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven"></force>
+    <force id="force-2" name="Clan Moulder (SK-AB)" entryId="0903-619f-ec8b-1c7a" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven">
+      <selections>
+        <selection id="sel-allow-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="c042-1d75-40ca-c654" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-allow-experimental-slr" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+            <category id="cat-allow-experimental-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
