@@ -386,7 +386,7 @@ function resolveAncestor(ctx, field, targetId) {
  * @param {{ kind: string, costTypeId?: string }} field  aus `SELECTION_COUNT` / `costSumField` / `limitValueField`.
  * @param {string} scope  ein `ScopeKeyword` oder eine Eintrags-/Kategorie-ID.
  * @param {string|null} targetId  Ziel-ID oder `null` fuer "alles im Rahmen".
- * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean }} [flags]
+ * @param {{ shared?: boolean, includeChildSelections?: boolean, includeChildForces?: boolean, includeClimbedCosts?: boolean, includeFrameOwn?: boolean }} [flags]
  *   Die drei Battlescribe-Flags, dazu das engine-eigene Gate
  *   `includeClimbedCosts` fuer die unter die Traeger-Id **aufgestiegenen**
  *   Nachfahren-Kosten (Issue 0113): ohne Angabe folgt es
@@ -394,6 +394,11 @@ function resolveAncestor(ctx, field, targetId) {
  *   sie die Schachtelungs-Flags fuer die Vorkommens-Zaehlung anhebt
  *   (`countingFlagsOf`), die Nachfahren-Kosten aber beim hingeschriebenen
  *   Flag bleiben muessen (§7.6 „just scope's field", Issue 091).
+ *   Dazu das zweite engine-eigene Gate `includeFrameOwn` fuer den Eigenanteil
+ *   des Rahmenknotens unter dem `null`-Ziel; ohne Angabe folgt es
+ *   `frame === ctx.node`. Die Constraint-Schicht schliesst es fuer eine
+ *   `scope="self"`-Grenze ueber `field="selections"`, die zaehlt, was
+ *   *unterhalb* ihres Traegers steht (§7.6), nicht den Traeger selbst.
  * @returns {number|typeof UNRESOLVED_BUDGET} die Zaehlung/Grenze, oder der
  *   Budget-Sentinel bei einem unaufloesbaren `LIMIT_VALUE`-Feld.
  */
@@ -445,12 +450,15 @@ export function query(ctx, field, scope, targetId, flags) {
   // wo {@link resolveFrame} den Rahmen an den fragenden Knoten bindet. Ist der
   // Rahmen ein anderer, stets ein echter Vorfahre, fragt `childId="any"` nach
   // dem, was *im* Rahmen steht, und der Rahmen steht nicht in sich selbst.
+  // Das Gate ist ueberschreibbar: `includeFrameOwn` wird — wie das benachbarte
+  // `includeClimbedCosts` — aus den **rohen** Flags gelesen, weil
+  // {@link normalizeFlags} nur die drei Battlescribe-Flags zurueckgibt.
   const tally = ctx.index.get(
     key,
     effectiveFlags.includeChildSelections,
     effectiveFlags.includeChildForces,
     flags?.includeClimbedCosts ?? effectiveFlags.includeChildSelections,
-    frame === ctx.node,
+    flags?.includeFrameOwn ?? (frame === ctx.node),
   );
 
   if (field.kind === CountedFieldKind.SELECTION_COUNT) {

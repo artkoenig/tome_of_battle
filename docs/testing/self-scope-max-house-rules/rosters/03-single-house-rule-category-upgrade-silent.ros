@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ssm-03" name="SSM 03 – Eine House rule (Category Upgrade): self-Grenze schweigt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored self-scope-max-house-rules E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (OK-AB)" entryId="729f-9246-5cd3-5044" catalogueId="731d-5b13-2a92-5427" catalogueRevision="2" catalogueName="Ogre Kingdoms (6th definitive edition)">
+      <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <selections>
+            <selection id="sel-allow-merc" name="Allow Mercenaries" entryId="fda5-49b9-b74c-aaf4" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <!-- Gegenprobe zu SSM 02 mit dem ANDEREN der beiden direkten Kinder:
+                     der self-Rahmen zaehlt wieder 1, nicht 2. Damit ist belegt, dass
+                     die 2 in SSM 01 aus der Anzahl der Kinder stammt und nicht an
+                     einem bestimmten Kind-Eintrag haengt. -->
+                <selection id="sel-hr-cat" name="House rule: Category Upgrade" entryId="698e-c660-5c99-d481" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

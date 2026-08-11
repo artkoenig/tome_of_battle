@@ -79,6 +79,17 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "Eine Bedingung auf das eingestellte Punktebudget (field=limit::ecfa-8486-4f6c-c249) muss dieses Budget auch dann lesen, wenn sie scope=force traegt: das .ros-Format kennt nur ein Budget an der Roster-Wurzel, also ist der Rahmen aufloesbar und liefert genau dieses Budget. Der Eintrag 'Border Patrol (500pts)' (2066-082d-a465-4baf, Mercenaries) haengt seine Pflicht (set 1 auf die min-Grenze 1a97-1579-ab05-a6d7) an equalTo 500; bei einem Budget von exakt 500 meldet der Bericht weiterhin effectiveMin 0 statt 1, und bei 499 wie 501 meldet er zusaetzlich die Diagnose UNRESOLVED_BUDGET_LIMIT. Unter der jetzigen Auswertung ist die Regel des Katalogautors tot."
+    },
+    {
+      "cellKey": "constraint|max|selectionCount|self|s=true|ics=false|icf=false|pct=false",
+      "scenario": "docs/testing/self-scope-max-house-rules",
+      "failingCases": [
+        "Szenario: self-scope-max-house-rules > rosters/01-both-house-rules-self-max-fires.ros",
+        "Szenario: self-scope-max-house-rules > rosters/06-single-house-rule-number-two-self-max-fires.ros"
+      ],
+      "pinnedAt": "2026-08-10",
+      "status": "open",
+      "note": "A max constraint with scope=\"self\" must make its own carrier selection the counting frame and count the selections underneath it: \"Allow Mercenaries\" (fda5-49b9-b74c-aaf4, game system) carries max 1 selections scope=\"self\" shared=\"true\" includeChildSelections=\"false\" (714b-5314-33d4-dd68) and holds exactly two direct children (the two hidden house-rule entries 713c-28b1-0861-1ffd and 698e-c660-5c99-d481), so a roster holding both — and equally one holding a single child node with number=2 — must make that limit fire with actual 2 against bound 1. The report carries no violation for 714b-5314-33d4-dd68 at all in either roster, while the four silent rosters (one child, no child, and the frame-delimiting roster 05 where the PARENT holds two children but the carrier only one) all pass; so the limit never fires rather than counting in the wrong frame. The parent-scoped sibling 1df9-8159-156a-641f is asserted absent in every roster and is correct throughout."
     }
   ],
   "parkedQuestions": [
@@ -105,15 +116,27 @@
       "parkedAt": "2026-08-10",
       "status": "open",
       "answer": null
+    },
+    {
+      "cellKey": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "question": "The only repeat in the whole fixture corpus that counts childId=\"any\" sits on the shared entry \"Grappling Hooks\" (6eac-4ed9-4511-ff14, game system), and that entry is orphaned: its id occurs exactly once in the corpus — at its own definition. Nothing links it, it carries no categoryLink so no force slot can offer it, and the game system declares no forceEntries at all; of the corpus's 141 repeat elements, no other one uses childId=\"any\". So no catalogue-admissible roster can reach the construct, and whether childId=\"any\" counts the query's own carrier among its parent frame's children cannot be triangulated from a second instance either. Should this cell be waived as permanently untestable on this corpus (recording that the entry is unreferenced upstream data), or should it be covered on the synthetic unit-test track under src/evaluator/ instead of the black-box docs/testing/ track?",
+      "sourcesChecked": [
+        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst (the definition at the sharedSelectionEntries top level, and the absence of any forceEntries)",
+        "all five definitive fixture files (0 incoming references to 6eac-4ed9-4511-ff14; 0 of 141 repeat elements carry childId=\"any\" besides this one)",
+        "docs/battlescribe-data-format.md 7.7 (childId values) and 5.6/8 (force slots resolve through categoryLinks)"
+      ],
+      "parkedAt": "2026-08-10",
+      "status": "open",
+      "answer": null
     }
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-6hzwh7",
+    "branch": "claude/evaluator-abschluss-kampagne-uhbxfy",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 13,
-    "lastRunAt": "2026-08-10T15:42:24Z",
-    "lastRunOutcome": "stopped-by-human",
+    "runs": 16,
+    "lastRunAt": "2026-08-10T23:18:35Z",
+    "lastRunOutcome": "stopped-waiting-on-human",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -178,8 +201,17 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/self-scope-max-house-rules": {
+        "cellKey": "constraint|max|selectionCount|self|s=true|ics=false|icf=false|pct=false",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-10",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     },
-    "reArmNote": "Run 13: the human stopped the campaign; the scheduled re-arm was deleted. The campaign is NOT closed - 8 cells remain uncovered in docs/testing/worklist.json and one parked question waits on an answer. A later run must be started by the human; do not read the missing re-arm as termination."
+    "reArmNote": "Run 16 did the termination check and stopped without re-arming. The campaign is NOT closed: the inventory exits 1 with one uncovered cell, but that cell is parked and no pinned gap is open, so there is no takeable work of any kind. Both open parkedQuestions entries wait on a human answer. This outcome value is not one of the three the skill names; it means \"unfinished, but nothing to do\" and was chosen over another empty hourly run. A later run must be started by the human, or by answering a parked question and re-invoking the evaluator-closure-loop skill; do not read the missing re-arm as termination."
   }
 }

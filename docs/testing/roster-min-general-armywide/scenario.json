@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "name": "roster-min-general-armywide",
+  "description": "Eine min-Grenze an einer categoryEntry mit field=\"selections\" scope=\"roster\" includeChildSelections=\"true\" includeChildForces=\"true\" ist eine ARMEEWEITE Pflicht auf dieser Kategorie: sie zaehlt jede Auswahl der Kategorie im ganzen Roster - ueber Kontingentgrenzen hinweg - und muss feuern, wenn keine einzige darin steht. Gepinnt an der Kategorie \"General\" a37e-7207-de6d-acb0 des UPSTREAM-Spielsystems (src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst:53-57), die genau zwei Grenzen traegt: max d818-c60d-b1f8-8aaa (:55) und min 1077-7379-f142-f382 (:56), beide field=\"selections\" scope=\"roster\" value=\"1.0\" percentValue=\"false\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"true\". Traeger der Kategorie ist im ganzen upstream-Satz ausschliesslich die gst-geteilte Aufwertung \"General\" 1b7c-2c90-6d96-28c9 (:633) ueber ihren categoryLink b6a9-2d67-cff3-dde7 (:638) - aufgeloest ueber die Id, nie ueber den Namen. ACHTUNG: dieselbe Constraint-Id traegt im Definitive-Satz (src/evaluator/__fixtures__/whfb6-definitive/) scope=\"force\" statt scope=\"roster\"; dieses Szenario laeuft ausschliesslich auf dem upstream-Satz und nennt nur dessen Dateien.",
+  "dataset": {
+    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/__fixtures__/whfb6/Vampire Counts.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-no-general-min-fires.ros",
+      "description": "Ein Kontingent, ein vollstaendig bestueckter Necromancer (b5d8-db21-a4b7-9e94) mit Handweapon und Wizard level 1, aber OHNE die optionale General-Aufwertung. Keine einzige Auswahl des Rosters traegt die Kategorie a37e-7207-de6d-acb0: die armeeweite Pflicht 1077-7379-f142-f382 feuert mit Ist 0 gegen Grenze 1. Die Obergrenze d818-c60d-b1f8-8aaa kann bei Ist 0 nicht feuern; die beiden Pflichten der Einheit sind erfuellt.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "d818-c60d-b1f8-8aaa",
+          "2525-273c-d3f1-cd1f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "846e-7221-e02a-201f"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-general-legal.ros",
+      "description": "Derselbe Necromancer, jetzt MIT der General-Aufwertung 1b7c-2c90-6d96-28c9 (angeboten ueber den sichtbaren entryLink 509d-c95d-3792-4e44). Armeeweite Zaehlung: Ist 1 - min 1077-7379-f142-f382 erfuellt, max d818-c60d-b1f8-8aaa eingehalten, beide schweigen. Auch die Eigengrenze der Aufwertung (5b30-f604-aa3b-1c34, max 1, scope=\"parent\") schweigt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "1077-7379-f142-f382",
+          "d818-c60d-b1f8-8aaa",
+          "5b30-f604-aa3b-1c34",
+          "2525-273c-d3f1-cd1f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "846e-7221-e02a-201f"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-generals-one-force-max-fires.ros",
+      "description": "Zwei Necromancer in EINEM Kontingent, jeder mit einer eigenen General-Aufwertung. Armeeweit Ist 2: die Geschwister-Obergrenze d818-c60d-b1f8-8aaa feuert mit Ist 2 gegen Grenze 1, die min 1077-7379-f142-f382 schweigt. Die parent-skopierte Eigengrenze der Aufwertung 5b30-f604-aa3b-1c34 sieht in JEDEM der beiden Eltern-Rahmen genau 1 und schweigt ebenfalls - ein roster-weites Lesen ihres shared=\"true\" liesse sie hier faelschlich mit Ist 2 feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "d818-c60d-b1f8-8aaa", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "1077-7379-f142-f382",
+          "5b30-f604-aa3b-1c34",
+          "2525-273c-d3f1-cd1f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "846e-7221-e02a-201f"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-forces-one-general-min-silent.ros",
+      "description": "ZWEI Kontingente desselben forceEntry 7d9d-6c8d-4ea0-b7ad: das erste mit General-Aufwertung, das zweite mit einem Necromancer ohne sie. Armeeweit steht genau EINE Auswahl der Kategorie - 1077-7379-f142-f382 muss schweigen, d818-c60d-b1f8-8aaa ebenso. Der Fall, der den Rahmen entscheidet: eine je-Kontingent gerechnete Lesart liesse die Pflicht fuer das zweite (generallose) Kontingent mit Ist 0 feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "1077-7379-f142-f382",
+          "d818-c60d-b1f8-8aaa",
+          "5b30-f604-aa3b-1c34",
+          "2525-273c-d3f1-cd1f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "846e-7221-e02a-201f"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-forces-two-generals-max-fires.ros",
+      "description": "Zwei Kontingente mit JE EINER General-Aufwertung - je Kontingent gerechnet waere nichts zu beanstanden. Armeeweit sind es zwei: d818-c60d-b1f8-8aaa feuert mit Ist 2 gegen Grenze 1, 1077-7379-f142-f382 schweigt. Gegenstueck zu Roster 04: zusammen pinnen beide die Aggregation ueber Kontingentgrenzen hinweg in beide Richtungen fest.",
+      "expect": {
+        "firing": [
+          { "limitId": "d818-c60d-b1f8-8aaa", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "1077-7379-f142-f382",
+          "5b30-f604-aa3b-1c34",
+          "2525-273c-d3f1-cd1f",
+          "03cf-1c4e-cf6f-0dad",
+          "45f9-d1c8-4fce-347c",
+          "846e-7221-e02a-201f"
+        ]
+      }
+    }
+  ]
+}

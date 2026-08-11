@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="mgrgm-05" name="MGRGM 05 – 2 Vampire Counts, 4 Grave markers: auf der verschobenen Grenze 4, still" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored modifier-group-repeats-grave-markers E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Gegenprobe zu Roster 04: derselbe Aufbau, ein Marker mehr.
+         2 Vampire Counts, kein Vampire Lord => Klammer greift zweimal => Grenzen 4/4.
+         Ist 4 liegt genau auf beiden Grenzen: keine der beiden darf feuern.
+         Bei nur EINER Anwendung stuende die Obergrenze auf 3 und wuerde hier anschlagen —
+         das trennt die zweite Wiederholungsstufe von der ersten. -->
+    <force id="force-1" name="Army of Sylvania (SoC)" entryId="4072-c3b8-84c4-a097" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-sylvania" name="Army of Sylvania" entryId="b48b-4a69-80f1-5d47" entryLinkId="" number="1" type="upgrade">
+          <selections>
+            <selection id="sel-grave-markers" name="Grave markers" entryId="f899-4fbd-db93-629e" entryLinkId="" number="4" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="sel-count-1" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit"/>
+        <selection id="sel-count-2" name="Vampire Count" entryId="6822-0110-a7c9-cbb0" entryLinkId="" number="1" type="unit"/>
+      </selections>
+    </force>
+  </forces>
+</roster>

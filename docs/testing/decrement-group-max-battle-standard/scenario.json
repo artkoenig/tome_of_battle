@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "name": "decrement-group-max-battle-standard",
+  "description": "Ein modifier type=decrement, dessen field die id eines Constraints nennt, senkt den effektiven Wert dieser Grenze — die absenkende Gegenrichtung zum increment. Traeger ist die Gruppe 'Weapons' (86431046-9343-42d5-b774-db24c99c4bb3) der Einheit 'Commander [HIGH ELVES]' (d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff, Vampire Counts, erreichbar nur ueber den Verbund 'Swain' b920-b398-dc26-7f4d im Kontingent 'Clan Lahmia (VC-AB)' 2102-34f1-c876-98c5): sie traegt max 1 (Constraint 93f2a491-7de3-4020-ad0d-5d08ac3399f8, field=selections scope=parent) und genau einen decrement-1-Modifier auf diese Constraint-Id, gegated auf 'equalTo 1' Battle-Standard-Bearer-Auswahlen (e9ad-f1ce-aebf-6d23) im Eltern-Rahmen. WICHTIG (siehe README): der Katalog bietet dem Commander an keiner Stelle seines Teilbaums einen Battle Standard Bearer an, und die Gruppe 'Weapons' hat ueberhaupt keine Mitglieder — die absenkende Haelfte (effectiveMax 0) ist aus den Katalogdaten daher NICHT baubar und bleibt eine dokumentierte Luecke. Gepinnt wird die inerte Haelfte ueber expect.capabilities: der Gruppen-Anker meldet in beiden Rostern effectiveMax 1 (Basiswert), auch wenn ein Battle Standard Bearer auf einem ANDEREN Charakter desselben Kontingents steht — scope=parent, shared=true weitet den Rahmen nicht.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-commander-no-bsb-effective-max-1.ros",
+      "description": "Kontingent 'Clan Lahmia (VC-AB)' mit 'Swain' und darunter dem Commander [HIGH ELVES]; unter dem Commander steht nichts. Die Bedingung des decrement (equalTo 1 BSB-Auswahlen, scope=parent) haelt nicht (Ist 0 != 1): die max-Grenze 93f2a491-7de3-4020-ad0d-5d08ac3399f8 behaelt ihren geschriebenen Basiswert. Der Gruppen-Anker 'Weapons' meldet effectiveMax 1 bei Ist 0, Spielraum 1, nicht blockiert. Waere der decrement faelschlich unbedingt angewendet, stuende hier effectiveMax 0 und isBlocked true.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "93f2a491-7de3-4020-ad0d-5d08ac3399f8",
+          "84a5-3fa2-f13f-40c8",
+          "2e71-b752-12d3-5100",
+          "aa1491d9-9d50-4d35-a6bf-9351ba3f6939",
+          "b6c4f102-c2fe-449a-8f02-d7be07231e7d",
+          "0918bd42-2d7e-4aa9-9baa-36e8d81eb8f1"
+        ],
+        "capabilities": [
+          {
+            "defId": "86431046-9343-42d5-b774-db24c99c4bb3",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff",
+            "name": "Weapons",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-bsb-on-other-character-still-max-1.ros",
+      "description": "IDENTISCHER Aufbau plus ein Wight Lord (b9c6-93fb-ce3c-965a) mit Pflicht-Handweapon und der Aufwertung Battle Standard Bearer (e9ad-f1ce-aebf-6d23 ueber den Verweis a359-4a25-39d6-f518) — die einzige Stelle, an der der Katalog einen BSB in einer Vampire-Counts-Armee anbietet. Im Kontingent steht damit genau eine BSB-Auswahl, im Eltern-Rahmen des Commander weiterhin keine. Da die Bedingung scope=parent traegt (shared=true weitet den Rahmen nicht, vgl. Szenario parent-max-enchanted-items-per-bearer), bleibt der decrement inert: der Gruppen-Anker meldet unveraendert effectiveMax 1 bei Ist 0. Ein force- oder roster-weites Lesen des Rahmens liesse die Bedingung hier ihre 'equalTo 1' finden und das Hoechstmass auf 0 fallen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "93f2a491-7de3-4020-ad0d-5d08ac3399f8",
+          "84a5-3fa2-f13f-40c8",
+          "2e71-b752-12d3-5100",
+          "aa1491d9-9d50-4d35-a6bf-9351ba3f6939",
+          "b6c4f102-c2fe-449a-8f02-d7be07231e7d",
+          "0918bd42-2d7e-4aa9-9baa-36e8d81eb8f1",
+          "082b-067c-b983-c393",
+          "01a5-106d-f6e8-560b",
+          "2a1d-03a1-b48c-64ad",
+          "6935-5f06-39d4-5f45",
+          "a775-7b1e-7fa8-d353",
+          "34c1-6e91-4dae-0ef6"
+        ],
+        "capabilities": [
+          {
+            "defId": "86431046-9343-42d5-b774-db24c99c4bb3",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff",
+            "name": "Weapons",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

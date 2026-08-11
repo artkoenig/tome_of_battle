@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="rmga-02" name="RMGA 02 - genau ein General" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored roster-scope General-category E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Derselbe Necromancer wie in Roster 01, jetzt MIT der Aufwertung
+             "General": die gst-geteilte Definition 1b7c-2c90-6d96-28c9
+             (.gst:633, type="upgrade", hidden="false") traegt den einzigen
+             categoryLink b6a9-2d67-cff3-dde7 auf die Kategorie
+             a37e-7207-de6d-acb0 im ganzen upstream-Satz. Angeboten wird sie hier
+             ueber den entryLink 509d-c95d-3792-4e44 (:1293, hidden="false").
+             Armeeweite Zaehlung: 1 - min 1077-7379-f142-f382 erfuellt,
+             max d818-c60d-b1f8-8aaa eingehalten. -->
+        <selection id="sel-nec-1" name="Necromancer" entryId="b5d8-db21-a4b7-9e94" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-nec-1-hw" name="Handweapon" entryId="dca8-37d5-c64a-db33" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-1-wiz" name="Wizard level 1" entryId="fa17-5cb0-9c97-4db6" entryLinkId="" entryGroupId="0c4e-627e-e499-f135" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-1-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

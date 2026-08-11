@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmei-02" name="PMEI 02 - ein Traeger mit ZWEI Enchanted Items" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-scope enchanted-items E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-wl" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- ZWEI VERSCHIEDENE Mitglieder der Gruppe "Enchanted Items" an
+                 EINEM Traeger: Casket of Ages (25 pts) und Talon of Death
+                 (40 pts). Verschieden gewaehlt, damit die roster-weiten
+                 Eigengrenzen der Gegenstaende (c235-25ac-6aaf-b4bd bzw.
+                 6af0-7513-7375-ff53, je max 1 scope="roster") NICHT feuern und
+                 allein e945-1f86-ecf8-4c65 mit Ist 2 / Grenze 1 uebrig bleibt. -->
+            <selection id="sel-wl-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-talon" name="Talon of Death" entryId="dbc8-8204-b238-c315" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

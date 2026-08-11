@@ -226,7 +226,16 @@ describe('Aufdeck-Grenze mit scope="parent" childId="any": Kontrollen, die der F
   const SELF_SCOPE_ID = 'entry-self-scope';
   const SELF_SCOPE_LIMIT_ID = 'limit-self-scope';
 
-  it('KONTROLLE: eine scope="self"-Grenze zaehlt weiterhin ihren eigenen Rahmen', () => {
+  it('KONTROLLE: eine scope="self"-Grenze zaehlt die Auswahlen UNTER ihrem Traeger, nicht dessen eigenen Bestand', () => {
+    // Issue 0147, increment "self-scope-max-frame": the earlier reading of
+    // this case asserted that a `scope="self"` limit counts its own
+    // carrier's piece count. That reading is refuted — the frame is the
+    // carrier's own selection, but what is counted is what stands
+    // UNDERNEATH it (docs/battlescribe-data-format.md §7.6). With no
+    // children under the carrier here, the count is 0 and the limit stays
+    // silent; see docs/testing/self-scope-max-house-rules roster 02, which
+    // forbids counting the carrier's own stock as a substitute for its
+    // children.
     const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
       <catalogue id="cat-self-scope" name="Self Scope Catalogue">
         <forceEntries>
@@ -244,10 +253,7 @@ describe('Aufdeck-Grenze mit scope="parent" childId="any": Kontrollen, die der F
 
     const report = evaluate(catalogueXml, roster);
 
-    expect(report.violations.find(violation => violation.limitId === SELF_SCOPE_LIMIT_ID)).toMatchObject({
-      actual: 2,
-      bound: 1,
-    });
+    expect(report.violations.find(violation => violation.limitId === SELF_SCOPE_LIMIT_ID)).toBeUndefined();
   });
 
   const HERO_ID = 'entry-hero';

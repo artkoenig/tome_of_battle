@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmei-04" name="PMEI 04 - zwei gleiche Traeger, derselbe Verweis, je ein Enchanted Item" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-scope enchanted-items E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- ZWEIMAL derselbe Traeger-Eintrag b9c6-93fb-ce3c-965a, also zweimal
+             DERSELBE entryLink d257-de6d-5d8b-7c6b auf DIESELBE geteilte Gruppe.
+             Der Wight Lord traegt keine eigene roster-weite Stueckzahlgrenze
+             (:978-:1125 ohne <constraints> auf Entitaetsebene), zwei Exemplare
+             sind also zaehltechnisch unauffaellig. -->
+        <selection id="sel-wl-a" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-a-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-a-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-wl-b" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-b-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- Bewusst ein ANDERER Gegenstand als beim ersten Traeger, damit
+                 die roster-weiten Eigengrenzen der Gegenstaende still bleiben
+                 und allein der Gruppenrahmen beobachtet wird. -->
+            <selection id="sel-wl-b-talon" name="Talon of Death" entryId="dbc8-8204-b238-c315" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

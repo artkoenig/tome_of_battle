@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="dgm-01" name="DGM 01 – Clan Lahmia (VC-AB): Commander [HIGH ELVES] ohne Battle Standard Bearer, Weapons-Maximum 1" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored decrement-group-max-battle-standard E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Kontingent "Clan Lahmia (VC-AB)" (2102-34f1-c876-98c5): nur in dieser Force
+         blendet der Modifier an "Swain" (b920-b398-dc26-7f4d, Basis hidden="true")
+         den Verbund der Fremdfraktions-Helden ein (set hidden=false bei
+         instanceOf 2102-… scope=force). Erst darueber ist der
+         Commander [HIGH ELVES] (d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff) ueberhaupt
+         angeboten: Gruppe "Hero from another faction" (09bf-a395-daf9-7e25, max 1)
+         > Gruppe "High Elves" (6bb3-dd06-5788-b4f7) > Commander.
+
+         Unter dem Commander steht NICHTS: die Gruppe "Weapons"
+         (86431046-9343-42d5-b774-db24c99c4bb3) hat im Katalog ueberhaupt keine
+         Mitglieder, und ein Battle Standard Bearer (e9ad-f1ce-aebf-6d23) wird dem
+         Commander an keiner Stelle seines Teilbaums angeboten. Die Bedingung des
+         decrement-Modifiers (equalTo 1 BSB-Auswahlen, scope=parent) haelt daher
+         NICHT (Ist 0 != 1): die max-Grenze 93f2a491-7de3-4020-ad0d-5d08ac3399f8
+         behaelt ihren geschriebenen Basiswert 1. Der Gruppen-Anker meldet
+         effektives Hoechstmass 1 bei Ist 0. -->
+    <force id="force-1" name="Clan Lahmia (VC-AB)" entryId="2102-34f1-c876-98c5" catalogueId="4d73-5ab0-9020-403c" catalogueRevision="1" catalogueName="Vampire Counts">
+      <selections>
+        <selection id="sel-swain" name="Swain" entryId="b920-b398-dc26-7f4d" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+            <category id="7a1c-d611-c2dc-def1" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-commander-he" name="Commander [HIGH ELVES]" entryId="d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff" entryLinkId="" entryGroupId="6bb3-dd06-5788-b4f7" number="1" type="unit" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

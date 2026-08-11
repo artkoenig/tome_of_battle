@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmei-03" name="PMEI 03 - zwei verschiedene Traeger mit je einem Enchanted Item" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-scope enchanted-items E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Traeger 1: Wight Lord, haelt die geteilte Gruppe ueber den
+             entryLink d257-de6d-5d8b-7c6b. -->
+        <selection id="sel-wl" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Traeger 2: Necromancer (:1187), haelt DIESELBE geteilte Gruppe
+             76c3-b01d-0836-2f86 ueber einen ANDEREN entryLink
+             c6f1-4ed3-eb25-9c78 (:1220), ebenfalls ohne eigene Grenze. -->
+        <selection id="sel-nec" name="Necromancer" entryId="b5d8-db21-a4b7-9e94" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Kinder des Necromancer: Handweapon (min 2525-273c-d3f1-cd1f)
+                 und ein Mitglied der Pflicht-Gruppe "Wizard Level" (min
+                 03cf-1c4e-cf6f-0dad); gewaehlt ist die im Katalog als
+                 defaultSelectionEntryId hinterlegte Option "Wizard level 1". -->
+            <selection id="sel-nec-hw" name="Handweapon" entryId="dca8-37d5-c64a-db33" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-wiz" name="Wizard level 1" entryId="fa17-5cb0-9c97-4db6" entryLinkId="" entryGroupId="0c4e-627e-e499-f135" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-nec-talon" name="Talon of Death" entryId="dbc8-8204-b238-c315" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

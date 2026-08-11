@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmei-05" name="PMEI 05 - zwei gleiche Traeger mit demselben Enchanted Item (Gegenprobe roster-Rahmen)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-scope enchanted-items E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="ea4b-9294-3427-1fc1" catalogueRevision="10" catalogueName="Vampire Counts">
+      <selections>
+        <!-- Wie Roster 04, aber BEIDE Traeger nehmen DENSELBEN Gegenstand
+             "Casket of Ages". Dessen Eigengrenze c235-25ac-6aaf-b4bd ist
+             scope="roster" (max 1) und feuert deshalb mit Ist 2 / Grenze 1,
+             waehrend die Gruppengrenze e945-1f86-ecf8-4c65 (scope="parent")
+             still bleibt. Die beiden Grenzen liegen im selben Roster
+             uebereinander und trennen den Roster- vom Eltern-Rahmen. -->
+        <selection id="sel-wl-a" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-a-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-a-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-wl-b" name="Wight Lord" entryId="b9c6-93fb-ce3c-965a" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="c16b-f319-2c62-2c12" name="Heroes" entryId="c16b-f319-2c62-2c12" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-wl-b-hw" name="Handweapon" entryId="c527-e525-5b58-9b7c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-wl-b-casket" name="Casket of Ages" entryId="a46f-b46b-2efc-0283" entryLinkId="" entryGroupId="76c3-b01d-0836-2f86" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

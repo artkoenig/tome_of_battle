@@ -18,7 +18,7 @@
  * Belegung und Restspielraum ab.
  */
 
-import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, SELECTION_COUNT, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
+import { AnchorKind, ConstraintKind, CountedFieldKind, DefinitionKind, ScopeKeyword, SELECTION_COUNT, SUSPENDED, UNLIMITED, UNRESOLVED_BUDGET, DiagnosticKind, diagnostic, isReportableAnchorKind, isLinkDefinition, limitMeasureOfCountedField } from './model.js';
 import { allNodes, evaluableLimitsOf } from './evalTree.js';
 import { query, createQueryContext } from './query.js';
 import { roundHalfUp } from './rounding.js';
@@ -98,10 +98,42 @@ function countingFlagsOf(limit, node) {
 }
 
 /**
+ * Whether a limit counts the **contents of its frame** instead of the
+ * occurrences of its own carrier.
+ *
+ * A `scope="self"` limit over `field="selections"` is that case. Its frame is
+ * the carrying selection itself (`query.js` -> `resolveSharedFrame`,
+ * ADR-0029), and `docs/battlescribe-data-format.md` §7.6 states the counting
+ * rule for it: "Gezaehlt werden die Auswahlen *unterhalb* des Traegers der
+ * Grenze, nicht der Traeger selbst. Der `scope` sagt nur, in welchem Rahmen
+ * summiert wird." So the counted target becomes `null` ("everything in the
+ * frame") and the engine-own gate `includeFrameOwn` is closed, which keeps the
+ * carrier's own piece count out of the answer. The two rosters of the
+ * `self-scope-max-house-rules` scenario delimit the rule from both sides:
+ * roster 05 (the carrier's parent holds two direct children, the carrier one)
+ * forbids counting in the **parent** frame, roster 02 (carrier plus one child)
+ * forbids counting the **carrier itself**.
+ *
+ * Restricted to `SELECTION_COUNT` on purpose. A self-scoped **cost** limit
+ * keeps its settled reading — the carrier's own costs, plus the climbed
+ * descendant costs under `includeChildSelections="true"` (Issues 091/0113,
+ * pinned by `countIndex.costSumCarrierFrame.test.js`) — and a `LIMIT_VALUE`
+ * field never reaches the frame code at all. The decision belongs here and not
+ * in `query.js`, because the primitive cannot tell a constraint's "everything
+ * under the carrier" from a **condition** with `scope="self"` and
+ * `childId="any"`, which keeps reading the carrier's own count.
+ */
+function countsFrameContents(limit) {
+  return limit.scope === ScopeKeyword.SELF && limit.field.kind === CountedFieldKind.SELECTION_COUNT;
+}
+
+/**
  * Wertet eine einzelne Grenze am Knoten aus und liefert ihr Ergebnis-Tripel,
  * oder `null`, wenn die Grenze suspendiert ist. Ziel der Zaehlung ist die
  * eigene Definition der Bezugsinstanz — bei einem Verweis dessen Ziel, siehe
- * die Begruendung an der Stelle selbst.
+ * die Begruendung an der Stelle selbst; eine `scope="self"`-Grenze ueber
+ * `field="selections"` zaehlt stattdessen den Inhalt ihres Rahmens
+ * ({@link countsFrameContents}).
  */
 function evaluateLimit(limit, node, effective, ctx) {
   const bound = resolveBound(limit, node, effective, ctx);
@@ -123,7 +155,20 @@ function evaluateLimit(limit, node, effective, ctx) {
   // `entryLinkId`s). Der Verweis bleibt trotzdem der Anker: nur an ihm gelten
   // die an ihm selbst deklarierten Grenzen.
   const targetId = isLinkDefinition(node.def) ? node.def.targetId : node.def.id;
-  const actual = query(ctx, limit.field, limit.scope, targetId, countingFlagsOf(limit, node));
+  // Counts what stands *under* the carrier, not the carrier's own occurrences
+  // ({@link countsFrameContents}, §7.6). `countedTargetId` below keeps the
+  // carrier's resolved target id either way: that field is the identity of the
+  // obligation across anchors and the dedup key of the report list, not the
+  // query's filter.
+  const frameContents = countsFrameContents(limit);
+  const countingFlags = countingFlagsOf(limit, node);
+  const actual = query(
+    ctx,
+    limit.field,
+    limit.scope,
+    frameContents ? null : targetId,
+    frameContents ? { ...countingFlags, includeFrameOwn: false } : countingFlags,
+  );
   // Zaehlt die Grenze selbst ein unaufloesbares Budget-Feld (Diagnose aus `query`),
   // wird sie fail-closed suspendiert statt den Sentinel zu vergleichen.
   if (actual === UNRESOLVED_BUDGET) return null;

@@ -1907,3 +1907,143 @@ Erreichbar ist der Gegenstand nur über die geteilte Gruppe „Enchanted Items
 > Bericht zu adressieren ist — über die Verweis-Id oder die Ziel-Id —, legt der
 > Manifest-Vertrag nicht fest, und kein anderes Szenario zeigt einen solchen
 > Fall. Der Slot wird dort deshalb ohne Rahmen-Koordinate benannt.
+
+## `parent-max-enchanted-items-per-bearer`
+
+Prüft, dass eine `max`-Grenze mit `scope="parent"` an einer geteilten
+Auswahlgruppe **je Träger** zählt und nicht armeeweit — obwohl sie
+`shared="true"` und `includeChildForces="true"` trägt. Beleg: die geteilte Gruppe
+„Enchanted Items" (`76c3-b01d-0836-2f86`, Vampire Counts) trägt genau eine
+Grenze, `max 1` auf `selections` im Eltern-Rahmen (`e945-1f86-ecf8-4c65`). Die
+Roster tragen dieselben Gegenstände in wechselnder Verteilung auf einen oder zwei
+Träger.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Träger, ein Gegenstand | Die Grenze schweigt |
+| 02 | Ein Träger, zwei Gegenstände | Sie feuert mit Ist 2 / Grenze 1 |
+| 03 | Zwei **verschiedene** Träger, je ein Gegenstand | Sie schweigt für beide — der Rahmen ist der Träger, nicht die Armee |
+| 04 | Zwei **gleiche** Träger (derselbe Verweis zweimal), je ein Gegenstand | Sie schweigt ebenfalls: auch Instanzen desselben Verweises werden nicht zusammengelegt |
+| 05 | Zwei gleiche Träger, **derselbe** Gegenstand | Die Gegenprobe: die armeeweite Grenze des Gegenstands feuert mit Ist 2 / Grenze 1, die Gruppengrenze schweigt |
+
+> **Offen deklariert:** In Roster 02 reißt zwangsläufig auch das Punktebudget der
+> Gruppe (die zwei billigsten Mitglieder kosten zusammen mehr als deren 50
+> Punkte); weil dieses Szenario eine Zähl-Grenze festnagelt und das Kostenbudget
+> anderswo gepinnt ist, wird es dort weder behauptet noch ausgeschlossen. Der
+> Fall „untergeordnetes Kontingent" ist auf diesem Datensatz nicht baubar — das
+> Spielsystem deklariert genau ein Kontingent —, sodass `includeChildForces` nur
+> in seiner Wirkungslosigkeit am Eltern-Rahmen belegt ist.
+
+## `not-instance-of-parent-ironskin-tribe`
+
+Prüft, dass eine `notInstanceOf`-Bedingung mit `scope="parent"` und einer
+Kategorie-Id die **effektiven** Kategorien der Eltern-Auswahl liest — also auch
+die, die ein Modifikator am Wurzel-Verweis der Einheit erst zur Laufzeit
+hinzufügt. Beleg: die Nullpunkt-Aufwertung „Extra Special choice"
+(`6c8d-f6f3-823e-e6a5`, unter „Rhinox Riders", Mercenaries) wird aufgedeckt und
+zur Pflicht (`min` 1), wenn die Eltern-Einheit **kein** „Ironskin" ist und das
+Armeebuch Ogre Kingdoms ist. Die Kategorie „Ironskin" hängt an keinem
+`categoryLink`; sie entsteht allein durch ein `add category` am Wurzel-Verweis,
+das nur im Kontingent „Ironskin Tribe" greift.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kontingent „Standard", Einheit über den Wurzel-Verweis | Die Aufwertung ist sichtbar und Pflicht; sie fehlt, also feuert ihre Mindestgrenze mit Ist 0 / Grenze 1 |
+| 02 | Kontingent „Ironskin Tribe", dieselbe Einheit über denselben Verweis | Die Laufzeit-Kategorie greift: die Aufwertung bleibt verborgen und unverpflichtend |
+| 03 | Wie 01, Aufwertung gewählt | Die Grenze schweigt, die Sichtbarkeit bleibt — der Unterschied ist die Auswahl, nicht die Regel |
+| 04 | Kontingent „Ironskin Tribe", Einheit **ohne** den Wurzel-Verweis | Ohne den Verweis fehlt die Laufzeit-Kategorie: die Pflicht greift wieder wie in 01 |
+
+> **Kontrolle:** Die Schwester-Aufwertung „Extra Rare choice" hängt allein am
+> Armeebuch und bleibt in allen vier Rostern verborgen — aufgedeckt wird also
+> nicht pauschal alles unter der Einheit.
+
+## `self-scope-max-house-rules`
+
+Prüft, dass eine `max`-Grenze mit `scope="self"` die tragende Auswahl **selbst**
+zum Zählrahmen macht: gezählt werden die Auswahlen unterhalb genau dieser
+Auswahl. Beleg: „Allow Mercenaries" (`fda5-49b9-b74c-aaf4`, Spielsystem) trägt
+nebeneinander eine `self`- und eine `parent`-skopierte `max 1` und hält genau
+zwei direkte Kind-Einträge (zwei House Rules).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Beide House Rules unter derselben „Allow Mercenaries" | Die `self`-Grenze feuert mit Ist 2 / Grenze 1 |
+| 02 / 03 | Je eine der beiden House Rules | Sie schweigt — und zwar unabhängig davon, welche |
+| 04 | Keine House Rule | Nullpunkt: der Träger zählt sich nicht selbst mit |
+| 05 | Der Eltern-Eintrag hält zwei Kinder, die „Allow Mercenaries" nur eines | Rahmen-Abgrenzung: eine Zählung im Eltern-Rahmen käme auf 2 und feuerte — gefordert ist Schweigen |
+| 06 | Ein Kind-Knoten mit Stückzahl 2 | Der Rahmen summiert Stückzahlen, nicht Knoten: die Grenze feuert ebenfalls |
+
+**Stand: grün.** Beim Pinnen war das Szenario rot — der Bericht führte für
+`714b-5314-33d4-dd68` überhaupt keine Verletzung, während die vier stummen Fälle
+passten: die Grenze feuerte also nie, statt im `self`-Rahmen zu zählen. Die
+Kampagne hat die Lücke in derselben Runde geschlossen (`constraints.js`,
+`query.js`); alle sechs Fälle sind grün.
+
+## `roster-min-general-armywide`
+
+Prüft die armeeweite Pflicht einer Kategorie: die Kategorie „General"
+(`a37e-7207-de6d-acb0`, oberer Datensatz) trägt `min 1` und `max 1`, beide mit
+`scope="roster"` über alle Kontingente hinweg. Träger ist ein Necromancer, der
+die Kategorie über eine schlichte, sichtbare Verknüpfung anbietet.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein General | Die Mindestgrenze feuert mit Ist 0 / Grenze 1 |
+| 02 | Genau ein General | Beide Grenzen schweigen |
+| 03 | Zwei Generäle in einem Kontingent | Die Obergrenze feuert mit Ist 2 / Grenze 1 |
+| 04 | Zwei Kontingente, ein General | Beide schweigen — eine Zählung je Kontingent ließe die Mindestgrenze für das zweite feuern |
+| 05 | Zwei Kontingente, je ein General | Die Obergrenze feuert mit Ist 2 — eine Zählung je Kontingent bliebe stumm |
+
+> **Achtung, Datensatz:** Dieselben beiden Grenzen-Ids tragen im
+> Definitive-Edition-Datensatz `scope="force"` statt `scope="roster"`. Das
+> Szenario benennt deshalb ausschließlich Dateien des oberen Datensatzes; die
+> README des Szenarios stellt den Unterschied voran.
+
+> **Offen deklariert:** Die armeeweite Core-Pflicht des Spielsystems feuert in
+> allen fünf Rostern gleich und wird deshalb weder behauptet noch
+> ausgeschlossen.
+
+## `modifier-group-repeats-grave-markers`
+
+Prüft eine Modifikator-Klammer **ohne** Bedingung, aber **mit**
+Wiederholungen: sie greift unbedingt, und ihr Wiederholungsfaktor multipliziert
+sich in jeden Modifikator darin. Beleg: „Grave markers"
+(`f899-4fbd-db93-629e`, Vampire Counts) trägt `min 2` und `max 2`, und die
+Klammer hebt beide je gezähltem Vampir im Kontingent um 1 — die wirksame Grenze
+ist also 2 + Anzahl.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kein Vampir, 2 Marker | Grundzustand: beide Grenzen bei 2, alles schweigt |
+| 02 | Ein Vampir, 2 Marker | Die Mindestgrenze feuert — sie steht jetzt bei 3 |
+| 03 | Ein Vampir, 3 Marker | Dieselbe Markerzahl wie 02, jetzt legal |
+| 04 | Zwei Vampire, 3 Marker | Dieselbe Markerzahl wie 03, jetzt zu wenig: die Grenze steht bei 4 |
+| 05 | Zwei Vampire, 4 Marker | Legal |
+| 06 | Zwei Vampire, 5 Marker | Die Obergrenze feuert — und meldet die **verschobene** Grenze 4, nicht die geschriebene 2 |
+
+> **Bewusst offen:** Kein Roster führt einen „0-1 Vampire Lord". Wie sich zwei
+> Wiederholungs-Elemente verrechnen, wenn **beide** zählen, behauptet das
+> Szenario deshalb nicht. Dass ein Wiederholungs-Element mit Zählung 0 neutral
+> ist und nicht alles annulliert, steht dagegen im Regeltext des Katalogs
+> selbst („je Vampire Count **oder** Vampire Lord").
+
+## `decrement-group-max-battle-standard`
+
+Prüft den senkenden Gegenpart zum `increment` auf einem Grenzwert. Die
+Waffengruppe des „Commander [HIGH ELVES]" trägt `max 1` und einen
+`decrement`-Modifikator auf genau diese Grenze, gekoppelt an die Frage, ob der
+Eltern-Rahmen **genau einen** Standartenträger führt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Commander ohne Standartenträger | Die Gruppe steht bei wirksamem Max 1 — der Modifikator greift nicht |
+| 02 | Standartenträger an einer **anderen** Figur desselben Kontingents | Unverändert Max 1: die Kopplung liest den Eltern-Rahmen, nicht das Kontingent |
+
+> **Grenze des Datensatzes, offen erklärt:** Die senkende Hälfte ist auf diesen
+> Katalogdaten **nicht baubar**. Die Waffengruppe hat keine Mitglieder und
+> niemand verweist auf sie, und der Commander bietet in seinem ganzen Teilbaum
+> keinen Standartenträger an — der gezählte Wert der Grenze ist also überall 0
+> und ihre Kopplung greift nie. Das Szenario nagelt deshalb den **ungesenkten**
+> Grenzwert und die Rahmen-Lesart der Kopplung fest; ein Roster zu erfinden, der
+> die Senkung auslöst, wäre kein Beleg aus den Daten. Ob diese Zelle stattdessen
+> als dauerhaft unprüfbar erklärt werden sollte, ist eine Frage an den Menschen.
