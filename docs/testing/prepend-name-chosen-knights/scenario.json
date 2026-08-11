@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "name": "prepend-name-chosen-knights",
+  "description": "modifier type=\"prepend\" field=\"name\" mit join-Trenner (6th Definitive Edition, Dark Elves): der Modifikator stellt seinen value VOR den bestehenden Namen und setzt den join-Text als Trenner dazwischen — das Ergebnis ist value + join + name. Der Trenner wird VERBATIM uebernommen, nicht angenommen: an dieser Fundstelle ist er ein U+00A0 NO-BREAK SPACE, KEIN gewoehnliches Leerzeichen U+0020. Die Einheit \"Knights of Chaos\" (7843-05b6-ba2d-cc2b) traegt <modifier type=\"prepend\" value=\"Chosen\" field=\"name\" join=\" \">, dessen einzige Bedingung atLeast 1 selections mit scope=\"self\" auf die Aufwertung \"Chosen\" (7ab9-d251-abf3-8878) prueft. Zwei Roster im Kontingent \"Cult of Slaanesh (SoC)\" (5013-f9f4-e03b-94d5), das die Einheit per set hidden=false ueberhaupt erst sichtbar macht: ohne die Aufwertung meldet der Einheiten-Slot den Katalognamen \"Knights of Chaos\", mit ihr \"Chosen Knights of Chaos\" (Trennzeichen U+00A0, im Manifest als \\u00a0 geschrieben — bitte NICHT zu einem gewoehnlichen Leerzeichen \"korrigieren\"). Kontrolle: der gleichnamige Modell-Slot (2a5f-a5b9-62c7-4659) traegt keinen Namens-Modifikator und bleibt in beiden Rostern \"Knights of Chaos\". Alle Aussagen laufen ueber expect.capabilities (effektiver name, isHidden); zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-knights-of-chaos-without-chosen.ros",
+      "description": "Kontingent \"Cult of Slaanesh (SoC)\" (5013-f9f4-e03b-94d5) mit einer katalogkonformen Einheit Knights of Chaos: 4 Modelle, Additional Rare slot, Hand Weapon, Shield, Heavy Armour, Mark of Slaanesh (troops), Chaos Steed mit Barding. Die Aufwertung \"Chosen\" ist NICHT gewaehlt, die self-Bedingung des prepend-Modifikators zaehlt 0 und haelt nicht: der Einheiten-Slot meldet den Katalognamen \"Knights of Chaos\". Der force-gegatterte set hidden=false greift, der Slot ist sichtbar.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "cb54-4992-1515-e03a",
+          "2d9b-6911-40b9-01aa",
+          "03d4-f851-1fb7-37f4",
+          "f138-915b-bd0b-18bb",
+          "9410-8464-eb23-1252",
+          "41de-302a-7655-2546",
+          "dc9e-e06c-1be3-bc6a",
+          "3d49-595d-671e-df23",
+          "1183-85a4-570d-865e",
+          "3280-167a-349f-c888",
+          "b72c-0388-8010-ce40",
+          "e044-8da5-f362-824e"
+        ],
+        "capabilities": [
+          {
+            "defId": "7843-05b6-ba2d-cc2b",
+            "anchorKind": "occupied",
+            "frameDefId": "5013-f9f4-e03b-94d5",
+            "name": "Knights of Chaos",
+            "isHidden": false
+          },
+          {
+            "defId": "2a5f-a5b9-62c7-4659",
+            "anchorKind": "occupied",
+            "frameDefId": "7843-05b6-ba2d-cc2b",
+            "name": "Knights of Chaos"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-knights-of-chaos-with-chosen.ros",
+      "description": "Derselbe Aufbau im selben Kontingent, ergaenzt um die Aufwertung \"Chosen\" (7ab9-d251-abf3-8878) und um den von ihr erzwungenen Ruestungstausch (Chaos Armour* statt Heavy Armour, den die Katalogdaten mit derselben Auswahl schalten). Die self-Bedingung des prepend-Modifikators zaehlt 1 und haelt: der Einheiten-Slot meldet \"Chosen Knights of Chaos\" — value \"Chosen\" + join + Katalogname, wobei join das U+00A0 NO-BREAK SPACE der Katalogdatei ist (kein U+0020). Der gleichnamige Modell-Slot und der Chosen-Slot selbst bleiben unveraendert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "cb54-4992-1515-e03a",
+          "2d9b-6911-40b9-01aa",
+          "03d4-f851-1fb7-37f4",
+          "f138-915b-bd0b-18bb",
+          "9410-8464-eb23-1252",
+          "41de-302a-7655-2546",
+          "dc9e-e06c-1be3-bc6a",
+          "3d49-595d-671e-df23",
+          "b72c-0388-8010-ce40",
+          "0d5e-788f-dcad-d20f",
+          "e044-8da5-f362-824e"
+        ],
+        "capabilities": [
+          {
+            "defId": "7843-05b6-ba2d-cc2b",
+            "anchorKind": "occupied",
+            "frameDefId": "5013-f9f4-e03b-94d5",
+            "name": "Chosen Knights of Chaos",
+            "isHidden": false
+          },
+          {
+            "defId": "2a5f-a5b9-62c7-4659",
+            "anchorKind": "occupied",
+            "frameDefId": "7843-05b6-ba2d-cc2b",
+            "name": "Knights of Chaos"
+          },
+          {
+            "defId": "7ab9-d251-abf3-8878",
+            "anchorKind": "occupied",
+            "frameDefId": "7843-05b6-ba2d-cc2b",
+            "name": "Chosen"
+          }
+        ]
+      }
+    }
+  ]
+}

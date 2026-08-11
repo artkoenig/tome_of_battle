@@ -2370,3 +2370,40 @@ steht — ein Reittier, das an fünf verschiedenen Charakteren angeboten wird.
 > (`efa6-a391-f62d-8034`) behauptet das Szenario in Roster 04 **nicht** — wie
 > `shared="true"` mit einem engeren `scope` zusammenwirkt, sagt keine Quelle,
 > und das Szenario rät nicht.
+
+## `prepend-name-chosen-knights`
+
+Prüft einen `prepend`-Modifikator auf den Anzeigenamen: der Wert wird **vor**
+den Katalognamen gesetzt, getrennt durch das `join`-Zeichen — und dieses wird
+**wörtlich** übernommen, nicht angenommen. Beleg: die Dark-Elves-Einheit
+„Knights of Chaos" (`7843-05b6-ba2d-cc2b`) heißt „Chosen …", sobald die
+Aufwertung „Chosen" (`7ab9-d251-abf3-8878`) in ihr steht. Das Trennzeichen ist
+in den Katalogdaten ein **geschütztes Leerzeichen** (U+00A0), kein normales —
+genau darauf zielt die Behauptung.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne „Chosen" | Der schlichte Katalogname; der gleichnamige Modell-Slot dient als Gegenprobe |
+| 02 | Dieselbe Einheit mit „Chosen" | Der vorangestellte Name — mit dem geschützten Leerzeichen als Trenner |
+
+> **Offen erklärt:** Ein Ergebnis mit normalem Leerzeichen wäre ein Befund über
+> die Engine, kein Anlass, die Erwartung umzuschreiben.
+
+## `less-than-id-scope-white-wolf-hammer`
+
+Prüft eine Bedingung `lessThan`, deren `scope` **keine Kennung des Formats**,
+sondern eine **Eintrags-Id** ist: gezählt wird innerhalb der nächsten
+umschließenden Auswahl dieses Eintrags, und die Bedingung hält nur **echt
+unterhalb** des geschriebenen Werts. Beleg: der Empire-„Templar Grand Master"
+(`8ab4-17be-8a49-b3f7`) muss den „Cavalry hammer" nehmen, wenn er die
+Aufwertung „0-1 Knights of the White Wolf" trägt **und** keine magische Waffe
+führt — der Modifikator hebt dann dessen Mindestmaß `106f-93b5-2186-7f80` von
+0 auf 1.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | White Wolf, keine magische Waffe, kein Hammer | Das Mindestmaß feuert — der Hammer ist Pflicht und fehlt |
+| 02 | Wie 01, plus eine magische Waffe | Eine einzige Auswahl mehr, und die Bedingung hält nicht: das Mindestmaß schweigt |
+| 03 | Wie 01, Hammer gewählt | Dieselbe Pflicht, erfüllt |
+| 04 | Ohne White Wolf | Der Hammer bleibt verborgen; sein Mindestmaß wird gar nicht geprüft |
+| 05 | Zwei Grand Master, nur einer mit magischer Waffe | Rahmen-Beweis: ein kontingentweiter Zähler würde beide verrechnen |

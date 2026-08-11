@@ -681,6 +681,20 @@
         "docs/testing/equal-to-roster-royal-pegasus-gate"
       ],
       "rationale": "Five rosters over the Bretonnia unit Pegasus Knights (ff3a-61e9-e154-92cc), whose roster-wide max of one (968c-6c14-9c73-d0c5) a set -1 modifier lifts to unlimited exactly when the army holds exactly one Royal Pegasus (bfa3-6734-c03f-3594). Rosters 02 and 04 carry the same actual of two units and differ only in the bound: with no Royal Pegasus and with two of them the equalTo is false and the limit fires, which is what forbids reading the condition as an atLeast; roster 03 holds one Royal Pegasus over one of five carrier links and the limit stays silent, roster 05 shows three units under the same gate, which separates the -1 sentinel from a bound merely raised to two. Scenario is green."
+    },
+    {
+      "key": "modifier|prepend|name",
+      "evidence": [
+        "docs/testing/prepend-name-chosen-knights"
+      ],
+      "rationale": "Roster pair over the Dark Elves unit Knights of Chaos (7843-05b6-ba2d-cc2b) in the contingent Cult of Slaanesh (SoC), which reveals the otherwise hidden entry. The unit carries a prepend on field name, gated on a self-scoped atLeast counting the Chosen upgrade (7ab9-d251-abf3-8878): roster 01 without it asserts the plain catalogue name, roster 02 with it asserts the prepended one. The separator is the join attribute taken verbatim, and the catalogue writes it as U+00A0, so the expected name carries a NO-BREAK SPACE and not a plain space - that is the assertion which makes the verbatim rule of the format doc observable. The identically named model slot and the Chosen slot are asserted unchanged as controls. Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-id-scope-white-wolf-hammer"
+      ],
+      "rationale": "Five rosters over the Empire unit Templar Grand Master (8ab4-17be-8a49-b3f7). The Cavalry hammer link under it raises its own min limit 106f-93b5-2186-7f80 from 0 to 1 through an and group of two conditions whose scope is the Grand Master's own entry id: at least one White Wolf upgrade, and fewer than one selection of the Magic Weapons group c071-eb48-3009-9ec1. Roster 01 has the upgrade and no magic weapon and the min fires with actual 0 against bound 1; roster 02 differs in a single selection - one magic weapon - which makes the lessThan false so the limit stays silent; roster 03 satisfies the raised min by taking the hammer; roster 04 drops the upgrade so the hammer stays hidden and its min is not validated at all; roster 05 puts two Grand Masters in one contingent, one with and one without the magic weapon, which a contingent-wide frame would conflate. Scenario is green."
     }
   ]
 }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pnck-02" name="PNCK 02 - Knights of Chaos mit der Aufwertung Chosen: prepend stellt Chosen + NBSP (U+00A0) voran" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored prepend-name-chosen-knights E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Cult of Slaanesh (SoC)" entryId="5013-f9f4-e03b-94d5" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-knights-of-chaos" name="Knights of Chaos" entryId="7843-05b6-ba2d-cc2b" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="e94b-6a54-8779-cd60" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-knight-models" name="Knights of Chaos" entryId="2a5f-a5b9-62c7-4659" entryLinkId="" number="4" type="model" collective="false"/>
+            <selection id="sel-additional-rare-slot" name="Additional Rare slot" entryId="bbc6-be9d-36c7-e71a" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="1eab-3950-8518-cec4" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="e517-105e-92b5-de39" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-chaos-armour" name="Chaos Armour*" entryId="91d4-774c-6c6c-fba3" entryLinkId="a969-18a8-f7a2-1ed4" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-mark-of-slaanesh" name="Mark of Slaanesh (troops)" entryId="fdca-8baf-a3cb-dc25" entryLinkId="4b40-2f23-f079-8fdf" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-chaos-steed" name="Chaos Steed" entryId="3c1f-3fc2-11b9-49aa" entryLinkId="7946-1b32-e202-e6ff" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-barding" name="Barding" entryId="3211-d836-02f1-01d0" entryLinkId="bbd6-10ce-3616-1ee9" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-chosen" name="Chosen" entryId="7ab9-d251-abf3-8878" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
