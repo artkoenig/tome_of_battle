@@ -179,7 +179,20 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
 | [`greater-than-self-blessed-spawning-slots`](testing/greater-than-self-blessed-spawning-slots/) | Definitive Lizardmen + Mercenaries | 5 |
 | [`id-scope-repeat-powerhouses-per-pack`](testing/id-scope-repeat-powerhouses-per-pack/) | Definitive Skaven + Mercenaries | 7 |
-| **Summe** | | **447** |
+| [`decrement-group-max-battle-standard`](testing/decrement-group-max-battle-standard/) | Definitive VC + Mercenaries | 2 |
+| [`modifier-group-repeats-grave-markers`](testing/modifier-group-repeats-grave-markers/) | Definitive VC + Mercenaries | 6 |
+| [`not-instance-of-parent-ironskin-tribe`](testing/not-instance-of-parent-ironskin-tribe/) | Definitive Ogre + Mercenaries | 4 |
+| [`self-scope-max-house-rules`](testing/self-scope-max-house-rules/) | Definitive Ogre + Mercenaries | 6 |
+| [`parent-max-enchanted-items-per-bearer`](testing/parent-max-enchanted-items-per-bearer/) | ergofang VC (ohne Mercenaries) | 5 |
+| [`roster-min-general-armywide`](testing/roster-min-general-armywide/) | ergofang VC (ohne Mercenaries) | 5 |
+| [`equal-to-roster-royal-pegasus-gate`](testing/equal-to-roster-royal-pegasus-gate/) | Definitive Bretonnia + Mercenaries | 5 |
+| [`prepend-name-chosen-knights`](testing/prepend-name-chosen-knights/) | Definitive Dark Elves + Mercenaries | 2 |
+| [`less-than-id-scope-white-wolf-hammer`](testing/less-than-id-scope-white-wolf-hammer/) | Definitive Empire + Mercenaries | 5 |
+| [`unset-primary-category-rat-ogres`](testing/unset-primary-category-rat-ogres/) | Definitive Skaven + Mercenaries | 5 |
+| [`multiply-cost-traditional-army`](testing/multiply-cost-traditional-army/) | Definitive Dwarfs + Mercenaries | 8 |
+| [`parent-repeat-upgrade-maneater-weapons`](testing/parent-repeat-upgrade-maneater-weapons/) | ergofang DoW (ohne Mercenaries) | 6 |
+| [`at-least-parent-model-champion-gate`](testing/at-least-parent-model-champion-gate/) | Definitive Dwarfs + Mercenaries | 4 |
+| **Summe** | | **510** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2466,3 +2479,26 @@ Wiederholungs-Familie den **ergofang**-Datensatz.
 > **Offen erklärt:** `childId="upgrade"` gegen `any`, der Rahmen „Modell" gegen
 > „Gruppe" sowie `shared` und `includeChildForces` sind auf diesen Daten nicht
 > unterscheidbar; das Szenario sagt es, statt einen Roster zu erfinden.
+
+## `at-least-parent-model-champion-gate`
+
+Prüft eine `<condition type="atLeast" … scope="parent" childId="model">`: gezählt
+werden die Auswahlen vom rohen Typ *model*, die der **Eltern-Rahmen** des
+Bedingungsträgers hält — die umschließende Einheiten-Auswahl, nicht die
+Optionsgruppe und nicht das Kontingent. Beleg: das Upgrade „Champion"
+(`21f9-b4f6-b59e-8892`, der Giant Slayer der Dwarfs-Einheit „Slayers"
+`b454-4868-7ec4-39e8`) trägt seine eigene Grenze `c120-7f3a-9c4d-6d32`
+(`max 0`) und genau **einen** Modifikator darauf: `increment 1`, gegattert durch
+diese eine Bedingung. Der Champion ist also nur wählbar, solange die Einheit
+selbst Modelle führt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 5 Slayer-Modelle, 1 Champion | Die Bedingung hält, der Deckel steht auf 1 — die Grenze schweigt |
+| 02 | Dieselbe Einheit **ohne** Modelle | Die Bedingung hält nicht, der Deckel bleibt 0 — die Grenze feuert mit Ist 1; zugleich feuert die Modell-Untergrenze der Einheit |
+| 03 | 5 Modelle, Champion `number="2"` | Der `increment` hebt den Deckel um **genau eins**: Ist 2 gegen Grenze 1 |
+| 04 | Einheit A ohne Modelle mit Champion, Einheit B mit 5 Modellen ohne Champion | Die Rahmentrennung: kontingentweit gäbe es Modelle, mit `scope="parent"` feuert A trotzdem — dieselbe Definition meldet in B einen Deckel von 1 |
+
+> **Offen erklärt:** `shared="true"` ist hier nicht beobachtbar — der Champion ist
+> ein Inline-Eintrag auf genau einem Pfad, und `childId="model"` ist ein
+> Typ-Schlüsselwort statt einer Ziel-Id.

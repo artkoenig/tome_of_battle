@@ -7,54 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 124,
-    "uncovered": 6
+    "covered": 125,
+    "uncovered": 5
   },
   "cells": [
-    {
-      "key": "condition|atLeast|parent|selectionCount|child=model",
-      "kind": "condition",
-      "axes": {
-        "type": "atLeast",
-        "scope": "parent",
-        "field": "selectionCount",
-        "childId": "model"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "21f9-b4f6-b59e-8892",
-            "name": "Champion"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "model"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|self|selectionCount|child=any",
       "kind": "condition",

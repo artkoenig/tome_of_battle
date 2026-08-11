@@ -716,6 +716,13 @@
         "docs/testing/parent-repeat-upgrade-maneater-weapons"
       ],
       "rationale": "Six rosters over the Dogs of War unit Ogre Maneaters (b1b8-10da-ac1a-ba7c) of the upstream fixture set. Each weapon link of the group Weapon (6a33-8be5-b0a4-5b42) carries an increment of 6 pts on the pts cost type whose repeat counts, in the parent frame, the selections of type upgrade with step 1. Measured through the roster budget with the limit one point below and one point above each derived total: the Ogre club member without the modifier clamps the baseline to exactly 80 points, one Great Weapon adds exactly one application of 6, and three weapons under one model raise the counted number to 3 so each of the three costs 18 - which rules out both reading the repeat as a mere condition and taking the unit rather than the model as the frame. Scenario is green."
+    },
+    {
+      "key": "condition|atLeast|parent|selectionCount|child=model",
+      "evidence": [
+        "docs/testing/at-least-parent-model-champion-gate"
+      ],
+      "rationale": "Vier Roster ueber die Dwarfs-Einheit Slayers (b454-4868-7ec4-39e8). Der Champion 21f9-b4f6-b59e-8892 traegt max 0 (c120-7f3a-9c4d-6d32) und genau einen increment-1-Modifikator darauf, gegated auf atLeast 1 selections scope=parent childId=model. Roster 01 (5 Slayer-Modelle) haelt die Bedingung: effectiveMax 1, die Grenze schweigt; Roster 02 (kein Modell) haelt sie nicht: effectiveMax 0 und die Grenze feuert mit Ist 1 gegen 0; Roster 03 (5 Modelle, Champion number=2) zeigt, dass der increment die Grenze auf genau 1 hebt und nicht aufhebt (Ist 2 gegen 1); Roster 04 trennt den Rahmen: die Modelle stehen in einer zweiten Slayers-Einheit, force- und rosterweit gaebe es also Modelle, mit scope=parent feuert die Grenze der modelllosen Einheit trotzdem, waehrend dieselbe Definition in der anderen Einheit effectiveMax 1 meldet. Szenario ist gruen."
     }
   ]
 }
