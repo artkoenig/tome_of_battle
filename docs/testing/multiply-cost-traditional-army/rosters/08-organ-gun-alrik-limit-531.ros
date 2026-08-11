@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="mcta-08" name="MCTA 08 - Organ Gun mit King Alrik, costLimit 531 pts" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored multiply-cost-traditional-army E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="531"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (DW2-AB)" entryId="8bd9-db54-8bdc-cdfa" catalogueId="a505-6b65-703b-4976" catalogueRevision="1" catalogueName="Dwarfs (2006)">
+      <selections>
+        <selection id="sel-allow-special" name="Allow special characters?" entryId="8923-5946-7b10-8957" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-toggle-special-list-rules" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+        </selection>
+        <selection id="sel-alrik" name="King Alrik Ranulfsson of Karak-Hirn (WD#315-UK)" entryId="8424-9cb7-d1ca-56fe" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-alrik-special-characters" name="Special Characters" entryId="0644-bfcd-32c2-21dc" primary="true"/>
+            <category id="cat-alrik-lord" name="Lord" entryId="d024-d25b-a9b4-73b6" primary="false"/>
+            <category id="cat-alrik-characters" name="Characters" entryId="7a1c-d611-c2dc-def1" primary="false"/>
+          </categories>
+        </selection>
+        <selection id="sel-organ-gun" name="Organ Gun" entryId="b767-3b91-f82d-efb6" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-og-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+            <category id="cat-og-warmachine" name="War Machine" entryId="f672-d9d4-a601-479a" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-og-crew" name="Crew" entryId="c0da-410d-044a-75df" entryLinkId="" number="3" type="model" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

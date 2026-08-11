@@ -2424,3 +2424,45 @@ zusätzlich zu Core — ein `remove` steht dort **nicht**.
 | 03 | Hell Pit, zwei Einheiten | Die Core-Pflicht ist allein durch die umgegliederten Einheiten erfüllt |
 | 04 | Standard, zwei Einheiten | Dort fehlen sie in Core — die Pflicht feuert mit Ist 0 |
 | 05 | Clan Pestilens, vier Einheiten | Gegenprobe aus demselben Katalog: dort steht ein echtes `remove`, und Special zählt 0 |
+
+## `multiply-cost-traditional-army`
+
+Prüft einen `multiply`-Modifikator auf eine Kostenart: er **vervielfacht** die
+Kosten des Trägers, er addiert keinen festen Betrag. Beleg: die
+Dwarfs-Kriegsmaschinen „Gyrocopter" (`fe43-aa5e-3d37-9772`, 140 pts) und
+„Organ Gun" (`b767-3b91-f82d-efb6`, 120 pts) kosten das **Doppelte**, sobald
+„King Alrik Ranulfsson" (`8424-9cb7-d1ca-56fe`) im Kontingent steht — die
+Katalogdaten nennen es die „Traditional Army"-Regel. Gemessen wird über das
+eingestellte Punktebudget, jede Ablesung von beiden Seiten geklammert (Limit
+einen Punkt darunter und einen darüber).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Gyrocopter ohne King Alrik | Grundlinie: genau der geschriebene Katalogwert |
+| 03/04 | Derselbe Gyrocopter mit King Alrik | Genau das Doppelte — nicht mehr, nicht weniger |
+| 05/06 | Organ Gun ohne King Alrik | Zweite Grundlinie mit **anderem** Grundwert |
+| 07/08 | Dieselbe Organ Gun mit King Alrik | Auch hier das Doppelte — ein fester Aufschlag hätte hier die falsche Zahl ergeben |
+
+> **Offen erklärt:** Ob ein `entryLink` ohne eigene Kosten auf die Kosten seines
+> Ziels zurückfällt, sagt keine Quelle; das Szenario umgeht die Frage, statt zu
+> raten, und lässt die betroffenen Gegenstände ungewählt.
+
+## `parent-repeat-upgrade-maneater-weapons`
+
+Prüft einen `<repeat>` mit `scope="parent"` und `childId="upgrade"`: gezählt
+werden im Eltern-Rahmen die Auswahlen vom Typ *upgrade*, und der Modifikator
+greift **je gezähltem Schritt einmal**. Beleg: die Waffen der Dogs-of-War-
+Einheit „Ogre Maneaters" (`b1b8-10da-ac1a-ba7c`) kosten je 6 Punkte mehr pro
+gezählter Aufwertung am Modell. Gemessen über das Punktebudget, jede Ablesung
+von beiden Seiten geklammert. Dieses Szenario nutzt als einziges der
+Wiederholungs-Familie den **ergofang**-Datensatz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Ogre club — das einzige Gruppenmitglied ohne Aufschlag | Grundlinie, exakt auf den Grundwert geklammert |
+| 03/04 | Stattdessen ein Great Weapon | Genau **eine** Anwendung des Aufschlags |
+| 05/06 | Drei Waffen unter demselben Modell | Zählerstand 3, also je Waffe **drei** Anwendungen — das trennt die Wiederholung von einer bloßen Bedingung, und das Modell vom Rahmen der ganzen Einheit |
+
+> **Offen erklärt:** `childId="upgrade"` gegen `any`, der Rahmen „Modell" gegen
+> „Gruppe" sowie `shared` und `includeChildForces` sind auf diesen Daten nicht
+> unterscheidbar; das Szenario sagt es, statt einen Roster zu erfinden.
