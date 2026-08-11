@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-repeat-upgrade-maneater-weapons",
+  "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"upgrade\" value=\"1\" repeats=\"1\"> zaehlt im Eltern-Rahmen des Traegers die Auswahlen, deren aufgeloester Eintragstyp \"upgrade\" ist - den Traeger selbst eingeschlossen - und wendet den Modifikator einmal je gezaehltem Schritt an. Gepinnt an der Einheit \"Ogre Maneaters\" (b1b8-10da-ac1a-ba7c) des upstream-Katalogs Dogs of War.cat: ihr Modell (8fed-6b86-9099-db53) haelt die Gruppe \"Weapon\" (6a33-8be5-b0a4-5b42), deren Links Great Weapon (d13c-78a4-0289-7d87), Cathayan Longsword (3d48-775c-37e8-0dc0) und Brace of Handguns (70ab-1c93-f3b5-9405) je einen increment 6.0 auf die pts-Kostenart ecfa-8486-4f6c-c249 mit genau diesem repeat tragen. Alle vier Waffenziele sind type=\"upgrade\" und kosten 0 pts, der Preis entsteht also ausschliesslich aus der Wiederholung. Messbar allein ueber die engine-eigene Budget-Regel budget::ecfa-8486-4f6c-c249, denn der Effekt ist eine Kostenaenderung und keine Grenze. Drei paarweise geklammerte Aufbauten: Ogre club (kein Modifikator) = 80 pts, Great Weapon allein (Treffer 1) = 86 pts, drei Waffen zugleich (Treffer 3, je 18 pts) = 134 pts. Alle Auswahlen tragen number=\"1\", damit die Summen von der ungeklaerten .ros-Zahlenbasis (Format-Doku Paragraph 7.5) unabhaengig sind.",
+  "dataset": {
+    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "catalogues": [
+      "src/__fixtures__/whfb6/Dogs of War.cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-ogre-club-baseline-over-budget.ros",
+      "description": "Grundlinie: Ogre Maneaters mit einem Modell (80 pts), Pflicht-Light-Armour (0 pts) und dem Ogre club (Link bbaf-1abe-4478-62d8, 0 pts) - dem einzigen Mitglied der Gruppe \"Weapon\" OHNE increment-Modifikator. Der Zaehlerstand im Eltern-Rahmen ist derselbe wie in Roster 03 (eine Auswahl vom Typ upgrade), es gibt nur nichts zu wiederholen. Summe 80 pts, Limit 79 => das Budget feuert mit Ist 80 / Grenze 79.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 80, "bound": 79 }
+        ],
+        "absent": [
+          "f353-4ad9-3691-858c",
+          "1fed-7cb3-eaf7-5d17",
+          "074d-5c87-9c9f-5052",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-ogre-club-baseline-within-budget.ros",
+      "description": "Derselbe Aufbau mit Limit 81: die Summe 80 haelt das Limit ein, das Budget schweigt. Zusammen mit Roster 01 ist die Grundlinie exakt auf 80 pts geklammert - jeder Aufschlag in den Rostern 03-06 ist damit ein messbarer Zuwachs gegenueber dieser Zahl.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "budget::ecfa-8486-4f6c-c249",
+          "f353-4ad9-3691-858c",
+          "1fed-7cb3-eaf7-5d17",
+          "074d-5c87-9c9f-5052",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-great-weapon-one-step-over-budget.ros",
+      "description": "Bis auf die Waffenidentitaet identisch zu Roster 01/02: statt des Ogre club steht das Great Weapon (Link d13c-78a4-0289-7d87 -> .gst 1eb7-3f36-8cf7-e0ba, type=\"upgrade\", 0 pts) in der Gruppe. Der repeat zaehlt im Eltern-Rahmen (dem Modell) die Auswahlen vom Typ upgrade - das ist die Great-Weapon-Auswahl selbst, Treffer 1 => floor(1/1)x1 = 1 Anwendung von increment 6 => Waffe 6 pts, Summe 86 pts. Limit 85 => das Budget feuert mit Ist 86 / Grenze 85. Eine Engine, die den Traeger aus seinem eigenen Rahmen ausnimmt oder den Rahmen nicht aufloest, kaeme auf 80 und liesse das Roster faelschlich schweigen.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 86, "bound": 85 }
+        ],
+        "absent": [
+          "f353-4ad9-3691-858c",
+          "1fed-7cb3-eaf7-5d17",
+          "173e-78a6-860e-2b1e",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-great-weapon-one-step-within-budget.ros",
+      "description": "Derselbe Aufbau mit Limit 87: die Summe 86 haelt das Limit ein, das Budget schweigt. Zusammen mit Roster 03 ist der Aufschlag exakt auf 6 pts geklammert, also auf GENAU EINE Anwendung - zwei Anwendungen (92 pts) liessen dieses Roster faelschlich feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "budget::ecfa-8486-4f6c-c249",
+          "f353-4ad9-3691-858c",
+          "1fed-7cb3-eaf7-5d17",
+          "173e-78a6-860e-2b1e",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-three-weapons-three-steps-over-budget.ros",
+      "description": "Drei Mitglieder der Gruppe \"Weapon\" unter demselben Modell: Great Weapon, Cathayan Longsword und Brace of Handguns, alle mit number=1 und alle mit demselben increment 6 + repeat. Der Zaehlerstand im Eltern-Rahmen ist 3, also 3 Anwendungen JE Waffe => je 0 + 3x6 = 18 pts, Summe 80 + 3x18 = 134 pts. Limit 133 => das Budget feuert mit Ist 134 / Grenze 133. Ein Zaehlerstand > 1 ist in diesem Rahmen nur durch Ueberfuellen der Gruppe erreichbar (sie traegt zwei identische max-1-Grenzen); beide Grenzen feuern deshalb bewusst mit Ist 3 / Grenze 1 und sind Teil der Erwartung.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 134, "bound": 133 },
+          { "limitId": "f353-4ad9-3691-858c", "actual": 3, "bound": 1 },
+          { "limitId": "1fed-7cb3-eaf7-5d17", "actual": 3, "bound": 1 }
+        ],
+        "absent": [
+          "173e-78a6-860e-2b1e",
+          "b004-ed55-2156-385c",
+          "c5fd-d20e-73e6-0690",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-three-weapons-three-steps-within-budget.ros",
+      "description": "Derselbe Aufbau mit Limit 135: die Summe 134 haelt das Limit ein, das Budget schweigt. Zusammen mit Roster 05 sind die drei Anwendungen je Waffe exakt geklammert - eine Anwendung je Waffe (98 pts, repeat als blosse Bedingung gelesen oder Rahmen faelschlich die Einheit) und zwei (116 pts, Traeger aus dem eigenen Rahmen ausgenommen) liessen Roster 05 faelschlich schweigen, vier (152 pts, includeChildSelections faelschlich als true im Einheiten-Rahmen) liessen dieses Roster faelschlich feuern. Die beiden max-1-Grenzen der Gruppe feuern unabhaengig vom Budget weiter.",
+      "expect": {
+        "firing": [
+          { "limitId": "f353-4ad9-3691-858c", "actual": 3, "bound": 1 },
+          { "limitId": "1fed-7cb3-eaf7-5d17", "actual": 3, "bound": 1 }
+        ],
+        "absent": [
+          "budget::ecfa-8486-4f6c-c249",
+          "173e-78a6-860e-2b1e",
+          "b004-ed55-2156-385c",
+          "c5fd-d20e-73e6-0690",
+          "fb53-ce3d-0b8b-cca8",
+          "b9c9-2eef-0ce0-4307",
+          "2ee2-9774-5dcc-530b",
+          "2624-53c3-c680-aa50",
+          "0375-f3e2-722a-06b2",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    }
+  ]
+}

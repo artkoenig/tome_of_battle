@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="prum-05" name="PRUM 05 - Ogre Maneaters mit drei Waffen (drei Wiederholungsschritte), Punktelimit 133 (Budget feuert)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-upgrade-maneater-weapons E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Drei Mitglieder der Gruppe "Weapon" unter DEMSELBEN Modell: Great Weapon
+       (d13c-78a4-0289-7d87), Cathayan Longsword (3d48-775c-37e8-0dc0) und
+       Brace of Handguns (70ab-1c93-f3b5-9405). Alle drei Ziele sind type="upgrade"
+       und kosten 0 pts; alle drei Links tragen denselben increment 6 mit demselben
+       repeat (scope="parent", childId="upgrade", value=1, repeats=1).
+       Zaehlung im Eltern-Rahmen (Modell 8fed-6b86-9099-db53): 3 Auswahlen vom Typ
+       "upgrade" => floor(3/1) x 1 = 3 Anwendungen JE Waffe => je 0 + 3x6 = 18 pts.
+       Summe: 0 + 80 + 0 (Light Armour) + 18 + 18 + 18 = 134 pts.
+       Limit 133 => budget::ecfa-8486-4f6c-c249 feuert mit Ist 134 / Grenze 133.
+       Die Ueberfuellung ist gewollt und unvermeidbar: die Gruppe traegt zwei
+       identische max-1-Grenzen (f353-4ad9-3691-858c, 1fed-7cb3-eaf7-5d17), ein
+       Zaehlerstand > 1 in diesem Rahmen ist ohne sie nicht erreichbar. Beide
+       Grenzen feuern hier mit Ist 3 / Grenze 1 und sind Teil der Erwartung. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="133"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="4887-12ed-22a2-f461" catalogueRevision="4" catalogueName="Dogs of War">
+      <selections>
+        <selection id="sel-maneaters" name="Ogre Maneaters" entryId="b1b8-10da-ac1a-ba7c" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-model" name="Ogre Maneaters" entryId="8fed-6b86-9099-db53" entryLinkId="" number="1" type="model" collective="false">
+              <selections>
+                <selection id="sel-weapon-gw" name="Great Weapon" entryId="1eb7-3f36-8cf7-e0ba" entryLinkId="d13c-78a4-0289-7d87" entryGroupId="6a33-8be5-b0a4-5b42" number="1" type="upgrade" collective="false"/>
+                <selection id="sel-weapon-cl" name="Cathayan Longsword" entryId="4186-0bfd-0938-69d8" entryLinkId="3d48-775c-37e8-0dc0" entryGroupId="6a33-8be5-b0a4-5b42" number="1" type="upgrade" collective="false"/>
+                <selection id="sel-weapon-bh" name="Brace of Handguns" entryId="098c-580d-026b-f647" entryLinkId="70ab-1c93-f3b5-9405" entryGroupId="6a33-8be5-b0a4-5b42" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="868a-ecb7-b621-41cc" entryGroupId="6b9b-e957-af89-cd63" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
