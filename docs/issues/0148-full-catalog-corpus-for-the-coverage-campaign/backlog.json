@@ -279,7 +279,7 @@
       "depth": "full",
       "status": "todo",
       "note": "Kept as one increment: seven books from one commit into one directory, and the re-baselining they force is not separately reviewable — split off, the copy step alone leaves the drift guard red. INC-1 proved the method that carries it: recompute every moved baseline with the character-class grep the test file names as arbiter, and expect scripts/lib/CLAUDE.md and docs/testing/worklist.json in the diff without a criterion naming them as scope creep. The definitive set feeds only the evaluator corpus, not the app E2E, so this increment's risk is the recomputation and the hook timeout, not the app.",
-      "branch": "",
+      "branch": "claude/evaluator-ergofang-daten-ni8js9--INC-2",
       "steps": [],
       "attempts": []
     }
