@@ -758,10 +758,12 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
 > (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
 > eingefrorenen Definitive-Edition-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`,
-> 4 `.cat` + 1 `.gst`; 62 `join`-Vorkommen insgesamt, davon 6 wirkungslos an
-> `set`-Modifiern): 56 von 57 `append`-Modifiern setzen `join` explizit (Leerzeichen, NBSP oder
-> `"&#160;+&#160;"`) — dort ist der Unterschied latent. Der eine `append` ohne `join`
-> (`Mercenaries`, `<modifier type="append" value="*" field="name"/>`) macht ihn sichtbar:
+> 11 `.cat` + 1 `.gst`; 121 `join`-Vorkommen insgesamt, davon 15 wirkungslos an
+> `set`-Modifiern und 5 an `prepend`-Modifiern): 101 von 119 `append`-Modifiern setzen `join`
+> explizit (Leerzeichen, NBSP oder
+> `"&#160;+&#160;"`) — dort ist der Unterschied latent. Die 18 `append` ohne `join`
+> (`Mercenaries` 1, `Skaven` 4, `The Empire` 13; Beispiel
+> `Mercenaries`, `<modifier type="append" value="*" field="name"/>`) machen ihn sichtbar:
 > nach dieser Entscheidung wird `*` direkt angefügt (`Name*`), nach dem Wiki mit Leerzeichen
 > (`Name *`).
 
@@ -836,7 +838,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 > Das Wiki zählt `ancestor` in der Scope-Aufzählung auf (gültig nur mit
 > `instanceOf`/`notInstanceOf`), beschreibt seine Semantik aber nicht; `unit` ist upstream gar
 > nicht dokumentiert. Reale Kataloge nutzen beide (Fixture-Kataloge der Definitive Edition:
-> `scope="unit"` 130×, `scope="ancestor"` 10×). Aus den Daten belegt und in Issue 086
+> `scope="unit"` 337×, `scope="ancestor"` 33×). Aus den Daten belegt und in Issue 086
 > entschieden:
 >
 > - **`unit` ist ein regulärer Zählrahmen:** der nächste Vorfahre — den Träger der Query
@@ -850,8 +852,9 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 >   `instanceOf`-Condition hält genau dann, wenn **irgendein** Vorfahre der tragenden Auswahl
 >   (die gesamte strikte Kette, Kontingente eingeschlossen) auf die `childId` auflöst —
 >   über seine Definitions-Id, seine Link-Ziel-Id, eine seiner **effektiven** Kategorien oder
->   seinen rohen Typ; `notInstanceOf` invers. Alle 10 Fixture-Vorkommen benennen
->   **Kategorie-Ids** („Characters", „Battle standard bearer", „Slaanesh [DARK ELVES]") — die
+>   seinen rohen Typ; `notInstanceOf` invers. Alle 33 Fixture-Vorkommen benennen
+>   **Kategorie-Ids** („Characters", „Battle standard bearer", „Slaanesh",
+>   „Slaanesh [DARK ELVES]") — die
 >   Prüfung braucht also die effektiven Kategorien, nicht nur Definitions-Ids. Die Zähl-Flags
 >   (`shared`, `includeChild…`) sind ohne Wirkung: eine Vorfahrenkette wird durch eine Instanz
 >   nicht enger.
@@ -1497,7 +1500,7 @@ Lücken, die uns bisher konkret getroffen haben:
 | **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
 | **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | [Der Kasten in §7.6](#scope-primary-catalogue) beschreibt die in Issue 077 aus den Daten belegte Semantik: das Armeebuch des umschließenden Kontingents, als Identitätsprüfung statt als Zählrahmen. |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
-| **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (130× bzw. 10× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
+| **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (337× bzw. 33× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
 | **`conditionGroup type="not"`** | Weder Wiki noch eine bekannte `BSData/schemas`-Version kennt den Gruppentyp; die Definitive Edition nutzt ihn (2× in `Vampire Counts`, Pflichteinheiten des Sonderheeres „Army of the Lichemaster"). | [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen) beschreibt die in Issue 0115 getroffene Entscheidung: die Gruppe hält, wenn **keines** ihrer Mitglieder hält (De-Morgan-Duale zu `or`). Die vendorte `Catalogue.xsd` wurde um den Wert erweitert (ADR 0016). |
