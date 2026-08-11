@@ -193,7 +193,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`parent-repeat-upgrade-maneater-weapons`](testing/parent-repeat-upgrade-maneater-weapons/) | ergofang DoW (ohne Mercenaries) | 6 |
 | [`at-least-parent-model-champion-gate`](testing/at-least-parent-model-champion-gate/) | Definitive Dwarfs + Mercenaries | 4 |
 | [`at-least-self-any-experimental-hydra-warning`](testing/at-least-self-any-experimental-hydra-warning/) | Definitive Dark Elves + Mercenaries | 5 |
-| **Summe** | | **515** |
+| [`not-equal-to-parent-lance-pistol-gate`](testing/not-equal-to-parent-lance-pistol-gate/) | Definitive Empire + Mercenaries | 7 |
+| **Summe** | | **522** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2532,3 +2533,26 @@ hängt.
 > getrennt wird `self` deshalb von `unit`, `force` und `roster`. `shared="true"`
 > ist unbeobachtbar, weil die Gruppe im ganzen Fixture-Satz genau einmal
 > vorkommt.
+
+## `not-equal-to-parent-lance-pistol-gate`
+
+Prüft eine `<condition type="notEqualTo" … scope="parent" childId="<Ziel-Id>">`:
+sie hält bei **jedem** Zählstand außer genau dem verglichenen — also bei 0
+**und** bei 2 —, ist also kein `lessThan`. Beleg: der Lance-Verweis
+(`e082-13b2-e746-34e0`) der Empire-Einheit „Knights of the Knightly Orders"
+(`1d77-9e6e-a6ab-573f`) trägt `min 1` und `max 1`; eine `modifierGroup` setzt
+**beide** auf 0, sobald die Einheit eine „Signature Weapon" führt und die Zahl
+der Pistolen im Einheiten-Rahmen ungleich 1 ist, eine zweite setzt sie bei genau
+einer Pistole zurück.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Signature Weapon = genau **eine** Pistole, Lance da / fehlt | Die Bedingung hält nicht, die Grenzen stehen auf 1 — die Pflicht feuert genau dann, wenn die Lance fehlt |
+| 03 | Signature Weapon = Great Weapon, also **null** Pistolen | Die Bedingung hält, beide Grenzen fallen auf 0 — ohne Lance schweigt alles |
+| 04/05 | **Zwei** Pistolen, Lance fehlt / ist da | Das Herzstück: Zählstand 2 lässt die Bedingung **wieder** halten, die Grenzen fallen auf 0 — unter einem `lessThan` wäre es umgekehrt |
+| 06 | Null Pistolen, aber **keine** Signature Weapon | Die and-Klammer fällt: die geschriebenen Grenzen 1/1 bleiben stehen und die Pflicht feuert |
+| 07 | Wie 03, die Pistole steht in einer **anderen** Einheit | Rahmentrennung: der fremde Zählstand zählt nicht mit |
+
+> **Offen erklärt:** Die Reihenfolge der beiden `modifierGroup`s und der
+> Unterschied `shared="false"` (Mindestmaß) gegen `shared="true"` (Höchstmaß)
+> sind mit einer Einheit und einer Verweis-Instanz nicht beobachtbar.

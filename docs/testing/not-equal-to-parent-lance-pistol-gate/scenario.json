@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "name": "not-equal-to-parent-lance-pistol-gate",
+  "description": "Condition-Zelle condition|notEqualTo|parent|selectionCount|child=id: Eine Bedingung type=\"notEqualTo\" value=\"1\" field=\"selections\" scope=\"parent\" haelt bei JEDEM Zaehlstand ausser genau 1 — also bei 0 UND bei 2 oder mehr; sie ist NICHT lessThan. Traeger ist im Armeebuch The Empire der entryLink 'Lance' e082-13b2-e746-34e0 (Ziel 8649-8ac8-5a6f-fd8d) in der Gruppe 'Weapons and Armour' f1bb-0dde-c39a-d0e1 der Einheit 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f. Der Verweis traegt min 1 (f0ce-7b2e-0be1-9dd1) und max 1 (128a-6411-f218-72fc); ein erster modifierGroup setzt BEIDE auf 0, gegatet auf eine and-Gruppe aus 'atLeast 1 childId=5191-89ca-822d-60e5' (der Verweis auf die Gruppe 'Signature Weapon' 7195-9f86-b364-0a4f) UND der notEqualTo-Bedingung auf childId=44f9-f44d-d693-84f8 ('Pistol', im Katalog innerhalb ebendieser Gruppe als Verweis fdd1-053d-3b57-76ca angeboten); ein zweiter modifierGroup setzt beide zurueck auf 1, gegatet auf 'equalTo 1' desselben Pistol-Ziels. Die Roster bilden das unterscheidende Tripel ab: Pistol-Zaehlstand 1 (Bedingung falsch, Grenzen 1/1 — Roster 01 und 02), Zaehlstand 0 bei vorhandener Signature Weapon (Bedingung wahr, Grenzen 0/0 — Roster 03) und Zaehlstand 2 (Bedingung WIEDER wahr, Grenzen 0/0 — Roster 04 und 05; unter der Lesart lessThan waeren es hier 1/1 und f0ce-7b2e-0be1-9dd1 muesste feuern). Roster 06 zeigt die and-Gruppe: Zaehlstand 0 OHNE Signature Weapon laesst die geschriebenen Grenzen stehen. Roster 07 zeigt den Rahmen: ein Pistol in einer ANDEREN Einheit desselben Kontingents (Elector Count f58c-9606-507a-0542, Verweis 11b1-f83f-3b7a-63ec) darf den Zaehlstand der Ritter nicht beruehren. Die verschobenen Grenzen werden ueber expect.capabilities (effectiveMin/effectiveMax des Lance-Slots) auch dort beobachtet, wo nichts feuert.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-pistol-count-1-lance-present.ros",
+      "description": "Ritterregiment im Kontingent 'Standard (EM-AB)' mit voller Pflichtausruestung (5 Knights, Shield, Lance, Hand Weapon, Full Plate Armour, Empire Warhorse) und der Order-Kette 'Custom Knightly Order' -> 'Knightly advantages' -> Signature Weapon = GENAU EIN Pistol. Im Rahmen der Einheit zaehlt 44f9-f44d-d693-84f8 genau 1: die notEqualTo-Bedingung haelt NICHT, der erste modifierGroup bleibt aus; die equalTo-Bedingung haelt und setzt beide Grenzen auf ihren geschriebenen Wert 1. Mit einer Lance sind min 1 und max 1 erfuellt — nichts feuert. Das ist der Fall, den die Katalogregel 45a3-03e9-e611-9a98 ('The pistol does not replace the Lance') am Pistol-Verweis in Worten beschreibt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "dbff-c6e9-ba8a-4a3c",
+          "ecdd-8e84-6a0e-c90b",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "fdd1-053d-3b57-76ca",
+            "targetDefId": "44f9-f44d-d693-84f8",
+            "name": "Pistol",
+            "current": 1,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-pistol-count-1-lance-missing.ros",
+      "description": "Bis auf die fehlende Lance byte-gleich zu Roster 01. Der Pistol-Zaehlstand bleibt 1, die notEqualTo-Bedingung haelt weiterhin nicht, die equalTo-Bedingung setzt beide Grenzen auf 1 — das Mindestmass f0ce-7b2e-0be1-9dd1 ist damit mit Ist 0 unerfuellt und feuert. Positive Kontrolle zu Roster 01 und Gegenstueck zu Roster 04: derselbe Aufbau ohne Lance, nur mit einem statt zwei Pistols, meldet die Pflicht — in Roster 04 darf sie schweigen.",
+      "expect": {
+        "firing": [
+          { "limitId": "f0ce-7b2e-0be1-9dd1", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "128a-6411-f218-72fc",
+          "dbff-c6e9-ba8a-4a3c",
+          "ecdd-8e84-6a0e-c90b",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "defId": "fdd1-053d-3b57-76ca",
+            "targetDefId": "44f9-f44d-d693-84f8",
+            "name": "Pistol",
+            "current": 1,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-signature-weapon-not-pistol-count-0.ros",
+      "description": "Wie Roster 02, aber die Signature Weapon ist ein Great Weapon (Verweis e667-bf75-c92f-1ede, Ziel 1eb7-3f36-8cf7-e0ba) statt eines Pistols. Im Rahmen der Einheit: Signature-Weapon-Auswahlen 1 (atLeast 1 haelt) und Pistol-Zaehlstand 0 — die notEqualTo-Bedingung haelt, weil 0 nicht gleich 1 ist. Die and-Gruppe haelt vollstaendig, beide Lance-Grenzen fallen auf 0. Ohne Lance ist das Mindestmass 0 erfuellt und das Hoechstmass 0 nicht ausgeschoepft: f0ce-7b2e-0be1-9dd1 muss schweigen, obwohl es in Roster 02 bei identischer Lance-Lage feuert.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "dbff-c6e9-ba8a-4a3c",
+          "ecdd-8e84-6a0e-c90b",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "e667-bf75-c92f-1ede",
+            "targetDefId": "1eb7-3f36-8cf7-e0ba",
+            "name": "Great Weapon",
+            "current": 1,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-pistol-count-2-lance-missing.ros",
+      "description": "Das Herzstueck: bis auf number=\"2\" am Pistol byte-gleich zu Roster 02. Der Pistol-Zaehlstand im Einheiten-Rahmen ist 2, die notEqualTo-Bedingung haelt damit WIEDER (2 ist nicht gleich 1) und die equalTo-Bedingung haelt nicht: beide Lance-Grenzen fallen auf 0, obwohl der Zaehlstand OBERHALB von 1 liegt. Genau hier trennt sich notEqualTo von lessThan — unter lessThan stuenden die Grenzen bei 1/1 und f0ce-7b2e-0be1-9dd1 muesste wie in Roster 02 mit Ist 0 feuern. Der zweite Pistol reisst dabei zwangslaeufig zwei Hoechstmasse: die Gruppengrenze ecdd-8e84-6a0e-c90b und die Verweisgrenze dbff-c6e9-ba8a-4a3c, beide max 1 im Rahmen der Auswahl 'Knightly advantages' und beide mit Ist 2. Einen anderen Weg zu zwei Pistols im Rahmen dieser Einheit gibt es im Katalog nicht.",
+      "expect": {
+        "firing": [
+          { "limitId": "ecdd-8e84-6a0e-c90b", "actual": 2, "bound": 1 },
+          { "limitId": "dbff-c6e9-ba8a-4a3c", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "fdd1-053d-3b57-76ca",
+            "targetDefId": "44f9-f44d-d693-84f8",
+            "name": "Pistol",
+            "current": 2,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-pistol-count-2-lance-present.ros",
+      "description": "Bis auf die zusaetzliche Lance byte-gleich zu Roster 04 — die Max-Seite derselben verschobenen Grenzen. Der Zaehlstand 2 haelt die notEqualTo-Bedingung, beide Grenzen stehen auf 0; die gewaehlte Lance verletzt damit das Hoechstmass 128a-6411-f218-72fc mit Ist 1 / Grenze 0, waehrend das Mindestmass 0 erfuellt bleibt. Unter der Lesart lessThan stuende das Hoechstmass bei 1 und duerfte nicht feuern.",
+      "expect": {
+        "firing": [
+          { "limitId": "128a-6411-f218-72fc", "actual": 1, "bound": 0 },
+          { "limitId": "ecdd-8e84-6a0e-c90b", "actual": 2, "bound": 1 },
+          { "limitId": "dbff-c6e9-ba8a-4a3c", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "f0ce-7b2e-0be1-9dd1",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 1,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "fdd1-053d-3b57-76ca",
+            "targetDefId": "44f9-f44d-d693-84f8",
+            "name": "Pistol",
+            "current": 2,
+            "effectiveMax": 1
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-no-signature-weapon-count-0.ros",
+      "description": "Gegenprobe zu Roster 03 fuer die and-Gruppe: derselbe Pistol-Zaehlstand 0 im Einheiten-Rahmen, aber GAR KEINE Order-Kette und damit keine Signature-Weapon-Auswahl. Die erste Haelfte der and-Gruppe (atLeast 1 childId=5191-89ca-822d-60e5) haelt nicht, also greift der set 0 nicht — obwohl die notEqualTo-Haelfte fuer sich haelt. Die geschriebenen Grenzen min 1 / max 1 bleiben stehen, und ohne Lance feuert das Mindestmass f0ce-7b2e-0be1-9dd1 mit Ist 0 / Grenze 1. Die Paarung 03 gegen 06 isoliert die and-Klammer, die Paarung 02 gegen 06 zeigt, dass beide Wege zur stehenden Pflicht dieselbe Meldung ergeben.",
+      "expect": {
+        "firing": [
+          { "limitId": "f0ce-7b2e-0be1-9dd1", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "128a-6411-f218-72fc",
+          "dbff-c6e9-ba8a-4a3c",
+          "ecdd-8e84-6a0e-c90b",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-pistol-in-other-unit-frame.ros",
+      "description": "Rahmenbeweis: bis auf den zusaetzlichen Elector Count byte-gleich zu Roster 03. Die Ritter tragen ein Great Weapon als Signature Weapon, in IHREM Rahmen ist der Pistol-Zaehlstand 0 — die Grenzen bleiben bei 0/0 und nichts feuert. Der Elector Count f58c-9606-507a-0542 traegt im selben Kontingent GENAU EINEN Pistol (dasselbe Ziel 44f9-f44d-d693-84f8 ueber den Verweis 11b1-f83f-3b7a-63ec der Gruppe 'Weapons' d7b5-6f57-f3fc-a0c4). Zaehlte scope=\"parent\" kontingent- oder rosterweit, waere der Zaehlstand der Ritter 1, die notEqualTo-Bedingung fiele, die equalTo-Bedingung setzte die Grenzen auf 1/1 und f0ce-7b2e-0be1-9dd1 muesste mit Ist 0 feuern. shared=\"true\" weitet den ueber scope bestimmten Rahmen dabei nicht.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "dbff-c6e9-ba8a-4a3c",
+          "ecdd-8e84-6a0e-c90b",
+          "8126-b330-ec8d-9cea",
+          "5f81-d4a6-b74f-6fc3",
+          "9ff4-e65c-ebb1-1f3c",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "bdef-ba9b-d6ce-5b14",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "f78b-9ad2-c515-7c0a",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "30c1-0e8a-ca51-3eee",
+          "2943-aa1c-4532-4fb2",
+          "536c-1042-a3a2-dfd9",
+          "89f6-32a9-4efd-4c0b"
+        ],
+        "capabilities": [
+          {
+            "defId": "e082-13b2-e746-34e0",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 0,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "11b1-f83f-3b7a-63ec",
+            "targetDefId": "44f9-f44d-d693-84f8",
+            "name": "Pistol",
+            "current": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -7,56 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 126,
-    "uncovered": 4
+    "covered": 127,
+    "uncovered": 3
   },
   "cells": [
-    {
-      "key": "condition|notEqualTo|parent|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "notEqualTo",
-        "scope": "parent",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "e082-13b2-e746-34e0",
-            "name": "Lance"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifierGroups",
-            "modifierGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "notEqualTo",
-            "field": "selections",
-            "scope": "parent",
-            "childId": "44f9-f44d-d693-84f8"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|notEqualTo|roster|limitValue|child=any",
       "kind": "condition",

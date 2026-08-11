@@ -730,6 +730,13 @@
         "docs/testing/at-least-self-any-experimental-hydra-warning"
       ],
       "rationale": "Fuenf Roster ueber die Dark-Elves-Gruppe \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138). Ihre Autor-Warnung haengt an einer and-Gruppe aus atLeast 1 selections scope=self childId=any (die Gruppe selbst ist der Zaehlrahmen) und lessThan 1 des Schalters \"Allow experimental rules?\" im Kontingent. Roster 01 (ein Gruppenmitglied, kein Schalter) und 05 (zwei Mitglieder) fordern die Warnung, Roster 02 (leere Gruppe), 03 (Rahmen gefuellt, Gruppe leer) und 04 (Mitglied plus Schalter) fordern Stille. Szenario ist ROT: die drei stillen Roster stimmen, in 01 und 05 traegt der Bericht am Gruppenanker gar keine Autor-Meldung. Siehe pinnedGaps in docs/testing/campaign-state.json."
+    },
+    {
+      "key": "condition|notEqualTo|parent|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/not-equal-to-parent-lance-pistol-gate"
+      ],
+      "rationale": "Sieben Roster ueber die Empire-Einheit Knights of the Knightly Orders (1d77-9e6e-a6ab-573f). Der Lance-Verweis e082-13b2-e746-34e0 traegt min 1 und max 1; eine modifierGroup setzt beide auf 0, gegatet auf atLeast 1 Signature Weapon UND notEqualTo 1 Pistol im Eltern-Rahmen, eine zweite setzt sie bei equalTo 1 Pistol zurueck. Roster 01/02 (Zaehlstand 1) halten die Bedingung nicht, Roster 03 (Zaehlstand 0) und 04/05 (Zaehlstand 2) halten sie - der Zaehlstand 2 trennt notEqualTo von lessThan. Roster 06 zeigt die and-Gruppe: derselbe Zaehlstand 0 ohne Signature-Weapon-Auswahl laesst die geschriebenen Grenzen stehen. Roster 07 trennt den Rahmen: ein Pistol in einer anderen Einheit desselben Kontingents zaehlt nicht mit. Szenario ist gruen."
     }
   ]
 }
