@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="asaeh-03" name="ASAEH 03 - Einheit und Kontingent voll besetzt, Gruppe leer: Warnung schweigt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored atLeast-self-any E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+  </costLimits>
+  <forces>
+    <!-- Der Rahmen-Test: die umschliessende Einheit haelt jetzt fuenf weitere
+         Auswahlen (Pflicht-Kind, zwei Beastmaster Apprentices mit je einer
+         Waffe), das Kontingent und das Roster damit ebenfalls - nur die Gruppe
+         7f4e-4b7b-fbc4-a138 selbst haelt keine. Waere der Rahmen der Bedingung
+         "unit", "force" oder "roster" statt "self", muesste die Warnung hier
+         anliegen. -->
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-hydra-unit" name="War Hydra" entryId="424f-9a77-2a02-4cec" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hydra-upgrade" name="War Hydra" entryId="3bfb-7e21-80b0-3b13" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="cat-experimental" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+              </categories>
+            </selection>
+            <!-- Geschwister des Gruppentraegers, nicht Mitglieder der Gruppe:
+                 "Beastmaster Apprentices" (d78e-d405-73e7-d3f5) mit min 2 / max 2
+                 (a75b-49a6-1dde-c444 / d4f4-51a7-906f-0c42, scope=parent). Beide
+                 Auswahlen erfuellen zugleich die Mindestgrenze des Waffen-
+                 Verweises c3ca-c3ce-f6be-f830 (min 1, scope=parent). -->
+            <selection id="sel-apprentice-1" name="Beastmaster Apprentices" entryId="d78e-d405-73e7-d3f5" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-apprentice-1-weapons" name="Two Hand Weapons" entryId="36a8-7bbb-d204-0314" entryLinkId="c3ca-c3ce-f6be-f830" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-apprentice-2" name="Beastmaster Apprentices" entryId="d78e-d405-73e7-d3f5" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-apprentice-2-weapons" name="Two Hand Weapons" entryId="36a8-7bbb-d204-0314" entryLinkId="c3ca-c3ce-f6be-f830" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

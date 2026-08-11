@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-self-any-experimental-hydra-warning",
+  "description": "Eine condition type=\"atLeast\" value=\"1\" field=\"selections\" scope=\"self\" childId=\"any\" macht den TRAEGER der Abfrage zu ihrem eigenen Zaehlrahmen: gezaehlt werden die Auswahlen, die der tragende Knoten selbst haelt - hier eine selectionEntryGroup, also die aus ihr gewaehlten Mitglieder, nicht der Bestand der umschliessenden Einheit, des Kontingents oder des Rosters. Gepinnt an der Dark-Elves-Gruppe \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138) im Pflicht-Upgrade 3bfb-7e21-80b0-3b13 der Rare-Einheit \"War Hydra\" (424f-9a77-2a02-4cec): die Gruppe traegt einen modifier type=\"add\" field=\"warning\", dessen einzige conditionGroup type=\"and\" genau zwei Bedingungen haelt - die self/any-Bedingung und lessThan 1 selections scope=force childId=e28d-f278-f209-63bd (\"Allow experimental rules?\"). Die Autor-Warnung muss also genau dann anliegen, wenn ein Hydra-Variante aus dieser Gruppe gewaehlt ist UND das Kontingent den Schalter nicht fuehrt; in jeder anderen Kombination muss sie schweigen. Fuenf Roster: das gegatete/ungegatete Paar bei sonst gleichem Aufbau, ein voll besetzter Rahmen bei leerer Gruppe (trennt self von unit/force/roster), der bewusst umgelegte zweite Konjunkt und ein Ueberlauf mit zwei Gruppenmitgliedern.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-veteran-hydra-warning-fires.ros",
+      "description": "Kontingent \"Standard (DE-AB)\" (26bc-729f-a188-f285) mit einer War-Hydra-Einheit, ihrem Pflicht-Upgrade und GENAU EINEM Mitglied der Gruppe \"War Hydras of Naggaroth\" (Veteran War Hydra, 86e7-cf9a-d4af-8b81). Kein \"Allow experimental rules?\" im Kontingent. Beide Konjunkte der and-Gruppe halten: die Gruppe haelt 1 Auswahl (atLeast 1, scope=self, childId=any) und der Schalter fehlt (lessThan 1, scope=force). Die Autor-Warnung liegt an der grenzentragenden Gruppe an; das Token {this} steht fuer den Anzeigenamen des Traegers, also fuer den Gruppennamen \"War Hydras of Naggaroth\". Die rohe Fassung mit {this} darf in keiner der beiden moeglichen Zeilenumbruch-Normalisierungen vorkommen. Die min-2-Grenze der Beastmaster Apprentices feuert bewusst mit Ist 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "a75b-49a6-1dde-c444", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "c36b-249d-d86e-b3f2",
+          "cf55-5fd5-ebc5-f6fd",
+          "656d-017e-a719-4a57",
+          "547a-41b7-dff9-d382",
+          "d4f4-51a7-906f-0c42",
+          "a3ce-55af-2de8-23be",
+          "f210-5b8b-86c7-9466"
+        ],
+        "capabilities": [
+          {
+            "defId": "7f4e-4b7b-fbc4-a138",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "3bfb-7e21-80b0-3b13",
+            "name": "War Hydras of Naggaroth",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "7f4e-4b7b-fbc4-a138",
+            "text": "War Hydras of Naggaroth is an experimental rule that requires permission from your opponen! Check \"Allow experimental rules?\" to disable this message.",
+            "severity": "warning",
+            "anchorKind": "groupAnchor",
+            "anchorName": "War Hydras of Naggaroth",
+            "count": 1
+          },
+          {
+            "origin": "authorMessage",
+            "text": "{this} is an experimental rule that requires permission from your opponen! Check \"Allow experimental rules?\" to disable this message.",
+            "count": 0
+          },
+          {
+            "origin": "authorMessage",
+            "text": "{this} is an experimental rule that requires permission from your opponen!\nCheck \"Allow experimental rules?\" to disable this message.",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-group-empty-warning-silent.ros",
+      "description": "Bis auf die fehlende Gruppenauswahl der Aufbau von Roster 01: gleiches Kontingent, gleiche Einheit, gleiches Pflicht-Upgrade, weiterhin kein \"Allow experimental rules?\". Die Gruppe haelt 0 Auswahlen, damit haelt das erste Konjunkt nicht mehr, und an der Gruppe liegt KEINE Autor-Meldung an. Das ist die Gegenprobe des Paares: allein die Semantik der self/any-Bedingung unterscheidet 01 von 02.",
+      "expect": {
+        "firing": [
+          { "limitId": "a75b-49a6-1dde-c444", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "c36b-249d-d86e-b3f2",
+          "cf55-5fd5-ebc5-f6fd",
+          "656d-017e-a719-4a57",
+          "547a-41b7-dff9-d382",
+          "d4f4-51a7-906f-0c42",
+          "a3ce-55af-2de8-23be",
+          "f210-5b8b-86c7-9466"
+        ],
+        "capabilities": [
+          {
+            "defId": "7f4e-4b7b-fbc4-a138",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "3bfb-7e21-80b0-3b13",
+            "name": "War Hydras of Naggaroth",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "7f4e-4b7b-fbc4-a138",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-frame-populated-group-empty-silent.ros",
+      "description": "Der Rahmen-Test. Die umschliessende Einheit haelt jetzt das Pflicht-Upgrade UND zwei Beastmaster Apprentices (d78e-d405-73e7-d3f5) mit je einer Waffe - Kontingent und Roster damit ebenfalls fuenf Auswahlen -, waehrend die Gruppe 7f4e-4b7b-fbc4-a138 selbst weiterhin keine haelt. Ein Rahmen \"unit\", \"force\" oder \"roster\" wuerde hier zaehlen und die Warnung ausloesen; \"self\" tut es nicht. Die min-2/max-2-Grenzen der Apprentices sind damit erfuellt und schweigen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "c36b-249d-d86e-b3f2",
+          "cf55-5fd5-ebc5-f6fd",
+          "656d-017e-a719-4a57",
+          "547a-41b7-dff9-d382",
+          "a75b-49a6-1dde-c444",
+          "d4f4-51a7-906f-0c42",
+          "8e9f-6150-7d65-248b",
+          "a3ce-55af-2de8-23be",
+          "f210-5b8b-86c7-9466"
+        ],
+        "capabilities": [
+          {
+            "defId": "7f4e-4b7b-fbc4-a138",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "3bfb-7e21-80b0-3b13",
+            "name": "War Hydras of Naggaroth",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "7f4e-4b7b-fbc4-a138",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-experimental-toggle-warning-silent.ros",
+      "description": "Roster 01 plus der Auswahl \"Allow experimental rules?\" (Ziel 8b76-92c4-23f9-54b1 ueber den Dark-Elves-Wurzelverweis e28d-f278-f209-63bd, den die Bedingung als childId nennt). Das erste Konjunkt haelt weiterhin - die Gruppe fuehrt ihr Mitglied -, das zweite (lessThan 1, scope=force) nicht mehr. Die Warnung muss schweigen; das beweist, dass die beiden Bedingungen als UND verknuepft sind und die self/any-Bedingung allein die Meldung nicht ausloest.",
+      "expect": {
+        "firing": [
+          { "limitId": "a75b-49a6-1dde-c444", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "c36b-249d-d86e-b3f2",
+          "cf55-5fd5-ebc5-f6fd",
+          "656d-017e-a719-4a57",
+          "547a-41b7-dff9-d382",
+          "d4f4-51a7-906f-0c42",
+          "a3ce-55af-2de8-23be",
+          "f210-5b8b-86c7-9466",
+          "b302-93b6-3d1d-13d6"
+        ],
+        "capabilities": [
+          {
+            "defId": "7f4e-4b7b-fbc4-a138",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "3bfb-7e21-80b0-3b13",
+            "name": "War Hydras of Naggaroth",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "authorMessages": []
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "7f4e-4b7b-fbc4-a138",
+            "count": 0
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-two-hydra-variants-group-max-fires.ros",
+      "description": "Roster 01 plus einem zweiten Gruppenmitglied (Royal War Hydra, af9a-6364-8ab3-efea). Die Gruppe haelt 2 Auswahlen: ihre eigene Grenze c36b-249d-d86e-b3f2 (max 1, field=selections, scope=parent) feuert mit Ist 2 gegen Grenze 1, und die Mindestbedingung atLeast 1 haelt weiterhin - ein Ueberlauf macht sie nicht falsch, die Warnung liegt weiterhin genau EINMAL an der Gruppe an. Der Text wird hier bewusst nicht behauptet (siehe README, Abschnitt zur Zeilenumbruch-Normalisierung); gepinnt sind Herkunft, Anker, Schweregrad und Anzahl.",
+      "expect": {
+        "firing": [
+          { "limitId": "c36b-249d-d86e-b3f2", "actual": 2, "bound": 1 },
+          { "limitId": "a75b-49a6-1dde-c444", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "cf55-5fd5-ebc5-f6fd",
+          "24c5-418f-a665-89ca",
+          "656d-017e-a719-4a57",
+          "547a-41b7-dff9-d382",
+          "d4f4-51a7-906f-0c42",
+          "a3ce-55af-2de8-23be",
+          "f210-5b8b-86c7-9466"
+        ],
+        "capabilities": [
+          {
+            "defId": "7f4e-4b7b-fbc4-a138",
+            "anchorKind": "groupAnchor",
+            "frameDefId": "3bfb-7e21-80b0-3b13",
+            "name": "War Hydras of Naggaroth",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1
+          }
+        ],
+        "messages": [
+          {
+            "origin": "authorMessage",
+            "anchorDefId": "7f4e-4b7b-fbc4-a138",
+            "severity": "warning",
+            "anchorKind": "groupAnchor",
+            "anchorName": "War Hydras of Naggaroth",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

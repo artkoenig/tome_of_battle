@@ -90,6 +90,17 @@
       "pinnedAt": "2026-08-10",
       "status": "open",
       "note": "A max constraint with scope=\"self\" must make its own carrier selection the counting frame and count the selections underneath it: \"Allow Mercenaries\" (fda5-49b9-b74c-aaf4, game system) carries max 1 selections scope=\"self\" shared=\"true\" includeChildSelections=\"false\" (714b-5314-33d4-dd68) and holds exactly two direct children (the two hidden house-rule entries 713c-28b1-0861-1ffd and 698e-c660-5c99-d481), so a roster holding both — and equally one holding a single child node with number=2 — must make that limit fire with actual 2 against bound 1. The report carries no violation for 714b-5314-33d4-dd68 at all in either roster, while the four silent rosters (one child, no child, and the frame-delimiting roster 05 where the PARENT holds two children but the carrier only one) all pass; so the limit never fires rather than counting in the wrong frame. The parent-scoped sibling 1df9-8159-156a-641f is asserted absent in every roster and is correct throughout."
+    },
+    {
+      "cellKey": "condition|atLeast|self|selectionCount|child=any",
+      "scenario": "docs/testing/at-least-self-any-experimental-hydra-warning",
+      "failingCases": [
+        "Szenario: at-least-self-any-experimental-hydra-warning > rosters/01-veteran-hydra-warning-fires.ros",
+        "Szenario: at-least-self-any-experimental-hydra-warning > rosters/05-two-hydra-variants-group-max-fires.ros"
+      ],
+      "pinnedAt": "2026-08-11",
+      "status": "open",
+      "note": "An author message carried by a selectionEntryGroup must reach the report at that group anchor when its gate holds: the group \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138, Dark Elves) carries a modifier type=\"add\" field=\"warning\" gated on an and-group of atLeast 1 selections scope=\"self\" childId=\"any\" (the group itself is the counting frame) and lessThan 1 selections scope=\"force\" of the toggle \"Allow experimental rules?\" (e28d-f278-f209-63bd); a roster that chooses one member of that group without the toggle (roster 01) and one that chooses two (roster 05) must each carry exactly one authorMessage of severity warning at anchorDefId 7f4e-4b7b-fbc4-a138, but the report carries no author message at that anchor at all, while the three rosters demanding silence (empty group, populated frame with empty group, member plus toggle) are already correct — so the gate is not read too eagerly, the message is never projected at a group carrier."
     }
   ],
   "parkedQuestions": [

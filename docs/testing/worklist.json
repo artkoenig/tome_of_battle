@@ -7,56 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 125,
-    "uncovered": 5
+    "covered": 126,
+    "uncovered": 4
   },
   "cells": [
-    {
-      "key": "condition|atLeast|self|selectionCount|child=any",
-      "kind": "condition",
-      "axes": {
-        "type": "atLeast",
-        "scope": "self",
-        "field": "selectionCount",
-        "childId": "any"
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntryGroup",
-            "id": "7f4e-4b7b-fbc4-a138",
-            "name": "War Hydras of Naggaroth"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntries",
-            "selectionEntry",
-            "selectionEntryGroups",
-            "selectionEntryGroup",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "atLeast",
-            "field": "selections",
-            "scope": "self",
-            "childId": "any"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|notEqualTo|parent|selectionCount|child=id",
       "kind": "condition",

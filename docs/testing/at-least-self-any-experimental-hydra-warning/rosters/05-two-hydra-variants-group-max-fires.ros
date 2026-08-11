@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="asaeh-05" name="ASAEH 05 - zwei Gruppenmitglieder: Gruppengrenze feuert, Warnung bleibt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored atLeast-self-any E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+  </costLimits>
+  <forces>
+    <!-- Roster 01 plus einem zweiten Gruppenmitglied. Die Gruppe haelt damit 2
+         Auswahlen: ihre eigene Grenze c36b-249d-d86e-b3f2 (max 1, scope=parent)
+         feuert mit Ist 2, und die Bedingung "atLeast 1" haelt weiterhin - eine
+         Mindestbedingung wird von einem Ueberlauf nicht falsch. -->
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-hydra-unit" name="War Hydra" entryId="424f-9a77-2a02-4cec" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hydra-upgrade" name="War Hydra" entryId="3bfb-7e21-80b0-3b13" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="cat-experimental" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+              </categories>
+              <selections>
+                <selection id="sel-veteran-hydra" name="Veteran War Hydra" entryId="86e7-cf9a-d4af-8b81" entryLinkId="" entryGroupId="7f4e-4b7b-fbc4-a138" number="1" type="upgrade" collective="false"/>
+                <selection id="sel-royal-hydra" name="Royal War Hydra" entryId="af9a-6364-8ab3-efea" entryLinkId="" entryGroupId="7f4e-4b7b-fbc4-a138" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

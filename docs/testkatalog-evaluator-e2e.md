@@ -192,7 +192,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`multiply-cost-traditional-army`](testing/multiply-cost-traditional-army/) | Definitive Dwarfs + Mercenaries | 8 |
 | [`parent-repeat-upgrade-maneater-weapons`](testing/parent-repeat-upgrade-maneater-weapons/) | ergofang DoW (ohne Mercenaries) | 6 |
 | [`at-least-parent-model-champion-gate`](testing/at-least-parent-model-champion-gate/) | Definitive Dwarfs + Mercenaries | 4 |
-| **Summe** | | **510** |
+| [`at-least-self-any-experimental-hydra-warning`](testing/at-least-self-any-experimental-hydra-warning/) | Definitive Dark Elves + Mercenaries | 5 |
+| **Summe** | | **515** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2502,3 +2503,32 @@ selbst Modelle führt.
 > **Offen erklärt:** `shared="true"` ist hier nicht beobachtbar — der Champion ist
 > ein Inline-Eintrag auf genau einem Pfad, und `childId="model"` ist ein
 > Typ-Schlüsselwort statt einer Ziel-Id.
+
+## `at-least-self-any-experimental-hydra-warning`
+
+Prüft eine `<condition type="atLeast" … scope="self" childId="any">` an einer
+**Auswahlgruppe**: Zählrahmen ist die Gruppe selbst — was sie an Mitgliedern
+hält —, nicht die umschließende Einheit, das Kontingent oder das Roster. Beleg:
+die Dark-Elves-Gruppe „War Hydras of Naggaroth" (`7f4e-4b7b-fbc4-a138`) trägt
+eine Autor-Warnung, die an einer `and`-Gruppe aus genau dieser Bedingung und
+`lessThan 1` des Schalters „Allow experimental rules?" (`e28d-f278-f209-63bd`)
+hängt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Gruppenmitglied, kein Schalter | Beide Konjunkte halten — die Warnung liegt genau einmal an der Gruppe an |
+| 02 | Dieselbe Einheit, Gruppe leer | Die Bedingung hält nicht — still |
+| 03 | Gruppe leer, dafür Rahmen und Einheit gefüllt | Die Rahmentrennung: einheits-, kontingent- und rosterweit gäbe es Auswahlen, mit `scope="self"` bleibt es still |
+| 04 | Gruppenmitglied **und** Schalter | Das zweite Konjunkt fällt — still; die erste Bedingung allein löst nichts aus |
+| 05 | Zwei Gruppenmitglieder | Ein Überlauf macht die Bedingung nicht falsch: die Gruppengrenze feuert (Ist 2 gegen 1), die Warnung liegt weiterhin genau einmal an |
+
+> **Status: rot.** Die drei stillen Roster stimmen; in 01 und 05 trägt der
+> Bericht am Gruppenanker gar keine Autor-Meldung. Der Befund ist als
+> Phase-B-Aufgabe in `docs/testing/campaign-state.json` (`pinnedGaps`)
+> festgehalten.
+
+> **Offen erklärt:** `self` gegen `parent` ist an dieser Fundstelle nicht
+> trennbar — die Gruppe ist der einzige Kind-Container ihres Elterneintrags;
+> getrennt wird `self` deshalb von `unit`, `force` und `roster`. `shared="true"`
+> ist unbeobachtbar, weil die Gruppe im ganzen Fixture-Satz genau einmal
+> vorkommt.

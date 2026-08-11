@@ -723,6 +723,13 @@
         "docs/testing/at-least-parent-model-champion-gate"
       ],
       "rationale": "Vier Roster ueber die Dwarfs-Einheit Slayers (b454-4868-7ec4-39e8). Der Champion 21f9-b4f6-b59e-8892 traegt max 0 (c120-7f3a-9c4d-6d32) und genau einen increment-1-Modifikator darauf, gegated auf atLeast 1 selections scope=parent childId=model. Roster 01 (5 Slayer-Modelle) haelt die Bedingung: effectiveMax 1, die Grenze schweigt; Roster 02 (kein Modell) haelt sie nicht: effectiveMax 0 und die Grenze feuert mit Ist 1 gegen 0; Roster 03 (5 Modelle, Champion number=2) zeigt, dass der increment die Grenze auf genau 1 hebt und nicht aufhebt (Ist 2 gegen 1); Roster 04 trennt den Rahmen: die Modelle stehen in einer zweiten Slayers-Einheit, force- und rosterweit gaebe es also Modelle, mit scope=parent feuert die Grenze der modelllosen Einheit trotzdem, waehrend dieselbe Definition in der anderen Einheit effectiveMax 1 meldet. Szenario ist gruen."
+    },
+    {
+      "key": "condition|atLeast|self|selectionCount|child=any",
+      "evidence": [
+        "docs/testing/at-least-self-any-experimental-hydra-warning"
+      ],
+      "rationale": "Fuenf Roster ueber die Dark-Elves-Gruppe \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138). Ihre Autor-Warnung haengt an einer and-Gruppe aus atLeast 1 selections scope=self childId=any (die Gruppe selbst ist der Zaehlrahmen) und lessThan 1 des Schalters \"Allow experimental rules?\" im Kontingent. Roster 01 (ein Gruppenmitglied, kein Schalter) und 05 (zwei Mitglieder) fordern die Warnung, Roster 02 (leere Gruppe), 03 (Rahmen gefuellt, Gruppe leer) und 04 (Mitglied plus Schalter) fordern Stille. Szenario ist ROT: die drei stillen Roster stimmen, in 01 und 05 traegt der Bericht am Gruppenanker gar keine Autor-Meldung. Siehe pinnedGaps in docs/testing/campaign-state.json."
     }
   ]
 }
