@@ -134,8 +134,8 @@
     "schemaVersion": 1,
     "branch": "claude/evaluator-ergofang-daten-ni8js9",
     "campaignIssue": null,
-    "runs": 17,
-    "lastRunAt": "2026-08-11T06:06:03Z",
+    "runs": 18,
+    "lastRunAt": "2026-08-11T15:53:22Z",
     "lastRunOutcome": null,
     "reArmedFor": null,
     "gaps": {
