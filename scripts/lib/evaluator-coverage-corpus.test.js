@@ -35,14 +35,14 @@ function totalOccurrencesByKind(cells, kind) {
 
 // ── Case 21 ───────────────────────────────────────────────────────────────
 describe('loadCorpus — static walk of both fixture sets', () => {
-  it('returns exactly nine catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
+  it('returns exactly ten catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
     expect(corpus.failures).toEqual([]);
-    expect(corpus.sources).toHaveLength(9);
+    expect(corpus.sources).toHaveLength(10);
 
     const definitiveFiles = corpus.sources.filter(s => s.file.includes('whfb6-definitive'));
     const whfb6Files = corpus.sources.filter(s => !s.file.includes('whfb6-definitive'));
     expect(definitiveFiles).toHaveLength(5);
-    expect(whfb6Files).toHaveLength(4);
+    expect(whfb6Files).toHaveLength(5);
 
     expect(corpus.sources.some(s => s.file.toLowerCase().endsWith('readme.md'))).toBe(false);
   });
@@ -56,19 +56,23 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
   // elements such as `<modifierGroup>`. The fixtures are frozen, so a mismatch
   // is a real extraction bug and the grep is the arbiter — re-run it before
   // touching the extraction if this fails.
+  // Issue 0148: recomputed for the ten-file corpus once Dogs of War.cat joined
+  // src/__fixtures__/whfb6/ — constraint, condition, modifier, repeat and
+  // repeatList all move; conditionGroup and modifierGroup don't change because
+  // Dogs of War has none of either.
   it.each([
-    ['constraint', 5290],
-    ['condition', 1739],
+    ['constraint', 5652],
+    ['condition', 1791],
     ['conditionGroup', 261],
-    ['modifier', 1762],
+    ['modifier', 1842],
     ['modifierGroup', 121],
-    ['repeat', 214],
+    ['repeat', 244],
     // (C2, round 3 correction) repeatList reads 213 under the corrected
     // character-class grep (`<repeats[ />]`); a trailing-space pattern misses
     // the attribute-less `<repeats>` tag the same way it misses
     // `<modifierGroup>`. totalOccurrencesByKind keys off the cell-key prefix,
     // so this counts every `repeatList|...` cell, not the `<repeat>` tag.
-    ['repeatList', 213],
+    ['repeatList', 243],
   ])('totals %s occurrences to %i', (kind, expected) => {
     expect(totalOccurrencesByKind(inventory.cells, kind)).toBe(expected);
   });
@@ -118,7 +122,12 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // (repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false)
     // is covered by src/evaluator/modifiers.repeatParentAny.test.js, so cells
     // stays 105 (the corpus is frozen) and covered/uncovered move to 105/0.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 105, uncovered: 0 });
+    // Issue 0148: Dogs of War.cat adds one new cell to the corpus,
+    // repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false,
+    // uncovered by design — closing it is the coverage campaign's work, out of
+    // scope for issue 0148 — so cells moves to 106 while covered stays 105 and
+    // uncovered becomes 1.
+    expect(recomputed.totals).toEqual({ cells: 106, covered: 105, uncovered: 1 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
@@ -244,9 +253,9 @@ describe('coveredKeysFromManifests over the real corpus and manifests — resolu
 
 // ── Case 27 (round 2 correction, Finding 1 — repeat flags) ─────────────────
 describe('extractCells over the real corpus — repeat cell count once shared/includeChildSelections/includeChildForces separate cells', () => {
-  it('yields exactly 11 distinct repeat| cells (R7)', () => {
+  it('yields exactly 12 distinct repeat| cells (R7)', () => {
     const repeatCells = inventory.cells.filter(c => c.key.startsWith('repeat|'));
-    expect(repeatCells).toHaveLength(11);
+    expect(repeatCells).toHaveLength(12);
   });
 });
 
@@ -266,6 +275,18 @@ describe('extractCells over the real corpus — landmark flagged repeat cells (R
     );
     expect(cell).toBeDefined();
     expect(cell.occurrences).toBe(12);
+  });
+});
+
+// ── Case 35 (issue 0148 — why Dogs of War is in the corpus) ─────────────────
+describe('extractCells over the real corpus — Dogs of War carries a construct no other book of its set carries', () => {
+  it('contains repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false with 3 occurrences, found only in Dogs of War.cat', () => {
+    const cell = inventory.cells.find(
+      c => c.key === 'repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false',
+    );
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(3);
+    expect(cell.files).toEqual({ 'src/__fixtures__/whfb6/Dogs of War.cat': 3 });
   });
 });
 

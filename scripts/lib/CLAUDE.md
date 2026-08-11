@@ -48,7 +48,7 @@ grep -rhoE '<modifierGroup[ />]' src/evaluator/__fixtures__/whfb6-definitive src
 The character class matters: a trailing-space pattern (`grep -o '<constraint '
 -r <fixture dirs> | wc -l`) undercounts attribute-less elements — measured on
 the frozen corpus, `modifierGroup` reads 109 instead of 121 with the
-trailing-space form, `repeats` reads 0 instead of 213. Use the `[ />]`
+trailing-space form, `repeats` reads 0 instead of 243. Use the `[ />]`
 character-class form above (substituting the tag name) for every kind, the
 same form `evaluator-coverage-corpus.test.js` itself uses.
 

@@ -40,6 +40,107 @@
             "summary": "Researched increment 1 of issue 0148: adding upstream's Dogs of War.cat to src/__fixtures__/whfb6/ adds exactly one new coverage cell (the childId=\"upgrade\" repeat, 3 occurrences), moving the corpus from 105 to 106 cells with uncovered 0 -> 1, and I recomputed every drift-guard baseline it touches from the corpus itself. No app-E2E test asserts anything the extra book breaks; the only real risk is the harness's 30-second import wait, and the pull-request screenshot is the library view (.screenshots/desktop_02_bibliothekar_loaded.png)."
           },
           "prompt": "Issue directory: docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign\nThis increment is worked on its own branch: `claude/evaluator-ergofang-daten-ni8js9--INC-1`, off `claude/evaluator-ergofang-daten-ni8js9`.\nBefore anything else, on `claude/evaluator-ergofang-daten-ni8js9`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 claude/evaluator-ergofang-daten-ni8js9--INC-1`, commit that state change and push `claude/evaluator-ergofang-daten-ni8js9`. Then create the branch with `git checkout -b claude/evaluator-ergofang-daten-ni8js9--INC-1`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md one increment at a time, and increment 1 is yours:\n  Dogs of War enters the ergofang fixture set, app E2E stays green — The ergofang fixture directory carries Dogs of War verbatim from upstream head, its README records the new provenance and the resulting two vintages, the corpus bookkeeping is re-baselined for the enlarged corpus, and the whole check suite is green including the puppeteer app E2E, whose harness now ships one army book more.\nWhat it has to satisfy:\n  - src/__fixtures__/whfb6/Dogs of War.cat exists and is byte-identical to that file in artkoenig/Warhammer-Fantasy-6th-edition at commit 9c7203c94221a4a98d5c1ffcfcfaedafe7d6d233.\n  - The four files already in src/__fixtures__/whfb6/ (three catalogues and the game system) are byte-identical to their committed state; nothing else about them changes.\n  - src/__fixtures__/whfb6/README.md states that Dogs of War.cat comes from the current upstream head while the other books predate the whitespace cleanup of issue 11, so the directory now carries two vintages, and states why this book is there: it carries rule constructs no other book of its set carries.\n  - npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes, with every baseline the added book moves recomputed from the corpus itself rather than adjusted until green.\n  - npm test passes. Fallout of the added book in the app E2E is fixed in the app E2E, never by keeping the book out of the fixture directory.\n  - A screenshot of an app view whose content changed through the added book is produced and available for the pull request.\nDeliberately not yours, and not a gap — a later increment takes each of these: The seven definitive books enter the corpus and the inventory is re-baselined.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 research:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 research:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:INC-1.0",
+          "at": "2026-08-11T10:38:59.509Z",
+          "return": {
+            "cases": [
+              {
+                "case": "1a. Case 21 (loadCorpus — static walk of both fixture sets): sources length 9 -> 10, definitive slice stays 5, other slice 4 -> 5; failures stays []; README exclusion unchanged; title updated from 'exactly nine' to 'exactly ten'.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "loadCorpus — static walk of both fixture sets > returns exactly ten catalogue/game-system files, excludes each README.md, and reports no parsererror",
+                "demands": "corpus.sources has length 10 (5 definitive + 5 whfb6), corpus.failures is [], no README.md among sources.",
+                "got": "Fails as expected: expected corpus.sources to have a length of 10 but got 9 — Dogs of War.cat is not yet in src/__fixtures__/whfb6/."
+              },
+              {
+                "case": "1b. Case 22 (per-kind occurrence totals): constraint 5290->5652, condition 1739->1791, conditionGroup 261 unchanged, modifier 1762->1842, modifierGroup 121 unchanged, repeat 214->244, repeatList 213->243; comment extended to note the ten-file recomputation for issue 0148.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — occurrence totals match a plain tag count > totals %s occurrences to %i (each of the seven kinds)",
+                "demands": "totalOccurrencesByKind(inventory.cells, kind) equals the recomputed number for each of the seven kinds.",
+                "got": "constraint, condition, modifier, repeat and repeatList fail on the current nine-file corpus (5290, 1739, 1762, 214, 213 respectively, all below the new baselines); conditionGroup and modifierGroup pass unchanged since Dogs of War contributes none of either — matches the plan's prediction exactly."
+              },
+              {
+                "case": "1c. Case 23 (landmark cells): NO CHANGE — conditionGroup|not|nested stays 2, the condition|greaterThanOrEqualTo|... cell stays 1 occurrence, the modifier|...|unresolvedTarget cell is still found, all seven kinds still present.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — the plan says verify, do not edit. Ran the existing cases unchanged and all four pass on the current nine-file corpus, confirming the plan's claim that Dogs of War does not move these landmarks."
+              },
+              {
+                "case": "1d. Cases 24-26 (worklist drift guard): the explicit totals assertion moves from {cells:105, covered:105, uncovered:0} to {cells:106, covered:105, uncovered:1}, with a comment line naming the single added cell (repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false) as uncovered by design; internal-consistency and ordering cases unchanged.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > deep-equals the worklist recomputed from the corpus, the manifests, and covered-cells.json",
+                "demands": "recomputed.totals deep-equals { cells: 106, covered: 105, uncovered: 1 } once the corpus and docs/testing/worklist.json are both re-baselined for the ten-file corpus.",
+                "got": "Fails as expected: expected {cells:105, covered:105, uncovered:0} to deeply equal {cells:106, covered:105, uncovered:1} — the deep-equal against the currently-committed worklist.json also fails until the file is regenerated, exactly as the plan predicted (the failure is on the explicit-totals assertion in the same test, before the file reaches that line the deep-equal above it already threw)."
+              },
+              {
+                "case": "1e. Cases B1/B2 (duplicated id 1077-7379-f142-f382): NO CHANGE — verify, do not edit.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — verified only. Both B1 and B2 pass unchanged on the current corpus, confirming the plan's claim that the id does not occur in Dogs of War."
+              },
+              {
+                "case": "1f. Case B4 (covered/uncovered partition): NO CHANGE — asserts a relation, not a number.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — verified only. Passes unchanged."
+              },
+              {
+                "case": "1g. Case B5 (unmatched resolution failures): NO CHANGE — outside-dataset stays empty, the unknown-id set stays as it is.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — verified only. Passes unchanged, confirming none of Dogs of War's ids intersect the four real ids the plan checked."
+              },
+              {
+                "case": "1h. Case R7 (distinct repeat| cells): 11 -> 12.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — repeat cell count once shared/includeChildSelections/includeChildForces separate cells > yields exactly 12 distinct repeat| cells (R7)",
+                "demands": "inventory.cells filtered to repeat| keys has length 12.",
+                "got": "Fails as expected: expected length of 12 but got 11 — the current nine-file corpus has 11 distinct repeat| cells; the twelfth (child=upgrade) only appears once Dogs of War.cat is present."
+              },
+              {
+                "case": "1i. Case R8 (landmark flagged repeat cells): NO CHANGE — 16 and 12 occurrences respectively, since Dogs of War's 30 repeats are all scope parent with includeChildSelections=false, distinct from both landmarks.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — verified only. Both R8 cases pass unchanged on the current corpus."
+              },
+              {
+                "case": "1j. Cases 29-34 (loadCoverageRecords temp-directory failure paths): NO CHANGE.",
+                "file": "",
+                "testName": "",
+                "got": "Not written — verified only. All six pass unchanged; they exercise temp directories, not the fixture corpus."
+              },
+              {
+                "case": "1k. Do NOT raise the beforeAll hook timeout.",
+                "file": "",
+                "testName": "",
+                "got": "Complied — no timeout change made; left for the seven-book increment as the plan directs."
+              },
+              {
+                "case": "2. New integration-level case pinning why Dogs of War is in the corpus: the cell repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false has 3 occurrences and its files map is exactly { 'src/__fixtures__/whfb6/Dogs of War.cat': 3 }.",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — Dogs of War carries a construct no other book of its set carries > contains repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false with 3 occurrences, found only in Dogs of War.cat",
+                "demands": "the cell exists, has 3 occurrences, and its files map is exactly { 'src/__fixtures__/whfb6/Dogs of War.cat': 3 } — pinning that only Dogs of War reaches this construct.",
+                "got": "Fails as expected: expected undefined to be defined — the cell does not exist in the corpus until Dogs of War.cat is added."
+              },
+              {
+                "case": "3. Criteria 'byte-identical to upstream' and 'the four existing files unchanged': not covered by a test, per the plan — judged by the two shell commands in checks instead.",
+                "file": "",
+                "testName": "",
+                "got": "No test written, per the plan's own reasoning (a committed sha256 would be an unread maintenance burden and the repo has no such convention)."
+              },
+              {
+                "case": "4. Criteria 'npm test passes' and 'a screenshot is produced': covered by the check commands, not by new test cases — no new E2E assertion asked for.",
+                "file": "",
+                "testName": "",
+                "got": "No test written, per the plan."
+              }
+            ],
+            "openQuestions": [],
+            "questions": [],
+            "summary": "Re-baselined scripts/lib/evaluator-coverage-corpus.test.js from the nine-file to the ten-file whfb6 corpus (sources length, per-kind totals, worklist totals, R7 repeat-cell count) and added one new case pinning the Dogs of War-only repeat|selectionCount|...child=upgrade... cell (3 occurrences, files map naming only Dogs of War.cat); ran `npx vitest run scripts/lib/evaluator-coverage-corpus.test.js` and confirmed all 9 touched/new cases fail for the expected reason (missing fixture / stale baseline) while the 20 cases the plan marked unchanged pass untouched. Also corrected the one stale figure (213 -> 243) in scripts/lib/CLAUDE.md that the researcher flagged."
+          },
+          "prompt": "Issue directory: docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign\nThis increment is worked on branch `claude/evaluator-ergofang-daten-ni8js9--INC-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-ergofang-daten-ni8js9--INC-1` and check it out; if the remote does not have it, create it from `claude/evaluator-ergofang-daten-ni8js9` and push it with `-u`.\nThis run works docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md one increment at a time, and increment 1 is yours:\n  Dogs of War enters the ergofang fixture set, app E2E stays green — The ergofang fixture directory carries Dogs of War verbatim from upstream head, its README records the new provenance and the resulting two vintages, the corpus bookkeeping is re-baselined for the enlarged corpus, and the whole check suite is green including the puppeteer app E2E, whose harness now ships one army book more.\nWhat it has to satisfy:\n  - src/__fixtures__/whfb6/Dogs of War.cat exists and is byte-identical to that file in artkoenig/Warhammer-Fantasy-6th-edition at commit 9c7203c94221a4a98d5c1ffcfcfaedafe7d6d233.\n  - The four files already in src/__fixtures__/whfb6/ (three catalogues and the game system) are byte-identical to their committed state; nothing else about them changes.\n  - src/__fixtures__/whfb6/README.md states that Dogs of War.cat comes from the current upstream head while the other books predate the whitespace cleanup of issue 11, so the directory now carries two vintages, and states why this book is there: it carries rule constructs no other book of its set carries.\n  - npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes, with every baseline the added book moves recomputed from the corpus itself rather than adjusted until green.\n  - npm test passes. Fallout of the added book in the app E2E is fixed in the app E2E, never by keeping the book out of the fixture directory.\n  - A screenshot of an app view whose content changed through the added book is produced and available for the pull request.\nDeliberately not yours, and not a gap — a later increment takes each of these: The seven definitive books enter the corpus and the inventory is re-baselined.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 research:INC-1.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 tests:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-1 tests:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
