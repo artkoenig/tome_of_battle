@@ -25,7 +25,7 @@ This directory now deliberately carries **two vintages** of the same upstream re
 - The other four files (`Warhammer Fantasy Battle 6th edition.gst`, `Ogre Kingdoms.cat`,
   `Orcs and Goblins.cat`, `Vampire Counts.cat`) come from commit `d13b7e5` and predate the
   whitespace cleanup of issue 11 (commit `db7848d`), so they still carry the leading and
-  trailing whitespace the E2E is meant to run through (see the next section).
+  trailing whitespace the E2E is meant to run through (siehe „Warum die unbereinigte Fassung“ weiter unten).
 
 Mixing the two is intentional, not drift: the older files exist for the normalisation path, the
 newer one for its rule constructs. Neither vintage may be "harmonised" with the other.
