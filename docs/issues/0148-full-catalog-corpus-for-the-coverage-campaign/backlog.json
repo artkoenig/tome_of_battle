@@ -587,7 +587,7 @@
       "depth": "full",
       "status": "todo",
       "note": "Split off from INC-2 because the run showed the enlarged corpus falsifies documentation far beyond the suite doc, and one sweep of everything is neither reviewable in one sitting nor safe: two of these three documents rest arguments on their figures, and docs/testing/ is frozen ground where the answer is a report rather than an edit. It runs after INC-3 because nothing can be re-measured before the books are in the corpus, and INC-3 has now landed them at 17 files / 130 cells / 105 covered / 25 uncovered. Unchanged in substance by this re-cut; what moved is the method: INC-3 was accepted because it enumerated the document's corpus-measured claims first and reported that enumeration, and INC-2 was blocked because it went figure by figure — so the enumerate-then-report method is now the increment's leading criterion, and the documents INC-3 finished are named as out of scope so their state cannot be reported as a defect here. Prose-only by construction, which is what makes it separately judgeable: the whole suite must be green untouched at both ends.",
-      "branch": "",
+      "branch": "claude/evaluator-ergofang-daten-ni8js9--INC-4",
       "steps": [],
       "attempts": []
     }
