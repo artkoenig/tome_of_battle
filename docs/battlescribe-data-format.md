@@ -758,10 +758,12 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
 > (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
 > eingefrorenen Definitive-Edition-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`,
-> 4 `.cat` + 1 `.gst`; 62 `join`-Vorkommen insgesamt, davon 6 wirkungslos an
-> `set`-Modifiern): 56 von 57 `append`-Modifiern setzen `join` explizit (Leerzeichen, NBSP oder
-> `"&#160;+&#160;"`) — dort ist der Unterschied latent. Der eine `append` ohne `join`
-> (`Mercenaries`, `<modifier type="append" value="*" field="name"/>`) macht ihn sichtbar:
+> 11 `.cat` + 1 `.gst`; 121 `join`-Vorkommen insgesamt, davon 15 wirkungslos an
+> `set`-Modifiern und 5 an `prepend`-Modifiern): 101 von 119 `append`-Modifiern setzen `join`
+> explizit (Leerzeichen, NBSP oder
+> `"&#160;+&#160;"`) — dort ist der Unterschied latent. Die 18 `append` ohne `join`
+> (`Mercenaries` 1, `Skaven` 4, `The Empire` 13; Beispiel
+> `Mercenaries`, `<modifier type="append" value="*" field="name"/>`) machen ihn sichtbar:
 > nach dieser Entscheidung wird `*` direkt angefügt (`Name*`), nach dem Wiki mit Leerzeichen
 > (`Name *`).
 
@@ -795,7 +797,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 
 | `condition`-Attribut | Bedeutung |
 |----------------------|-----------|
-| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`. |
+| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
 | `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …) — dazu `unit` (die umschließende Einheit) und `ancestor` (die Vorfahrenkette, nur mit `instanceOf`/`notInstanceOf`), siehe den [Kasten unten](#scope-unit-ancestor), sowie `primary-catalogue`, das Armeebuch des umschließenden Kontingents ([Kasten in §7.6](#scope-primary-catalogue)). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
@@ -836,7 +838,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 > Das Wiki zählt `ancestor` in der Scope-Aufzählung auf (gültig nur mit
 > `instanceOf`/`notInstanceOf`), beschreibt seine Semantik aber nicht; `unit` ist upstream gar
 > nicht dokumentiert. Reale Kataloge nutzen beide (Fixture-Kataloge der Definitive Edition:
-> `scope="unit"` 130×, `scope="ancestor"` 10×). Aus den Daten belegt und in Issue 086
+> `scope="unit"` 337×, `scope="ancestor"` 33×). Aus den Daten belegt und in Issue 086
 > entschieden:
 >
 > - **`unit` ist ein regulärer Zählrahmen:** der nächste Vorfahre — den Träger der Query
@@ -850,8 +852,9 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 >   `instanceOf`-Condition hält genau dann, wenn **irgendein** Vorfahre der tragenden Auswahl
 >   (die gesamte strikte Kette, Kontingente eingeschlossen) auf die `childId` auflöst —
 >   über seine Definitions-Id, seine Link-Ziel-Id, eine seiner **effektiven** Kategorien oder
->   seinen rohen Typ; `notInstanceOf` invers. Alle 10 Fixture-Vorkommen benennen
->   **Kategorie-Ids** („Characters", „Battle standard bearer", „Slaanesh [DARK ELVES]") — die
+>   seinen rohen Typ; `notInstanceOf` invers. Alle 33 Fixture-Vorkommen benennen
+>   **Kategorie-Ids** („Characters", „Battle standard bearer", „Slaanesh",
+>   „Slaanesh [DARK ELVES]") — die
 >   Prüfung braucht also die effektiven Kategorien, nicht nur Definitions-Ids. Die Zähl-Flags
 >   (`shared`, `includeChild…`) sind ohne Wirkung: eine Vorfahrenkette wird durch eine Instanz
 >   nicht enger.
@@ -866,14 +869,16 @@ wenn **mindestens eines** hält.
 > `BSData/schemas`-Version kennt diesen Gruppentyp; die vendorte `Catalogue.xsd` dieses Projekts
 > wurde bewusst und dokumentiert um ihn erweitert (wie zuvor um `multiply`/`prepend`/`join`, siehe
 > [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)). Belegt ist er allein
-> durch reale Kataloge: die Definitive Edition nutzt ihn 2× in `Vampire Counts`, beide Male am
-> `set`-Modifier, der die Pflicht-Untergrenze einer Sonderheer-Einheit hebt („Army of the
-> Lichemaster": Heinrich Kemmler `8461-3eab-e5ac-1636`, Krell `60a8-5b49-6b81-7c84`).
+> durch reale Kataloge: die Definitive Edition nutzt ihn 4× in drei Armeebüchern — `Vampire Counts`
+> 2×, `Lizardmen` 1×, `Skaven` 1× —, jedes Mal am `set`-Modifier, der die Pflicht-Untergrenze einer
+> Sonderheer-Einheit hebt, abhängig von einer Kampagnen-Ausnahme („Army of the Lichemaster":
+> Heinrich Kemmler `8461-3eab-e5ac-1636`, Krell `60a8-5b49-6b81-7c84`; „Red Host (LUS)": Tehenhauin;
+> „Bubonic Court of Nurglitch (LUS)").
 >
 > **Entscheidung dieses Projekts (Issue 0115):** eine `not`-Gruppe hält genau dann, wenn **keines**
 > ihrer Mitglieder hält — die exakte De-Morgan-Duale zu `or`. Damit ist `not` die strengere der
 > beiden denkbaren Lesarten (`NOT(OR(…))` gegen `NOT(AND(…))`) und folgt der fail-closed-Richtung
-> der übrigen Auswertung. Auf den realen Daten ist die Wahl **nicht beobachtbar**: beide
+> der übrigen Auswertung. Auf den realen Daten ist die Wahl **nicht beobachtbar**: alle vier
 > Fundstellen tragen genau *ein* Mitglied (eine `and`-Untergruppe), wo jede Lesart dieselbe
 > schlichte Negation ergibt.
 
@@ -1041,10 +1046,13 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   Gatter-Musters der Kataloge: die **geteilte** Definition trägt `hidden="true"` plus einen bedingten
   `set hidden="false"`, und jeder `entryLink` auf sie trägt (wie Battlescribe es immer schreibt)
   `hidden="false"`. Würde das `hidden="false"` des Verweises dem Ziel vorgehen, wäre das Gatter
-  wirkungslos — belegt an den DE-Katalogen des Repos: 37 der 42 geteilten Definitionen mit
-  `hidden="true"` gattern genau so (der Aufdeck-Modifikator steht dabei mal in `<modifiers>`,
+  wirkungslos — belegt an den DE-Katalogen des Repos: 63 der 72 geteilten Definitionen mit
+  `hidden="true"` gattern genau so (gezählt werden die *direkten* Kinder von
+  `<sharedSelectionEntries>` / `<sharedSelectionEntryGroups>` mit `hidden="true"`, verschachtelte
+  nicht, und davon die, deren eigene Spanne einen `<modifier field="hidden" value="false">` trägt;
+  der Aufdeck-Modifikator steht dabei mal in `<modifiers>`,
   mal in einem bedingten `<modifierGroup>` — siehe den Fallstrick-Kasten in §7.7), und
-  **kein** `entryLink` (0 von 2302) lässt das Attribut weg.
+  **kein** `entryLink` (0 von 5542) lässt das Attribut weg.
   *Projektentscheidung, keine Quellenaussage:* weder XSD noch BSData-Wiki legen die Komposition
   fest; sie ist aus den Daten erschlossen (Issue 0135, nimmt die gegenteilige Hälfte von Issue 0099
   zurück).
@@ -1425,14 +1433,14 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | Kontext | Attribut | Werte |
 |---------|----------|-------|
 | `selectionEntry` | `type` | `unit`, `model`, `upgrade` |
-| `entryLink` | `type` | `selectionEntry`, `selectionEntryGroup` |
+| `entryLink` | `type` | `selectionEntry`, `selectionEntryGroup`, `rule` (2× in den Fixture-Katalogen belegt — „The Dark Art" in `Vampire Counts` und `Dark Elves` —, upstream nicht dokumentiert) |
 | `infoLink` | `type` | `profile`, `rule`, `infoGroup` |
 | `constraint` | `type` | `min`, `max` |
 | `constraint` | `field` | `selections`, `forces`, *`<costTypeId>`* |
-| `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)) |
+| `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)), `primary-category` (4× in den Fixture-Katalogen belegt, `Forces of Chaos`, upstream nicht dokumentiert), `model-or-unit` (2× in den Fixture-Katalogen belegt, `Lizardmen`, upstream nicht dokumentiert) |
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
-| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf` |
+| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
 | `conditionGroup` | `type` | `and`, `or`, `not` (`not` ohne offiziellen Schema-Beleg, siehe [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen)) |
 
 ### 13.2 Der `field`-Wert je nach Kontext
@@ -1497,10 +1505,10 @@ Lücken, die uns bisher konkret getroffen haben:
 | **Grenze am Verweis oder am Ziel** | Belegt ist nur, dass ein `entryLink` eigene `constraint`s tragen darf und dass ein Modifier am Link dessen Grenzwerte ändert. Ob eine am Link deklarierte Grenze *für den Link* oder *für das Ziel* gilt, steht nirgends. | Issue 076 |
 | **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | [Der Kasten in §7.6](#scope-primary-catalogue) beschreibt die in Issue 077 aus den Daten belegte Semantik: das Armeebuch des umschließenden Kontingents, als Identitätsprüfung statt als Zählrahmen. |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
-| **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (130× bzw. 10× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
+| **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (337× bzw. 33× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
-| **`conditionGroup type="not"`** | Weder Wiki noch eine bekannte `BSData/schemas`-Version kennt den Gruppentyp; die Definitive Edition nutzt ihn (2× in `Vampire Counts`, Pflichteinheiten des Sonderheeres „Army of the Lichemaster"). | [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen) beschreibt die in Issue 0115 getroffene Entscheidung: die Gruppe hält, wenn **keines** ihrer Mitglieder hält (De-Morgan-Duale zu `or`). Die vendorte `Catalogue.xsd` wurde um den Wert erweitert (ADR 0016). |
+| **`conditionGroup type="not"`** | Weder Wiki noch eine bekannte `BSData/schemas`-Version kennt den Gruppentyp; die Definitive Edition nutzt ihn (4× in drei Armeebüchern — `Vampire Counts` 2×, `Lizardmen` 1×, `Skaven` 1× —, jeweils an Pflichteinheiten eines Sonderheeres, u. a. „Army of the Lichemaster"). | [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen) beschreibt die in Issue 0115 getroffene Entscheidung: die Gruppe hält, wenn **keines** ihrer Mitglieder hält (De-Morgan-Duale zu `or`). Die vendorte `Catalogue.xsd` wurde um den Wert erweitert (ADR 0016). |
 | **`<repeats>` an einer `modifierGroup`** | Die XSD gibt der `ModifierGroup` über `ModifierBase` ein `<repeats>` (`Catalogue.xsd:469-479`), sagt aber nichts über seine Wirkung; das Wiki kennt Modifier-Gruppen gar nicht. Reale Kataloge nutzen es (`Vampire Counts`, „Grave markers"). | [§7.7](#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier) beschreibt die in Issue 0116 getroffene Entscheidung: der Faktor der Klammer multipliziert sich in jedem Modifier darin auf dessen eigenen — dieselbe Regel wie für die Wiederholungen eines einzelnen Modifiers. |
 | **`set` mit `<repeat>`** | Das Wiki sagt zum `repeat` nur, er lasse den Modifier „multiple times" greifen; welchen Sinn das für ein *setzendes* Feld hat, sagt es nicht. Das kanonische `.gst`-Beispiel (Core-Slots der Force „Standard") kombiniert beides real. | [§7.7](#77-modifier-condition-condition-group-repeat) beschreibt die in Issue 0095 getroffene Entscheidung: ein wiederholter `set` ist **idempotent** — derselbe Wert zweimal geschrieben ändert nichts. Nur `increment`/`decrement`/`multiply` vervielfacht der Faktor. |
 | **`modifierGroup`** | Das Wiki erwähnt Modifier-Gruppen **an keiner Stelle** (0 Treffer im ganzen Submodul, Stand `f4949c3`, 2026-01-27) — der Abschnitt *Modifier* kennt als Kinder nur Conditions, Condition Groups und Repeats. Die XSD definiert sie dagegen (`Catalogue.xsd:107` und `523-538`), und reale Kataloge nutzen sie gleichberechtigt zu `<modifiers>`. | [§7.7](#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier) dieses Dokuments beschreibt sie aus XSD und Daten. Die Lücke hat konkret Schaden angerichtet: in Issue 0135 wurde ein sauber gegatterter Katalogeintrag für einen Datenfehler gehalten, weil eine Suche nur `<modifiers>` abdeckte. |

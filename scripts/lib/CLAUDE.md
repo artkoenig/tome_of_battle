@@ -23,8 +23,11 @@ run a single file: `npx vitest run scripts/lib/<file>.test.js`.
   is integration level and says so in its top comment — keep the synthetic
   cases in the unit file and the corpus-backed ones in the integration file,
   as `evaluator-coverage-cells.test.js` / `evaluator-coverage-corpus.test.js`
-  do, so a change to the classification rules doesn't force a ~2s corpus
-  parse on every unit-level run.
+  do, so a change to the classification rules doesn't force a ~11 s corpus
+  parse (the full seventeen-file corpus, measured under plain node with jsdom)
+  on every unit-level run. That is also why the corpus test's `beforeAll`
+  carries an explicit 120 s timeout: the parse alone blows vitest's 10 s hook
+  default.
 - German comments appear in older files here; write new ones in English.
 
 ## Evaluator coverage inventory (`evaluator-coverage-cells.js` / `evaluator-coverage-corpus.js`)
@@ -45,12 +48,17 @@ the extraction, if a total ever disagrees, since the fixtures are frozen:
 grep -rhoE '<modifierGroup[ />]' src/evaluator/__fixtures__/whfb6-definitive src/__fixtures__/whfb6 | wc -l
 ```
 
+Issue 0148, increment 2 re-baselined every corpus figure in this doc and in
+`evaluator-coverage-corpus.test.js` for the seventeen-file corpus (the twelve
+`whfb6-definitive` books plus the five `whfb6` ones) — none of the numbers
+below are ten-file-corpus figures anymore.
+
 The character class matters: a trailing-space pattern (`grep -o '<constraint '
 -r <fixture dirs> | wc -l`) undercounts attribute-less elements — measured on
-the frozen corpus, `modifierGroup` reads 109 instead of 121 with the
-trailing-space form, `repeats` reads 0 instead of 243. Use the `[ />]`
-character-class form above (substituting the tag name) for every kind, the
-same form `evaluator-coverage-corpus.test.js` itself uses.
+the frozen seventeen-file corpus, `modifierGroup` reads 375 instead of 417 with
+the trailing-space form, and `repeats` reads 0 instead of 496. Use the `[ />]`
+character-class form above (substituting the tag name)
+for every kind, the same form `evaluator-coverage-corpus.test.js` itself uses.
 
 It also checks the corpus against the committed `docs/testing/worklist.json` /
 `docs/testing/covered-cells.json` (drift guard: recompute and deep-equal the
