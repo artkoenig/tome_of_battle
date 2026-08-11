@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "name": "multiply-cost-traditional-army",
+  "description": "Ein modifier type=\"multiply\" value=\"2\" mit field=\"ecfa-8486-4f6c-c249\" (der pts-Kostenart) VERVIELFACHT die eigene Kostenart des Traegers, statt einen festen Aufschlag zu addieren. Traeger sind die drei Dwarfs-Kriegsmaschinen Gyrocopter (fe43-aa5e-3d37-9772, 140 pts), Organ Gun (b767-3b91-f82d-efb6, 120 pts) und Flame Cannon (6abc-75c5-412f-011d, 140 pts); alle drei tragen denselben Modifikator unter derselben Bedingung atLeast 1 selections scope=force childId=8424-9cb7-d1ca-56fe (\"King Alrik Ranulfsson of Karak-Hirn\") - im Katalogkommentar die Regel \"Traditional Army\", DW1-AB p.53. Da der Modifikator eine KOSTE aendert und keine zaehlende Grenze, wird er ueber das Punktebudget des Rosters gemessen: jede Bauform steht zweimal im Satz, einmal mit costLimit = Summe-1 (die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249 feuert mit der abgeleiteten Summe als actual) und einmal mit costLimit = Summe+1 (dieselbe Bauform bleibt still). Zwei verschiedene Grundkosten werden gelesen, weil 120 und 140 sich zu verschiedenen Zahlen verdoppeln: nur so trennt der Satz eine Multiplikation von einem konstanten Aufschlag. Gyrocopter: 140 ohne Alrik, 280 mit Alrik. Organ Gun: 120 ohne Alrik, 240 mit Alrik. Nicht behauptet werden die hidden-Gatter derselben Eintraege und die force-Grenze 3751-1529-9d9d-46c3 des Sonderhelden.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-gyrocopter-plain-limit-139.ros",
+      "description": "Kontingent \"Standard (DW2-AB)\" (8bd9-db54-8bdc-cdfa) mit dem 0-pts-Schalter \"Allow special characters?\" (8923-5946-7b10-8957) und EINEM Gyrocopter (fe43-aa5e-3d37-9772) samt seiner Pflichtoption \"Steam gun\" (7ef5-6a2c-59fd-452a, ohne <costs> = 0 pts). King Alrik ist NICHT im Kontingent, die Bedingung des multiply-Modifikators (atLeast 1, scope=force, childId=8424-9cb7-d1ca-56fe) haelt also nicht: der Gyrocopter kostet seinen geschriebenen Katalogwert 140 pts. Verplante Summe 140, costLimit 139 - die roster-weite Budget-Regel feuert mit Ist 140 gegen Grenze 139 und bezeugt damit den UNGEDOPPELTEN Grundwert.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 140, "bound": 139 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/02-gyrocopter-plain-limit-141.ros",
+      "description": "IDENTISCHE Bauform wie Roster 01, nur costLimit 141 statt 139. Die verplante Summe 140 liegt unter dem Budget: die Budget-Regel budget::ecfa-8486-4f6c-c249 feuert NICHT. Das Paar 139/141 klammert die Summe beidseitig auf exakt 140 ein - eine Auswertung, die den multiply-Modifikator auch ohne King Alrik anwendete (280), liesse die Grenze hier feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"]
+      }
+    },
+    {
+      "file": "rosters/03-gyrocopter-alrik-limit-569.ros",
+      "description": "Dieselbe Bauform wie Roster 01, ZUSAETZLICH King Alrik Ranulfsson of Karak-Hirn (8424-9cb7-d1ca-56fe, 290 pts, ohne Magic-Items-Optionen). Damit haelt die Bedingung des multiply-Modifikators und der Gyrocopter kostet 140 x 2 = 280 pts. Verplante Summe 290 + 280 = 570; costLimit 569 - die Budget-Regel feuert mit Ist 570 gegen Grenze 569. Ohne Verdopplung waere die Summe 430 und die Grenze bliebe still; ein konstanter Aufschlag von +140 traefe hier zufaellig dieselbe Zahl und wird erst von Roster 07 ausgeschlossen.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 570, "bound": 569 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/04-gyrocopter-alrik-limit-571.ros",
+      "description": "IDENTISCHE Bauform wie Roster 03, nur costLimit 571 statt 569. Die verplante Summe 570 liegt unter dem Budget: die Budget-Regel feuert NICHT. Das Paar 569/571 klammert die Summe beidseitig auf exakt 570 ein - eine Auswertung, die den multiply-Modifikator mehrfach anwendete (290 + 560 = 850) oder ihn auf die ganze Liste bezoege, liesse die Grenze hier feuern.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"]
+      }
+    },
+    {
+      "file": "rosters/05-organ-gun-plain-limit-119.ros",
+      "description": "Dasselbe Kontingent mit dem 0-pts-Schalter und EINER Organ Gun (b767-3b91-f82d-efb6) samt ihrer Pflichtbesatzung \"Crew\" (c0da-410d-044a-75df, number=3, ohne <costs> = 0 pts). King Alrik ist NICHT im Kontingent: die Organ Gun kostet ihren geschriebenen Katalogwert 120 pts. Verplante Summe 120, costLimit 119 - die Budget-Regel feuert mit Ist 120 gegen Grenze 119 und bezeugt die ZWEITE, von 140 verschiedene Grundkoste.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 120, "bound": 119 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/06-organ-gun-plain-limit-121.ros",
+      "description": "IDENTISCHE Bauform wie Roster 05, nur costLimit 121 statt 119. Die verplante Summe 120 liegt unter dem Budget: die Budget-Regel feuert NICHT. Das Paar 119/121 klammert die Summe beidseitig auf exakt 120 ein.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"]
+      }
+    },
+    {
+      "file": "rosters/07-organ-gun-alrik-limit-529.ros",
+      "description": "Dieselbe Bauform wie Roster 05, ZUSAETZLICH King Alrik (290 pts). Die Bedingung haelt, die Organ Gun kostet 120 x 2 = 240 pts. Verplante Summe 290 + 240 = 530; costLimit 529 - die Budget-Regel feuert mit Ist 530 gegen Grenze 529. Dies ist der Fall, der die MULTIPLIKATION vom konstanten Aufschlag trennt: waere der Modifikator als fester Zuschlag in Hoehe des Gyrocopter-Deltas (+140) gelesen, ergaebe sich 290 + 260 = 550 und die Grenze meldete eine andere Zahl; ohne Verdopplung ergaebe sich 410 und sie bliebe still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 530, "bound": 529 }
+        ],
+        "absent": []
+      }
+    },
+    {
+      "file": "rosters/08-organ-gun-alrik-limit-531.ros",
+      "description": "IDENTISCHE Bauform wie Roster 07, nur costLimit 531 statt 529. Die verplante Summe 530 liegt unter dem Budget: die Budget-Regel feuert NICHT. Das Paar 529/531 klammert die Summe beidseitig auf exakt 530 ein und schliesst damit jede Lesart aus, die mehr als das Doppelte der Grundkosten ansetzt.",
+      "expect": {
+        "firing": [],
+        "absent": ["budget::ecfa-8486-4f6c-c249"]
+      }
+    }
+  ]
+}

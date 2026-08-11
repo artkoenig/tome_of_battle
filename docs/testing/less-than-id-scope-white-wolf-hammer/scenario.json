@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "name": "less-than-id-scope-white-wolf-hammer",
+  "description": "Condition-Zelle condition|lessThan|id|selectionCount|child=id: Eine Bedingung type=lessThan field=selections, deren scope KEIN Schluesselwort ist, sondern die Id eines selectionEntry, zaehlt innerhalb der naechsten umschliessenden Auswahl, die auf diese Id aufloest, die zur childId passenden Selektionen und haelt genau dann, wenn dieser Zaehlstand echt unter value liegt. Traeger ist im Armeebuch The Empire der entryLink 'Cavalry hammer ' (cc8d-7cc1-0e80-0108, Ziel 9c55-fbdf-3b4c-f808) in der Gruppe 'Order Weapon' (e254-997d-e319-33c6) des 'Templar Grand Master' (8ab4-17be-8a49-b3f7): sein constraint 106f-93b5-2186-7f80 (min, Rohwert 0, field=selections, scope=parent) wird von einem modifier type=set value=1 genau dann auf 1 gehoben, wenn eine and-Gruppe aus ZWEI Bedingungen haelt, beide mit scope=8ab4-17be-8a49-b3f7: atLeast 1 childId=32c2-bfbe-88b1-8425 ('0-1 Knights of the White Wolf') UND lessThan 1 childId=c071-eb48-3009-9ec1 (selectionEntryGroup 'Magic Weapons'), beide shared=true includeChildSelections=true. Die Roster 01 und 02 sind bis auf EINE Auswahl gleich - die magische Waffe 'Sword of Might' unter der Gruppe 'Magic Weapons' - und isolieren damit genau die lessThan-Haelfte: in beiden ist der Hammer sichtbar (derselbe set-hidden-false-Modifikator, nur auf die atLeast-Haelfte gegatet), aber nur in 01 steht sein effektives Mindestmass auf 1 und die Grenze feuert mit Ist 0 / Grenze 1. Roster 03 waehlt den Hammer und erfuellt dieselbe gehobene Pflicht (Ist 1), Roster 04 laesst den White Wolf weg (Hammer verborgen, Rohwert min 0), Roster 05 stellt ZWEI Grand Masters in EIN Kontingent - A mit White Wolf und ohne magische Waffe, B mit magischer Waffe und ohne White Wolf - und pinnt ueber count=1, dass der Rahmen die eine umschliessende Instanz ist und nicht das Kontingent oder die Roster. Die Sichtbarkeit selbst ist keine zaehlende Grenze und wird ueber expect.capabilities[].isHidden beobachtet; die Min-Grenze der durch den White Wolf ausgeblendeten 'Lance' (6992-af3c-357c-9bdc) darf nach Formatdoku Abschnitt 5.6/8 nicht validiert werden und steht deshalb in absent.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-white-wolf-no-magic-weapon-hammer-mandatory.ros",
+      "description": "Ein Templar Grand Master im Kontingent 'Standard (EM-AB)' mit seiner Pflichtausruestung (Full Plate Armour, Empire Warhorse + Barding, Hand Weapon, Shield) UND der Aufwertung '0-1 Knights of the White Wolf'. KEINE magische Waffe, KEIN Cavalry hammer. Im Rahmen des Grand Masters zaehlt die atLeast-Bedingung 1 (haelt) und die lessThan-Bedingung 0 < 1 (haelt): die and-Gruppe haelt, der set-Modifier hebt 106f-93b5-2186-7f80 von 0 auf 1. Der Hammer ist zugleich eingeblendet (derselbe White Wolf gattet den set-hidden-false), das Mindestmass ist also validierbar - und mit Ist 0 unerfuellt. Die durch den White Wolf ausgeblendete 'Lance' behaelt ihr geschriebenes min 1, das als verborgene Entitaet nicht validiert wird.",
+      "expect": {
+        "firing": [
+          { "limitId": "106f-93b5-2186-7f80", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "6992-af3c-357c-9bdc",
+          "c3dd-c1d8-860d-0091",
+          "a144-8323-15a1-d4fe",
+          "4631-1a49-90b7-067b",
+          "ac7c-3782-0795-89ca",
+          "9c05-dbb0-ce76-1ca3",
+          "a53b-3d35-f6d7-2910",
+          "61e6-14a6-8422-d83a",
+          "72c3-8d9a-9738-df40",
+          "f603-a5d3-b8d1-d988",
+          "e369-888c-81f7-bf21",
+          "d0e1-8406-8a40-63d2",
+          "3cc3-41d7-7267-e347",
+          "0cda-8c44-bc6f-1e6a",
+          "8558-47f5-960b-9e7c",
+          "03b7-bc8e-fc30-1f30",
+          "ffd4-6f1b-e014-6708",
+          "8668-6a27-8afb-884c",
+          "b90f-4c89-9fe6-9d65",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "105f-fcbb-23b2-7d06",
+          "3219-23f5-50e5-8903",
+          "013b-ca2c-876e-7ba6",
+          "e08a-3412-5d3e-0923",
+          "1f94-bceb-13ee-f93d",
+          "3065-4091-48c8-aefb"
+        ],
+        "capabilities": [
+          {
+            "defId": "cc8d-7cc1-0e80-0108",
+            "targetDefId": "9c55-fbdf-3b4c-f808",
+            "name": "Cavalry Hammer (White Wolves)",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          },
+          {
+            "defId": "6ffd-43e9-329f-d85c",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "isHidden": true
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "8ab4-17be-8a49-b3f7" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-white-wolf-magic-weapon-hammer-optional.ros",
+      "description": "Bis auf EINE Auswahl gleich zu Roster 01: unter dem Traeger 'Magic Selection' (2cf1-e089-263b-aec4) steht zusaetzlich die magische Waffe 'Sword of Might' (8c56-9be1-c4a9-5afe ueber den Verweis 099e-250b-a57e-7027 in der Gruppe c071-eb48-3009-9ec1). Im Rahmen des Grand Masters zaehlt die lessThan-Bedingung damit 1 und haelt NICHT mehr; die and-Gruppe faellt, der set-Modifier bleibt aus, 106f-93b5-2186-7f80 behaelt seinen geschriebenen Rohwert 0 und darf nicht feuern. Der Hammer bleibt dabei sichtbar - sein set-hidden-false haengt allein an der atLeast-Haelfte. Genau dieser Unterschied (gleiche Sichtbarkeit, effektives Mindestmass 1 gegen 0) isoliert die lessThan-Zelle.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "106f-93b5-2186-7f80",
+          "29c9-4d50-361c-dfb1",
+          "6992-af3c-357c-9bdc",
+          "c3dd-c1d8-860d-0091",
+          "a144-8323-15a1-d4fe",
+          "4631-1a49-90b7-067b",
+          "ac7c-3782-0795-89ca",
+          "9c05-dbb0-ce76-1ca3",
+          "a53b-3d35-f6d7-2910",
+          "61e6-14a6-8422-d83a",
+          "72c3-8d9a-9738-df40",
+          "f603-a5d3-b8d1-d988",
+          "e369-888c-81f7-bf21",
+          "d0e1-8406-8a40-63d2",
+          "3cc3-41d7-7267-e347",
+          "0cda-8c44-bc6f-1e6a",
+          "8558-47f5-960b-9e7c",
+          "03b7-bc8e-fc30-1f30",
+          "ffd4-6f1b-e014-6708",
+          "8668-6a27-8afb-884c",
+          "b90f-4c89-9fe6-9d65",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "105f-fcbb-23b2-7d06",
+          "3219-23f5-50e5-8903",
+          "013b-ca2c-876e-7ba6",
+          "e08a-3412-5d3e-0923",
+          "1f94-bceb-13ee-f93d",
+          "d707-a89c-2143-1971",
+          "c568-b884-80b5-bb1c",
+          "c4e5-2128-e15d-7894",
+          "3e58-33a7-788f-7fc7",
+          "e40b-b4c1-ed22-82cc",
+          "3065-4091-48c8-aefb"
+        ],
+        "capabilities": [
+          {
+            "defId": "cc8d-7cc1-0e80-0108",
+            "targetDefId": "9c55-fbdf-3b4c-f808",
+            "name": "Cavalry Hammer (White Wolves)",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "6ffd-43e9-329f-d85c",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "isHidden": true
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "8ab4-17be-8a49-b3f7" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-white-wolf-hammer-selected-min-met.ros",
+      "description": "Wie Roster 01 (White Wolf, keine magische Waffe), aber der Cavalry hammer IST gewaehlt (entryId 9c55-fbdf-3b4c-f808 ueber entryLinkId cc8d-7cc1-0e80-0108 in der Gruppe e254-997d-e319-33c6). Die and-Gruppe haelt weiterhin, das Mindestmass steht auf 1 - mit Ist 1 ist es erfuellt, 106f-93b5-2186-7f80 feuert nicht. Positive Kontrolle: die Abwesenheit in Roster 02 liegt an der gefallenen lessThan-Bedingung, nicht daran, dass der Slot gar nicht bewertet wuerde. Der Shield fehlt bewusst: sein max UND sein min werden vom gewaehlten Hammer per equalTo-Bedingung auf 0 gesetzt (a53b-3d35-f6d7-2910 / 9c05-dbb0-ce76-1ca3), und der Verweis wird zugleich ausgeblendet.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "106f-93b5-2186-7f80",
+          "29c9-4d50-361c-dfb1",
+          "6992-af3c-357c-9bdc",
+          "c3dd-c1d8-860d-0091",
+          "a144-8323-15a1-d4fe",
+          "4631-1a49-90b7-067b",
+          "ac7c-3782-0795-89ca",
+          "9c05-dbb0-ce76-1ca3",
+          "a53b-3d35-f6d7-2910",
+          "61e6-14a6-8422-d83a",
+          "72c3-8d9a-9738-df40",
+          "f603-a5d3-b8d1-d988",
+          "e369-888c-81f7-bf21",
+          "d0e1-8406-8a40-63d2",
+          "3cc3-41d7-7267-e347",
+          "0cda-8c44-bc6f-1e6a",
+          "8558-47f5-960b-9e7c",
+          "03b7-bc8e-fc30-1f30",
+          "ffd4-6f1b-e014-6708",
+          "8668-6a27-8afb-884c",
+          "b90f-4c89-9fe6-9d65",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "105f-fcbb-23b2-7d06",
+          "3219-23f5-50e5-8903",
+          "013b-ca2c-876e-7ba6",
+          "e08a-3412-5d3e-0923",
+          "1f94-bceb-13ee-f93d",
+          "3065-4091-48c8-aefb"
+        ],
+        "capabilities": [
+          {
+            "defId": "cc8d-7cc1-0e80-0108",
+            "targetDefId": "9c55-fbdf-3b4c-f808",
+            "name": "Cavalry Hammer (White Wolves)",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "6ffd-43e9-329f-d85c",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 0,
+            "effectiveMin": 1,
+            "isHidden": true
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "8ab4-17be-8a49-b3f7" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-no-white-wolf-hammer-hidden-min-zero.ros",
+      "description": "Grundlinie ohne die White-Wolf-Aufwertung: derselbe Grand Master mit Pflichtausruestung und der reglaeren Order-Weapon-Wahl 'Lance'. Die erste Haelfte der and-Gruppe (atLeast 1 childId=32c2-bfbe-88b1-8425) zaehlt 0 und haelt nicht - unabhaengig davon, dass die lessThan-Haelfte hier haelt (0 magische Waffen). 106f-93b5-2186-7f80 behaelt seinen Rohwert 0 und feuert nicht; der Verweis bleibt ausserdem auf seinem Basiswert hidden=true, denn auch der set-hidden-false haengt an derselben atLeast-Haelfte. Die 'Lance' ist hier sichtbar, ihr min 1 wird validiert und ist mit Ist 1 erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "106f-93b5-2186-7f80",
+          "29c9-4d50-361c-dfb1",
+          "6992-af3c-357c-9bdc",
+          "c3dd-c1d8-860d-0091",
+          "a144-8323-15a1-d4fe",
+          "4631-1a49-90b7-067b",
+          "ac7c-3782-0795-89ca",
+          "9c05-dbb0-ce76-1ca3",
+          "a53b-3d35-f6d7-2910",
+          "61e6-14a6-8422-d83a",
+          "72c3-8d9a-9738-df40",
+          "f603-a5d3-b8d1-d988",
+          "e369-888c-81f7-bf21",
+          "d0e1-8406-8a40-63d2",
+          "3cc3-41d7-7267-e347",
+          "0cda-8c44-bc6f-1e6a",
+          "8558-47f5-960b-9e7c",
+          "03b7-bc8e-fc30-1f30",
+          "ffd4-6f1b-e014-6708",
+          "8668-6a27-8afb-884c",
+          "b90f-4c89-9fe6-9d65",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "105f-fcbb-23b2-7d06",
+          "3219-23f5-50e5-8903",
+          "013b-ca2c-876e-7ba6",
+          "e08a-3412-5d3e-0923",
+          "1f94-bceb-13ee-f93d",
+          "3065-4091-48c8-aefb"
+        ],
+        "capabilities": [
+          {
+            "defId": "cc8d-7cc1-0e80-0108",
+            "targetDefId": "9c55-fbdf-3b4c-f808",
+            "name": "Cavalry Hammer (White Wolves)",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "6ffd-43e9-329f-d85c",
+            "targetDefId": "8649-8ac8-5a6f-fd8d",
+            "name": "Lance",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "8ab4-17be-8a49-b3f7" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-two-grand-masters-frame-isolation.ros",
+      "description": "Rahmenbeweis: ZWEI Instanzen desselben Eintrags 8ab4-17be-8a49-b3f7 in EINEM Kontingent 'Standard (EM-AB)'. Grand Master A traegt den White Wolf und KEINE magische Waffe, Grand Master B traegt die magische Waffe 'Sword of Might' und KEINEN White Wolf (dadurch bleibt zugleich die force-weite 0-1-Grenze des White Wolf 3219-23f5-50e5-8903 erfuellt). Unter dem Instanz-Rahmen zaehlt A: atLeast 1 (haelt) und lessThan 0 < 1 (haelt) - die Pflicht wird gehoben und feuert mit Ist 0 / Grenze 1. Unter B haelt schon die atLeast-Haelfte nicht. Deshalb feuert 106f-93b5-2186-7f80 GENAU EINMAL (count 1): eine kontingent- oder rosterweite Zaehlung faende die magische Waffe des B und liesse die Grenze bei A gar nicht steigen (0 Treffer), eine Lesart des Rahmens als Traeger-Selbst (wie self) liesse sie bei beiden steigen (2 Treffer). Ueber capabilities wird hier nichts behauptet, weil beide Grand Masters dieselben Slot-Definitions-Ids tragen und sich nur ueber einen Slot-Pfad trennen liessen.",
+      "expect": {
+        "firing": [
+          { "limitId": "106f-93b5-2186-7f80", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": [
+          "6992-af3c-357c-9bdc",
+          "c3dd-c1d8-860d-0091",
+          "a144-8323-15a1-d4fe",
+          "4631-1a49-90b7-067b",
+          "ac7c-3782-0795-89ca",
+          "9c05-dbb0-ce76-1ca3",
+          "a53b-3d35-f6d7-2910",
+          "61e6-14a6-8422-d83a",
+          "72c3-8d9a-9738-df40",
+          "f603-a5d3-b8d1-d988",
+          "e369-888c-81f7-bf21",
+          "d0e1-8406-8a40-63d2",
+          "3cc3-41d7-7267-e347",
+          "0cda-8c44-bc6f-1e6a",
+          "8558-47f5-960b-9e7c",
+          "03b7-bc8e-fc30-1f30",
+          "ffd4-6f1b-e014-6708",
+          "8668-6a27-8afb-884c",
+          "b90f-4c89-9fe6-9d65",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "105f-fcbb-23b2-7d06",
+          "3219-23f5-50e5-8903",
+          "013b-ca2c-876e-7ba6",
+          "e08a-3412-5d3e-0923",
+          "1f94-bceb-13ee-f93d",
+          "d707-a89c-2143-1971",
+          "c568-b884-80b5-bb1c",
+          "c4e5-2128-e15d-7894",
+          "3e58-33a7-788f-7fc7",
+          "e40b-b4c1-ed22-82cc",
+          "3065-4091-48c8-aefb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "8ab4-17be-8a49-b3f7" }
+          ]
+        }
+      }
+    }
+  ]
+}

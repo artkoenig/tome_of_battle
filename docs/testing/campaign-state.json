@@ -132,10 +132,10 @@
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-gm15d7",
+    "branch": "claude/evaluator-abschluss-kampagne-caa8zq",
     "campaignIssue": null,
-    "runs": 19,
-    "lastRunAt": "2026-08-11T16:57:43Z",
+    "runs": 20,
+    "lastRunAt": "2026-08-11T18:56:31Z",
     "lastRunOutcome": "stopped-by-human",
     "reArmedFor": null,
     "gaps": {
@@ -212,6 +212,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 19, the first run after the maintainer paused the campaign at the end of run 18. Six explorer invocations pinned six cells, every one of them green on the untouched engine: at-least-id-scope-inner-circle-champion, equal-to-self-general-black-arc, force-repeat-bloodletters-flesh-hound-slots, repeat-list-two-repeats-regiment-of-renown, greater-than-self-blessed-spawning-slots and id-scope-repeat-powerhouses-per-pack. No phase-B round in either half of the run: nothing was pinned red, so the open task list stayed empty. Coverage moved from 112/130 to 118/130; 12 cells stay open, the heaviest with five occurrences. The three parked questions of the earlier runs are all answered and their cells have left the worklist, so nothing waits on the maintainer. One thing worth carrying forward: the container starts without node_modules, so npm ci comes before the inventory. The multi-repeat cell needed a semantic decision the sources do not state outright - the scenario derives the additive reading from the wiki wording and from corpus sites that a multiplicative reading would make meaningless, and says so in its README rather than hiding it. The maintainer stopped the campaign right after this run: the re-arming trigger was created and then deleted again, so no run is scheduled. The campaign is NOT closed - the termination check does not hold, 12 cells are uncovered - it is paused, and only a human starts the next run."
+    "reArmNote": "Run 20, the first run after the maintainer restarted the campaign paused at the end of run 19. Six explorer invocations pinned six cells, every one green on the untouched engine: equal-to-roster-royal-pegasus-gate, prepend-name-chosen-knights, less-than-id-scope-white-wolf-hammer, unset-primary-category-rat-ogres, multiply-cost-traditional-army and parent-repeat-upgrade-maneater-weapons. No phase-B round in either half: nothing was pinned red, so the open task list stayed empty. Coverage moved from 118/130 to 124/130; the six cells still open each occur exactly once. Two things worth carrying forward. First: the container starts without node_modules, so npm ci comes before the inventory. Second, and more important: the join attribute of the Dark Elves prepend modifier is a raw U+00A0, and the first draft of that scenario expected a plain space, which the runner rejected - when a delegation prompt quotes an attribute value that could be whitespace, quote its codepoint, not its rendering. The last cell of the run was the first to use the upstream corpus src/__fixtures__/whfb6/ under the extended allow-list, and it worked without any change to the runner. The maintainer stopped the campaign right after this run: the re-arming trigger was created and then deleted again, so no run is scheduled. The campaign is NOT closed - the termination check does not hold, 6 cells are uncovered - it is paused, and only a human starts the next run."
   }
 }

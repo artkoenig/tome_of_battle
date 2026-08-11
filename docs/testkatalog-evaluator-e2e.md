@@ -2347,3 +2347,122 @@ eingestellte Punktebudget.
 > `"true"`, ist auf diesen Daten **nicht** beobachtbar — kein `entryLink` im
 > Korpus hängt das „Ogre Pack" tiefer als direkt unter die Einheit. Das
 > Szenario sagt das, statt einen Roster zu erfinden.
+
+## `equal-to-roster-royal-pegasus-gate`
+
+Prüft eine Bedingung `equalTo` im armeeweiten Rahmen: sie hält bei **genau**
+dem geschriebenen Wert und ist darunter wie darüber gleichermaßen falsch — sie
+ist also kein Mindestmaß. Beleg: die Bretonnia-Einheit „Pegasus Knights"
+(`ff3a-61e9-e154-92cc`) darf armeeweit nur einmal aufgestellt werden
+(`968c-6c14-9c73-d0c5`); ein Modifikator hebt diese Grenze auf „unbegrenzt",
+sobald in der Armee **genau ein** „Royal Pegasus" (`bfa3-6734-c03f-3594`)
+steht — ein Reittier, das an fünf verschiedenen Charakteren angeboten wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Einheit, kein Royal Pegasus | Grundlinie: die Grenze steht auf 1 und wird von einer Einheit nicht gerissen |
+| 02 | Zwei Einheiten, kein Royal Pegasus | Die Grenze feuert — Ist 2 gegen 1 |
+| 03 | Zwei Einheiten, ein Royal Pegasus | Das Gatter hält, die Grenze ist aufgehoben und schweigt |
+| 04 | Zwei Einheiten, **zwei** Royal Pegasus | Die Grenze feuert wieder — genau das trennt „gleich" von „mindestens" |
+| 05 | Drei Einheiten, ein Royal Pegasus | „Unbegrenzt" heißt unbegrenzt, nicht „Grenze auf 2 gehoben" |
+
+> **Offen erklärt:** Die parent-skopierte Eigengrenze des Royal Pegasus
+> (`efa6-a391-f62d-8034`) behauptet das Szenario in Roster 04 **nicht** — wie
+> `shared="true"` mit einem engeren `scope` zusammenwirkt, sagt keine Quelle,
+> und das Szenario rät nicht.
+
+## `prepend-name-chosen-knights`
+
+Prüft einen `prepend`-Modifikator auf den Anzeigenamen: der Wert wird **vor**
+den Katalognamen gesetzt, getrennt durch das `join`-Zeichen — und dieses wird
+**wörtlich** übernommen, nicht angenommen. Beleg: die Dark-Elves-Einheit
+„Knights of Chaos" (`7843-05b6-ba2d-cc2b`) heißt „Chosen …", sobald die
+Aufwertung „Chosen" (`7ab9-d251-abf3-8878`) in ihr steht. Das Trennzeichen ist
+in den Katalogdaten ein **geschütztes Leerzeichen** (U+00A0), kein normales —
+genau darauf zielt die Behauptung.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne „Chosen" | Der schlichte Katalogname; der gleichnamige Modell-Slot dient als Gegenprobe |
+| 02 | Dieselbe Einheit mit „Chosen" | Der vorangestellte Name — mit dem geschützten Leerzeichen als Trenner |
+
+> **Offen erklärt:** Ein Ergebnis mit normalem Leerzeichen wäre ein Befund über
+> die Engine, kein Anlass, die Erwartung umzuschreiben.
+
+## `less-than-id-scope-white-wolf-hammer`
+
+Prüft eine Bedingung `lessThan`, deren `scope` **keine Kennung des Formats**,
+sondern eine **Eintrags-Id** ist: gezählt wird innerhalb der nächsten
+umschließenden Auswahl dieses Eintrags, und die Bedingung hält nur **echt
+unterhalb** des geschriebenen Werts. Beleg: der Empire-„Templar Grand Master"
+(`8ab4-17be-8a49-b3f7`) muss den „Cavalry hammer" nehmen, wenn er die
+Aufwertung „0-1 Knights of the White Wolf" trägt **und** keine magische Waffe
+führt — der Modifikator hebt dann dessen Mindestmaß `106f-93b5-2186-7f80` von
+0 auf 1.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | White Wolf, keine magische Waffe, kein Hammer | Das Mindestmaß feuert — der Hammer ist Pflicht und fehlt |
+| 02 | Wie 01, plus eine magische Waffe | Eine einzige Auswahl mehr, und die Bedingung hält nicht: das Mindestmaß schweigt |
+| 03 | Wie 01, Hammer gewählt | Dieselbe Pflicht, erfüllt |
+| 04 | Ohne White Wolf | Der Hammer bleibt verborgen; sein Mindestmaß wird gar nicht geprüft |
+| 05 | Zwei Grand Master, nur einer mit magischer Waffe | Rahmen-Beweis: ein kontingentweiter Zähler würde beide verrechnen |
+
+## `unset-primary-category-rat-ogres`
+
+Prüft `unset-primary` auf einer Kategorie: der Modifikator nimmt **nur** das
+Primär-Kennzeichen, die **Mitgliedschaft bleibt** — und gezählt wird die
+Mitgliedschaft. Beleg: die Skaven-Einheit „Rat Ogres" (`232c-d42d-bb0b-a85d`)
+ist von Haus aus Special; im Kontingent „Hell Pit (WD-311)" nimmt eine
+Modifikator-Klammer Special das Primär-Kennzeichen und macht die Einheit
+zusätzlich zu Core — ein `remove` steht dort **nicht**.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Hell Pit, vier Einheiten | Die Special-Obergrenze feuert trotzdem — Ist 4 gegen 3 |
+| 02 | Standard, vier Einheiten | Dieselbe Special-Überschreitung, dazu die unerfüllte Core-Pflicht |
+| 03 | Hell Pit, zwei Einheiten | Die Core-Pflicht ist allein durch die umgegliederten Einheiten erfüllt |
+| 04 | Standard, zwei Einheiten | Dort fehlen sie in Core — die Pflicht feuert mit Ist 0 |
+| 05 | Clan Pestilens, vier Einheiten | Gegenprobe aus demselben Katalog: dort steht ein echtes `remove`, und Special zählt 0 |
+
+## `multiply-cost-traditional-army`
+
+Prüft einen `multiply`-Modifikator auf eine Kostenart: er **vervielfacht** die
+Kosten des Trägers, er addiert keinen festen Betrag. Beleg: die
+Dwarfs-Kriegsmaschinen „Gyrocopter" (`fe43-aa5e-3d37-9772`, 140 pts) und
+„Organ Gun" (`b767-3b91-f82d-efb6`, 120 pts) kosten das **Doppelte**, sobald
+„King Alrik Ranulfsson" (`8424-9cb7-d1ca-56fe`) im Kontingent steht — die
+Katalogdaten nennen es die „Traditional Army"-Regel. Gemessen wird über das
+eingestellte Punktebudget, jede Ablesung von beiden Seiten geklammert (Limit
+einen Punkt darunter und einen darüber).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Gyrocopter ohne King Alrik | Grundlinie: genau der geschriebene Katalogwert |
+| 03/04 | Derselbe Gyrocopter mit King Alrik | Genau das Doppelte — nicht mehr, nicht weniger |
+| 05/06 | Organ Gun ohne King Alrik | Zweite Grundlinie mit **anderem** Grundwert |
+| 07/08 | Dieselbe Organ Gun mit King Alrik | Auch hier das Doppelte — ein fester Aufschlag hätte hier die falsche Zahl ergeben |
+
+> **Offen erklärt:** Ob ein `entryLink` ohne eigene Kosten auf die Kosten seines
+> Ziels zurückfällt, sagt keine Quelle; das Szenario umgeht die Frage, statt zu
+> raten, und lässt die betroffenen Gegenstände ungewählt.
+
+## `parent-repeat-upgrade-maneater-weapons`
+
+Prüft einen `<repeat>` mit `scope="parent"` und `childId="upgrade"`: gezählt
+werden im Eltern-Rahmen die Auswahlen vom Typ *upgrade*, und der Modifikator
+greift **je gezähltem Schritt einmal**. Beleg: die Waffen der Dogs-of-War-
+Einheit „Ogre Maneaters" (`b1b8-10da-ac1a-ba7c`) kosten je 6 Punkte mehr pro
+gezählter Aufwertung am Modell. Gemessen über das Punktebudget, jede Ablesung
+von beiden Seiten geklammert. Dieses Szenario nutzt als einziges der
+Wiederholungs-Familie den **ergofang**-Datensatz.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Ogre club — das einzige Gruppenmitglied ohne Aufschlag | Grundlinie, exakt auf den Grundwert geklammert |
+| 03/04 | Stattdessen ein Great Weapon | Genau **eine** Anwendung des Aufschlags |
+| 05/06 | Drei Waffen unter demselben Modell | Zählerstand 3, also je Waffe **drei** Anwendungen — das trennt die Wiederholung von einer bloßen Bedingung, und das Modell vom Rahmen der ganzen Einheit |
+
+> **Offen erklärt:** `childId="upgrade"` gegen `any`, der Rahmen „Modell" gegen
+> „Gruppe" sowie `shared` und `includeChildForces` sind auf diesen Daten nicht
+> unterscheidbar; das Szenario sagt es, statt einen Roster zu erfinden.

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-roster-royal-pegasus-gate",
+  "description": "Eine condition type=\"equalTo\" field=\"selections\" scope=\"roster\" childId=\"...\" haelt NUR bei exakter Gleichheit — ein Weniger und ein Mehr machen sie gleichermassen falsch. Beleg in Bretonnia (a5c3-073c-b4e8-4284): die Wurzel-Einheit Pegasus Knights (ff3a-61e9-e154-92cc) traegt die roster-skopierte Grenze 968c-6c14-9c73-d0c5 (type=max, field=selections, scope=roster, value=1), und ihr einziger Modifikator (type=set field=968c-6c14-9c73-d0c5 value=-1) ist durch genau eine Bedingung gegattert: equalTo 1 auf den armeeweiten Bestand des shared entry Royal Pegasus (bfa3-6734-c03f-3594, includeChildSelections=true, includeChildForces=true, shared=true). Ohne Royal Pegasus (Ist 0) und mit zwei Royal Pegasus (Ist 2) ist die Bedingung falsch, die Grenze bleibt bei 1 und eine zweite Einheit Pegasus Knights reisst sie (Ist 2 / Grenze 1); mit genau einem Royal Pegasus greift der Modifikator, die Grenze steht auf dem Sentinel -1 (unbegrenzt) und darf nicht feuern. Das Paar 02/04 gegen 03 trennt equalTo von einem blossen atLeast; Roster 05 (drei Einheiten bei einem Royal Pegasus) trennt \"unbegrenzt\" von \"auf 2 angehoben\". Jede Einheit Pegasus Knights ist katalogkonform ausgebaut (3 Modelle, Pegasus, Gallant, Hand Weapon, Lance, Shield, Heavy Armour), damit ihre Pflichtgrenzen in jedem Roster mit in absent stehen koennen. Andere Armeeaufbau-Diagnosen (General-Pflicht, Core-Mindestzahl, Punktelimit) koennen zusaetzlich auftreten und sind hier ohne Belang.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-one-unit-no-royal-pegasus-legal.ros",
+      "description": "Grundlinie: EINE katalogkonforme Einheit Pegasus Knights, sonst nichts. Die equalTo-Bedingung ist falsch (Ist 0 Royal Pegasus, Schwelle 1), der set-Modifikator greift nicht, die Grenze 968c-6c14-9c73-d0c5 steht auf ihrem geschriebenen Wert 1 — und wird mit Ist 1 gerade nicht gerissen. Der Nachweis, dass allein die zweite Einheit in Roster 02 die Grenze reisst.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "968c-6c14-9c73-d0c5",
+          "ab94-5c7c-3fb2-bd09",
+          "8337-24fc-f0cd-2c64",
+          "2c32-41ac-9c5d-2de8",
+          "76c1-253c-26f0-8330",
+          "e6b0-6756-93e0-dcdd",
+          "93d7-d3cb-6b2e-504f",
+          "2f5d-1823-e9ef-5427",
+          "06e2-8a3d-a4e5-b26e"
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-two-units-no-royal-pegasus-illegal.ros",
+      "description": "ZWEI katalogkonforme Einheiten Pegasus Knights, KEIN Royal Pegasus im Heer. Die equalTo-Bedingung ist falsch (Ist 0 != 1), der set-Modifikator greift nicht, die Grenze bleibt auf dem geschriebenen value=1 und wird von den zwei roster-weit gezaehlten Einheiten gerissen: Ist 2 / Grenze 1. Die untere Haelfte des equalTo-Nachweises — ein atLeast 1 haette hier genauso wenig gehalten, deshalb braucht es zusaetzlich Roster 04.",
+      "expect": {
+        "firing": [
+          { "limitId": "968c-6c14-9c73-d0c5", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "ab94-5c7c-3fb2-bd09",
+          "8337-24fc-f0cd-2c64",
+          "2c32-41ac-9c5d-2de8",
+          "76c1-253c-26f0-8330",
+          "e6b0-6756-93e0-dcdd",
+          "93d7-d3cb-6b2e-504f",
+          "2f5d-1823-e9ef-5427",
+          "06e2-8a3d-a4e5-b26e"
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-units-one-royal-pegasus-legal.ros",
+      "description": "Bis auf den Paladin (2674-4f8e-d872-f448) mit Royal Pegasus (entryLink 5f65-7e04-08cd-39dd auf bfa3-6734-c03f-3594) identisch mit Roster 02. Der armeeweite Bestand an Royal Pegasus ist genau 1, die equalTo-Bedingung haelt, der set-Modifikator setzt 968c-6c14-9c73-d0c5 auf den Sentinel -1 = unbegrenzt — dieselben zwei Einheiten Pegasus Knights sind jetzt legal, die Grenze darf NICHT feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "968c-6c14-9c73-d0c5",
+          "ab94-5c7c-3fb2-bd09",
+          "8337-24fc-f0cd-2c64",
+          "2c32-41ac-9c5d-2de8",
+          "76c1-253c-26f0-8330",
+          "e6b0-6756-93e0-dcdd",
+          "93d7-d3cb-6b2e-504f",
+          "2f5d-1823-e9ef-5427",
+          "06e2-8a3d-a4e5-b26e",
+          "6b67-31e7-0623-7bce",
+          "9cd2-349a-8d91-03cc",
+          "7374-751c-a4c2-9be5",
+          "50f5-2b5f-6625-d104",
+          "efa6-a391-f62d-8034"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-units-two-royal-pegasus-illegal.ros",
+      "description": "Wie Roster 03, zusaetzlich eine Damsel of the Lady (9f03-3ab3-72d8-3a69) mit einem zweiten Royal Pegasus (entryLink 349a-77d5-4b8c-5f81 auf dasselbe Ziel bfa3-6734-c03f-3594). Der armeeweite Bestand ist 2, die equalTo-Bedingung ist damit WIEDER falsch, der set-Modifikator greift nicht, die Grenze faellt auf value=1 zurueck und feuert erneut: Ist 2 / Grenze 1. Das ist der Fall, den ein atLeast 1 nicht mehr melden wuerde — er trennt equalTo von atLeast. Die parent-skopierte Eigengrenze des Royal Pegasus (efa6-a391-f62d-8034) wird hier bewusst nicht behauptet (siehe README).",
+      "expect": {
+        "firing": [
+          { "limitId": "968c-6c14-9c73-d0c5", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "ab94-5c7c-3fb2-bd09",
+          "8337-24fc-f0cd-2c64",
+          "2c32-41ac-9c5d-2de8",
+          "76c1-253c-26f0-8330",
+          "e6b0-6756-93e0-dcdd",
+          "93d7-d3cb-6b2e-504f",
+          "2f5d-1823-e9ef-5427",
+          "06e2-8a3d-a4e5-b26e",
+          "6b67-31e7-0623-7bce",
+          "9cd2-349a-8d91-03cc",
+          "7374-751c-a4c2-9be5",
+          "50f5-2b5f-6625-d104",
+          "fe29-e78b-6881-23d2",
+          "9558-8cc9-fe43-adb2"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-three-units-one-royal-pegasus-legal.ros",
+      "description": "Wie Roster 03, aber mit DREI Einheiten Pegasus Knights bei weiterhin genau einem Royal Pegasus. Die equalTo-Bedingung haelt unveraendert, der gesetzte Wert ist -1 = unbegrenzt und nicht etwa 2: auch die dritte Einheit ist legal, 968c-6c14-9c73-d0c5 darf nicht feuern. Trennt den Sentinel -1 von einer blossen Anhebung der Grenze.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "968c-6c14-9c73-d0c5",
+          "ab94-5c7c-3fb2-bd09",
+          "8337-24fc-f0cd-2c64",
+          "2c32-41ac-9c5d-2de8",
+          "76c1-253c-26f0-8330",
+          "e6b0-6756-93e0-dcdd",
+          "93d7-d3cb-6b2e-504f",
+          "2f5d-1823-e9ef-5427",
+          "06e2-8a3d-a4e5-b26e",
+          "6b67-31e7-0623-7bce",
+          "9cd2-349a-8d91-03cc",
+          "7374-751c-a4c2-9be5",
+          "50f5-2b5f-6625-d104",
+          "efa6-a391-f62d-8034"
+        ]
+      }
+    }
+  ]
+}

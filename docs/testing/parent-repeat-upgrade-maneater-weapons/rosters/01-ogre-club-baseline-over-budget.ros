@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="prum-01" name="PRUM 01 - Ogre Maneaters mit Ogre club (kein Aufschlag), Punktelimit 79 (Budget feuert)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-repeat-upgrade-maneater-weapons E2E fixture)" gameSystemId="6d8e-38d9-3c69-febf" gameSystemName="Warhammer Fantasy Battle 6th edition" gameSystemRevision="8" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <!-- Grundlinie ohne Aufschlag. Der Ogre club (Link bbaf-1abe-4478-62d8, zugleich
+       defaultSelectionEntryId der Gruppe "Weapon") ist der EINZIGE der vier
+       Gruppenmitglieder OHNE increment-Modifikator. Die Zaehlung im Eltern-Rahmen
+       des Modells ist trotzdem 1 (der Club ist selbst type="upgrade") - es gibt hier
+       nur keinen Modifikator, den sie wiederholen koennte.
+       Summe: Einheit 0 + Modell 80 + Light Armour 0 + Ogre club 0 = 80 pts.
+       Limit 79 => budget::ecfa-8486-4f6c-c249 feuert mit Ist 80 / Grenze 79. -->
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="79"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard " entryId="7d9d-6c8d-4ea0-b7ad" catalogueId="4887-12ed-22a2-f461" catalogueRevision="4" catalogueName="Dogs of War">
+      <selections>
+        <!-- Wurzel-selectionEntry "Ogre Maneaters" (Dogs of War.cat:2543, type="unit", 0 pts).
+             Effektive Kategorie: der Katalog nimmt per Modifikator "Special"
+             (43cc-fc3f-35a7-8d03) weg und setzt "Rare" (e94b-6a54-8779-cd60) primaer,
+             solange keine Auswahl der Kategorie "DOW" (bb6b-cda8-b237-4dfd) im Roster
+             steht - hier steht keine. -->
+        <selection id="sel-maneaters" name="Ogre Maneaters" entryId="b1b8-10da-ac1a-ba7c" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <!-- Pflicht-Modell (min 1: fb53-ce3d-0b8b-cca8), 80 pts. -->
+            <selection id="sel-model" name="Ogre Maneaters" entryId="8fed-6b86-9099-db53" entryLinkId="" number="1" type="model" collective="false">
+              <selections>
+                <!-- Gruppe "Weapon" (6a33-8be5-b0a4-5b42, max 1 zweifach):
+                     ein Mitglied => beide max-Grenzen schweigen. -->
+                <selection id="sel-weapon-club" name="Ogre club" entryId="6192-2089-b7d5-7084" entryLinkId="bbaf-1abe-4478-62d8" entryGroupId="6a33-8be5-b0a4-5b42" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <!-- Pflicht-Gruppe "Armour" (6b9b-e957-af89-cd63, min 1: b9c9-2eef-0ce0-4307).
+                 Light Armour ist die Vorgabe (868a-ecb7-b621-41cc) und traegt KEINEN
+                 Kosten-Modifikator; Ziel .gst 055f-8e4e-f170-35d2 = 0 pts. Sie haengt
+                 unter der EINHEIT, nicht unter dem Modell - sie zaehlt fuer den
+                 repeat der Waffen also nicht mit. -->
+            <selection id="sel-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="868a-ecb7-b621-41cc" entryGroupId="6b9b-e957-af89-cd63" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ltwwh-05" name="LTWWH 05 - Zwei Templar Grand Masters in EINEM Kontingent: A traegt den White Wolf und keine magische Waffe, B traegt die magische Waffe und keinen White Wolf" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored less-than-id-scope-white-wolf-hammer E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="3000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (EM-AB)" entryId="e821-88b8-2071-6b6a" catalogueId="3938-8369-a300-4a03" catalogueRevision="1" catalogueName="The Empire">
+      <selections>
+        <selection id="sel-tgm-a" name="Templar Grand Master A (White Wolf, ohne magische Waffe)" entryId="8ab4-17be-8a49-b3f7" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-tgm-a-plate" name="Full Plate Armour" entryId="199f-b4b9-aaca-490f" entryLinkId="fb3a-9b3f-4a15-6030" number="1" type="upgrade"/>
+            <selection id="sel-tgm-a-horse" name="Empire Warhorse" entryId="a1e3-7f97-5fc6-abaa" entryLinkId="7ba6-d697-88e0-c7f7" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-tgm-a-barding" name="Barding" entryId="3211-d836-02f1-01d0" entryLinkId="5f95-206a-3007-3cb6" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+            <selection id="sel-tgm-a-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8e82-e9b7-ae87-abdf" number="1" type="upgrade"/>
+            <selection id="sel-tgm-a-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="0a5f-3110-a889-c3ed" number="1" type="upgrade"/>
+            <selection id="sel-tgm-a-whitewolf" name="0-1 Knights of the White Wolf" entryId="32c2-bfbe-88b1-8425" entryLinkId="4430-d4ff-7985-09fa" entryGroupId="ef59-a7d3-a7d7-ec9c" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="sel-tgm-b" name="Templar Grand Master B (magische Waffe, ohne White Wolf)" entryId="8ab4-17be-8a49-b3f7" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-tgm-b-plate" name="Full Plate Armour" entryId="199f-b4b9-aaca-490f" entryLinkId="fb3a-9b3f-4a15-6030" number="1" type="upgrade"/>
+            <selection id="sel-tgm-b-horse" name="Empire Warhorse" entryId="a1e3-7f97-5fc6-abaa" entryLinkId="7ba6-d697-88e0-c7f7" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-tgm-b-barding" name="Barding" entryId="3211-d836-02f1-01d0" entryLinkId="5f95-206a-3007-3cb6" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+            <selection id="sel-tgm-b-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="8e82-e9b7-ae87-abdf" number="1" type="upgrade"/>
+            <selection id="sel-tgm-b-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="0a5f-3110-a889-c3ed" number="1" type="upgrade"/>
+            <selection id="sel-tgm-b-lance" name="Lance" entryId="8649-8ac8-5a6f-fd8d" entryLinkId="6ffd-43e9-329f-d85c" entryGroupId="e254-997d-e319-33c6" number="1" type="upgrade"/>
+            <selection id="sel-tgm-b-magicselection" name="Magic Selection" entryId="2cf1-e089-263b-aec4" entryLinkId="" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-tgm-b-swordofmight" name="Sword of Might" entryId="8c56-9be1-c4a9-5afe" entryLinkId="099e-250b-a57e-7027" entryGroupId="c071-eb48-3009-9ec1" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

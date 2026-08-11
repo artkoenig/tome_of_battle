@@ -674,6 +674,48 @@
         "docs/testing/id-scope-repeat-powerhouses-per-pack"
       ],
       "rationale": "Seven rosters over the Skaven unit Mutant Rat Ogres (7a4a-301b-af31-9ee0) in the contingent Hell Pit (WD-311), the only one that reveals it. The option Powerhouses (259c-906d-4b40-2b31, base cost 0) carries an increment of 10 points on the pts cost type whose <repeat> names the unit's own id as its scope and counts the Ogre Pack model (8ea5-88f7-6636-7aaf); the option sits two levels below the frame, so the frame is an ancestor of the carrier. Measured through the roster budget with the limit set one point below the derived sum: one pack costs 75, two 150, three 225, and the same unit without the option 195, so the delta is exactly three times ten. One roster sets the limit one point above the sum and stays silent, one takes the sibling options Quadrupedal (5) and Resilient (12) for two further independent readings of the same shape, and the last holds two Mutant Rat Ogres units with two and three packs where only the first carries the option - a contingent-wide frame would price it thirty points higher. Openly declared in the README as not observable on this data: includeChildSelections=\"false\" cannot be told from \"true\", because no entryLink nests the Ogre Pack deeper than a direct child of the unit anywhere in the corpus. Scenario is green."
+    },
+    {
+      "key": "condition|equalTo|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-roster-royal-pegasus-gate"
+      ],
+      "rationale": "Five rosters over the Bretonnia unit Pegasus Knights (ff3a-61e9-e154-92cc), whose roster-wide max of one (968c-6c14-9c73-d0c5) a set -1 modifier lifts to unlimited exactly when the army holds exactly one Royal Pegasus (bfa3-6734-c03f-3594). Rosters 02 and 04 carry the same actual of two units and differ only in the bound: with no Royal Pegasus and with two of them the equalTo is false and the limit fires, which is what forbids reading the condition as an atLeast; roster 03 holds one Royal Pegasus over one of five carrier links and the limit stays silent, roster 05 shows three units under the same gate, which separates the -1 sentinel from a bound merely raised to two. Scenario is green."
+    },
+    {
+      "key": "modifier|prepend|name",
+      "evidence": [
+        "docs/testing/prepend-name-chosen-knights"
+      ],
+      "rationale": "Roster pair over the Dark Elves unit Knights of Chaos (7843-05b6-ba2d-cc2b) in the contingent Cult of Slaanesh (SoC), which reveals the otherwise hidden entry. The unit carries a prepend on field name, gated on a self-scoped atLeast counting the Chosen upgrade (7ab9-d251-abf3-8878): roster 01 without it asserts the plain catalogue name, roster 02 with it asserts the prepended one. The separator is the join attribute taken verbatim, and the catalogue writes it as U+00A0, so the expected name carries a NO-BREAK SPACE and not a plain space - that is the assertion which makes the verbatim rule of the format doc observable. The identically named model slot and the Chosen slot are asserted unchanged as controls. Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-id-scope-white-wolf-hammer"
+      ],
+      "rationale": "Five rosters over the Empire unit Templar Grand Master (8ab4-17be-8a49-b3f7). The Cavalry hammer link under it raises its own min limit 106f-93b5-2186-7f80 from 0 to 1 through an and group of two conditions whose scope is the Grand Master's own entry id: at least one White Wolf upgrade, and fewer than one selection of the Magic Weapons group c071-eb48-3009-9ec1. Roster 01 has the upgrade and no magic weapon and the min fires with actual 0 against bound 1; roster 02 differs in a single selection - one magic weapon - which makes the lessThan false so the limit stays silent; roster 03 satisfies the raised min by taking the hammer; roster 04 drops the upgrade so the hammer stays hidden and its min is not validated at all; roster 05 puts two Grand Masters in one contingent, one with and one without the magic weapon, which a contingent-wide frame would conflate. Scenario is green."
+    },
+    {
+      "key": "modifier|unset-primary|category",
+      "evidence": [
+        "docs/testing/unset-primary-category-rat-ogres"
+      ],
+      "rationale": "Five rosters over the Skaven unit Rat Ogres (232c-d42d-bb0b-a85d), whose base primary category is Special. In the contingent Hell Pit (WD-311) a modifier bracket does unset-primary on Special plus add and set-primary on Core, and writes no remove. Rosters 01 and 02 hold four Rat Ogres in Hell Pit and in Standard and both overflow the force-scoped Special maximum 16f0-6e5b-55d0-4102 with actual 4 against bound 3 - identical Special overflow in both contingents is what shows the membership survived the unset-primary. Rosters 03 and 04 isolate the add/set-primary half: two units meet the Core minimum 35c2-d478-392a-aeb1 in Hell Pit while the same two leave it firing with actual 0 in Standard. Roster 05 is the control from the same catalogue: the Clan Pestilens bracket writes an actual remove of Special, and there the Special maximum reads actual 0. Scenario is green."
+    },
+    {
+      "key": "modifier|multiply|costValue",
+      "evidence": [
+        "docs/testing/multiply-cost-traditional-army"
+      ],
+      "rationale": "Eight rosters over the Dwarfs war machines Gyrocopter (fe43-aa5e-3d37-9772, 140 pts) and Organ Gun (b767-3b91-f82d-efb6, 120 pts) in the contingent Standard (DW2-AB), the one contingent that offers them and King Alrik Ranulfsson (8424-9cb7-d1ca-56fe) at once. Both carry a multiply of 2 on the pts cost type gated on the force holding King Alrik. Measured through the roster budget with the limit set one point below and one point above the derived total, so every reading is clamped from both sides: 140 without Alrik and 280 with him, 120 and 240 for the Organ Gun. The second base cost is what separates a multiplication from a fixed surcharge - a plus of 140 points would have made roster 08 fire. Openly declared in the README as routed around rather than guessed: whether an entryLink without costs falls back to its target's cost, which is why Alrik's magic items stay unselected. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/parent-repeat-upgrade-maneater-weapons"
+      ],
+      "rationale": "Six rosters over the Dogs of War unit Ogre Maneaters (b1b8-10da-ac1a-ba7c) of the upstream fixture set. Each weapon link of the group Weapon (6a33-8be5-b0a4-5b42) carries an increment of 6 pts on the pts cost type whose repeat counts, in the parent frame, the selections of type upgrade with step 1. Measured through the roster budget with the limit one point below and one point above each derived total: the Ogre club member without the modifier clamps the baseline to exactly 80 points, one Great Weapon adds exactly one application of 6, and three weapons under one model raise the counted number to 3 so each of the three costs 18 - which rules out both reading the repeat as a mere condition and taking the unit rather than the model as the frame. Scenario is green."
     }
   ]
 }
