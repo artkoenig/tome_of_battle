@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="gtsbs-02" name="GTSBS 02 – Nur Regiment A traegt eine Blessed-Spawning-Option: A wird Special, B bleibt Core" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored greater-than-self-blessed-spawning-slots E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (LM-AB)" entryId="8fcd-0130-a0ff-b7bc" catalogueId="19e3-92e5-1158-4551" catalogueRevision="1" catalogueName="Lizardmen (6th definitive edition)">
+      <selections>
+        <!-- Regiment A: GENAU EINE Blessed-Spawning-Option (Tzunki, 10 pts).
+             Selbst-Zaehlung von bd30-a138-fa7a-ecbe = 1.
+             greaterThan 0 haelt (1 > 0)  => add/set-primary Special 43cc-..., remove Core 64bf-...
+             greaterThan 1 haelt NICHT (1 ist nicht strikt groesser als 1) => KEIN Rare.
+             Effektive Kategorien von A: {Special}.
+             Der <categories>-Block notiert bewusst weiter den ROHEN Core-Link. -->
+        <selection id="sel-swa" name="Saurus Warriors" entryId="2258-e16e-24dd-6e85" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-swa-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-swa-models" name="Saurus Warrior" entryId="5005-7199-18bd-22ca" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-swa-hw" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d534-9465-25dd-bcc0" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="f11f-b61d-fb7d-720a" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-scaly" name="Scaly Skin (6+)" entryId="2481-9ff2-5fe7-f381" entryLinkId="e899-01e5-cba3-601f" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-tzunki" name="Blessed Spawning of Tzunki, the Water God" entryId="5dcd-c767-b2a6-5ff4" entryLinkId="a347-553a-afa1-d025" entryGroupId="bd30-a138-fa7a-ecbe" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Regiment B: KEINE Blessed-Spawning-Option. Selbst-Zaehlung = 0 => bleibt Core.
+             Das ist die Nachbarschaftsprobe: wuerde der Zaehler ueber das Kontingent
+             statt im Traeger genommen, saehe auch B eine 1 und wuerde ebenfalls
+             Special — Core-Ist waere 0 statt 1. -->
+        <selection id="sel-swb" name="Saurus Warriors" entryId="2258-e16e-24dd-6e85" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-swb-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-swb-models" name="Saurus Warrior" entryId="5005-7199-18bd-22ca" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-swb-hw" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d534-9465-25dd-bcc0" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="f11f-b61d-fb7d-720a" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-scaly" name="Scaly Skin (6+)" entryId="2481-9ff2-5fe7-f381" entryLinkId="e899-01e5-cba3-601f" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

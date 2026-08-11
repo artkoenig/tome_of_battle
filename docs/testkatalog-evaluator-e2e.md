@@ -173,7 +173,13 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
 | [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
 | [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
-| **Summe** | | **414** |
+| [`at-least-id-scope-inner-circle-champion`](testing/at-least-id-scope-inner-circle-champion/) | Definitive Empire + Mercenaries | 4 |
+| [`equal-to-self-general-black-arc`](testing/equal-to-self-general-black-arc/) | Definitive Dark Elves + Mercenaries | 4 |
+| [`force-repeat-bloodletters-flesh-hound-slots`](testing/force-repeat-bloodletters-flesh-hound-slots/) | Definitive Forces of Chaos + Mercenaries | 7 |
+| [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
+| [`greater-than-self-blessed-spawning-slots`](testing/greater-than-self-blessed-spawning-slots/) | Definitive Lizardmen + Mercenaries | 5 |
+| [`id-scope-repeat-powerhouses-per-pack`](testing/id-scope-repeat-powerhouses-per-pack/) | Definitive Skaven + Mercenaries | 7 |
+| **Summe** | | **447** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2198,3 +2204,146 @@ Punkte bei genau null, 5 Punkte bei genau einer Auswahl des Inner-Circle-Links
 > nicht herstellbar — die `max 1`-Grenze am Link wird von keinem Modifikator
 > des Armeebuchs angefasst. Das Szenario behauptet deshalb nichts über diesen
 > Fall, statt einen Roster zu erfinden.
+
+## `at-least-id-scope-inner-circle-champion`
+
+Prüft die `atLeast`-Bedingung mit einer **Eintrags-Id** als `scope` — dem
+Gegenstück zum Schlüsselwort `unit` — und macht sie über **Merkmalswerte**
+statt über Punkte beobachtbar. Beleg: das Empire-Ritterregiment „Knights of
+the Knightly Orders" (`1d77-9e6e-a6ab-573f`) trägt denselben Modifikator
+(`increment 1` auf die Stärke) unter derselben `or`-Gruppe an zwei Orten —
+einmal am Profil der Einheit selbst, einmal am Champion-Profil des
+Kommandogruppen-Upgrades „First Knight", das ein Enkel der Einheit ist. Der
+Rahmen ist damit einmal der Träger und einmal ein Vorfahre; beide Male zählt
+er den Inner-Circle-Verweis (`6e1d-9e41-114f-8128`) *dieser* Einheit.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Regiment mit Champion **und** Innerem Zirkel | Beide Profile steigen von Stärke 3 auf 4 — der Rahmen greift am Träger wie am Vorfahren |
+| 02 | Dasselbe Regiment ohne Inneren Zirkel | Beide Profile bleiben auf ihrem Basiswert |
+| 03 | Zwei Regimenter: Zirkel im einen, Champion im **anderen** | Rahmen-Beweis: der Champion bleibt auf Stärke 3 — ein kontingent- oder rosterweiter Rahmen ergäbe 4 |
+| 04 | Zwei Regimenter: Zirkel **und** Champion im selben | Gegenprobe: die zweite, aufwertungslose Instanz derselben Einheit unterdrückt den Modifikator nicht |
+
+> **Bewusst offen gelassen:** In den Rostern 03/04 stehen zwei Slots derselben
+> Definition nebeneinander; der Manifest-Vertrag trennt sie nur über einen
+> Slot-Pfad, dessen Schreibweise sich nicht aus den Katalogdaten ableiten
+> lässt. Die beiden Roster behaupten deshalb nichts über die
+> **Einheiten**-Profile und prüfen den Rahmen ausschließlich am eindeutigen
+> Champion-Slot — dem tieferen der beiden Fälle. Die Einheiten-Profile sind in
+> 01/02 einzeln gepinnt.
+
+## `equal-to-self-general-black-arc`
+
+Prüft die `equalTo`-Bedingung mit `scope="self"`: gezählt wird allein in der
+Auswahl, die die Bedingung trägt. Beleg: die Dark-Elves-Charaktere „Highborn"
+(`79af-7092-a9a9-393d`) und „Noble" (`bd43-41c0-298e-22be`) tragen denselben
+Namenszusatz „Captain of the Black Arc", jeder gegattet auf **seinen eigenen**
+General-Verweis und auf das Kontingent „The Raiding Army (DE-AB)"
+(`4b5b-aebb-1526-91bb`). Zwei Träger mit demselben Konstrukt sind es, die den
+`self`-Rahmen beobachtbar machen, ohne dass zwei Instanzen derselben Einheit
+nötig wären.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Beide Charaktere im Raiding Army, General **nur** beim Highborn | Nur der Highborn trägt den Zusatz; der Noble behält seinen Namen — ein kontingentweiter Rahmen benennte beide |
+| 02 | Dasselbe gespiegelt: General beim Noble | Nur der Noble trägt den Zusatz |
+| 03 | Beide ohne General | Kein Zusatz; zugleich feuert die armeeweite General-Pflicht |
+| 04 | Wie 01, aber in einem anderen Kontingent | Das zweite Glied der `and`-Gruppe fällt: kein Zusatz |
+
+> **Nicht baubar, offen erklärt:** Ein Zähler über eins ist auf diesen Daten
+> nicht herstellbar — der geteilte General-Eintrag trägt `max 1` sowohl im
+> Eltern- als auch im Kontingent-Rahmen. Die Roster trennen `equalTo` deshalb
+> nur nach unten von `atLeast`, nicht nach oben; das Szenario sagt das statt
+> einen Roster zu erfinden.
+
+## `force-repeat-bloodletters-flesh-hound-slots`
+
+Prüft einen `<repeat>` mit `scope="force"` und einer Eintrags-Id als `childId`:
+der Modifikator greift einmal je gezählter Auswahl im Kontingent. Beleg: die
+Chaos-Einheit „Flesh Hounds" (`eaf6-a701-f67e-7c26`) trägt eine
+kontingentweite Obergrenze mit dem geschriebenen Wert 0
+(`7f35-5f3f-42c9-be19`). Im Kontingent „Daemonic Legion (SoC)"
+(`93f4-7522-86e9-7d45`) hebt ein `increment 1` sie je Bloodletters-Einheit
+(`7dc4-fb32-003b-c289`) an; außerhalb dieses Kontingents hebt ein `set -1` sie
+stattdessen ganz auf. Fünf Roster steigen die Wiederholungsleiter hinauf, zwei
+laufen dieselben Auswahlen im anderen Kontingent.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Legion, keine Bloodletters, eine Meute | Null Wiederholungen: der Basiswert 0 steht, die Grenze feuert |
+| 02 | Legion, eine Bloodletters-Einheit, zwei Meuten | Eine Wiederholung: eine Meute wäre erlaubt, zwei feuern |
+| 03 | Legion, zwei Bloodletters-Einheiten, zwei Meuten | Zwei Wiederholungen: passt genau, kein Verstoß |
+| 04 | Legion, zwei Bloodletters-Einheiten, drei Meuten | Dieselbe Grenze feuert eine Meute zu spät |
+| 05 | Legion, drei Bloodletters-Einheiten, drei Meuten | Dritte Wiederholung: passt wieder |
+| 06 | Standard-Kontingent, keine Bloodletters, zwei Meuten | Statt der Anhebung greift die Aufhebung: keine Obergrenze |
+| 07 | Standard-Kontingent, auswahlgleich zu 04 | Gegenprobe: dieselben Auswahlen, aber stumm — das Gatter am `increment` hängt am Kontingent |
+
+## `repeat-list-two-repeats-regiment-of-renown`
+
+Prüft, was passiert, wenn ein Modifikator **mehrere** `<repeat>` trägt: jede
+Wiederholung ist eine eigene Abfrage und steuert ihre eigenen Anwendungen bei
+— sie **addieren** sich. Beleg: im Kontingent „Marienburger Mercenary Army
+(EM-AB)" (`d1ca-0d07-b9d2-0ff1`) hängen am Kategorie-Verweis „Regiment of
+Renown" zwei Obergrenzen mit dem geschriebenen Wert 0, jede angehoben um eins
+je Auswahl der Kategorie „State troops" **und** je Auswahl der Kategorie
+„Militia".
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Weder Staatstruppen noch Miliz, ein Söldnerregiment | Beide Wiederholungen zählen null: der Basiswert 0 steht, die Grenze feuert |
+| 02 | Zwei Staatstruppen, **keine** Miliz, zwei Söldnerregimenter | Entscheidender Fall: additiv passt es, multiplikativ wäre gar keines erlaubt |
+| 03 | Dieselbe Armee mit einem Regiment zu viel | Die Grenze feuert bei drei |
+| 04 | Gespiegelt: zwei Miliz, keine Staatstruppen | Dieselbe Rechnung von der anderen Seite |
+| 05 | Zwei Staatstruppen **und** eine Miliz, drei Regimenter | Beide Beiträge stapeln sich |
+| 06 | Eine Staatstruppe, zwei Regimenter | Ein einzelner Schritt: genau eines wäre erlaubt |
+
+> **Wo die Quelle schweigt:** Weder Wiki noch XSD sagen ausdrücklich, wie
+> mehrere Wiederholungen eines Modifikators zusammenwirken. Das Szenario
+> leitet die additive Lesart aus der Wiki-Formulierung („ancestor of **one or
+> more** Repeats", „each time the Query is met") und aus drei weiteren
+> Fundstellen desselben Musters im Korpus ab — darunter eine mit **drei**
+> Wiederholungen —, die unter einer multiplikativen Lesart sinnlos würden.
+
+## `greater-than-self-blessed-spawning-slots`
+
+Prüft die `greaterThan`-Bedingung mit `scope="self"`: gezählt wird im Träger
+selbst, und die Bedingung hält nur **echt oberhalb** des geschriebenen Werts.
+Beleg: die Lizardmen-Einheit „Saurus Warriors" (`2258-e16e-24dd-6e85`) wandert
+über zwei verschachtelte Modifikator-Klammern aus Core nach Special und weiter
+nach Rare — die erste hält bei mehr als null, die zweite bei mehr als einer
+Auswahl aus der Gruppe „Blessed Spawning Warrios" (`bd30-a138-fa7a-ecbe`). Die
+Gruppe ist auf zwei Mitglieder gedeckelt, die baubaren Zählerstände sind also
+genau 0, 1 und 2.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Regimenter, keine Option | Beide bleiben Core — bei null hält „mehr als null" nicht |
+| 02 | Eine Option im ersten Regiment | Nur dieses wird Special; die Core-Pflicht meldet genau ein fehlendes Core-Regiment |
+| 03 | Je eine Option in beiden | Beide Special — bei eins hält „mehr als eins" noch nicht |
+| 04 | Je zwei Optionen in beiden | Beide Rare, und die Rare-Obergrenze feuert |
+| 05 | Zwei Optionen nur im ersten Regiment | Rahmen-Beweis: das andere bleibt Core, ein kontingentweiter Zähler läse null Core |
+
+## `id-scope-repeat-powerhouses-per-pack`
+
+Prüft einen `<repeat>`, dessen `scope` eine **Eintrags-Id** ist: derselbe
+Rahmen wie bei einer Bedingung mit Eintrags-Id, und der Modifikator greift je
+gezähltem Schritt einmal. Beleg: die Skaven-Option „Powerhouses"
+(`259c-906d-4b40-2b31`, Grundkosten 0) trägt einen Aufschlag von 10 Punkten je
+„Ogre Pack" im Rahmen der Einheit „Mutant Rat Ogres" (`7a4a-301b-af31-9ee0`) —
+die Option hängt dabei zwei Ebenen unter dem Rahmen. Gemessen wird über das
+eingestellte Punktebudget.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Pack, Option gewählt | Genau eine Anwendung: der Aufschlag trennt sich von den Grundkosten der Option |
+| 02 | Zwei Packs | Zweite Wiederholung |
+| 03 | Drei Packs | Dritte Wiederholung |
+| 04 | Drei Packs, **ohne** Option | Nullpunkt: die Differenz zu 03 ist genau dreimal zehn |
+| 05 | Wie 03, Limit einen Punkt darüber | Gegenprobe: das Budget schweigt |
+| 06 | Drei Packs, zwei andere Optionen derselben Bauart | Zwei unabhängige Ablesungen desselben Musters |
+| 07 | Zwei Einheiten mit zwei und drei Packs, Option nur in der ersten | Rahmen-Beweis: ein kontingentweiter Rahmen läge dreißig Punkte höher |
+
+> **Offen erklärt:** Ob `includeChildSelections="false"` hier enger zählt als
+> `"true"`, ist auf diesen Daten **nicht** beobachtbar — kein `entryLink` im
+> Korpus hängt das „Ogre Pack" tiefer als direkt unter die Einheit. Das
+> Szenario sagt das, statt einen Roster zu erfinden.

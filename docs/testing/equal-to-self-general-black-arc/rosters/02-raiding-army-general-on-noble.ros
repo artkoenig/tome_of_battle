@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="etsg-02" name="ETSG 02 - Raiding Army: General auf dem Noble, Highborn ohne General" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored equal-to-self-general-black-arc E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Spiegelbild zu Roster 01: derselbe Aufbau, die General-Aufwertung sitzt
+         aber auf dem ANDEREN Charakter. -->
+    <force id="force-1" name="The Raiding Army (DE-AB)" entryId="4b5b-aebb-1526-91bb" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <!-- Highborn OHNE eigenen General-Verweis (7a1e-c134-434e-3313):
+             sein equalTo-Zaehler im self-Rahmen ist 0. -->
+        <selection id="sel-highborn" name="Highborn" entryId="79af-7092-a9a9-393d" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-highborn-handweapon" name="Hand Weapon" entryId="5dc5-1087-8483-1d9b" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-noble" name="Noble" entryId="bd43-41c0-298e-22be" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-noble-handweapon" name="Hand Weapon" entryId="2378-4502-c0b0-c8b0" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <!-- Der EIGENE General-Verweis des Noble (entryLink 030a-4b09-0210-225c
+                 auf dieselbe gst-Aufwertung 1b7c-2c90-6d96-28c9). Genau ihn benennt
+                 die equalTo-Bedingung des Noble: Ist 1 = Grenze 1. -->
+            <selection id="sel-noble-general" name="General" entryId="1b7c-2c90-6d96-28c9" entryLinkId="030a-4b09-0210-225c" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

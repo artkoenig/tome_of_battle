@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="isrpp-06" name="ISRPP 06 - Zweite Lesart derselben Bauform: DREI Ogre Packs mit Quadrupedal (5 je Pack) UND Resilient (12 je Pack) - Summe 246, Limit 245" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored id-scope-repeat-powerhouses-per-pack E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="245.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Hell Pit (WD-311)" entryId="9f0b-5346-a3bc-b5fe" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven">
+      <selections>
+        <selection id="sel-unit" name="Mutant Rat Ogres" entryId="7a4a-301b-af31-9ee0" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-unit-special" name="Special" entryId="43cc-fc3f-35a7-8d03" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-pack" name="Ogre Pack" entryId="8ea5-88f7-6636-7aaf" entryLinkId="" number="3" type="model" collective="false"/>
+            <selection id="sel-ratogre" name="Rat Ogre" entryId="40c5-05e4-da1d-6194" entryLinkId="" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="sel-quadrupedal" name="Quadrupedal" entryId="d9b9-4315-f6b5-e02e" entryLinkId="" number="1" type="upgrade" collective="false"/>
+                <selection id="sel-resilient" name="Resilient" entryId="b03e-5d16-19d6-d9fa" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

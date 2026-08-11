@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "name": "greater-than-self-blessed-spawning-slots",
+  "description": "condition type=greaterThan mit scope=self zaehlt STRIKT und IM TRAEGER (Lizardmen, Saurus Warriors 2258-e16e-24dd-6e85). Zwei verschachtelte modifierGroups gatten die Kategoriezugehoerigkeit an der Selbst-Zaehlung der Gruppe Blessed Spawning Warrios (bd30-a138-fa7a-ecbe): >0 schiebt das Regiment von Core (64bf-...) nach Special (43cc-...), >1 weiter nach Rare (e94b-...). Bei GENAU dem hingeschriebenen Wert haelt die Bedingung nicht — 0 Optionen bleiben Core, 1 Option bleibt Special. Beobachtbar gemacht ueber die kategoriezaehlenden .gst-Grenzen Core min 2 (35c2-d478-392a-aeb1), Special max 3 (16f0-6e5b-55d0-4102) und Rare max 1 (0a44-2d3f-adfe-f3a1) bei costLimit 1000 sowie ueber die Kategorie-Anker des Kontingents Standard (LM-AB) 8fcd-0130-a0ff-b7bc. Zwei Regimenter je Roster: die Faelle 02 und 05 pinnen, dass die Zaehlung im Traeger und nicht im Kontingent stattfindet.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-two-regiments-no-spawning-core.ros",
+      "description": "Zwei Saurus-Warriors-Regimenter, KEINE Blessed-Spawning-Option. Selbst-Zaehlung je Traeger 0: greaterThan 0 haelt NICHT (nicht strikt groesser), greaterThan 1 erst recht nicht. Beide bleiben Core: Core-Ist 2 >= 2 (35c2-... stumm), Special-Ist 0, Rare-Ist 0. Waere greaterThan als >= gelesen, waeren beide Special und die Core-Untergrenze wuerde mit Ist 0 feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "35c2-d478-392a-aeb1",
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Core",
+            "current": 2,
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "43cc-fc3f-35a7-8d03",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Special",
+            "current": 0,
+            "effectiveMax": 3,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Rare",
+            "current": 0,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-regiment-one-spawning-special.ros",
+      "description": "Zwei Regimenter, nur Regiment A traegt GENAU EINE Blessed-Spawning-Option (Tzunki). A: Selbst-Zaehlung 1 => greaterThan 0 haelt => Special statt Core; greaterThan 1 haelt NICHT => kein Rare. B: Selbst-Zaehlung 0 => bleibt Core. Core-Ist 1 < 2 => 35c2-... feuert. Der Ist-Wert 1 ist die eigentliche Aussage: bei kontingentweiter Zaehlung waeren beide Special und der Ist waere 0.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 1, "bound": 2 }
+        ],
+        "absent": [
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Core",
+            "current": 1,
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "43cc-fc3f-35a7-8d03",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Special",
+            "current": 1,
+            "effectiveMax": 3,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Rare",
+            "current": 0,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-regiments-one-spawning-each-special.ros",
+      "description": "Beide Regimenter tragen je GENAU EINE Option. Je Traeger Selbst-Zaehlung 1: beide Special, keines Rare. Core-Ist 0 => 35c2-... feuert mit Ist 0. Special-Ist 2 <= 3 (16f0-... stumm), Rare-Ist 0 (0a44-... stumm). Der absent-Eintrag fuer 0a44-... ist die Kernaussage: bei kontingentweiter Zaehlung saehe jeder Traeger 2 (> 1) und beide waeren Rare (Ist 2 > 1).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": [
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Core",
+            "current": 0,
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "43cc-fc3f-35a7-8d03",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Special",
+            "current": 2,
+            "effectiveMax": 3,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Rare",
+            "current": 0,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-regiments-two-spawnings-each-rare.ros",
+      "description": "Beide Regimenter tragen je ZWEI Optionen (Tzunki + Tlazcotl) — der von der Gruppen-Obergrenze 1239-2402-7195-3d05 (max 2) erlaubte Hoechststand. Je Traeger Selbst-Zaehlung 2: greaterThan 0 UND greaterThan 1 halten, die zweite Klammer nimmt Special wieder weg und setzt Rare. Rare-Ist 2 > 1 => 0a44-... feuert; Special-Ist 0 => 16f0-... stumm; Core-Ist 0 => 35c2-... feuert. Die Gruppen-Obergrenze selbst ist mit Ist 2 = Grenze 2 eingehalten.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 },
+          { "limitId": "0a44-2d3f-adfe-f3a1", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "16f0-6e5b-55d0-4102",
+          "1239-2402-7195-3d05"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Core",
+            "current": 0,
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "43cc-fc3f-35a7-8d03",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Special",
+            "current": 0,
+            "effectiveMax": 3,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Rare",
+            "current": 2,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-only-one-regiment-two-spawnings-rare.ros",
+      "description": "Zwei Regimenter, nur Regiment A traegt ZWEI Optionen. A: Selbst-Zaehlung 2 => Rare. B: Selbst-Zaehlung 0 => Core. Core-Ist 1 < 2 => 35c2-... feuert mit Ist 1; Rare-Ist 1 <= 1 => 0a44-... stumm; Special-Ist 0. Nachbarschaftsprobe der zweiten Stufe: bei kontingentweiter Zaehlung waere auch B Rare (Rare-Ist 2 wuerde 0a44-... reissen, Core-Ist waere 0).",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 1, "bound": 2 }
+        ],
+        "absent": [
+          "16f0-6e5b-55d0-4102",
+          "0a44-2d3f-adfe-f3a1",
+          "1239-2402-7195-3d05"
+        ],
+        "capabilities": [
+          {
+            "targetDefId": "64bf-efb4-9978-26df",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Core",
+            "current": 1,
+            "effectiveMin": 2,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "43cc-fc3f-35a7-8d03",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Special",
+            "current": 0,
+            "effectiveMax": 3,
+            "isHidden": false
+          },
+          {
+            "targetDefId": "e94b-6a54-8779-cd60",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "8fcd-0130-a0ff-b7bc",
+            "name": "Rare",
+            "current": 1,
+            "effectiveMax": 1,
+            "isHidden": false
+          }
+        ]
+      }
+    }
+  ]
+}

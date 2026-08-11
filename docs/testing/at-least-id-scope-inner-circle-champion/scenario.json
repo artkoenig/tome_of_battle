@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-id-scope-inner-circle-champion",
+  "description": "Pinnt den Bezugsrahmen einer <condition ... scope=\"<Eintrags-Id>\"> fest — eines scope-Werts, der KEIN Schluesselwort (parent/roster/force/self/unit) ist, sondern die Id des selectionEntry 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f. Zwei Stellen im Armeebuch The Empire tragen denselben Modifikator 'increment 1 auf das Merkmal S (b690-4bc0-bb73-267b)' unter derselben or-Gruppe aus zwei atLeast-1-Bedingungen mit scope=\"1d77-9e6e-a6ab-573f\" und childId=\"6e1d-9e41-114f-8128\" bzw. childId=\"8229-6f9b-ba74-c239\": der Profil-infoLink 'Elite' b968-23a8-1f42-6af7 (Ziel 15ce-32a2-92e2-1279, Basis-S 3) direkt an der Einheit und der Profil-infoLink 'Elite Champion' 7310-540c-a461-d9e9 (Ziel 73cc-0129-e7fe-ea53, Basis-S 3) am Kommandogruppen-Upgrade 'First Knight' 4267-ee8f-ec8c-e0f9, also einem Enkel der Einheit. Der Rahmen ist die naechste umschliessende Auswahl, die auf diese Eintrags-Id aufloest (den Traeger eingeschlossen) — mithin die eigene Einheit, nicht das Kontingent und nicht die Roster. Vier Roster: eine Einheit mit Inner Circle (S 4 in beiden Profilen), dieselbe ohne (S 3), sowie zwei Roster mit ZWEI Ritterregimentern in EINEM Kontingent, in denen der 'First Knight' einmal in der Einheit OHNE (S 3) und einmal in der Einheit MIT Inner Circle (S 4) steht. Das Paar in einem Kontingent unterscheidet den Eintrags-Id-Rahmen von einer kontingent- oder rosterweiten Zaehlung. Beobachtet wird ausschliesslich ueber expect.capabilities[].infoElements[].characteristics; zaehlende Grenzen sind nur als absent-Aussagen dabei.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-single-unit-with-inner-circle-s4.ros",
+      "description": "Ein Ritterregiment 'Knights of the Knightly Orders' (5 Ritter, Pflichtausruestung Shield/Lance/Hand Weapon/Full Plate Armour/Empire Warhorse) mit dem Kommandogruppen-Upgrade 'First Knight' UND der Aufwertung 'Knights of the Inner Circle' (entryLink 6e1d-9e41-114f-8128 -> selectionEntry 2cbd-fee0-a336-0e5d). Im Rahmen der Einheit 1d77-9e6e-a6ab-573f zaehlt die erste Bedingung der or-Gruppe 1 >= 1, also greift der increment 1 auf S an BEIDEN Stellen: das Einheiten-Profil 'Elite' zeigt S 4 statt 3, das Champion-Profil 'Elite Champion' ebenfalls S 4 statt 3. WS bleibt 4 und A bleibt 1 bzw. 2 — der Modifikator trifft nur S. Fuer den Champion ist der Rahmen ein Vorfahre, nicht der Traeger: eine Lesart, die scope=\"<Eintrags-Id>\" wie scope=\"self\" behandelte, liesse ihn auf 3 stehen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "f78b-9ad2-c515-7c0a",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "e6e2-1254-e3fb-a17b",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff"
+        ],
+        "capabilities": [
+          {
+            "defId": "1d77-9e6e-a6ab-573f",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "b968-23a8-1f42-6af7",
+                "kind": "profile",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "1" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "4267-ee8f-ec8c-e0f9",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "7310-540c-a461-d9e9",
+                "kind": "profile",
+                "name": "First Knight",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "2" }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "1d77-9e6e-a6ab-573f" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-single-unit-without-inner-circle-s3.ros",
+      "description": "Bis auf die fehlende Inner-Circle-Auswahl byte-gleich zu Roster 01. Im Rahmen der Einheit zaehlen beide Bedingungen der or-Gruppe 0, also greift der increment nicht: das Einheiten-Profil 'Elite' steht auf seinem Basis-S 3 (15ce-32a2-92e2-1279), das Champion-Profil 'Elite Champion' ebenfalls auf 3 (73cc-0129-e7fe-ea53). Der Kontrast zu Roster 01 isoliert genau den Modifikator; alle uebrigen Merkmale sind in beiden Rostern gleich.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "f78b-9ad2-c515-7c0a",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "e6e2-1254-e3fb-a17b",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff"
+        ],
+        "capabilities": [
+          {
+            "defId": "1d77-9e6e-a6ab-573f",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "b968-23a8-1f42-6af7",
+                "kind": "profile",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "3" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "1" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "4267-ee8f-ec8c-e0f9",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "7310-540c-a461-d9e9",
+                "kind": "profile",
+                "name": "First Knight",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "3" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "2" }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "1d77-9e6e-a6ab-573f" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-two-units-champion-in-unit-without-inner-circle.ros",
+      "description": "Rahmenbeweis: ZWEI Instanzen derselben Einheit 1d77-9e6e-a6ab-573f in EINEM Kontingent 'Standard (EM-AB)'. Regiment A traegt 'Knights of the Inner Circle', hat aber keinen Champion; Regiment B traegt den 'First Knight', aber keinen Inner Circle. Der Champion steht damit unter der Instanz, die die gezaehlte Aufwertung NICHT traegt: sein Profil 'Elite Champion' bleibt auf Basis-S 3. Eine kontingent- oder rosterweite Zaehlung faende den Inner Circle des Regiments A und ergaebe 4. Ueber die Einheiten-Profile selbst sagt dieses Roster nichts aus — beide Einheiten-Slots tragen dieselbe Definitions-Id und liessen sich nur ueber einen Slot-Pfad auseinanderhalten; der Champion-Slot dagegen ist eindeutig (die zweite, nicht gewaehlte Champion-Stelle waere hoechstens ein Angebots-Anker, deshalb die Einschraenkung anchorKind occupied).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "f78b-9ad2-c515-7c0a",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "e6e2-1254-e3fb-a17b",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff"
+        ],
+        "capabilities": [
+          {
+            "defId": "4267-ee8f-ec8c-e0f9",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "7310-540c-a461-d9e9",
+                "kind": "profile",
+                "name": "First Knight",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "3" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "2" }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "1d77-9e6e-a6ab-573f" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-two-units-champion-in-unit-with-inner-circle.ros",
+      "description": "Die Gegenprobe zu Roster 03 mit derselben Kontingent-Besetzung: Regiment A traegt 'Knights of the Inner Circle' UND den 'First Knight', Regiment B weder noch. Der Champion steht jetzt unter der Instanz, die die gezaehlte Aufwertung traegt: sein Profil 'Elite Champion' zeigt S 4. Die zweite, aufwertungslose Instanz derselben Einheit im selben Kontingent unterdrueckt den increment also nicht — der Rahmen ist die eine umschliessende Instanz, nicht die Gesamtheit aller Instanzen dieses Eintrags. Auch hier bleiben die Einheiten-Profile unbehauptet, weil beide Einheiten-Slots dieselbe Definitions-Id tragen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "1e3a-4402-70e8-2b08",
+          "58c4-d930-895a-0b74",
+          "f0ce-7b2e-0be1-9dd1",
+          "128a-6411-f218-72fc",
+          "50ac-f86f-cfa1-d050",
+          "9368-e62e-157c-023e",
+          "8d09-7d84-af64-cb83",
+          "e635-0971-2920-856c",
+          "e369-888c-81f7-bf21",
+          "f78b-9ad2-c515-7c0a",
+          "22cd-67c5-1c2c-2266",
+          "ae52-6868-5949-892c",
+          "0cda-8c44-bc6f-1e6a",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "e6e2-1254-e3fb-a17b",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff"
+        ],
+        "capabilities": [
+          {
+            "defId": "4267-ee8f-ec8c-e0f9",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "7310-540c-a461-d9e9",
+                "kind": "profile",
+                "name": "First Knight",
+                "characteristics": [
+                  { "typeId": "b690-4bc0-bb73-267b", "value": "4" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "2" }
+                ]
+              }
+            ]
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNRESOLVED_SCOPE", "scope": "1d77-9e6e-a6ab-573f" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="gtsbs-04" name="GTSBS 04 – Beide Regimenter mit je ZWEI Blessed-Spawning-Optionen: beide Rare, Rare-Obergrenze reisst" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored greater-than-self-blessed-spawning-slots E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="1000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (LM-AB)" entryId="8fcd-0130-a0ff-b7bc" catalogueId="19e3-92e5-1158-4551" catalogueRevision="1" catalogueName="Lizardmen (6th definitive edition)">
+      <selections>
+        <!-- Regiment A: ZWEI Optionen (Tzunki 10 pts + Tlazcotl 20 pts).
+             Selbst-Zaehlung von bd30-a138-fa7a-ecbe = 2 — der von der
+             Gruppen-Obergrenze 1239-2402-7195-3d05 (max 2, scope=parent)
+             erlaubte Hoechststand.
+             greaterThan 0 haelt (2 > 0) => erste Klammer: +Special, -Core.
+             greaterThan 1 haelt (2 > 1) => zweite Klammer: +Rare, -Special.
+             Effektive Kategorien von A: {Rare}. -->
+        <selection id="sel-swa" name="Saurus Warriors" entryId="2258-e16e-24dd-6e85" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-swa-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-swa-models" name="Saurus Warrior" entryId="5005-7199-18bd-22ca" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-swa-hw" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d534-9465-25dd-bcc0" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="f11f-b61d-fb7d-720a" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-scaly" name="Scaly Skin (6+)" entryId="2481-9ff2-5fe7-f381" entryLinkId="e899-01e5-cba3-601f" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-tzunki" name="Blessed Spawning of Tzunki, the Water God" entryId="5dcd-c767-b2a6-5ff4" entryLinkId="a347-553a-afa1-d025" entryGroupId="bd30-a138-fa7a-ecbe" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swa-tlazcotl" name="Blessed Spawning of Tlazcotl, the Impassive" entryId="31c1-f8e7-c99d-90cc" entryLinkId="51c7-4aa0-0f5c-bb0c" entryGroupId="bd30-a138-fa7a-ecbe" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <!-- Regiment B: ebenfalls zwei Optionen => ebenfalls {Rare}.
+             Rare-Ist 2 gegen die .gst-Obergrenze max 1 (0a44-...) bei 1000 pts. -->
+        <selection id="sel-swb" name="Saurus Warriors" entryId="2258-e16e-24dd-6e85" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-swb-core" name="Core" entryId="64bf-efb4-9978-26df" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-swb-models" name="Saurus Warrior" entryId="5005-7199-18bd-22ca" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-swb-hw" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d534-9465-25dd-bcc0" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="f11f-b61d-fb7d-720a" entryGroupId="be2a-754f-1943-edaa" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-scaly" name="Scaly Skin (6+)" entryId="2481-9ff2-5fe7-f381" entryLinkId="e899-01e5-cba3-601f" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-tzunki" name="Blessed Spawning of Tzunki, the Water God" entryId="5dcd-c767-b2a6-5ff4" entryLinkId="a347-553a-afa1-d025" entryGroupId="bd30-a138-fa7a-ecbe" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-swb-tlazcotl" name="Blessed Spawning of Tlazcotl, the Impassive" entryId="31c1-f8e7-c99d-90cc" entryLinkId="51c7-4aa0-0f5c-bb0c" entryGroupId="bd30-a138-fa7a-ecbe" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

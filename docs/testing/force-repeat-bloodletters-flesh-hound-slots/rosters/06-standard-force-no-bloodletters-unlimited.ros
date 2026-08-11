@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="frbfh-06" name="FRBFH 06 - Standard (HC-AB + BC-AB): keine Bloodletters, zwei Einheiten Flesh Hounds (Grenze per set -1 aufgehoben)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored force-repeat-bloodletters-flesh-hound-slots E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000"/>
+  </costLimits>
+  <forces>
+    <!-- Kontingent "Standard (HC-AB + BC-AB)" d403-5cc9-152c-2093 - NICHT die
+         Daemonic Legion. Die notInstanceOf-Bedingung haelt => set -1 setzt
+         7f35-5f3f-42c9-be19 auf den HINGESCHRIEBENEN Sentinel -1 = unbegrenzt.
+         Der increment-Modifikator ist hier ungegattert-aus (instanceOf haelt
+         nicht), sein <repeat> spielt keine Rolle. Zwei Einheiten Flesh Hounds
+         sind legal, obwohl in Roster 01 (Daemonic Legion, 0 Bloodletters)
+         bereits EINE gegen die Basis 0 feuerte. -->
+    <force id="force-1" name="Standard (HC-AB + BC-AB)" entryId="d403-5cc9-152c-2093" catalogueId="6b83-a975-a500-41c3" catalogueRevision="1" catalogueName="Forces of Chaos">
+      <selections>
+        <selection id="sel-fh" name="Flesh Hounds" entryId="eaf6-a701-f67e-7c26" entryLinkId="" number="2" type="unit" collective="false">
+          <selections>
+            <selection id="sel-fh-models" name="Flesh hound" entryId="51c0-1582-976e-d0bb" entryLinkId="" number="5" type="model" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

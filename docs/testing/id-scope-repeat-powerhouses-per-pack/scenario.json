@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "name": "id-scope-repeat-powerhouses-per-pack",
+  "description": "Pinnt einen <repeat field=\"selections\" scope=\"7a4a-301b-af31-9ee0\" value=\"1\" repeats=\"1\" includeChildSelections=\"false\" childId=\"8ea5-88f7-6636-7aaf\"> fest, dessen scope KEIN Schluesselwort, sondern die Id eines Katalog-Eintrags ist: 7a4a-301b-af31-9ee0 benennt die Einheit 'Mutant Rat Ogres' des Skaven-Katalogs. Der Rahmen ist damit dieselbe Zelle wie bei einer id-skopierten condition (Praezedenz: greater-than-id-scope-brain-transplant) - die naechste umschliessende Selektion, die auf diese Id aufloest. Gezaehlt wird das Modell 'Ogre Pack' 8ea5-88f7-6636-7aaf, und der getragene modifier type=\"increment\" field=\"ecfa-8486-4f6c-c249\" value=\"10\" der Option 'Powerhouses' 259c-906d-4b40-2b31 (Grundkosten 0 pts) wird einmal je gezaehltem Schritt angewandt: 10 pts JE Ogre Pack der eigenen Einheit. Der Traeger haengt zwei Ebenen unter dem Rahmen (Einheit -> Aufwertung 'Rat Ogre' 40c5-05e4-da1d-6194 -> Gruppe 'Options' a0a2-1a3d-86d3-4a67), der Rahmen ist also ein VORFAHRE des Traegers. Drei Stuetzstellen variieren allein die Packzahl (1/2/3 -> 75/150/225), ein Nullpunkt ohne Option pinnt die 195 der drei Packs allein, eine Gegenprobe mit Limit einen Punkt UEBER der Summe fordert Stille, ein Roster mit den Geschwister-Optionen 'Quadrupedal' d9b9-4315-f6b5-e02e (5 je Pack) und 'Resilient' b03e-5d16-19d6-d9fa (12 je Pack) liest dieselbe Bauform mit anderen Werten zweifach unabhaengig, und ein Roster mit ZWEI Einheiten unterschiedlicher Packzahl (2 mit Option, 3 ohne) fordert, dass der Rahmen die Einheit des Traegers ist und nicht das Kontingent (345, nicht 375). Beobachtbar gemacht wird die Summe ueber die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249, deren 'actual' die verplante Gesamtsumme traegt; das Punktelimit steht je Roster eine Einheit unter der abgeleiteten Summe.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-one-pack-powerhouses.ros",
+      "description": "Kleinste legale Einheit im Kontingent 'Hell Pit (WD-311)' 9f0b-5346-a3bc-b5fe (das einzige, in dem die basis-verborgene Einheit eingeblendet wird): EIN 'Ogre Pack' (65 pts, min 1) und die Pflicht-Aufwertung 'Rat Ogre' (0 pts, min 1 / max 1), darunter die Option 'Powerhouses' (Grundkosten 0 pts). Der Rahmen zaehlt genau 1 Ogre Pack, der repeat wendet den increment 10 also GENAU EINMAL an. Summe 65 + 0 + 0 + 10 = 75, Punktelimit 74 - das Budget feuert mit Ist 75. Dieser Fall isoliert die Grundkosten der Option (0) gegen ihren Aufschlag (10): bliebe der repeat wirkungslos, waere die Summe 65 und das Budget still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 75, "bound": 74 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-two-packs-powerhouses.ros",
+      "description": "Baugleich zu Roster 01, allein die Packzahl steht auf 2 (2 x 65 = 130). Der Rahmen zaehlt 2, der increment 10 greift zweimal: Summe 130 + 20 = 150, Punktelimit 149 - das Budget feuert mit Ist 150. Gegenueber Roster 01 waechst die Summe um genau 75 = 65 Modellkosten + 10 Aufschlag. Eine einmalige Anwendung ergaebe 140, gar keine 130.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 150, "bound": 149 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-three-packs-powerhouses.ros",
+      "description": "Baugleich zu Roster 01/02, Packzahl 3 (3 x 65 = 195). Der Rahmen zaehlt 3, der increment 10 greift dreimal: Summe 195 + 30 = 225, Punktelimit 224 - das Budget feuert mit Ist 225. Die drei Stuetzstellen 1/2/3 -> 75/150/225 legen die Gerade eindeutig fest: Steigung 75 pts je Pack, davon 65 Modellkosten und 10 Aufschlag; der Achsenabschnitt ist 0, die Option kostet ohne Pack nichts.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 225, "bound": 224 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-three-packs-no-option.ros",
+      "description": "Der Nullpunkt zu Roster 03: dieselben drei Ogre Packs und derselbe Rat Ogre, aber KEINE Option - der Traeger des modifiers fehlt. Damit entfaellt der Aufschlag vollstaendig: Summe 195, Punktelimit 194, das Budget feuert mit Ist 195. Die Differenz zu Roster 03 ist exakt 30 = 3 Packs x increment 10, und sie ist damit unabhaengig von der Frage gemessen, was ein Ogre Pack kostet.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 195, "bound": 194 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-three-packs-powerhouses-within-budget.ros",
+      "description": "Gegenprobe zu Roster 03: byte-gleicher Aufbau, allein das Punktelimit steht auf 226 - einen Punkt UEBER der abgeleiteten Summe 225. Das Budget muss still bleiben. Zusammen mit Roster 03 (Limit 224, feuert mit Ist 225) klammert das die Summe von beiden Seiten ein: sie ist groesser als 224 und hoechstens 226. Ein Aufschlag, der zu gross gerechnet wuerde (etwa 10 pts je Pack UND je Rat Ogre, oder ein kontingentweiter Zaehlrahmen), liesse das Budget hier feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "budget::ecfa-8486-4f6c-c249",
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/06-three-packs-quadrupedal-and-resilient.ros",
+      "description": "Dieselbe Bauform, zweimal unabhaengig gelesen: drei Ogre Packs (195) und statt Powerhouses die beiden Geschwister-Optionen 'Quadrupedal' d9b9-4315-f6b5-e02e (increment 5, gleicher repeat) und 'Resilient' b03e-5d16-19d6-d9fa (increment 12, gleicher repeat). Beide Grundkosten sind 0. Summe 195 + 3 x 5 + 3 x 12 = 195 + 15 + 36 = 246, Punktelimit 245 - das Budget feuert mit Ist 246. Die Gruppe 'Options' (max 2 = 8fcf-0d32-a63c-37a1) ist mit genau zwei Optionen exakt erreicht, nicht ueberschritten. Waere jeder Aufschlag nur einmal angewandt, ergaebe sich 212; griffe nur einer der beiden repeats, 222 bzw. 236; zaehlte ein repeat den Traeger statt der Packs, ebenfalls nicht 246. Die Merkmals-Wirkungen der beiden Optionen (Mv +1 durch Quadrupedal, T +1 durch Resilient) beruehren die Punkte nicht und werden hier nicht behauptet.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 246, "bound": 245 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/07-two-units-frame-per-unit.ros",
+      "description": "Der Rahmenbeweis: ZWEI Einheiten 'Mutant Rat Ogres' im selben Kontingent (die Einheit traegt keine eigene Stueckzahl-Grenze, zwei Selektionen sind also baubar) mit UNTERSCHIEDLICHER Packzahl. Einheit A hat 2 Packs (130) und traegt Powerhouses, Einheit B hat 3 Packs (195) und keine Option. Weil der id-wertige scope die JEWEILS eigene umschliessende Einheit benennt, wird die Option nach As Packzahl bepreist: 2 x 10 = 20. Summe 130 + 20 + 195 = 345, Punktelimit 344 - das Budget feuert mit Ist 345. Zaehlte der Rahmen kontingent- oder rosterweit (5 Packs), waeren es 50 pts Aufschlag und damit 375; zaehlte er Bs Packzahl, 355; griffe der repeat gar nicht, 335. Ueber capabilities wird hier bewusst nichts behauptet: jede benutzte Definition steht zweimal unter demselben frameDefId.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 345, "bound": 344 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "c161-77b3-0542-5ff1",
+          "9155-53b8-0a0e-9b94",
+          "d83c-1177-f544-0764",
+          "3836-686c-435d-6ac8",
+          "14e8-5762-d2d0-ee18",
+          "01af-64b4-bcee-cfdb"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "7a4a-301b-af31-9ee0" }
+          ]
+        }
+      }
+    }
+  ]
+}

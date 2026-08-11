@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="frbfh-05" name="FRBFH 05 - Daemonic Legion (SoC): drei Einheiten Bloodletters, drei Einheiten Flesh Hounds (Grenze 3, still)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored force-repeat-bloodletters-flesh-hound-slots E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="3000"/>
+  </costLimits>
+  <forces>
+    <!-- Wie Roster 04, aber eine DRITTE Einheit Bloodletters: der <repeat> zaehlt
+         3 Treffer => der increment +1 greift DREIMAL => Grenze 0 + 3 = 3.
+         Dieselben drei Einheiten Flesh Hounds, die in Roster 04 feuerten, sind
+         hier legal. Dritte Wiederholung - der Faktor waechst weiter, er saettigt
+         nicht bei zwei. -->
+    <force id="force-1" name="Daemonic Legion (SoC)" entryId="93f4-7522-86e9-7d45" catalogueId="6b83-a975-a500-41c3" catalogueRevision="1" catalogueName="Forces of Chaos">
+      <selections>
+        <selection id="sel-bl-1" name="Bloodletters" entryId="7dc4-fb32-003b-c289" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-bl-1-models" name="Bloodletter" entryId="f260-1878-a029-72d3" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-bl-1-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="b34f-43d3-bb62-363d" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bl-1-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="c1a8-c1b7-857e-1d9e" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-bl-2" name="Bloodletters" entryId="7dc4-fb32-003b-c289" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-bl-2-models" name="Bloodletter" entryId="f260-1878-a029-72d3" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-bl-2-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="b34f-43d3-bb62-363d" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bl-2-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="c1a8-c1b7-857e-1d9e" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-bl-3" name="Bloodletters" entryId="7dc4-fb32-003b-c289" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-bl-3-models" name="Bloodletter" entryId="f260-1878-a029-72d3" entryLinkId="" number="10" type="model" collective="false"/>
+            <selection id="sel-bl-3-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="b34f-43d3-bb62-363d" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-bl-3-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="c1a8-c1b7-857e-1d9e" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+        <selection id="sel-fh" name="Flesh Hounds" entryId="eaf6-a701-f67e-7c26" entryLinkId="" number="3" type="unit" collective="false">
+          <selections>
+            <selection id="sel-fh-models" name="Flesh hound" entryId="51c0-1582-976e-d0bb" entryLinkId="" number="5" type="model" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
