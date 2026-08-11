@@ -7,8 +7,8 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 106,
-    "uncovered": 24
+    "covered": 107,
+    "uncovered": 23
   },
   "cells": [
     {
@@ -112,109 +112,6 @@
             "scope": "unit",
             "childId": "7b8d-8405-0e74-9f46",
             "repeats": "1"
-          }
-        }
-      ]
-    },
-    {
-      "key": "condition|lessThan|self|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "lessThan",
-        "scope": "self",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 29,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 6,
-        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 19
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
-            "name": "Highborn"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "self",
-            "childId": "ba90-e917-dbad-292c"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
-            "name": "Highborn"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "self",
-            "childId": "4c8c-ab06-0b67-d4e8"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "infoLink",
-            "id": "5c2e1a49-8ece-4726-8d67-81eb7b45df58",
-            "name": "Noble"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "infoLinks",
-            "infoLink",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "lessThan",
-            "field": "selections",
-            "scope": "self",
-            "childId": "e26c-c1cc-c821-d48e"
           }
         }
       ]

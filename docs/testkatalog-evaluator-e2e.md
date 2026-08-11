@@ -168,7 +168,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
 | [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
 | [`at-least-self-equipment-save`](testing/at-least-self-equipment-save/) | Definitive Bretonnia + Mercenaries | 7 |
-| **Summe** | | **388** |
+| [`less-than-self-mount-and-weapon-gate`](testing/less-than-self-mount-and-weapon-gate/) | Definitive Dark Elves + Mercenaries | 5 |
+| **Summe** | | **393** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2079,3 +2080,26 @@ Der geschriebene Basiswert ist 7.
 > offen — ein Lord *ohne* schwere Rüstung ist sonst nicht baubar, und der
 > Basiswert wäre nie sichtbar. Diese Grenzen stehen deshalb in keiner der
 > beiden Erwartungslisten; Roster 06 ist das konforme Gegenstück.
+
+## `less-than-self-mount-and-weapon-gate`
+
+Prüft die `lessThan`-Bedingung mit `scope="self"`, deren `childId` eine
+**Gruppen-Id** benennt (§7.7/§13.2 der Formatdoku): gezählt wird im Rahmen des
+Trägers, was unter ihm steht — eine Auswahl **innerhalb** der benannten Gruppe
+zählt für die Gruppe —, und `lessThan 1` heißt schlicht „nichts davon
+vorhanden". Beleg: der Highborn (`79af-7092-a9a9-393d`, Dark Elves) trägt an
+seinem Profil-Verweis (`7ae07422-6715-4692-aeb9-89fbd4ed033f`) acht
+`decrement`-Modifikatoren auf `Sv`; einer davon hängt an einer `and`-Gruppe aus
+„kein Reittier" (`ba90-e917-dbad-292c`), „Schild vorhanden"
+(`0b9c-d3ff-6535-74cd`) und „keine Nahkampfwaffe" (`4c8c-ab06-0b67-d4e8`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Highborn nur mit seinen Pflichtkindern | Allein der bedingungslose Abzug greift — er nagelt den Modifikator ohne jede Bedingung fest |
+| 02 | Zusätzlich Schild | Messgrundlage: Schild-Abzug **und** der Abzug der `and`-Gruppe greifen |
+| 03 | Schild **und** Großwaffe aus der Gruppe „CC Weapons" | Die `and`-Gruppe fällt an ihrem Waffen-Glied: ein Abzug weniger |
+| 04 | Schild **und** Dunkler Pegasus aus der Gruppe „Mounts" | Die `and`-Gruppe fällt an ihrem Reittier-Glied. Der Pegasus ist gewählt, weil er als einziges Reittier keinen eigenen Abzug trägt — sonst wäre die Wirkung nicht zu trennen |
+| 05 | Schild **und** Dunkles Streitross | Kontrolle: hier verlöre man die Gruppe und gewänne den Streitross-Abzug — das Ergebnis wäre dasselbe, die Regel also nicht messbar |
+
+> Roster 02 nagelt zusätzlich fest, dass die **Pflicht-Handwaffe** des Highborn
+> kein Mitglied der Gruppe „CC Weapons" ist und deshalb nicht mitzählt.

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="ltsmw-01" name="LTSMW 01 - Highborn ohne Ausruestung (nur der unbedingte Modifikator, Sv 7)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored less-than-self-mount-and-weapon-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-highborn" name="Highborn" entryId="79af-7092-a9a9-393d" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-hand-weapon" name="Hand Weapon" entryId="5dc5-1087-8483-1d9b" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-character-options" name="Character options" entryId="e8af-bd8c-71e2-8c30" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -590,6 +590,13 @@
         "docs/testing/at-least-self-equipment-save"
       ],
       "rationale": "Seven rosters over the Bretonnian Lord (bf54-da29-921a-e457, Bretonnia), whose profile infoLink c2cae708-0b6f-4553-9adc-754be21e3d2e carries four Sv decrements, each gated on atLeast 1 selections scope=\"self\" of one equipment id. Roster 01 pins the written base Sv 7 with nothing under the Lord; 02/03/04 isolate Shield, Heavy Armour and Warhorse one at a time; roster 05 is the depth witness - the Barding (3211-d836-02f1-01d0) hangs one level below the mount link, so only includeChildSelections=\"true\" reaches it and a direct-children reading would give 6 instead of 5; roster 07 is the frame witness - a bare Lord beside fully equipped Knights of the Realm carrying the same four target ids stays at Sv 7, where a force- or roster-wide frame would give 2. Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|self|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-self-mount-and-weapon-gate"
+      ],
+      "rationale": "Five rosters over the Dark Elf Highborn (79af-7092-a9a9-393d, Dark Elves), whose profile infoLink 7ae07422-6715-4692-aeb9-89fbd4ed033f carries an and-group of two lessThan conditions (scope=\"self\", childIds ba90-e917-dbad-292c 'Mounts' and 4c8c-ab06-0b67-d4e8 'CC Weapons' - both selectionEntryGroup ids) beside an atLeast on the shield. Roster 01 pins the unconditional decrement 4 alone; 02 is the measuring baseline with the shield and neither mount nor weapon; 03 differs from it only by a great weapon inside the CC-Weapons group and 04 only by a Dark Pegasus inside the Mounts group - a mount chosen because it carries no Sv modifier of its own, so the falling and-group is the only moving part. Roster 05 records the Dark Steed as the control that cannot separate the two effects. Roster 02 also pins that the mandatory direct child Hand Weapon does not count toward the CC-Weapons group. Scenario is green."
     }
   ]
 }

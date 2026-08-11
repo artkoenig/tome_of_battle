@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "name": "less-than-self-mount-and-weapon-gate",
+  "description": "Eine Bedingung type=\"lessThan\" mit scope=\"self\" zaehlt im Rahmen der Auswahl, die die Abfrage traegt, die unter diesem Traeger stehenden Auswahlen, die auf die in childId genannte Id aufloesen — nennt childId eine selectionEntryGroup, zaehlt jede in dieser Gruppe getroffene Auswahl mit — und sie haelt, solange dieser Stand unter ihrem value liegt. Am Highborn der Dark Elves (79af-7092-a9a9-393d) haengen acht Sv-Modifikatoren (field=f1be-e66c-d5e1-673c) am infoLink 7ae07422-6715-4692-aeb9-89fbd4ed033f auf das Profil 3ffc-3172-37a9-a1fc (Basis Sv 11). Der sechste ist der zusaetzliche Ruestungsschritt: decrement 1 an einer conditionGroup type=\"and\" aus 'lessThan 1 Mounts (ba90-e917-dbad-292c)' UND 'atLeast 1 Shield (0b9c-d3ff-6535-74cd)' UND 'lessThan 1 CC Weapons (4c8c-ab06-0b67-d4e8)', alle scope=self, shared=true, includeChildSelections=true. Der vierte Modifikator (decrement 4) traegt gar keine Bedingung und wirkt immer. Gemessen wird je ein Paar, das sich NUR in der Nahkampfwaffe bzw. NUR im Reittier unterscheidet; als Reittier des Mount-Paares dient der Dark Pegasus, weil er als einziger leichtgewichtiger Mount keinen eigenen Sv-Modifikator traegt. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-highborn-bare-sv-7.ros",
+      "description": "Grundlinie und Nagel fuer den bedingungslosen vierten Modifikator: Highborn mit nur den beiden Pflichtkindern Hand Weapon (5dc5-1087-8483-1d9b) und Character options (e8af-bd8c-71e2-8c30). Kein Schild, kein Reittier, keine Nahkampfwaffe aus der Gruppe CC Weapons. Von den acht Sv-Modifikatoren wirkt allein der bedingungslose decrement 4; die and-Gruppe faellt schon an ihrem Glied 'atLeast 1 Shield'. Sv 11 - 4 = 7 (im Datensatz 'kein Ruestungswurf', vgl. defaultValue=7 des characteristicType f1be-e66c-d5e1-673c).",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "a8f3-c5ec-4979-8f97",
+          "31ee-1b0d-0417-5cc6",
+          "79df-9ec7-9c79-b8dc",
+          "ba0b-4441-5ece-5fee",
+          "445f-35a8-9739-f98d",
+          "e556-9588-cb62-fed5",
+          "7874-ef54-fef7-0abc",
+          "73b0-905f-f230-93a8"
+        ],
+        "capabilities": [
+          {
+            "defId": "79af-7092-a9a9-393d",
+            "anchorKind": "occupied",
+            "name": "Highborn",
+            "infoElements": [
+              {
+                "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+                "kind": "profile",
+                "name": "Highborn",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-shield-only-sv-5.ros",
+      "description": "Der Bezugspunkt beider Messpaare: Highborn + Hand Weapon + Character options + Schild (0b9c-d3ff-6535-74cd, inline in der Gruppe Armour f074-0296-4374-278e). Die and-Gruppe haelt vollstaendig — Mounts-Stand 0 < 1, Schild-Stand 1 >= 1, CC-Weapons-Stand 0 < 1. Die Hand Weapon ist ein DIREKTES Kind des Highborn und KEIN Mitglied der Gruppe CC Weapons; sie erhoeht den gezaehlten Gruppenstand also nicht. Sv 11 - 4 (bedingungslos) - 1 (Schild) - 1 (Ruestungsschritt) = 5.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "a8f3-c5ec-4979-8f97",
+          "31ee-1b0d-0417-5cc6",
+          "79df-9ec7-9c79-b8dc",
+          "ba0b-4441-5ece-5fee",
+          "445f-35a8-9739-f98d",
+          "e556-9588-cb62-fed5",
+          "7874-ef54-fef7-0abc",
+          "9b9e-1cae-a668-f57f",
+          "73b0-905f-f230-93a8"
+        ],
+        "capabilities": [
+          {
+            "defId": "79af-7092-a9a9-393d",
+            "anchorKind": "occupied",
+            "name": "Highborn",
+            "infoElements": [
+              {
+                "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+                "kind": "profile",
+                "name": "Highborn",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-shield-and-great-weapon-sv-6.ros",
+      "description": "Erste Haelfte des Waffen-Messpaares: bis auf die Great Weapon (33db-02ad-6323-1ca6, inline in der Gruppe CC Weapons 4c8c-ab06-0b67-d4e8) identisch mit Roster 02. Der Gruppenstand von CC Weapons steigt damit auf 1, die Bedingung 'lessThan 1 CC Weapons' haelt nicht mehr, die ganze and-Gruppe faellt und der Ruestungsschritt entfaellt: Sv 11 - 4 - 1 (Schild) = 6. Genau ein Punkt schlechter als Roster 02, und die Nahkampfwaffe ist der einzige Unterschied. Die Great Weapon traegt selbst keinen Sv-Modifikator am Highborn-Profil.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "a8f3-c5ec-4979-8f97",
+          "31ee-1b0d-0417-5cc6",
+          "79df-9ec7-9c79-b8dc",
+          "ba0b-4441-5ece-5fee",
+          "bad1-2b62-b68d-1c9b",
+          "445f-35a8-9739-f98d",
+          "e556-9588-cb62-fed5",
+          "7874-ef54-fef7-0abc",
+          "9b9e-1cae-a668-f57f",
+          "73b0-905f-f230-93a8"
+        ],
+        "capabilities": [
+          {
+            "defId": "79af-7092-a9a9-393d",
+            "anchorKind": "occupied",
+            "name": "Highborn",
+            "infoElements": [
+              {
+                "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+                "kind": "profile",
+                "name": "Highborn",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "6" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-shield-and-dark-pegasus-sv-6.ros",
+      "description": "Erste Haelfte des Reittier-Messpaares: bis auf den Dark Pegasus (Ziel 68f3-4984-8c3c-e164 ueber den entryLink 630f-b8b0-b4e1-c381 in der Gruppe Mounts ba90-e917-dbad-292c) identisch mit Roster 02. Der Gruppenstand von Mounts steigt auf 1, die Bedingung 'lessThan 1 Mounts' haelt nicht mehr, der Ruestungsschritt entfaellt: Sv 11 - 4 - 1 (Schild) = 6. Der Dark Pegasus ist bewusst gewaehlt, weil er unter den acht Sv-Modifikatoren NICHT vorkommt (anders als Dark Steed 03e9-b763-6e56-2836 und Cold One 6315-38ea-2a11-da65); der eine Punkt Unterschied zu Roster 02 kann daher nur aus der lessThan-Bedingung stammen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "a8f3-c5ec-4979-8f97",
+          "31ee-1b0d-0417-5cc6",
+          "79df-9ec7-9c79-b8dc",
+          "ba0b-4441-5ece-5fee",
+          "445f-35a8-9739-f98d",
+          "e556-9588-cb62-fed5",
+          "673b-b16a-3450-b5ea",
+          "303c-e96d-e4dc-cd4f",
+          "7874-ef54-fef7-0abc",
+          "9b9e-1cae-a668-f57f",
+          "73b0-905f-f230-93a8"
+        ],
+        "capabilities": [
+          {
+            "defId": "79af-7092-a9a9-393d",
+            "anchorKind": "occupied",
+            "name": "Highborn",
+            "infoElements": [
+              {
+                "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+                "kind": "profile",
+                "name": "Highborn",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "6" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-shield-and-dark-steed-sv-5-control.ros",
+      "description": "Kontrolle zur Wahl des Reittiers: bis auf den Dark Steed (Ziel 03e9-b763-6e56-2836 ueber den entryLink 82fe-54ca-9dfc-e131 in der Gruppe Mounts) identisch mit Roster 02. Auch hier faellt der Ruestungsschritt, aber der Dark Steed traegt einen EIGENEN decrement 1 (zweiter Modifikator am infoLink) — die beiden Effekte heben sich exakt auf: Sv 11 - 4 - 1 (Schild) - 1 (Dark Steed) = 5, derselbe Wert wie in Roster 02. Dieses Roster belegt aus den Daten, warum das Reittier-Messpaar den Dark Pegasus braucht und nicht den Dark Steed nehmen darf.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "a8f3-c5ec-4979-8f97",
+          "31ee-1b0d-0417-5cc6",
+          "79df-9ec7-9c79-b8dc",
+          "ba0b-4441-5ece-5fee",
+          "445f-35a8-9739-f98d",
+          "e556-9588-cb62-fed5",
+          "c3b3-dceb-f5b6-39e3",
+          "fe79-ad23-a431-5be9",
+          "7874-ef54-fef7-0abc",
+          "9b9e-1cae-a668-f57f",
+          "73b0-905f-f230-93a8"
+        ],
+        "capabilities": [
+          {
+            "defId": "79af-7092-a9a9-393d",
+            "anchorKind": "occupied",
+            "name": "Highborn",
+            "infoElements": [
+              {
+                "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+                "kind": "profile",
+                "name": "Highborn",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "7" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" },
+                  { "typeId": "6b9f-c8fe-8998-27e3", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
