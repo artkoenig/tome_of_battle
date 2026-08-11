@@ -21,7 +21,7 @@ aus, die ein Nutzer beim Import erlebt — inklusive katalogübergreifender
 
 ## Warum diese Teilmenge (nicht alle 18 Kataloge)
 
-Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **12** der 18
+Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **11** der 18
 `.cat` plus die `.gst` — aus zwei verschiedenen Gründen.
 
 **Fünf Dateien sind der minimale echte Multi-`.cat`-Fall.** Die
@@ -42,7 +42,7 @@ Belegt an den echten Daten: die Ogre-`.cat` hat 244 eindeutige `targetId`s,
 Abhängigkeit — kein toter Verweis.
 
 **Sieben weitere Dateien liegen aus Abdeckungsgründen hier** (siehe den
-nächsten Abschnitt). Die sechs noch fehlenden Bücher bringen **keine weitere
+nächsten Abschnitt). Die sieben noch fehlenden Bücher bringen **keine weitere
 Zelle** und bleiben deshalb draußen — jedes Byte Korpus wird bei jedem
 Inventar- und Drift-Lauf bezahlt.
 
