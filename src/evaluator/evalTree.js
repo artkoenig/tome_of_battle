@@ -680,10 +680,31 @@ function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catal
 /**
  * Die tragende Definition eines Knotens: bei einem `entryLink`-Knoten die
  * aufgeloeste Zieldefinition (die die Gruppen traegt), sonst die eigene.
+ *
+ * Ein Verweis darf **selbst** Kinder deklarieren (`Catalogue.xsd`: `EntryLink`
+ * erweitert `SelectionEntryBase` und fuehrt damit
+ * `selectionEntries`/`selectionEntryGroups`/`entryLinks`;
+ * `docs/battlescribe-data-format.md` §4.4). Diese am Verweis deklarierten
+ * Kinder stehen an genau **dieser** Verwendungsstelle neben denen des Ziels —
+ * sie gehoeren also ebenso zur tragenden Definition. Real z. B. der Empire-
+ * Captain: die Gruppe „Mounts" verlinkt „Empire Warhorse", und die Option
+ * „Barding" haengt am **Verweis**, nicht am geteilten Ziel-Eintrag. Ohne diese
+ * Vereinigung faende keine der Traversierungen ueber `ownerDefinitionOf` die
+ * Barding-Option: kein Angebots-Anker, kein Gruppen-Anker, kein
+ * Pflicht-Phantom, keine Sichtbarkeits-Klammer.
+ *
+ * Reihenfolge wie in {@link optionDefinitionsUnder} beim Gruppen-Verweis:
+ * erst die Kinder des Ziels, dann die am Verweis deklarierten. Deklariert der
+ * Verweis keine, geht die Zieldefinition unveraendert (und ohne Kopie) durch.
  */
 export function ownerDefinitionOf(node) {
   if (node.def.kind === DefinitionKind.ENTRY_LINK && node.def.resolved) {
-    return node.def.resolved;
+    const linkLocalChildren = node.def.children ?? [];
+    if (linkLocalChildren.length === 0) return node.def.resolved;
+    return {
+      ...node.def.resolved,
+      children: [...(node.def.resolved.children ?? []), ...linkLocalChildren],
+    };
   }
   return node.def;
 }
