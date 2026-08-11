@@ -6,9 +6,121 @@
     "src/__fixtures__/whfb6"
   ],
   "totals": {
-    "cells": 105,
+    "cells": 106,
     "covered": 105,
-    "uncovered": 0
+    "uncovered": 1
   },
-  "cells": []
+  "cells": [
+    {
+      "key": "repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "parent",
+        "childId": "upgrade",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 3,
+      "files": {
+        "src/__fixtures__/whfb6/Dogs of War.cat": 3
+      },
+      "examples": [
+        {
+          "file": "src/__fixtures__/whfb6/Dogs of War.cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "d13c-78a4-0289-7d87",
+            "name": "Great Weapon"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "upgrade",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/__fixtures__/whfb6/Dogs of War.cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "3d48-775c-37e8-0dc0",
+            "name": "Cathayan Longsword"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "upgrade",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/__fixtures__/whfb6/Dogs of War.cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "70ab-1c93-f3b5-9405",
+            "name": "Brace of Handguns"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "parent",
+            "childId": "upgrade",
+            "repeats": "1"
+          }
+        }
+      ]
+    }
+  ]
 }
