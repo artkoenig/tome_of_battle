@@ -123,6 +123,54 @@ describe('Bericht: Faehigkeitsdatensatz einer MAX-Grenze', () => {
   });
 });
 
+describe('Bericht: ein Slot mit zaehlender UND kostenmessender Max-Grenze', () => {
+  // Der Katalog-Regelfall des Magiegegenstands-Blocks: „hoechstens 1 davon, und
+  // darin hoechstens 50 Punkte". Beide Grenzen sind Hoechstmasse desselben Slots,
+  // messen aber Verschiedenes — die Stueckzahl-Felder des Faehigkeitsdatensatzes
+  // nennen die zaehlende. Ohne diese Regel entschiede die Reihenfolge im
+  // Katalogtext, und die Oberflaeche laese die 50 als Stueckzahl.
+  const POINTS_ID = 'cost-points';
+  const ITEM_DEF_ID = 'entry-magic-items';
+  const COUNT_MAX = 1;
+  const POINTS_MAX = 50;
+
+  /** `constraintsXml` ist die Reihenfolge der beiden Grenzen im Katalogtext. */
+  function catalogueWith(constraintsXml) {
+    return `<?xml version="1.0" encoding="utf-8"?>
+      <catalogue id="cat-cap-mixed-max" name="Capability Mixed MAX Catalogue">
+        <costTypes>
+          <costType id="${POINTS_ID}" name="pts" defaultCostLimit="-1"/>
+        </costTypes>
+        <selectionEntries>
+          <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit">
+            <selectionEntries>
+              <selectionEntry id="${ITEM_DEF_ID}" name="Magic Items" type="upgrade">
+                <constraints>${constraintsXml}</constraints>
+              </selectionEntry>
+            </selectionEntries>
+          </selectionEntry>
+        </selectionEntries>
+      </catalogue>`;
+  }
+
+  const COUNT_LIMIT = `<constraint id="max-items" type="max" value="${COUNT_MAX}" field="selections" scope="parent"/>`;
+  const POINTS_LIMIT = `<constraint id="max-points" type="max" value="${POINTS_MAX}" field="${POINTS_ID}" scope="parent"/>`;
+
+  it.each([
+    ['zaehlende Grenze zuerst', COUNT_LIMIT + POINTS_LIMIT],
+    ['kostenmessende Grenze zuerst', POINTS_LIMIT + COUNT_LIMIT],
+  ])('nennt in effectiveMax die Stueckzahl-Grenze, nicht das Punktebudget (%s)', (_name, constraintsXml) => {
+    const report = evaluate(catalogueWith(constraintsXml), rosterOf(WARRIOR_DEF_ID, 1));
+
+    const { capability } = slotByDefId(report, ITEM_DEF_ID, { phantom: true });
+    expect(capability).toMatchObject({
+      effectiveMax: COUNT_MAX,
+      current: 0,
+      headroom: COUNT_MAX,
+    });
+  });
+});
+
 describe('Bericht: ein belegter Slot behaelt seinen Stand, wenn sein einziges Max per set -1 zu unbegrenzt wird', () => {
   // Issue 0147, Kriterium 1: die Unit-Analogie der Rosters 01/03 des Szenarios
   // `greater-than-force-unlimited-gate` — derselbe Rohwert-Max mit demselben

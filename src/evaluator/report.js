@@ -45,7 +45,7 @@
  * den Bericht von aussen erreichbar und ADR-0034 nur noch eine Absichtserklaerung.
  */
 
-import { AnchorKind, ConstraintKind, DefinitionKind, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
+import { AnchorKind, ConstraintKind, DefinitionKind, LimitMeasure, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
@@ -293,10 +293,26 @@ function dedupeMandatoryEntryPhantomViolations(results) {
 }
 
 /**
+ * Die Messgroessen, die **Auswahlen zaehlen**. Nur sie sind die Bezugsgroesse der
+ * Zahlenfelder eines Faehigkeitsdatensatzes (`effectiveMin`/`effectiveMax`/
+ * `current`/`headroom`): die Oberflaeche liest dort eine Stueckzahl. Eine
+ * Kostensummen- oder Budget-Grenze misst dagegen Punkte — ihr Wert gehoert nie in
+ * dieselben Felder.
+ */
+const COUNTING_MEASURES = new Set([LimitMeasure.SELECTION_COUNT, LimitMeasure.FORCE_COUNT]);
+
+/**
  * Die Grenz-Ergebnisse je Knoten und Art (MIN/MAX), **einmal** je Bericht
  * aufgebaut. Ohne diesen Index kostete jeder Slot zwei lineare Suchen ueber alle
  * Ergebnisse — bei einem Baum aus mehreren hundert Slots ein quadratischer Aufwand
  * fuer eine Frage, die eine Zuordnung beantwortet.
+ *
+ * Ein Knoten kann **mehrere** Grenzen derselben Art tragen — der Regelfall im
+ * Katalog ist ein Eintrag mit einer zaehlenden und einer kostenmessenden
+ * Hoechstgrenze nebeneinander (etwa „hoechstens 1 Magiegegenstands-Block, und
+ * darin hoechstens 50 Punkte"). Der Index haelt sie deshalb alle, in
+ * Auswertungsreihenfolge; welches Ergebnis welches Feld speist, entscheiden die
+ * Waehler darunter.
  */
 function indexResultsByAnchor(results) {
   const index = new Map();
@@ -306,17 +322,43 @@ function indexResultsByAnchor(results) {
       byKind = new Map();
       index.set(result.anchor, byKind);
     }
-    byKind.set(result.limit.kind, result);
+    const ofKind = byKind.get(result.limit.kind);
+    if (ofKind === undefined) byKind.set(result.limit.kind, [result]);
+    else ofKind.push(result);
   }
   return index;
+}
+
+/** Alle (nicht suspendierten) Ergebnisse der Grenzen gegebener Art am Knoten. */
+function resultsOfKind(resultsByAnchor, node, kind) {
+  return resultsByAnchor.get(node)?.get(kind) ?? [];
 }
 
 /**
  * Das Ergebnis der Grenze gegebener Art (MIN/MAX) am Knoten, oder `null`, wenn
  * der Knoten keine solche (nicht suspendierte) Grenze traegt.
+ *
+ * Traegt der Knoten mehrere Grenzen dieser Art, hat die **zaehlende** Vorrang —
+ * im Katalog der Regelfall bei einem Eintrag, der eine Stueckzahl und ein
+ * Punktebudget nebeneinander deckelt („hoechstens 1 Magiegegenstands-Block, und
+ * darin hoechstens 50 Punkte"). Ohne diesen Vorrang entschiede die
+ * Deklarationsreihenfolge im Katalog, und die Punktgrenze stuende in den
+ * Stueckzahl-Feldern des Slots: die Oberflaeche laese „hoechstens 50 Punkte" als
+ * „hoechstens 50 Stueck" und boete einen Mengensteller an, wo genau eine Auswahl
+ * erlaubt ist. Unter mehreren gleichartigen gilt die zuletzt ausgewertete.
+ *
+ * Traegt der Knoten **nur** kostenmessende Grenzen, bleibt es bei deren Ergebnis:
+ * dort ist der Punktwert das einzige, was der Slot ueber seine Grenze zu sagen
+ * hat.
  */
 function findResult(resultsByAnchor, node, kind) {
-  return resultsByAnchor.get(node)?.get(kind) ?? null;
+  const ofKind = resultsOfKind(resultsByAnchor, node, kind);
+  let fallback = null;
+  for (const result of ofKind) {
+    if (COUNTING_MEASURES.has(result.measure)) fallback = result;
+    else if (fallback === null || !COUNTING_MEASURES.has(fallback.measure)) fallback = result;
+  }
+  return fallback;
 }
 
 /**
@@ -397,6 +439,11 @@ function headroomOf(maxResult) {
  * deklariert) — nach derselben Link-vor-Ziel-Regel wie `sourceId` (Issue 0133).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
+ * `effectiveMin`/`effectiveMax`/`current`/`headroom` nennen dabei die
+ * **zaehlende** Grenze des Slots, wo er eine traegt — auch wenn daneben eine
+ * kostenmessende steht ({@link findResult}); `isBlocked`/`isMandatoryUnmet`
+ * lesen umgekehrt **jede** Grenze: ein ausgeschoepftes Punktebudget sperrt
+ * genauso wie eine erreichte Stueckzahl.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
  * die **effektiven** Eigenkosten EINER Instanz (nach Kosten-Modifikatoren, auch
  * an Angebots-Ankern: was EINE Instanz beim Waehlen kosten wuerde) und die
@@ -452,8 +499,13 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     // Auswahlen melden, die er nachweislich haelt.
     current: maxResult?.actual ?? minResult?.actual ?? anchorOccupancies.get(node) ?? node.instance?.count ?? 0,
     headroom: headroomOf(maxResult),
-    isMandatoryUnmet: minResult !== null && !minResult.satisfied,
-    isBlocked: maxResult !== null && maxResult.actual >= maxResult.bound,
+    // Die beiden Flags lesen dagegen **jede** Grenze des Knotens, auch die
+    // kostenmessende: „hier passt nichts mehr hinein" gilt genauso, wenn das
+    // Punktebudget des Slots ausgeschoepft ist, und eine unerfuellte
+    // Mindestgrenze bleibt eine offene Pflicht, gleich was sie misst. Nur die
+    // Zahlen daneben sind auf die zaehlenden Grenzen beschraenkt.
+    isMandatoryUnmet: resultsOfKind(resultsByAnchor, node, ConstraintKind.MIN).some(r => !r.satisfied),
+    isBlocked: resultsOfKind(resultsByAnchor, node, ConstraintKind.MAX).some(r => r.actual >= r.bound),
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
