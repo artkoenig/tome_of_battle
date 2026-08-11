@@ -173,7 +173,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
 | [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
 | [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
-| **Summe** | | **414** |
+| [`at-least-id-scope-inner-circle-champion`](testing/at-least-id-scope-inner-circle-champion/) | Definitive Empire + Mercenaries | 4 |
+| **Summe** | | **418** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2198,3 +2199,30 @@ Punkte bei genau null, 5 Punkte bei genau einer Auswahl des Inner-Circle-Links
 > nicht herstellbar — die `max 1`-Grenze am Link wird von keinem Modifikator
 > des Armeebuchs angefasst. Das Szenario behauptet deshalb nichts über diesen
 > Fall, statt einen Roster zu erfinden.
+
+## `at-least-id-scope-inner-circle-champion`
+
+Prüft die `atLeast`-Bedingung mit einer **Eintrags-Id** als `scope` — dem
+Gegenstück zum Schlüsselwort `unit` — und macht sie über **Merkmalswerte**
+statt über Punkte beobachtbar. Beleg: das Empire-Ritterregiment „Knights of
+the Knightly Orders" (`1d77-9e6e-a6ab-573f`) trägt denselben Modifikator
+(`increment 1` auf die Stärke) unter derselben `or`-Gruppe an zwei Orten —
+einmal am Profil der Einheit selbst, einmal am Champion-Profil des
+Kommandogruppen-Upgrades „First Knight", das ein Enkel der Einheit ist. Der
+Rahmen ist damit einmal der Träger und einmal ein Vorfahre; beide Male zählt
+er den Inner-Circle-Verweis (`6e1d-9e41-114f-8128`) *dieser* Einheit.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Regiment mit Champion **und** Innerem Zirkel | Beide Profile steigen von Stärke 3 auf 4 — der Rahmen greift am Träger wie am Vorfahren |
+| 02 | Dasselbe Regiment ohne Inneren Zirkel | Beide Profile bleiben auf ihrem Basiswert |
+| 03 | Zwei Regimenter: Zirkel im einen, Champion im **anderen** | Rahmen-Beweis: der Champion bleibt auf Stärke 3 — ein kontingent- oder rosterweiter Rahmen ergäbe 4 |
+| 04 | Zwei Regimenter: Zirkel **und** Champion im selben | Gegenprobe: die zweite, aufwertungslose Instanz derselben Einheit unterdrückt den Modifikator nicht |
+
+> **Bewusst offen gelassen:** In den Rostern 03/04 stehen zwei Slots derselben
+> Definition nebeneinander; der Manifest-Vertrag trennt sie nur über einen
+> Slot-Pfad, dessen Schreibweise sich nicht aus den Katalogdaten ableiten
+> lässt. Die beiden Roster behaupten deshalb nichts über die
+> **Einheiten**-Profile und prüfen den Rahmen ausschließlich am eindeutigen
+> Champion-Slot — dem tieferen der beiden Fälle. Die Einheiten-Profile sind in
+> 01/02 einzeln gepinnt.
