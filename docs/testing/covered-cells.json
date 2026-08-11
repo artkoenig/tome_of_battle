@@ -639,6 +639,13 @@
         "docs/testing/at-least-id-scope-inner-circle-champion"
       ],
       "rationale": "Four rosters over the Empire regiment 'Knights of the Knightly Orders' (1d77-9e6e-a6ab-573f), whose own id is written into the scope of the conditions under test. The same increment 1 on the Strength characteristic sits under the same or-group at two places: on the unit's own infoLink 'Elite' (b968-23a8-1f42-6af7) and on the champion infoLink 'Elite Champion' (7310-540c-a461-d9e9) inside the command-group upgrade 'First Knight' (4267-ee8f-ec8c-e0f9), a grandchild of the unit - so the frame is once the carrier and once an ancestor. Roster 01 puts the Inner Circle link 6e1d-9e41-114f-8128 into the regiment and both profiles read S 4 instead of 3; roster 02 drops it and both read 3. Roster 03 holds two regiments in one force with the Inner Circle in the one and the champion in the other, where the champion stays at S 3 - a force- or roster-wide frame, or a reading that unions all instances of the entry, would give 4. Roster 04 swaps them, so a second upgrade-less instance of the same entry does not suppress the modifier. WS and A are asserted alongside as control cells, the unconditional profile name 'First Knight' probes that the modifier chain ran at all, and diagnostics.absent forbids UNRESOLVED_SCOPE for scope=\"1d77-9e6e-a6ab-573f\". Scenario is green."
+    },
+    {
+      "key": "condition|equalTo|self|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-self-general-black-arc"
+      ],
+      "rationale": "Four rosters over the Dark Elves characters Highborn (79af-7092-a9a9-393d) and Noble (bd43-41c0-298e-22be). Both carry the byte-identical append 'Captain of the Black Arc' on field=\"name\", gated by an and-group of an equalTo 1 condition with scope=\"self\" on their own General entryLink (7a1e-c134-434e-3313 resp. 030a-4b09-0210-225c) and an instanceOf of the contingent The Raiding Army (4b5b-aebb-1526-91bb). Roster 01 puts both characters into that contingent with the General on the Highborn only: his name gains the suffix, the Noble keeps his plain name - a force- or roster-wide frame would name both. Roster 02 mirrors it onto the Noble, roster 03 drops the General so the counter is 0 and neither name changes, roster 04 repeats 01 in a different contingent so the second member of the and-group falls. A counter above one is not buildable - the shared General upgrade 1b7c-2c90-6d96-28c9 carries max 1 scope=\"parent\" and max 1 scope=\"force\" - and the README records that instead of inventing a roster, together with the note that the pair therefore does not separate equalTo from atLeast on the upper side. Scenario is green."
     }
   ]
 }

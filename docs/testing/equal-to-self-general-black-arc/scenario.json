@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-self-general-black-arc",
+  "description": "Pinnt den Namens-Modifikator <modifier type=\"append\" value=\"Captain of the Black Arc\" field=\"name\" join=\" \"> der Dark-Elves-Charaktere Highborn (79af-7092-a9a9-393d) und Noble (bd43-41c0-298e-22be) fest. Beide tragen dieselbe conditionGroup type=\"and\" aus (a) <condition type=\"equalTo\" value=\"1\" field=\"selections\" scope=\"self\" childId=\"<eigener General-entryLink>\" shared=\"true\" includeChildSelections=\"true\"> - beim Highborn 7a1e-c134-434e-3313, beim Noble 030a-4b09-0210-225c, beide auf die gst-geteilte Aufwertung \"General\" 1b7c-2c90-6d96-28c9 - und (b) <condition type=\"instanceOf\" value=\"1\" field=\"selections\" scope=\"force\" childId=\"4b5b-aebb-1526-91bb\"> auf das Kontingent \"The Raiding Army (DE-AB)\". Zwei Aussagen: scope=\"self\" zaehlt NUR innerhalb der tragenden Auswahl - ein Geschwister-Charakter im selben Kontingent, der die General-Aufwertung nicht selbst traegt, behaelt seinen Katalognamen -, und equalTo haelt NUR beim genau geschriebenen Zaehlwert 1, nicht bei 0. Ein Zaehlwert ueber 1 ist auf diesen Daten nicht baubar (max 1 scope=\"parent\" a830-88fc-15ba-9584 und max 1 scope=\"force\" fc6d-21e4-3da5-17f9 an 1b7c-2c90-6d96-28c9) - dafuer gibt es deshalb bewusst kein Roster. Vier Roster: General auf dem Highborn, General auf dem Noble (Spiegelbild), gar kein General und derselbe Aufbau im Kontingent \"Standard (DE-AB)\" 26bc-729f-a188-f285, wo die zweite Bedingung der and-Gruppe faellt. Alle Erwartungen sind expect.capabilities[].name (effektiver Anzeigename); die uebrigen Namens-/hidden-Gatter des Highborn (set \"City Commander\" auf forceEntry 77cd-dafb-16af-93c0, set hidden auf 5013-f9f4-e03b-94d5) bleiben in beiden benutzten Kontingenten still.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-raiding-army-general-on-highborn.ros",
+      "description": "Kontingent \"The Raiding Army (DE-AB)\" (4b5b-aebb-1526-91bb) mit einem Highborn UND einem Noble, je mit Pflicht-Handwaffe. Die General-Aufwertung haengt ausschliesslich am Highborn (entryLink 7a1e-c134-434e-3313). Im self-Rahmen des Highborn ist der Zaehler 1: beide Bedingungen der and-Gruppe halten, der Name wird zu \"Highborn Captain of the Black Arc\". Im self-Rahmen des Noble ist der Zaehler 0 (sein eigener Verweis 030a-4b09-0210-225c ist nicht gewaehlt): er behaelt \"Noble\". Ein kontingent- oder rosterweiter Zaehlrahmen, der den General des Highborn mitsaehe, wuerde beide Charaktere benennen.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "fc6d-21e4-3da5-17f9",
+          "a830-88fc-15ba-9584",
+          "d818-c60d-b1f8-8aaa",
+          "54c9-b217-e67c-bd60",
+          "1077-7379-f142-f382",
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "5d7c-d550-cae0-f61c",
+          "9190-f95b-692c-bced"
+        ],
+        "capabilities": [
+          { "defId": "79af-7092-a9a9-393d", "name": "Highborn Captain of the Black Arc" },
+          { "defId": "bd43-41c0-298e-22be", "name": "Noble" },
+          { "defId": "7a1e-c134-434e-3313", "anchorKind": "occupied", "current": 1 }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-raiding-army-general-on-noble.ros",
+      "description": "Spiegelbild zu Roster 01 im selben Kontingent: die General-Aufwertung haengt jetzt ausschliesslich am Noble (entryLink 030a-4b09-0210-225c). Jetzt ist der Noble der Traeger - \"Noble Captain of the Black Arc\" -, und der Highborn behaelt \"Highborn\", weil sein eigener Verweis 7a1e-c134-434e-3313 nicht gewaehlt ist. Das Paar 01/02 zeigt, dass der Beiname der GEWAEHLTEN Aufwertung folgt und nicht der Definition (Lord vs. Held) oder der Reihenfolge im Roster.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "fc6d-21e4-3da5-17f9",
+          "a830-88fc-15ba-9584",
+          "d818-c60d-b1f8-8aaa",
+          "54c9-b217-e67c-bd60",
+          "1077-7379-f142-f382",
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "5d7c-d550-cae0-f61c",
+          "9190-f95b-692c-bced"
+        ],
+        "capabilities": [
+          { "defId": "79af-7092-a9a9-393d", "name": "Highborn" },
+          { "defId": "bd43-41c0-298e-22be", "name": "Noble Captain of the Black Arc" },
+          { "defId": "030a-4b09-0210-225c", "anchorKind": "occupied", "current": 1 }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-raiding-army-no-general.ros",
+      "description": "Dasselbe Kontingent, dieselben zwei Charaktere, aber KEINE General-Aufwertung im ganzen Roster. Beide equalTo-Zaehler stehen auf 0, der geschriebene Wert ist 1 - die erste Bedingung faellt bei beiden, beide behalten ihren Katalognamen. Zugleich der Beleg, dass der Beiname nicht schon aus dem Kontingent allein folgt. Nebenwirkung des Aufbaus: die force-skopierte Pflicht min 1 der .gst-Kategorie \"General\" (a37e-7207-de6d-acb0) ist mit Ist 0 unerfuellt und wird hier mitgepinnt.",
+      "expect": {
+        "firing": [
+          { "limitId": "1077-7379-f142-f382", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "fc6d-21e4-3da5-17f9",
+          "a830-88fc-15ba-9584",
+          "d818-c60d-b1f8-8aaa",
+          "54c9-b217-e67c-bd60",
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "5d7c-d550-cae0-f61c",
+          "9190-f95b-692c-bced"
+        ],
+        "capabilities": [
+          { "defId": "79af-7092-a9a9-393d", "name": "Highborn" },
+          { "defId": "bd43-41c0-298e-22be", "name": "Noble" }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-standard-force-general-on-highborn.ros",
+      "description": "Bis auf entryId/Name der Force identisch zu Roster 01, hier im Kontingent \"Standard (DE-AB)\" (26bc-729f-a188-f285). Der Highborn traegt seinen General, der self-skopierte equalTo-Zaehler steht also weiter auf 1 - aber die zweite Bedingung der and-Gruppe (instanceOf force 4b5b-aebb-1526-91bb) haelt nicht, und eine and-Gruppe verlangt alle Mitglieder. Kein Charakter erhaelt den Beiname; auch das konkurrierende set \"City Commander\" (gegatet auf forceEntry 77cd-dafb-16af-93c0) bleibt still.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "fc6d-21e4-3da5-17f9",
+          "a830-88fc-15ba-9584",
+          "d818-c60d-b1f8-8aaa",
+          "54c9-b217-e67c-bd60",
+          "1077-7379-f142-f382",
+          "ad31-faa2-6dd0-c8ff",
+          "c62a-9089-2b02-e959",
+          "5d7c-d550-cae0-f61c",
+          "9190-f95b-692c-bced"
+        ],
+        "capabilities": [
+          { "defId": "79af-7092-a9a9-393d", "name": "Highborn" },
+          { "defId": "bd43-41c0-298e-22be", "name": "Noble" },
+          { "defId": "7a1e-c134-434e-3313", "anchorKind": "occupied", "current": 1 }
+        ]
+      }
+    }
+  ]
+}

@@ -7,106 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 113,
-    "uncovered": 17
+    "covered": 114,
+    "uncovered": 16
   },
   "cells": [
-    {
-      "key": "condition|equalTo|self|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "self",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 11,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 6,
-        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 3
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "79af-7092-a9a9-393d",
-            "name": "Highborn"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "self",
-            "childId": "7a1e-c134-434e-3313"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "bd43-41c0-298e-22be",
-            "name": "Noble"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "self",
-            "childId": "030a-4b09-0210-225c"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "e637-be84-b4ee-d47c",
-            "name": "Warriors of Chaos"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "conditionGroups",
-            "conditionGroup",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "self",
-            "childId": "c7ff-31af-939e-0fbd"
-          }
-        }
-      ]
-    },
     {
       "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
       "kind": "repeat",

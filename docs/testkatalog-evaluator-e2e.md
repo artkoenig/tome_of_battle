@@ -174,7 +174,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
 | [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
 | [`at-least-id-scope-inner-circle-champion`](testing/at-least-id-scope-inner-circle-champion/) | Definitive Empire + Mercenaries | 4 |
-| **Summe** | | **418** |
+| [`equal-to-self-general-black-arc`](testing/equal-to-self-general-black-arc/) | Definitive Dark Elves + Mercenaries | 4 |
+| **Summe** | | **422** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2226,3 +2227,27 @@ er den Inner-Circle-Verweis (`6e1d-9e41-114f-8128`) *dieser* Einheit.
 > **Einheiten**-Profile und prüfen den Rahmen ausschließlich am eindeutigen
 > Champion-Slot — dem tieferen der beiden Fälle. Die Einheiten-Profile sind in
 > 01/02 einzeln gepinnt.
+
+## `equal-to-self-general-black-arc`
+
+Prüft die `equalTo`-Bedingung mit `scope="self"`: gezählt wird allein in der
+Auswahl, die die Bedingung trägt. Beleg: die Dark-Elves-Charaktere „Highborn"
+(`79af-7092-a9a9-393d`) und „Noble" (`bd43-41c0-298e-22be`) tragen denselben
+Namenszusatz „Captain of the Black Arc", jeder gegattet auf **seinen eigenen**
+General-Verweis und auf das Kontingent „The Raiding Army (DE-AB)"
+(`4b5b-aebb-1526-91bb`). Zwei Träger mit demselben Konstrukt sind es, die den
+`self`-Rahmen beobachtbar machen, ohne dass zwei Instanzen derselben Einheit
+nötig wären.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Beide Charaktere im Raiding Army, General **nur** beim Highborn | Nur der Highborn trägt den Zusatz; der Noble behält seinen Namen — ein kontingentweiter Rahmen benennte beide |
+| 02 | Dasselbe gespiegelt: General beim Noble | Nur der Noble trägt den Zusatz |
+| 03 | Beide ohne General | Kein Zusatz; zugleich feuert die armeeweite General-Pflicht |
+| 04 | Wie 01, aber in einem anderen Kontingent | Das zweite Glied der `and`-Gruppe fällt: kein Zusatz |
+
+> **Nicht baubar, offen erklärt:** Ein Zähler über eins ist auf diesen Daten
+> nicht herstellbar — der geteilte General-Eintrag trägt `max 1` sowohl im
+> Eltern- als auch im Kontingent-Rahmen. Die Roster trennen `equalTo` deshalb
+> nur nach unten von `atLeast`, nicht nach oben; das Szenario sagt das statt
+> einen Roster zu erfinden.
