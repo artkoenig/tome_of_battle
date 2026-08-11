@@ -135,9 +135,9 @@
     "branch": "claude/evaluator-ergofang-daten-ni8js9",
     "campaignIssue": null,
     "runs": 18,
-    "lastRunAt": "2026-08-11T15:53:22Z",
-    "lastRunOutcome": null,
-    "reArmedFor": null,
+    "lastRunAt": "2026-08-11T16:44:43Z",
+    "lastRunOutcome": "rearmed",
+    "reArmedFor": "2026-08-11T17:44:43Z",
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
         "cellKey": "condition|atLeast|force|selectionCount|child=id",
@@ -212,6 +212,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Campaign re-opened by the maintainer on 2026-08-12 after issue 0148 enlarged the corpus from nine to seventeen catalogue files. The worklist holds 25 uncovered cells again, all of them from the seven definitive books and the one ergofang book that issue 0148 added. The run continues on the session branch claude/evaluator-ergofang-daten-ni8js9, whose pull request is 211; the branch of the closed campaign (claude/evaluator-abschluss-kampagne-2bsuve) is merged and gone. campaignIssue is null so the first phase-B round files a fresh issue directory. The gaps of the closed campaign stay recorded as history; every one of them is closed."
+    "reArmNote": "Run 18, the first run on the enlarged seventeen-file corpus. Six explorer invocations pinned seven cells, every one of them green on the untouched engine: at-least-self-equipment-save, less-than-self-mount-and-weapon-gate, unit-scope-repeat-knight-markup, at-least-roster-limit-lord-slots (which credits both its condition cell and the repeat on the same limit), greater-than-id-scope-brain-transplant and equal-to-unit-inner-circle-markup. No phase-B round: nothing was pinned red, so the open task list was empty. Coverage moved from 105/130 to 112/130. One tool fix on the way: the drift guard snapshotted the covered/uncovered split as literals and failed on the first closed cell; it now asserts the cell count and the internal consistency of the split instead."
   }
 }
