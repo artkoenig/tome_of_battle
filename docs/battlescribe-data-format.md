@@ -759,7 +759,8 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
 > eingefrorenen Definitive-Edition-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`,
 > 11 `.cat` + 1 `.gst`; 121 `join`-Vorkommen insgesamt, davon 15 wirkungslos an
-> `set`-Modifiern und 5 an `prepend`-Modifiern): 101 von 119 `append`-Modifiern setzen `join`
+> `set`-Modifiern; 5 stehen an `prepend`-Modifiern, wo der Trenner wirkt
+> (`src/evaluator/modifiers.js`, `prependOrder`)): 101 von 119 `append`-Modifiern setzen `join`
 > explizit (Leerzeichen, NBSP oder
 > `"&#160;+&#160;"`) — dort ist der Unterschied latent. Die 18 `append` ohne `join`
 > (`Mercenaries` 1, `Skaven` 4, `The Empire` 13; Beispiel
