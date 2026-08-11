@@ -177,7 +177,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`equal-to-self-general-black-arc`](testing/equal-to-self-general-black-arc/) | Definitive Dark Elves + Mercenaries | 4 |
 | [`force-repeat-bloodletters-flesh-hound-slots`](testing/force-repeat-bloodletters-flesh-hound-slots/) | Definitive Forces of Chaos + Mercenaries | 7 |
 | [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
-| **Summe** | | **435** |
+| [`greater-than-self-blessed-spawning-slots`](testing/greater-than-self-blessed-spawning-slots/) | Definitive Lizardmen + Mercenaries | 5 |
+| **Summe** | | **440** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2301,3 +2302,22 @@ je Auswahl der Kategorie „State troops" **und** je Auswahl der Kategorie
 > more** Repeats", „each time the Query is met") und aus drei weiteren
 > Fundstellen desselben Musters im Korpus ab — darunter eine mit **drei**
 > Wiederholungen —, die unter einer multiplikativen Lesart sinnlos würden.
+
+## `greater-than-self-blessed-spawning-slots`
+
+Prüft die `greaterThan`-Bedingung mit `scope="self"`: gezählt wird im Träger
+selbst, und die Bedingung hält nur **echt oberhalb** des geschriebenen Werts.
+Beleg: die Lizardmen-Einheit „Saurus Warriors" (`2258-e16e-24dd-6e85`) wandert
+über zwei verschachtelte Modifikator-Klammern aus Core nach Special und weiter
+nach Rare — die erste hält bei mehr als null, die zweite bei mehr als einer
+Auswahl aus der Gruppe „Blessed Spawning Warrios" (`bd30-a138-fa7a-ecbe`). Die
+Gruppe ist auf zwei Mitglieder gedeckelt, die baubaren Zählerstände sind also
+genau 0, 1 und 2.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Zwei Regimenter, keine Option | Beide bleiben Core — bei null hält „mehr als null" nicht |
+| 02 | Eine Option im ersten Regiment | Nur dieses wird Special; die Core-Pflicht meldet genau ein fehlendes Core-Regiment |
+| 03 | Je eine Option in beiden | Beide Special — bei eins hält „mehr als eins" noch nicht |
+| 04 | Je zwei Optionen in beiden | Beide Rare, und die Rare-Obergrenze feuert |
+| 05 | Zwei Optionen nur im ersten Regiment | Rahmen-Beweis: das andere bleibt Core, ein kontingentweiter Zähler läse null Core |
