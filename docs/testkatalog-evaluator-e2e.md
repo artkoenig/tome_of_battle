@@ -2407,3 +2407,20 @@ führt — der Modifikator hebt dann dessen Mindestmaß `106f-93b5-2186-7f80` vo
 | 03 | Wie 01, Hammer gewählt | Dieselbe Pflicht, erfüllt |
 | 04 | Ohne White Wolf | Der Hammer bleibt verborgen; sein Mindestmaß wird gar nicht geprüft |
 | 05 | Zwei Grand Master, nur einer mit magischer Waffe | Rahmen-Beweis: ein kontingentweiter Zähler würde beide verrechnen |
+
+## `unset-primary-category-rat-ogres`
+
+Prüft `unset-primary` auf einer Kategorie: der Modifikator nimmt **nur** das
+Primär-Kennzeichen, die **Mitgliedschaft bleibt** — und gezählt wird die
+Mitgliedschaft. Beleg: die Skaven-Einheit „Rat Ogres" (`232c-d42d-bb0b-a85d`)
+ist von Haus aus Special; im Kontingent „Hell Pit (WD-311)" nimmt eine
+Modifikator-Klammer Special das Primär-Kennzeichen und macht die Einheit
+zusätzlich zu Core — ein `remove` steht dort **nicht**.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Hell Pit, vier Einheiten | Die Special-Obergrenze feuert trotzdem — Ist 4 gegen 3 |
+| 02 | Standard, vier Einheiten | Dieselbe Special-Überschreitung, dazu die unerfüllte Core-Pflicht |
+| 03 | Hell Pit, zwei Einheiten | Die Core-Pflicht ist allein durch die umgegliederten Einheiten erfüllt |
+| 04 | Standard, zwei Einheiten | Dort fehlen sie in Core — die Pflicht feuert mit Ist 0 |
+| 05 | Clan Pestilens, vier Einheiten | Gegenprobe aus demselben Katalog: dort steht ein echtes `remove`, und Special zählt 0 |

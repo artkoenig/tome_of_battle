@@ -695,6 +695,13 @@
         "docs/testing/less-than-id-scope-white-wolf-hammer"
       ],
       "rationale": "Five rosters over the Empire unit Templar Grand Master (8ab4-17be-8a49-b3f7). The Cavalry hammer link under it raises its own min limit 106f-93b5-2186-7f80 from 0 to 1 through an and group of two conditions whose scope is the Grand Master's own entry id: at least one White Wolf upgrade, and fewer than one selection of the Magic Weapons group c071-eb48-3009-9ec1. Roster 01 has the upgrade and no magic weapon and the min fires with actual 0 against bound 1; roster 02 differs in a single selection - one magic weapon - which makes the lessThan false so the limit stays silent; roster 03 satisfies the raised min by taking the hammer; roster 04 drops the upgrade so the hammer stays hidden and its min is not validated at all; roster 05 puts two Grand Masters in one contingent, one with and one without the magic weapon, which a contingent-wide frame would conflate. Scenario is green."
+    },
+    {
+      "key": "modifier|unset-primary|category",
+      "evidence": [
+        "docs/testing/unset-primary-category-rat-ogres"
+      ],
+      "rationale": "Five rosters over the Skaven unit Rat Ogres (232c-d42d-bb0b-a85d), whose base primary category is Special. In the contingent Hell Pit (WD-311) a modifier bracket does unset-primary on Special plus add and set-primary on Core, and writes no remove. Rosters 01 and 02 hold four Rat Ogres in Hell Pit and in Standard and both overflow the force-scoped Special maximum 16f0-6e5b-55d0-4102 with actual 4 against bound 3 - identical Special overflow in both contingents is what shows the membership survived the unset-primary. Rosters 03 and 04 isolate the add/set-primary half: two units meet the Core minimum 35c2-d478-392a-aeb1 in Hell Pit while the same two leave it firing with actual 0 in Standard. Roster 05 is the control from the same catalogue: the Clan Pestilens bracket writes an actual remove of Special, and there the Special maximum reads actual 0. Scenario is green."
     }
   ]
 }

@@ -7,91 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 121,
-    "uncovered": 9
+    "covered": 122,
+    "uncovered": 8
   },
   "cells": [
-    {
-      "key": "modifier|unset-primary|category",
-      "kind": "modifier",
-      "axes": {
-        "type": "unset-primary",
-        "targetField": "category"
-      },
-      "occurrences": 4,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 3,
-        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "fcdd-429a-3b79-7e8d",
-            "name": "Men at Arms"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "unset-primary",
-            "field": "category"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "9572-ac32-c59e-134c",
-            "name": "Peasant Bowmen"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "unset-primary",
-            "field": "category"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0227-ea15-966b-4a20",
-            "name": "Grail Reliquae with Battle Pilgrims"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier"
-          ],
-          "raw": {
-            "type": "unset-primary",
-            "field": "category"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|multiply|costValue",
       "kind": "modifier",

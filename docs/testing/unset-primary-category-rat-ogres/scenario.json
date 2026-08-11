@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "name": "unset-primary-category-rat-ogres",
+  "description": "modifier type=\"unset-primary\" field=\"category\" loescht nur das primary-Flag eines Kategorie-Links, nicht die Mitgliedschaft — und zaehlrelevant ist allein die Mitgliedschaft. Die Skaven-Einheit \"Rat Ogres\" (232c-d42d-bb0b-a85d) traegt Special (43cc-fc3f-35a7-8d03) als primaeren categoryLink; nur im Kontingent \"Hell Pit (WD-311)\" (9f0b-5346-a3bc-b5fe) klammert eine modifierGroup drei Modifier: unset-primary Special, add Core (64bf-efb4-9978-26df), set-primary Core. Ein remove von Special fehlt bewusst. Erwartung: dort zaehlen Rat Ogres gegen Special UND gegen Core; in einem Kontingent ohne die Klammer nur gegen Special. Gegenprobe ist Clan Pestilens (SK-AB), wo dieselbe Einheit ein echtes remove auf Special erhaelt und der Special-Zaehler dadurch tatsaechlich auf 0 faellt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-hell-pit-four-rat-ogres-special-max-fires.ros",
+      "description": "Hell Pit (WD-311), 4x Rat Ogres, Punktelimit 1000. Die Klammer greift: unset-primary Special + add/set-primary Core. Special bleibt Mitgliedschaft — die force-skopierte Special-Obergrenze (max 3) feuert mit Ist 4. Die Core-Pflicht (min 2) ist allein durch die vier umgegliederten Rat Ogres erfuellt und feuert deshalb nicht; Rare bleibt unberuehrt.",
+      "expect": {
+        "firing": [
+          { "limitId": "16f0-6e5b-55d0-4102", "actual": 4, "bound": 3 }
+        ],
+        "absent": ["35c2-d478-392a-aeb1", "0a44-2d3f-adfe-f3a1"]
+      }
+    },
+    {
+      "file": "rosters/02-standard-four-rat-ogres-special-max-and-core-min-fire.ros",
+      "description": "Standard (SK-AB), 4x Rat Ogres, Punktelimit 1000. Identischer Aufbau wie 01, nur das Kontingent unterscheidet sich; die Klammer greift nicht. Special feuert exakt gleich (Ist 4 / Grenze 3) — das ist der Kontrast, der zeigt, dass unset-primary in 01 den Special-Zaehler NICHT gesenkt hat. Core wird hier nicht hinzugefuegt, also feuert die Core-Pflicht mit Ist 0 / Grenze 2.",
+      "expect": {
+        "firing": [
+          { "limitId": "16f0-6e5b-55d0-4102", "actual": 4, "bound": 3 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": ["0a44-2d3f-adfe-f3a1"]
+      }
+    },
+    {
+      "file": "rosters/03-hell-pit-two-rat-ogres-core-min-met.ros",
+      "description": "Hell Pit (WD-311), 2x Rat Ogres, Punktelimit 1000. Minimalpaar zu 04: Die add/set-primary-Haelfte macht die zwei Einheiten zu Core, damit ist die Core-Pflicht (min 2) punktgenau erfuellt und feuert nicht. Special liegt bei Ist 2 unter der Grenze 3 und feuert ebenfalls nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["35c2-d478-392a-aeb1", "16f0-6e5b-55d0-4102", "0a44-2d3f-adfe-f3a1"]
+      }
+    },
+    {
+      "file": "rosters/04-standard-two-rat-ogres-core-min-fires.ros",
+      "description": "Standard (SK-AB), 2x Rat Ogres, Punktelimit 1000. Identischer Aufbau wie 03, nur das Kontingent unterscheidet sich; ohne die Klammer bleibt Core leer und die Core-Pflicht feuert mit Ist 0 / Grenze 2. Special bleibt mit Ist 2 unter der Grenze 3.",
+      "expect": {
+        "firing": [
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": ["16f0-6e5b-55d0-4102", "0a44-2d3f-adfe-f3a1"]
+      }
+    },
+    {
+      "file": "rosters/05-clan-pestilens-four-rat-ogres-special-removed.ros",
+      "description": "Clan Pestilens (SK-AB), 4x Rat Ogres, Punktelimit 1000. Gegenprobe: hier greift die zweite modifierGroup mit add Rare + set-primary Rare + echtem remove Special. Der Special-Zaehler faellt dadurch tatsaechlich auf 0 (Grenze 3 bleibt still), waehrend die Rare-Obergrenze (max 1) mit Ist 4 feuert und die Core-Pflicht mit Ist 0 / Grenze 2 feuert. Der Unterschied zu 01 belegt, dass remove und unset-primary verschiedene Wirkungen haben.",
+      "expect": {
+        "firing": [
+          { "limitId": "0a44-2d3f-adfe-f3a1", "actual": 4, "bound": 1 },
+          { "limitId": "35c2-d478-392a-aeb1", "actual": 0, "bound": 2 }
+        ],
+        "absent": ["16f0-6e5b-55d0-4102"]
+      }
+    }
+  ]
+}

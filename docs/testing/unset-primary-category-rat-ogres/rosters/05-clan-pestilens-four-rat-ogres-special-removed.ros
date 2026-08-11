@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="upcro-05" name="UPCRO 05 - Clan Pestilens (SK-AB), 4x Rat Ogres - Kontrollfall mit echtem remove: Special faellt auf 0, Rare max 1 gerissen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored unset-primary-category-rat-ogres E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="1000"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Clan Pestilens (SK-AB)" entryId="adc6-cd5d-19cc-1bf3" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven">
+      <selections>
+        <selection id="sel-rat-ogres-1" name="Rat Ogres" entryId="232c-d42d-bb0b-a85d" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-ro1-pack" name="Ogre Pack" entryId="a321-5389-dab4-1f54" entryLinkId="" number="1" type="model"/>
+            <selection id="sel-ro1-rat-ogre" name="Rat Ogre" entryId="cafc-ed54-2012-4907" entryLinkId="" number="1" type="upgrade"/>
+            <selection id="sel-ro1-packmaster" name="Packmaster each pack" entryId="4eb2-daf5-2374-6108" entryLinkId="" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-ro1-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="670b-28e6-84e2-db97" number="1" type="upgrade"/>
+                <selection id="sel-ro1-whip" name="Whip" entryId="e92b-3eab-c634-f54a" entryLinkId="5674-6df2-aa7c-91af" number="1" type="upgrade"/>
+                <selection id="sel-ro1-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="98a9-69de-5437-f795" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+        <selection id="sel-rat-ogres-2" name="Rat Ogres" entryId="232c-d42d-bb0b-a85d" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-ro2-pack" name="Ogre Pack" entryId="a321-5389-dab4-1f54" entryLinkId="" number="1" type="model"/>
+            <selection id="sel-ro2-rat-ogre" name="Rat Ogre" entryId="cafc-ed54-2012-4907" entryLinkId="" number="1" type="upgrade"/>
+            <selection id="sel-ro2-packmaster" name="Packmaster each pack" entryId="4eb2-daf5-2374-6108" entryLinkId="" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-ro2-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="670b-28e6-84e2-db97" number="1" type="upgrade"/>
+                <selection id="sel-ro2-whip" name="Whip" entryId="e92b-3eab-c634-f54a" entryLinkId="5674-6df2-aa7c-91af" number="1" type="upgrade"/>
+                <selection id="sel-ro2-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="98a9-69de-5437-f795" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+        <selection id="sel-rat-ogres-3" name="Rat Ogres" entryId="232c-d42d-bb0b-a85d" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-ro3-pack" name="Ogre Pack" entryId="a321-5389-dab4-1f54" entryLinkId="" number="1" type="model"/>
+            <selection id="sel-ro3-rat-ogre" name="Rat Ogre" entryId="cafc-ed54-2012-4907" entryLinkId="" number="1" type="upgrade"/>
+            <selection id="sel-ro3-packmaster" name="Packmaster each pack" entryId="4eb2-daf5-2374-6108" entryLinkId="" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-ro3-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="670b-28e6-84e2-db97" number="1" type="upgrade"/>
+                <selection id="sel-ro3-whip" name="Whip" entryId="e92b-3eab-c634-f54a" entryLinkId="5674-6df2-aa7c-91af" number="1" type="upgrade"/>
+                <selection id="sel-ro3-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="98a9-69de-5437-f795" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+        <selection id="sel-rat-ogres-4" name="Rat Ogres" entryId="232c-d42d-bb0b-a85d" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-ro4-pack" name="Ogre Pack" entryId="a321-5389-dab4-1f54" entryLinkId="" number="1" type="model"/>
+            <selection id="sel-ro4-rat-ogre" name="Rat Ogre" entryId="cafc-ed54-2012-4907" entryLinkId="" number="1" type="upgrade"/>
+            <selection id="sel-ro4-packmaster" name="Packmaster each pack" entryId="4eb2-daf5-2374-6108" entryLinkId="" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-ro4-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="670b-28e6-84e2-db97" number="1" type="upgrade"/>
+                <selection id="sel-ro4-whip" name="Whip" entryId="e92b-3eab-c634-f54a" entryLinkId="5674-6df2-aa7c-91af" number="1" type="upgrade"/>
+                <selection id="sel-ro4-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="98a9-69de-5437-f795" number="1" type="upgrade"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
