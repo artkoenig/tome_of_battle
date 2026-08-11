@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "issue": "docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap — issue 0148 (files the issue has to change)\n\n- `src/__fixtures__/whfb6/Dogs of War.cat` — New file: the ergofang book that carries the childId=\"upgrade\" cell no definitive book reaches.\n- `src/__fixtures__/whfb6/README.md` — Provenance of the added book, the two vintages the directory now holds, and why the book is there.\n- `src/evaluator/__fixtures__/whfb6-definitive/` — Directory that receives the seven new definitive .cat files verbatim.\n- `src/evaluator/__fixtures__/whfb6-definitive/README.md` — Its 'why only this subset' section names the five current books and has to account for the seven added ones.\n- `scripts/lib/evaluator-coverage-corpus.test.js` — Drift guard whose corpus baselines (file counts, per-kind totals, repeat| cells, landmark counts) and beforeAll timeout are written for the nine-file corpus.\n- `docs/testing/worklist.json` — Regenerated output of the coverage inventory; the drift guard compares the committed file against a fresh computation.\n- `e2e/ui.test.js` — Puppeteer app E2E over the ergofang fixture directory; the catalogue picker and its dataset change once the harness ships one book more.\n- `scripts/lib/e2e-harness.js` — Zips every .cat/.gst of src/__fixtures__/whfb6/ into the app under test; only touched if the added book breaks the harness itself.\n- `scripts/lib/e2e-harness.test.js` — Asserts what the harness collects from the frozen ergofang fixture directory; only touched if the added book breaks it.\n- `src/evaluator/e2e.testcatalog.test.js` — Manifest-driven evaluator E2E over docs/testing/; resolves scenario datasets against the corpus files and may see the added books.\n- `scripts/lib/CLAUDE.md` — Suite doc that documents the corpus drift guard with concrete nine-file measurements (modifierGroup 121, repeats 213); stale once the corpus grows.\n- `docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md` — Issue frontmatter (pr) and progress sections are kept current as the run lands.\n\nNot expected to change, named so nobody hunts for it: `scripts/lib/evaluator-coverage-corpus.js` fixes the corpus by directory (`CORPUS_DIRS`), so a book is in the corpus by being copied into one of the two directories; `scripts/evaluator-coverage-inventory.js` reads that module and needs no edit. Every other test that reads the two fixture directories names its files explicitly, so it does not see the added books.",
+  "increments": [
+    {
+      "id": "INC-1",
+      "title": "Dogs of War enters the ergofang fixture set, app E2E stays green",
+      "goal": "The ergofang fixture directory carries Dogs of War verbatim from upstream head, its README records the new provenance and the resulting two vintages, the corpus bookkeeping is re-baselined for the enlarged corpus, and the whole check suite is green including the puppeteer app E2E, whose harness now ships one army book more.",
+      "criteria": [
+        "src/__fixtures__/whfb6/Dogs of War.cat exists and is byte-identical to that file in artkoenig/Warhammer-Fantasy-6th-edition at commit 9c7203c94221a4a98d5c1ffcfcfaedafe7d6d233.",
+        "The four files already in src/__fixtures__/whfb6/ (three catalogues and the game system) are byte-identical to their committed state; nothing else about them changes.",
+        "src/__fixtures__/whfb6/README.md states that Dogs of War.cat comes from the current upstream head while the other books predate the whitespace cleanup of issue 11, so the directory now carries two vintages, and states why this book is there: it carries rule constructs no other book of its set carries.",
+        "npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes, with every baseline the added book moves recomputed from the corpus itself rather than adjusted until green.",
+        "npm test passes. Fallout of the added book in the app E2E is fixed in the app E2E, never by keeping the book out of the fixture directory.",
+        "A screenshot of an app view whose content changed through the added book is produced and available for the pull request."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "First because it carries the run's only unknown: the puppeteer app E2E zips every .cat/.gst of this directory, so the app under test changes shape here and nowhere else. It is also the only book whose cell is unreachable from the definitive set.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "INC-2",
+      "title": "The seven definitive books enter the corpus and the inventory is re-baselined",
+      "goal": "The definitive fixture set carries the seven books that hold the rule constructs the frozen corpus misses, both the corpus drift guard and the coverage inventory report the extended corpus, and the regenerated worklist is committed.",
+      "criteria": [
+        "src/evaluator/__fixtures__/whfb6-definitive/ carries 'The Empire', 'Bretonnia', 'Dark Elves', 'Dwarfs (2005)', 'Skaven', 'Lizardmen' and 'Forces of Chaos', each with its ' (6th definitive edition).cat' suffix, byte-identical to artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition at commit 4a558216aabea1719d15c8f45bf52b6ee0cd5e3e.",
+        "The five files already in that directory are byte-identical to their committed state; nothing else about them changes.",
+        "src/evaluator/__fixtures__/whfb6-definitive/README.md records the provenance of the added books and states why they are there: they carry rule constructs no other book of the set carries.",
+        "node scripts/evaluator-coverage-inventory.js reports 17 corpus files, 130 cells, 105 covered and 25 uncovered, and exits 1; the regenerated docs/testing/worklist.json with its 25 entries is committed.",
+        "npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes: the file counts of case 21 (17 in total, 12 definitive, 5 in the other set), the per-kind occurrence totals of case 22, the distinct repeat| cell count of R7 and the landmark occurrence counts of R8 are each recomputed from the extended corpus, with case 22's own documented grep arbitrating a mismatch.",
+        "The beforeAll hook of that test file has a timeout that survives parsing 17 files instead of 9, so the file does not fail before its cases run.",
+        "npm test passes.",
+        "No cell of the worklist is pinned or closed, no file under docs/testing/ other than worklist.json changes, and no production code under src/ changes."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "Second because the definitive set feeds only the evaluator corpus, not the app E2E; its risk is the recomputation of the drift-guard baselines and the exact inventory tally, both of which the issue states as numbers.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-11T10:24:08.926Z",
+        "return": {
+          "questions": [],
+          "summary": "Issue 0148 is cut into two increments: INC-1 brings Dogs of War into the ergofang fixture set and keeps the puppeteer app E2E green (the run's only real unknown, so it goes first), INC-2 brings the seven definitive books in and re-baselines the coverage inventory and its drift guard. Each of the issue's acceptance criteria lands in exactly one increment, split by fixture directory, and the codemap names twelve files with the reason each is touched."
+        },
+        "prompt": "Issue directory: docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign\nOpen the run state for docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
