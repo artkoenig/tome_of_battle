@@ -42,8 +42,11 @@ entfernt.
 Fast alle Szenarien werten Roster gegen die **echten** Definitive-Edition-
 Katalogdaten aus (ADR-[0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)) —
 `src/evaluator/__fixtures__/whfb6-definitive/`, genau die Dateien, die ein Nutzer
-beim Import erlebt. Ausnahme ist `vampire-bloodlines-ergofang`, das den
-eigenständigen ergofang-VC-Katalog (`src/__fixtures__/whfb6/`) nutzt. Jede
+beim Import erlebt. Ausnahme sind fünf Szenarien, die Dateien des eigenständigen
+ergofang-VC-Katalogs (`src/__fixtures__/whfb6/`) nutzen:
+`vampire-bloodlines-ergofang`, `category-id-scope-instance-of`,
+`decrement-cost-bloodline-casting-dice`, `parent-max-enchanted-items-per-bearer`
+und `roster-min-general-armywide`. Jede
 Armee-`.cat` wird zusammen mit ihrer gemeinsamen **Mercenaries**-Abhängigkeit
 ausgewertet (Stern-Struktur); einige Roster prüfen bewusst den **unvollständigen**
 Satz *ohne* Mercenaries — per Roster-`dataset`-Override im Manifest.
@@ -1193,9 +1196,18 @@ in der gewählten Blutlinie.
 | 03 | Strigoi | Nur die andere greift: Namenszusatz, A 6, Sv+ 5+ |
 | 04 | Beide Blutlinien | Beide inneren Klammern greifen zugleich (zwei Namenszusätze), und die Gruppengrenze max 1 feuert mit Ist 2 |
 
-Der Fall „innere Bedingung hält, äußere scheitert" ist im Fixture-Korpus nicht
-baubar — alle drei verschachtelten Fundstellen haben eine unbedingte äußere
-Klammer; das ist in der README des Szenarios als Lücke festgehalten.
+Der Fall „innere Bedingung hält, äußere scheitert" war im damaligen Fixture-Satz
+nicht baubar — alle drei verschachtelten Fundstellen hatten eine unbedingte
+äußere Klammer. Der erweiterte Korpus zählt 14 solcher äußeren Klammern in den
+zwölf Definitive-Dateien (Vampire Counts 3, Lizardmen 3, Skaven 8) und 16 über
+alle siebzehn Dateien, und **zwei** davon sind bedingt: beide hängen an der
+`selectionEntry` „Saurus Warriors" (`2258-e16e-24dd-6e85`, Lizardmen), gewächtert
+durch `equalTo scope="force" childId="859a-ac18-878a-600b"`, und tragen je zwei
+innere Klammern mit eigenen Bedingungen. Der Fall ist damit aus einem
+hinzugekommenen Buch baubar; er wird hier bewusst **nicht** gebaut — ein Szenario
+zu autorisieren ist Arbeit der Kampagne und liegt außerhalb dieses Durchgangs.
+Die README des Szenarios hält weiterhin die alte Lücke fest und bleibt
+eingefroren.
 
 ## `not-instance-of-force-gate`
 
@@ -1502,10 +1514,16 @@ Gruppe sehr wohl gezählt wird.
 
 Prüft die `conditionGroup type="not"` als **Negation**: sie hält genau dann,
 wenn **keines** ihrer Mitglieder hält (§7.7 der Formatdoku, Issue 0115). Beleg
-ist das einzige reale Vorkommen im Datensatz — der `set`-Modifikator, der im
-Kontingent „Army of the Lichemaster" die Pflicht-Untergrenzen von Heinrich
-Kemmler (`8461-3eab-e5ac-1636`) und Krell (`60a8-5b49-6b81-7c84`) von 0 auf 1
-hebt. Sein Wächter ist eine `and`-Gruppe aus (a) `instanceOf` auf das Kontingent
+sind die beiden realen Vorkommen im Datensatz dieses Szenarios — zwei
+baugleiche `set`-Modifikatoren, die im Kontingent „Army of the Lichemaster" die
+Pflicht-Untergrenzen von Heinrich Kemmler (`8461-3eab-e5ac-1636`) und Krell
+(`60a8-5b49-6b81-7c84`) von 0 auf 1 heben. Im ganzen Korpus kommt die
+`conditionGroup type="not"` viermal vor: diese beiden in Vampire Counts sowie je
+eine in Lizardmen („Tehenhauin, the Prophet of Sotek", `56e7-0e42-990f-bbdf`)
+und Skaven („Arch Plague Lord Nurglitch", `2849-41f5-0ee5-0ad9`). Alle vier
+tragen genau ein Mitglied und keine direkte Bedingung — der Fall „not-Gruppe mit
+mehr als einem Mitglied" bleibt also unbaubar, und an dem, was dieses Szenario
+entschieden hat, ändert sich nichts. Ihr Wächter ist eine `and`-Gruppe aus (a) `instanceOf` auf das Kontingent
 `f37a-a93e-fa22-61a8` und (b) einer `not`-Gruppe über genau einer
 `and`-Untergruppe (Punktelimit < 2000 **und** mindestens eine Kampagnen-Auswahl
 `14fb-dd39-08e7-cbde` im Kontingent). Die Roster variieren Budget,

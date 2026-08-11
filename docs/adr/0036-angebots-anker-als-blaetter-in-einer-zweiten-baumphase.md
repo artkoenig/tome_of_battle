@@ -118,8 +118,19 @@ entscheidet sich am Parsen, nicht am Baum.**
   wissen, dass der Baum nach `buildEvalTree` noch nicht vollständig ist.
 - **Negativ:** Die Basis-Kategorie als Filter ist eine bewusste Näherung. Eine
   Definition, die ihre Kategorie erst per Modifikator erhielte, wird im
-  Kontingent nicht angeboten. Ein Fall dafür ist in den Fixture-Katalogen nicht
-  belegt; tritt einer auf, ist er hier zu vermerken.
+  Kontingent nicht angeboten. Der erweiterte Fixture-Korpus belegt diesen Fall
+  inzwischen dreifach — jeweils gegen das Kontingent „War of Vengeance (DW1-AB)"
+  (`d18e-88cd-44b8-f527`) des Buches Dwarfs (2005): die Wurzel-`entryLink`s
+  „Ruglud's Armoured Orcs" (`8a22-be92-5feb-16e8`, Orcs and goblins), „Mengil
+  Manhide's Manflayers" (`bbaf-7b5e-6800-7d50`, Dark Elves) und „Tichi Huichi's
+  Raiders" (`a532-46a4-3c3c-d689`, Lizardmen). Jeder von ihnen zeigt auf einen
+  geteilten Mercenaries-Eintrag mit den Basis-Kategorien „Regiment of Renown"
+  und „Rare", die das Kontingent nicht verlinkt, und trägt einen **unbedingten**
+  `modifierGroup`, der `add category = Special` und `remove category = Rare`
+  ausführt — effektiv Special, in der Basis Rare, und der Basis-Kategorie-Filter
+  lässt ihn aus dem Angebot dieses Kontingents fallen. Die Entscheidung (Option
+  2, Basis-Kategorien) bleibt davon unberührt; der Befund ist in Issue 0148
+  (INC-4) für den Maintainer festgehalten.
 - **Neutral:** Die Verletzungsliste bleibt unverändert — die grüne E2E-Suite ist
   der Nachweis.
 
