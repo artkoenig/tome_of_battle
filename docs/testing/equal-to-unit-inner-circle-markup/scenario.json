@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "name": "equal-to-unit-inner-circle-markup",
+  "description": "Pinnt die beiden <condition type=\"equalTo\" field=\"selections\" scope=\"unit\" childId=\"6e1d-9e41-114f-8128\"> am entryLink 'Knights of the Blazing Sun' f711-222f-99ff-5e01 (Ziel dfad-d77b-9156-e917) fest. Beide Bedingungen gatten je einen 'increment' auf die pts-Kostenart ecfa-8486-4f6c-c249, der per <repeat scope=\"unit\" childId=\"7b8d-8405-0e74-9f46\"> einmal je Ritter-Modell der umschliessenden Einheit greift: value=\"0\" schaltet 3 pts je Ritter frei, value=\"1\" dagegen 5 pts je Ritter. Der Zaehlrahmen ist die umschliessende Einheit 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f; gezaehlt wird die in childId benannte Aufwertung 'Knights of the Inner Circle' (entryLink 6e1d-9e41-114f-8128 -> selectionEntry 2cbd-fee0-a336-0e5d). Fuenf Roster: ohne Inner Circle (equalTo 0 haelt, 130), mit genau einem (equalTo 1 haelt, 155), mit dem GESCHWISTER-Link 'Knights of the Inner Circle (White Wolf)' 8229-6f9b-ba74-c239 -> 12c2-2826-c92f-4930 (nicht benannt, also haelt weiter equalTo 0, 145), eine Kontrolle ohne Orden, die den Eigenaufschlag des Inner Circle isoliert (130), und ein Rahmenbeweis mit zwei Regimentern, bei dem der Inner Circle in der ANDEREN Einheit steht (338, nicht 348). Ein Zaehlwert ueber 1 ist im unit-Rahmen nicht baubar (max 1 scope=\"parent\" 5454-b1cf-abc3-042a am Link plus max 1 scope=\"force\" abd1-90ab-2b66-ecff am Ziel) — dafuer gibt es deshalb bewusst kein Roster. Beobachtbar gemacht werden die Summen ueber die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249; das Punktelimit steht je Roster eine Einheit unter der korrekten Summe. Das hidden-Gatter des Blazing-Sun-Links (instanceOf force 6b0d-2c9f-2d46-b330 = 'Army of Middenland (SoC)') bleibt im Kontingent 'Standard (EM-AB)' e821-88b8-2071-6b6a geschlossen, und die force-skopierte Obergrenze der Einheit 2943-aa1c-4532-4fb2 (max 0) ist dort per set -1 aufgehoben.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-blazing-sun-no-inner-circle-3pts.ros",
+      "description": "Ritterregiment mit 5 Rittern (5 x 23 = 115), Pflichtausruestung (alle 0 pts), Schalter 'Allow experimental rules?' samt White-Dwarf/Citadel-Journal-Unterpunkt (0 pts, deckt die verborgene Gruppe 'Knightly Orders (CJ#43)' d454-fa90-afa7-fa48 auf) und dem Orden 'Knights of the Blazing Sun'. Der Inner Circle ist NICHT gewaehlt: der equalTo-Zaehler im unit-Rahmen ist 0, also haelt die erste Bedingung und der Aufschlag betraegt 3 pts je Ritter = 15. Die Link-Kosten des Ordens sind ausdruecklich 0 und schlagen die 3 pts der Definition dfad-d77b-9156-e917. Summe 130, Punktelimit 129 — das Budget feuert mit Ist 130. Griffe stattdessen die zweite Bedingung (equalTo 1), waeren es 140; griffen beide, 155; griffe keine, 115.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 130, "bound": 129 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "a51e-d04a-de5d-664f",
+          "3d1f-8999-a10e-80c7",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff",
+          "ad1b-51cb-9726-034e",
+          "a3ff-4097-904b-d617",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 5,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "dfad-d77b-9156-e917",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-blazing-sun-with-inner-circle-5pts.ros",
+      "description": "Byte-gleich zu Roster 01, zusaetzlich die Aufwertung 'Knights of the Inner Circle' (entryLink 6e1d-9e41-114f-8128 -> 2cbd-fee0-a336-0e5d, Basis 0 pts, eigener increment 3 je Modell im parent-Rahmen = 15). Der equalTo-Zaehler im unit-Rahmen steht damit auf genau 1: die erste Bedingung (equalTo 0) faellt weg, die zweite (equalTo 1) greift und macht aus dem Aufschlag 5 pts je Ritter = 25. Summe 115 + 15 + 25 = 155, Punktelimit 154 — das Budget feuert mit Ist 155. Griffen beide Bedingungen, waeren es 170; bliebe der Aufschlag bei 3 pts je Ritter, 145.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 155, "bound": 154 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "a51e-d04a-de5d-664f",
+          "3d1f-8999-a10e-80c7",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 5,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "2cbd-fee0-a336-0e5d",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "dfad-d77b-9156-e917",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-blazing-sun-with-white-wolf-sibling-3pts.ros",
+      "description": "Wie Roster 02, aber statt des benannten Links steht der GESCHWISTER-Link 'Knights of the Inner Circle (White Wolf)' 8229-6f9b-ba74-c239 (Ziel 12c2-2826-c92f-4930) unter derselben Einheit. Die childId der equalTo-Bedingungen benennt ihn nicht — weder als Link noch als Ziel —, also bleibt der Zaehler 0 und die erste Bedingung haelt weiter: Blazing Sun kostet 3 pts je Ritter = 15. Der Geschwister-Link traegt seinerseits einen increment 3 je Modell im parent-Rahmen = 15 (Basis 0). Summe 115 + 15 + 15 = 145, Punktelimit 144 — das Budget feuert mit Ist 145. Zaehlte die Bedingung 'irgendeine Inner-Circle-Aufwertung', griffe die zweite Bedingung und die Summe waere 155. Der Geschwister-Link ist hier effektiv verborgen (hidden=\"true\" am Link, aufgedeckt nur bei gewaehltem Orden 'Knights of the White Wolf'); nach der Formatspezifikation beruehrt das nur die Verfuegbarkeit und die Pruefung von Mindestgrenzen, nicht die Kosten einer bereits getroffenen Auswahl.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 145, "bound": 144 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "a51e-d04a-de5d-664f",
+          "3d1f-8999-a10e-80c7",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff",
+          "ad1b-51cb-9726-034e",
+          "a3ff-4097-904b-d617",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 5,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "12c2-2826-c92f-4930",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "dfad-d77b-9156-e917",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-inner-circle-without-blazing-sun-control.ros",
+      "description": "Kontrolle: dieselben 5 Ritter und dieselbe Pflichtausruestung, der Inner Circle IST gewaehlt, aber KEIN Knightly Order. Ohne den Blazing-Sun-Link existieren die beiden equalTo-gegatteten Modifikatoren nicht; uebrig bleibt allein der Eigenaufschlag des Inner Circle (increment 3 je Modell im parent-Rahmen = 15). Summe 115 + 15 = 130, Punktelimit 129 — das Budget feuert mit Ist 130. Damit ist der Eigenaufschlag des Inner Circle unabhaengig festgenagelt: die Differenz von Roster 01 (130) zu Roster 02 (155) zerfaellt in 15 pts Inner Circle und 10 pts Zweigwechsel (5 Ritter x (5 - 3)).",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 130, "bound": 129 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 5,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "2cbd-fee0-a336-0e5d",
+            "anchorKind": "occupied",
+            "current": 1,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-two-regiments-inner-circle-in-other-unit.ros",
+      "description": "Rahmenbeweis mit zwei Ritterregimentern im selben Kontingent. Regiment A (5 Ritter) traegt den Blazing-Sun-Orden und KEINEN Inner Circle; Regiment B (8 Ritter) traegt den Inner Circle und keinen Orden. Der Zaehlrahmen der equalTo-Bedingung ist die umschliessende Einheit: im Rahmen von A ist der Zaehler 0, also gilt der 3-pts-Zweig. A: 115 + 15 = 130. B: 184 + 8 x 3 = 208. Summe 338, Punktelimit 337 — das Budget feuert mit Ist 338. Zaehlte die Bedingung kontingent- oder roster-weit, faende sie den Inner Circle des Regiments B, der 5-pts-Zweig griffe und die Summe waere 348. Die force-skopierte Obergrenze abd1-90ab-2b66-ecff (max 1 Inner Circle je Kontingent) ist mit einem Exemplar erfuellt.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 338, "bound": 337 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "a51e-d04a-de5d-664f",
+          "3d1f-8999-a10e-80c7",
+          "5454-b1cf-abc3-042a",
+          "abd1-90ab-2b66-ecff",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="arls-04" name="ARLS 04 - costLimit 2000 pts, ein Bretonnian Lord (Lord-Grenze 1)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored at-least-roster-limit-lord-slots E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (BR-AB)" entryId="3a8b-8c11-beff-0534" catalogueId="a5c3-073c-b4e8-4284" catalogueRevision="1" catalogueName="Bretonnia">
+      <selections>
+        <selection id="sel-lord-1" name="Bretonnian Lord" entryId="bf54-da29-921a-e457" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-lord-1-knights-vow" name="Knights Vow" entryId="e432-4d78-0f50-1e35" entryLinkId="1858-1a94-5453-9f62" entryGroupId="4533-c439-9afd-8a27" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lord-1-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="50dd-7a6f-a038-a90b" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lord-1-heavy-armour" name="Heavy Armour" entryId="dde4-0ba8-7b3c-57b7" entryLinkId="d0d1-a2dc-5164-3b51" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-lord-1-warhorse" name="Bretonnian Warhorse" entryId="adc2-53db-4a9e-b8ea" entryLinkId="cf12-1619-f359-4462" entryGroupId="99f3-9464-d966-2a3b" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

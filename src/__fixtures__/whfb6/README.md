@@ -13,6 +13,35 @@ Laufzeit bezogenen Katalogen.
   Verzeichnis `public/catalogs/whfb6/`, das mit ADR-0014 entfallen ist
 - Stand: Commit `d13b7e5` (2026-07-02), **vor** der Whitespace-Bereinigung aus Issue 11
   (Commit `db7848d`, 2026-07-15)
+- `Dogs of War.cat` was copied verbatim from `artkoenig/Warhammer-Fantasy-6th-edition` at commit
+  `9c7203c94221a4a98d5c1ffcfcfaedafe7d6d233`, the current upstream head (issue 0148). Not
+  reformatted, re-indented or normalised in any way.
+
+## Two vintages on purpose
+
+This directory now deliberately carries **two vintages** of the same upstream repository:
+
+- `Dogs of War.cat` sits at upstream head (`9c7203c9`).
+- The other four files (`Warhammer Fantasy Battle 6th edition.gst`, `Ogre Kingdoms.cat`,
+  `Orcs and Goblins.cat`, `Vampire Counts.cat`) come from commit `d13b7e5` and predate the
+  whitespace cleanup of issue 11 (commit `db7848d`), so they still carry the leading and
+  trailing whitespace the E2E is meant to run through (siehe „Warum die unbereinigte Fassung“ weiter unten).
+
+Mixing the two is intentional, not drift: the older files exist for the normalisation path, the
+newer one for its rule constructs. Neither vintage may be "harmonised" with the other.
+
+## Warum Dogs of War
+
+Added for issue 0148 (evaluator coverage campaign). This book carries rule constructs no other
+book of either fixture corpus carries: it holds the only `childId="upgrade"` repeats in the
+whole corpus (3 occurrences), i.e. the cell
+
+```
+repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false
+```
+
+which the coverage campaign cannot reach at all without this file. Removing the book would make
+that cell unreachable again.
 
 ## Warum die unbereinigte Fassung
 
@@ -36,3 +65,6 @@ prüft `ui.test.js` explizit.
 Diese Fixture wird **nicht** automatisch mit dem externen Katalog-Fork
 synchronisiert. Sie ändert sich nur, wenn eine App-seitige Funktionsänderung
 (z. B. neue Struktur, neue getestete Regel) das erfordert.
+
+The addition of `Dogs of War.cat` is exactly such a functional reason: the evaluator coverage
+campaign needs a rule construct no file already here provides.

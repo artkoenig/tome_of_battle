@@ -583,6 +583,55 @@
         "src/evaluator/modifiers.repeatParentAny.test.js"
       ],
       "rationale": "Covered by a module test rather than by a scenario, because the corpus's only occurrence is unreachable from any roster: the carrier 'Grappling Hooks' (6eac-4ed9-4511-ff14, a shared selectionEntry of src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst) is named exactly once in the whole corpus - at its own definition - nothing links it, it carries no categoryLink, and the game system declares no forceEntries, so no .ros can put it into a parent frame. The maintainer decided on 2026-08-11 (docs/testing/campaign-state.json, parkedQuestions) to cover the cell on the unit-test track instead of waiving it as untestable, because the entry models a real rule of the game - 1 point per grappling hook and rope, one per model of a skirmishing infantry unit, matching the entry's own comment '1p/model' - and the missing incoming link is an upstream data gap, not a meaningless construct. The test rebuilds the construct on a synthetic catalogue (increment +1 on a cost type, one repeat with field=selections scope=parent childId=any value=1 repeats=1 shared=true includeChildSelections=false includeChildForces=false roundUp=false percentValue=false) and pins five readings separately, so no single wrong reading can pass it: one application per counted selection across frame counts 0, 1, 2 and 3; the counting frame being the selection that holds the carrier, neither the carrier itself nor the enclosing selectionEntryGroup; childId=any counting a selection of a foreign entry; the carrier counting in its own frame while a grandchild is excluded by includeChildSelections=false (rules ALP-R5 and ALP-R2 of docs/testing/at-least-parent-any-reveal carried over unchanged to the repeat axis); and field=selections counting quantities, so one selection with number=2 counts 2."
+    },
+    {
+      "key": "condition|atLeast|self|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/at-least-self-equipment-save"
+      ],
+      "rationale": "Seven rosters over the Bretonnian Lord (bf54-da29-921a-e457, Bretonnia), whose profile infoLink c2cae708-0b6f-4553-9adc-754be21e3d2e carries four Sv decrements, each gated on atLeast 1 selections scope=\"self\" of one equipment id. Roster 01 pins the written base Sv 7 with nothing under the Lord; 02/03/04 isolate Shield, Heavy Armour and Warhorse one at a time; roster 05 is the depth witness - the Barding (3211-d836-02f1-01d0) hangs one level below the mount link, so only includeChildSelections=\"true\" reaches it and a direct-children reading would give 6 instead of 5; roster 07 is the frame witness - a bare Lord beside fully equipped Knights of the Realm carrying the same four target ids stays at Sv 7, where a force- or roster-wide frame would give 2. Scenario is green."
+    },
+    {
+      "key": "condition|lessThan|self|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/less-than-self-mount-and-weapon-gate"
+      ],
+      "rationale": "Five rosters over the Dark Elf Highborn (79af-7092-a9a9-393d, Dark Elves), whose profile infoLink 7ae07422-6715-4692-aeb9-89fbd4ed033f carries an and-group of two lessThan conditions (scope=\"self\", childIds ba90-e917-dbad-292c 'Mounts' and 4c8c-ab06-0b67-d4e8 'CC Weapons' - both selectionEntryGroup ids) beside an atLeast on the shield. Roster 01 pins the unconditional decrement 4 alone; 02 is the measuring baseline with the shield and neither mount nor weapon; 03 differs from it only by a great weapon inside the CC-Weapons group and 04 only by a Dark Pegasus inside the Mounts group - a mount chosen because it carries no Sv modifier of its own, so the falling and-group is the only moving part. Roster 05 records the Dark Steed as the control that cannot separate the two effects. Roster 02 also pins that the mandatory direct child Hand Weapon does not count toward the CC-Weapons group. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|unit|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/unit-scope-repeat-knight-markup"
+      ],
+      "rationale": "Six rosters over 'Knights of the Knightly Orders' (1d77-9e6e-a6ab-573f, The Empire). The entryLink 'Exemplars of Sigmar (Knights)' (dcf8-3a0e-7f04-4dd4) carries increment 2 pts repeated once per Knight model (7b8d-8405-0e74-9f46) counted with scope=\"unit\", and the surcharge is measured through the roster budget budget::ecfa-8486-4f6c-c249, whose limit is set one point below the derived sum in every roster. Rosters 01/02/03 give three support points at 5, 8 and 12 knights, so a single application or a missing one is excluded; 04 is the zero point without the advantage and 05 the sibling advantage that carries no repeat. Roster 06 is the frame witness: a second knight regiment without the advantage leaves the surcharge untouched, where a force-wide count would raise it. Scenario is green."
+    },
+    {
+      "key": "condition|atLeast|roster|limitValue|child=model",
+      "evidence": [
+        "docs/testing/at-least-roster-limit-lord-slots"
+      ],
+      "rationale": "Six rosters over the Bretonnian force 'Standard (BR-AB)', whose Lord categoryLink d1d3-6362-e2f7-23c9 carries the limit d7e7-599d-12cf-1fd1 (max 0) plus a decrement gated on atLeast 1000 and an increment gated on atLeast 2000, both on limit::ecfa-8486-4f6c-c249 with childId=\"model\". The rosters hold byte-identical selections within each family and move nothing but the configured costLimit: 999 against 1000 straddles the first threshold, 1999 against 2000 the second, and 2999 against 3000 the third rung. That pins three things at once - the condition reads the configured budget and not the spent sum (at most 131 points are ever spent), the threshold is inclusive, and childId=\"model\" is inert for a limit query. Scenario is green."
+    },
+    {
+      "key": "repeat|limitValue|roster|child=any|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/at-least-roster-limit-lord-slots"
+      ],
+      "rationale": "Pinned by the same scenario as the sibling condition cell: the increment on the Lord limit d7e7-599d-12cf-1fd1 carries the repeat <repeat value=\"1000\" repeats=\"1\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"roster\" childId=\"any\" ics=\"true\" icf=\"true\"/>, and rosters 04 (costLimit 2000, bound 1) and 06 (costLimit 3000, bound 2) are two support points of its arithmetic - the modifier is applied floor(budget/1000) times, so a single application or a missing repetition would give a different bound in at least one of them. Scenario is green."
+    },
+    {
+      "key": "condition|greaterThan|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/greater-than-id-scope-brain-transplant"
+      ],
+      "rationale": "Four rosters over the Skaven 'Mutant Rat Ogres' (7a4a-301b-af31-9ee0), whose infoLinks carry conditions whose scope is not a keyword but that unit's own id, counting the Brain transplant (8b1c-de3a-982e-e323) two levels below it with includeChildSelections=\"true\". Rosters 01 and 02 differ by exactly that one selection and flip five gated constructs at once - the rule occurrence 12c2-071e-1e09-5918 leaves the info projection, Regeneration enters it, the Ld and WS values move and the mandatory packmaster limit 6fda-622a-eae1-fc61 drops to 0. Roster 03 puts a second Options member beside the transplant, so the frame is proven to count everything under it rather than the first child; roster 04 holds two units, one transplanted and one not, and the single remaining violation proves the frame is the named entry's own selection and not the force. Scenario is green."
+    },
+    {
+      "key": "condition|equalTo|unit|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-unit-inner-circle-markup"
+      ],
+      "rationale": "Five rosters over the Empire knight regiment. The knightly order 'Knights of the Blazing Sun' (f711-222f-99ff-5e01) carries two mutually exclusive markups per knight model, one gated on equalTo 0 and one on equalTo 1 of the Inner Circle link 6e1d-9e41-114f-8128, both scope=\"unit\"; the surcharge is measured through the roster budget budget::ecfa-8486-4f6c-c249 with the limit one point below the derived sum. Roster 01 pins the zero branch, 02 the one branch, 04 isolates the Inner Circle's own markup so the delta between them decomposes, and 05 puts the Inner Circle in a second regiment, where a force-wide frame would raise the sum. Roster 03 chooses the sibling White Wolf link instead: it is a different link with a different target, so the zero branch has to survive. A count above one is not buildable - the link's own max 1 scope=\"parent\" is addressed by no modifier in the book - and the scenario README records that instead of inventing a roster. Scenario is green."
     }
   ]
 }

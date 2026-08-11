@@ -167,7 +167,13 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
 | [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
-| **Summe** | | **381** |
+| [`at-least-self-equipment-save`](testing/at-least-self-equipment-save/) | Definitive Bretonnia + Mercenaries | 7 |
+| [`less-than-self-mount-and-weapon-gate`](testing/less-than-self-mount-and-weapon-gate/) | Definitive Dark Elves + Mercenaries | 5 |
+| [`unit-scope-repeat-knight-markup`](testing/unit-scope-repeat-knight-markup/) | Definitive Empire + Mercenaries | 6 |
+| [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
+| [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
+| [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
+| **Summe** | | **414** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2050,3 +2056,145 @@ Eltern-Rahmen **genau einen** Standartenträger führt.
 > Grenzwert und die Rahmen-Lesart der Kopplung fest; ein Roster zu erfinden, der
 > die Senkung auslöst, wäre kein Beleg aus den Daten. Ob diese Zelle stattdessen
 > als dauerhaft unprüfbar erklärt werden sollte, ist eine Frage an den Menschen.
+
+## `at-least-self-equipment-save`
+
+Prüft die `atLeast`-Bedingung mit `scope="self"` und einer **Eintrags-Id** als
+`childId` (§7.7/§13.2 der Formatdoku): Zählrahmen ist die Auswahl, die die
+Abfrage trägt, gezählt wird, was **unter** ihr steht — mit
+`includeChildSelections="true"` auch tiefer Verschachteltes. Beleg: der
+Bretonnian Lord (`bf54-da29-921a-e457`, Bretonnia) trägt an seinem
+Profil-Verweis (`c2cae708-0b6f-4553-9adc-754be21e3d2e`) vier
+`decrement`-Modifikatoren auf den Rüstungswurf `Sv`, jeder an genau ein
+Ausrüstungsstück gekoppelt: Schild, Barding, Streitross und schwere Rüstung.
+Der geschriebene Basiswert ist 7.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Lord ohne jede Ausrüstung | Keine Bedingung hält — der Rüstungswurf steht auf dem geschriebenen Basiswert |
+| 02 | Lord mit Schild | Genau ein Abzug greift |
+| 03 | Lord mit schwerer Rüstung | Der doppelte Abzug greift — der einzige Modifikator mit Wert 2 |
+| 04 | Lord auf dem Streitross, ohne Barding | Das Reittier zählt, die Barding noch nicht |
+| 05 | Lord auf dem Streitross **mit** Barding | Die Barding hängt eine Ebene unter dem Reittier: sie zählt mit. Eine Lesart, die nur direkte Kinder zählte, käme hier auf einen zu hohen Wert |
+| 06 | Lord mit allen vier Stücken | Alle vier Abzüge summieren sich; katalogkonform gebaut, alle Pflichten erfüllt |
+| 07 | Nackter Lord neben voll ausgerüsteten Rittern derselben Armee | Unverändert Basiswert: der Rahmen ist der Träger, nicht das Kontingent oder die Armee |
+
+> **Bewusst nicht katalogkonform:** Die Roster 01–05 und 07 lassen die
+> Pflichten des Lords (Gelübde, Reittier-Wahl, Handwaffe, schwere Rüstung)
+> offen — ein Lord *ohne* schwere Rüstung ist sonst nicht baubar, und der
+> Basiswert wäre nie sichtbar. Diese Grenzen stehen deshalb in keiner der
+> beiden Erwartungslisten; Roster 06 ist das konforme Gegenstück.
+
+## `less-than-self-mount-and-weapon-gate`
+
+Prüft die `lessThan`-Bedingung mit `scope="self"`, deren `childId` eine
+**Gruppen-Id** benennt (§7.7/§13.2 der Formatdoku): gezählt wird im Rahmen des
+Trägers, was unter ihm steht — eine Auswahl **innerhalb** der benannten Gruppe
+zählt für die Gruppe —, und `lessThan 1` heißt schlicht „nichts davon
+vorhanden". Beleg: der Highborn (`79af-7092-a9a9-393d`, Dark Elves) trägt an
+seinem Profil-Verweis (`7ae07422-6715-4692-aeb9-89fbd4ed033f`) acht
+`decrement`-Modifikatoren auf `Sv`; einer davon hängt an einer `and`-Gruppe aus
+„kein Reittier" (`ba90-e917-dbad-292c`), „Schild vorhanden"
+(`0b9c-d3ff-6535-74cd`) und „keine Nahkampfwaffe" (`4c8c-ab06-0b67-d4e8`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Highborn nur mit seinen Pflichtkindern | Allein der bedingungslose Abzug greift — er nagelt den Modifikator ohne jede Bedingung fest |
+| 02 | Zusätzlich Schild | Messgrundlage: Schild-Abzug **und** der Abzug der `and`-Gruppe greifen |
+| 03 | Schild **und** Großwaffe aus der Gruppe „CC Weapons" | Die `and`-Gruppe fällt an ihrem Waffen-Glied: ein Abzug weniger |
+| 04 | Schild **und** Dunkler Pegasus aus der Gruppe „Mounts" | Die `and`-Gruppe fällt an ihrem Reittier-Glied. Der Pegasus ist gewählt, weil er als einziges Reittier keinen eigenen Abzug trägt — sonst wäre die Wirkung nicht zu trennen |
+| 05 | Schild **und** Dunkles Streitross | Kontrolle: hier verlöre man die Gruppe und gewänne den Streitross-Abzug — das Ergebnis wäre dasselbe, die Regel also nicht messbar |
+
+> Roster 02 nagelt zusätzlich fest, dass die **Pflicht-Handwaffe** des Highborn
+> kein Mitglied der Gruppe „CC Weapons" ist und deshalb nicht mitzählt.
+
+## `unit-scope-repeat-knight-markup`
+
+Prüft die **Wiederholung** mit `scope="unit"` und einer Eintrags-Id als
+`childId` (§7.7/§13.2 der Formatdoku): gezählt wird in der umschließenden
+Einheit des Trägers, und der Modifikator greift einmal je gezählter Auswahl.
+Beleg: der ritterliche Vorteil „Exemplars of Sigmar"
+(`dcf8-3a0e-7f04-4dd4`, The Empire) trägt `increment 2` auf die Punkte,
+wiederholt je Ritter-Modell (`7b8d-8405-0e74-9f46`) der Einheit „Knights of
+the Knightly Orders" (`1d77-9e6e-a6ab-573f`). Weil eine Kostenart kein Feld
+am Slot hat, wird der Aufschlag über das eingestellte Punktebudget gemessen:
+das Limit steht in jedem Roster genau einen Punkt unter der hergeleiteten
+Summe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kleinstes Regiment: 5 Ritter mit dem Vorteil | Der Aufschlag greift fünfmal — das Budget kippt |
+| 02 | 8 Ritter mit dem Vorteil | Achtmal |
+| 03 | 12 Ritter mit dem Vorteil | Zwölfmal. Drei Stützstellen schließen eine einmalige Anwendung aus |
+| 04 | 8 Ritter **ohne** den Vorteil | Nullpunkt: kein Aufschlag, die Differenz zu Roster 02 ist genau der Aufschlag |
+| 05 | 8 Ritter mit dem Schwester-Vorteil „Blessed" | Der trägt keine Wiederholung: ebenfalls kein Aufschlag |
+| 06 | Zwei Regimenter — 5 Ritter mit Vorteil, 8 ohne | Rahmen-Beweis: nur die eigene Einheit zählt. Kontingentweit wären es 13 Ritter und der Aufschlag entsprechend höher |
+
+## `at-least-roster-limit-lord-slots`
+
+Prüft die `atLeast`-Bedingung auf das **eingestellte Kostenlimit** mit
+`childId="model"` (§7.7/§13.2 der Formatdoku) und zugleich die Wiederholung
+je 1000 Punkte an derselben Grenze. Beleg: der Lord-`categoryLink`
+(`d1d3-6362-e2f7-23c9`) des bretonischen Kontingents „Standard (BR-AB)" trägt
+die Grenze `d7e7-599d-12cf-1fd1` (`max 0`), einen `decrement` ab 1000 Punkten
+und einen `increment` ab 2000 Punkten, der sich je angefangener 1000 Punkte
+wiederholt. Innerhalb einer Roster-Familie sind die Auswahlen identisch —
+allein die eingestellte Punktgrenze bewegt sich, verplant sind nie mehr als
+131 Punkte.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Lord, Budget 999 | Keine der beiden Schwellen erreicht: die Grenze steht auf ihrem geschriebenen Wert und der Lord verletzt sie |
+| 02 | Ein Lord, Budget 1000 | Die erste Schwelle greift exakt auf dem Wert — die Schranke wird rechnerisch negativ |
+| 03 | Ein Lord, Budget 1999 | Unverändert: die zweite Schwelle ist noch nicht erreicht |
+| 04 | Ein Lord, Budget 2000 | Zweite Schwelle erreicht, die Wiederholung greift zweimal: genau ein Lord ist erlaubt, die Grenze schweigt |
+| 05 | Zwei Lords, Budget 2999 | Immer noch nur einer erlaubt — die Grenze feuert |
+| 06 | Zwei Lords, Budget 3000 | Eine Wiederholung mehr: zwei Lords sind erlaubt, die Grenze schweigt |
+
+> **Rechnerisch negative Schranke:** Die Roster 02 und 03 nageln fest, dass ein
+> aus Modifikatoren *errechneter* Wert `-1` **nicht** der Sentinel
+> „unbegrenzt" ist — der gilt laut Formatdoku §7.6 nur für hingeschriebene
+> Werte. Eine Lesart, die hier auf „unbegrenzt" umschaltete, erlaubte bei 1500
+> Punkten beliebig viele Lords.
+
+## `greater-than-id-scope-brain-transplant`
+
+Prüft eine Bedingung, deren `scope` **kein Schlüsselwort**, sondern die Id
+eines Katalog-Eintrags ist (§7.6, Zeile „(Spezifische ID)"): Zählrahmen ist
+die Auswahl dieses Eintrags, und mit `includeChildSelections="true"` zählt
+alles darunter, gleich wie tief. Beleg: die Skaven-Einheit „Mutant Rat Ogres"
+(`7a4a-301b-af31-9ee0`) trägt zehn Bedingungen dieser Form auf ihre eigene Id;
+fünf davon hängen am „Brain transplant" (`8b1c-de3a-982e-e323`), der zwei
+Ebenen tiefer in der Options-Gruppe eines Rat Ogre steht. Gespielt wird im
+Kontingent „Hell Pit (WD-311)" — dem einzigen, in dem die Einheit überhaupt
+eingeblendet wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne jede Option | Nichts hält: die Regel „Loss of Packmaster Ogres" steht sichtbar in der Info-Projektion, das Profil auf Basiswerten, die Packmaster-Pflicht feuert |
+| 02 | Dieselbe Einheit mit einem Brain transplant | Eine einzige Auswahl kippt fünf Konstrukte zugleich: die Regel verschwindet, „Regeneration" erscheint, zwei Profilwerte steigen, die Pflicht fällt auf null |
+| 03 | Zwei Optionen — „Powerhouses" **und** Brain transplant | Der Rahmen zählt alles unter sich, nicht nur das erste Kind |
+| 04 | Zwei Einheiten, nur eine mit Transplantat | Rahmen-Beweis: die untransplantierte Einheit behält ihre Pflicht — der Rahmen ist die benannte Auswahl, nicht das Kontingent |
+
+## `equal-to-unit-inner-circle-markup`
+
+Prüft die `equalTo`-Bedingung mit `scope="unit"` und einer **Link**-Id als
+`childId` (§7.7/§13.2 der Formatdoku): gezählt wird in der umschließenden
+Einheit, und die Bedingung hält nur bei exakt dem geschriebenen Wert. Beleg:
+der Ritterorden „Knights of the Blazing Sun" (`f711-222f-99ff-5e01`, The
+Empire) trägt zwei einander ausschließende Aufschläge je Ritter-Modell — 3
+Punkte bei genau null, 5 Punkte bei genau einer Auswahl des Inner-Circle-Links
+(`6e1d-9e41-114f-8128`). Gemessen wird über das eingestellte Punktebudget.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Orden, kein Innerer Zirkel | Der Zähler steht auf null: der kleine Aufschlag greift |
+| 02 | Orden **und** Innerer Zirkel | Der Zähler steht auf eins: der größere Aufschlag greift |
+| 03 | Orden **und** das Schwester-Link „White Wolf" | Ein anderer Link mit anderem Ziel erfüllt die benannte Id nicht — der kleine Aufschlag bleibt |
+| 04 | Innerer Zirkel ohne Orden | Zerlegt die Differenz: der Zirkel hat einen eigenen Aufschlag, der nichts mit der Bedingung zu tun hat |
+| 05 | Zwei Regimenter, der Zirkel im **anderen** | Rahmen-Beweis: die Bedingung sieht nur die eigene Einheit |
+
+> **Nicht baubar, offen erklärt:** Ein Zähler über eins ist auf diesen Daten
+> nicht herstellbar — die `max 1`-Grenze am Link wird von keinem Modifikator
+> des Armeebuchs angefasst. Das Szenario behauptet deshalb nichts über diesen
+> Fall, statt einen Roster zu erfinden.

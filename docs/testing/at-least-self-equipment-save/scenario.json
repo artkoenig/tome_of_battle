@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-self-equipment-save",
+  "description": "Eine condition type=\"atLeast\" mit scope=\"self\" nimmt die Auswahl, die die Query traegt, als Zaehlrahmen und zaehlt die Auswahlen UNTER diesem Traeger — mit includeChildSelections=\"true\" auch die tiefer verschachtelten. Am Bretonnian Lord (bf54-da29-921a-e457, Bretonnia) haengen vier decrement-Modifikatoren am infoLink c2cae708-0b6f-4553-9adc-754be21e3d2e (Profil 58b5-73df-d1c1-7387, Basis Sv 7), je gegattert durch genau eine solche Bedingung: Shield 50e2-1873-a856-03e7 (-1), Barding 3211-d836-02f1-01d0 (-1), Bretonnian Warhorse adc2-53db-4a9e-b8ea (-1) und Heavy Armour dde4-0ba8-7b3c-57b7 (-2). Jeder Modifikator feuert genau dann, wenn sein Ausruestungsteil irgendwo unter dem Lord steht; Sv ist der geschriebene Basiswert minus der Summe der greifenden Abzuege. Roster 05 fuehrt das Barding UEBER das Pferd ein (eine Ebene tiefer als die direkten Kinder) und trennt damit \"zaehlt in beliebiger Tiefe unter dem Traeger\" von \"zaehlt nur direkte Kinder\"; Roster 07 stellt den nackten Lord neben eine voll ausgeruestete Einheit derselben Force und trennt scope=\"self\" von force/roster. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-lord-bare-sv-7.ros",
+      "description": "Grundlinie: der Bretonnian Lord und SONST NICHTS. Keine der vier Bedingungen haelt, kein Abzug greift — Sv steht auf dem geschriebenen Basiswert 7. Bewusst nicht katalogkonform: die Pflichten Vow (5352-910f-fe13-a8f5), Mounts (8f92-2c89-5335-8ce8), Hand Weapon (1d32-3280-ccc4-5f89 / bdef-ba9b-d6ce-5b14) und Heavy Armour (fbf1-0ef9-150e-90da) bleiben unerfuellt — siehe README; sie stehen deshalb weder in firing noch in absent.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5d7c-add5-0e19-7649",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "bb04-e762-5ef0-a6bc",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-lord-shield-sv-6.ros",
+      "description": "Bis auf den Schild identisch mit Roster 01. Der Schild (50e2-1873-a856-03e7) haengt als direktes Kind am Lord: allein die Shield-Bedingung haelt (Ist 1 / Schwelle 1), allein ihr decrement 1 greift — Sv 7 - 1 = 6.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5d7c-add5-0e19-7649",
+          "61e6-14a6-8422-d83a",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "bb04-e762-5ef0-a6bc",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "6" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-lord-heavy-armour-sv-5.ros",
+      "description": "Bis auf die Schwere Ruestung identisch mit Roster 01. Nur die Heavy-Armour-Bedingung (dde4-0ba8-7b3c-57b7) haelt; ihr Modifikator traegt als einziger den Wert 2 — Sv 7 - 2 = 5. Der Zeuge dafuer, dass der decrement-value aus dem Katalog kommt und nicht pauschal 1 ist.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "8df7-8f2d-4b60-a938",
+          "40c1-e17a-2dd8-fba6",
+          "5d7c-add5-0e19-7649",
+          "25d8-9ea5-9936-d44c",
+          "bb04-e762-5ef0-a6bc",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-lord-warhorse-sv-6.ros",
+      "description": "Der Lord auf dem Bretonnian Warhorse (adc2-53db-4a9e-b8ea) aus der Gruppe Mounts, OHNE Barding. Nur die Warhorse-Bedingung haelt — Sv 7 - 1 = 6. Erste Haelfte des Tiefen-Messpaares mit Roster 05.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "25d8-9ea5-9936-d44c",
+          "d1fd-8f42-122a-e2b6",
+          "bb04-e762-5ef0-a6bc",
+          "5d7c-add5-0e19-7649",
+          "8df7-8f2d-4b60-a938",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "6" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-lord-warhorse-barding-sv-5.ros",
+      "description": "Bis auf das Barding identisch mit Roster 04. Das Barding (3211-d836-02f1-01d0) haengt UNTER dem Pferd, also eine Ebene tiefer als die direkten Kinder des Lords — trotzdem haelt seine Bedingung, weil sie includeChildSelections=\"true\" traegt: Sv 7 - 1 (Pferd) - 1 (Barding) = 5. Das Messpaar 04/05 trennt \"zaehlt alles unter dem Traeger\" von \"zaehlt nur direkte Kinder\".",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "25d8-9ea5-9936-d44c",
+          "d1fd-8f42-122a-e2b6",
+          "ffd4-6f1b-e014-6708",
+          "bb04-e762-5ef0-a6bc",
+          "5d7c-add5-0e19-7649",
+          "8df7-8f2d-4b60-a938",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "5" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-lord-all-four-sv-2.ros",
+      "description": "Alle vier Ausloeser zugleich, in einem in jeder Hinsicht katalogkonformen Lord: Knights Vow, Hand Weapon, Schild, Schwere Ruestung, Bretonnian Warhorse mit Barding. Alle vier Bedingungen halten, alle vier Abzuege summieren sich auf demselben Feld: Sv 7 - 1 (Schild) - 1 (Barding) - 1 (Pferd) - 2 (Schwere Ruestung) = 2. Weil hier keine Pflicht offen bleibt, stehen auch die Mindestgrenzen des Lords in absent.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "5352-910f-fe13-a8f5",
+          "d7b1-1663-7bd9-d8c4",
+          "8f92-2c89-5335-8ce8",
+          "bb04-e762-5ef0-a6bc",
+          "1d32-3280-ccc4-5f89",
+          "ce85-f523-bccd-ba01",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "fbf1-0ef9-150e-90da",
+          "8df7-8f2d-4b60-a938",
+          "40c1-e17a-2dd8-fba6",
+          "5d7c-add5-0e19-7649",
+          "61e6-14a6-8422-d83a",
+          "25d8-9ea5-9936-d44c",
+          "d1fd-8f42-122a-e2b6",
+          "ffd4-6f1b-e014-6708",
+          "dde3-d464-c6d0-8ec8"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "2" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-bare-lord-beside-equipped-knights-sv-7.ros",
+      "description": "Der nackte Lord aus Roster 01, diesmal neben einer voll ausgeruesteten Einheit Knights of the Realm (3f3b-a058-295e-9046) im selben Kontingent: Schild, Schwere Ruestung, Bretonnian Warhorse und Barding liegen dort mit exakt denselben Ziel-Ids. Kontingent- und rosterweit stehen also alle vier Ausloeser — der Lord traegt aber keinen davon, und sein Sv muss auf 7 bleiben. Der scharfe Nachweis, dass scope=\"self\" den Traeger meint und nicht force/roster. Kontrolle: das Profil der Ritter (infoLink 33f1d553-c707-4d02-8afb-decba0bfda79) traegt gar keine Modifikatoren und steht auf seinem geschriebenen Sv 2. Die Mindestgrenzen des nackten Lords bleiben offen und stehen daher weder in firing noch in absent.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "bb04-e762-5ef0-a6bc",
+          "d7b1-1663-7bd9-d8c4",
+          "ce85-f523-bccd-ba01",
+          "5d7c-add5-0e19-7649",
+          "8df7-8f2d-4b60-a938",
+          "25d8-9ea5-9936-d44c",
+          "f9c2-08f7-b725-fc4f",
+          "4290-e0b1-7133-af5e",
+          "9ed7-1760-ae79-5bf9",
+          "26c6-cd4f-cbda-df74",
+          "35e2-2056-4819-ce26",
+          "b538-0c35-164b-f2fc",
+          "40af-b071-49ff-bcf2",
+          "69fe-0a04-43da-2add",
+          "be7d-a70d-b7a8-9844",
+          "4ddd-2080-b7b3-45c4",
+          "2a22-b99c-6fc1-a325",
+          "0649-26da-b091-2e85",
+          "749f-9bd8-9e4c-6aef",
+          "e8f9-12ba-284b-0e66",
+          "f135-8299-0871-ee77",
+          "9ecf-1fbe-13d8-d602",
+          "2350-1fb7-a7ff-186b"
+        ],
+        "capabilities": [
+          {
+            "defId": "bf54-da29-921a-e457",
+            "anchorKind": "occupied",
+            "name": "Bretonnian Lord",
+            "infoElements": [
+              {
+                "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+                "kind": "profile",
+                "name": "Bretonnian Lord",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "7" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "6" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "4" }
+                ]
+              }
+            ]
+          },
+          {
+            "defId": "3f3b-a058-295e-9046",
+            "anchorKind": "occupied",
+            "name": "Knights of the Realm",
+            "infoElements": [
+              {
+                "id": "33f1d553-c707-4d02-8afb-decba0bfda79",
+                "kind": "profile",
+                "name": "Knight of the Realm",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "characteristics": [
+                  { "typeId": "f1be-e66c-d5e1-673c", "value": "2" },
+                  { "typeId": "d4a9-0ed4-d041-e54b", "value": "7" },
+                  { "typeId": "f95b-da01-0578-3bdc", "value": "4" },
+                  { "typeId": "8712-f56f-5b22-a720", "value": "3" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
