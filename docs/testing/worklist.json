@@ -7,103 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 114,
-    "uncovered": 16
+    "covered": 115,
+    "uncovered": 15
   },
   "cells": [
-    {
-      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "force",
-        "childId": "id",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": true,
-        "includeChildForces": true,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 9,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 9
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "eaf6-a701-f67e-7c26",
-            "name": "Flesh Hounds"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "7dc4-fb32-003b-c289",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "65a1-b008-9ddc-1e1c",
-            "name": "Nurglings"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "c417-3a98-07c2-08dd",
-            "repeats": "1"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "96c1-5655-edfe-4cb8",
-            "name": "Screamers"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "force",
-            "childId": "c539-4c54-33b5-47c3",
-            "repeats": "1"
-          }
-        }
-      ]
-    },
     {
       "key": "repeatList|n=gt1|on=modifier",
       "kind": "repeatList",

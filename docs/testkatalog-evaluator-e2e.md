@@ -175,7 +175,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
 | [`at-least-id-scope-inner-circle-champion`](testing/at-least-id-scope-inner-circle-champion/) | Definitive Empire + Mercenaries | 4 |
 | [`equal-to-self-general-black-arc`](testing/equal-to-self-general-black-arc/) | Definitive Dark Elves + Mercenaries | 4 |
-| **Summe** | | **422** |
+| [`force-repeat-bloodletters-flesh-hound-slots`](testing/force-repeat-bloodletters-flesh-hound-slots/) | Definitive Forces of Chaos + Mercenaries | 7 |
+| **Summe** | | **429** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2251,3 +2252,25 @@ nötig wären.
 > Eltern- als auch im Kontingent-Rahmen. Die Roster trennen `equalTo` deshalb
 > nur nach unten von `atLeast`, nicht nach oben; das Szenario sagt das statt
 > einen Roster zu erfinden.
+
+## `force-repeat-bloodletters-flesh-hound-slots`
+
+Prüft einen `<repeat>` mit `scope="force"` und einer Eintrags-Id als `childId`:
+der Modifikator greift einmal je gezählter Auswahl im Kontingent. Beleg: die
+Chaos-Einheit „Flesh Hounds" (`eaf6-a701-f67e-7c26`) trägt eine
+kontingentweite Obergrenze mit dem geschriebenen Wert 0
+(`7f35-5f3f-42c9-be19`). Im Kontingent „Daemonic Legion (SoC)"
+(`93f4-7522-86e9-7d45`) hebt ein `increment 1` sie je Bloodletters-Einheit
+(`7dc4-fb32-003b-c289`) an; außerhalb dieses Kontingents hebt ein `set -1` sie
+stattdessen ganz auf. Fünf Roster steigen die Wiederholungsleiter hinauf, zwei
+laufen dieselben Auswahlen im anderen Kontingent.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Legion, keine Bloodletters, eine Meute | Null Wiederholungen: der Basiswert 0 steht, die Grenze feuert |
+| 02 | Legion, eine Bloodletters-Einheit, zwei Meuten | Eine Wiederholung: eine Meute wäre erlaubt, zwei feuern |
+| 03 | Legion, zwei Bloodletters-Einheiten, zwei Meuten | Zwei Wiederholungen: passt genau, kein Verstoß |
+| 04 | Legion, zwei Bloodletters-Einheiten, drei Meuten | Dieselbe Grenze feuert eine Meute zu spät |
+| 05 | Legion, drei Bloodletters-Einheiten, drei Meuten | Dritte Wiederholung: passt wieder |
+| 06 | Standard-Kontingent, keine Bloodletters, zwei Meuten | Statt der Anhebung greift die Aufhebung: keine Obergrenze |
+| 07 | Standard-Kontingent, auswahlgleich zu 04 | Gegenprobe: dieselben Auswahlen, aber stumm — das Gatter am `increment` hängt am Kontingent |

@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "name": "force-repeat-bloodletters-flesh-hound-slots",
+  "description": "Ein <repeat value=\"1\" repeats=\"1\" field=\"selections\" scope=\"force\" childId=\"7dc4-fb32-003b-c289\" shared=\"true\" roundUp=\"false\" includeChildSelections=\"true\" includeChildForces=\"true\"> an einem increment-Modifikator wendet diesen EINMAL JE gezaehlter Auswahl des benannten Eintrags im KONTINGENT an - childId ist hier eine Eintrags-Id (die Wurzel-Einheit 'Bloodletters', Forces-of-Chaos-.cat Z. 5634), nicht eine Kategorie und kein Kostenlimit. Traeger ist die Wurzel-Einheit 'Flesh Hounds' eaf6-a701-f67e-7c26 (Z. 5790) mit der einen Grenze max 0 selections scope=force shared=true includeChildSelections=false (7f35-5f3f-42c9-be19, Z. 5886) und genau zwei Schreibern darauf: einem set -1, gegattert per notInstanceOf auf das Kontingent 'Daemonic Legion (SoC)' 93f4-7522-86e9-7d45 (Z. 5801), und dem increment 1 mit dem <repeat>, gegattert per instanceOf auf dasselbe Kontingent (Z. 5807). Daraus folgt: IN der Daemonic Legion ist das wirksame Maximum der Flesh Hounds gleich der Zahl der Bloodletters-Einheiten im Kontingent (0 -> 0, 1 -> 1, 2 -> 2, 3 -> 3); AUSSERHALB ist die Grenze per hingeschriebenem Sentinel -1 aufgehoben, unabhaengig von jeder Bloodletters-Auswahl. Fuenf Roster in der Daemonic Legion laufen die Leiter ab und straddeln sie zweimal (Ist 2 gegen bound 1, Ist 3 gegen bound 2), zwei Roster im Kontingent 'Standard (HC-AB + BC-AB)' d403-5cc9-152c-2093 pinnen die Aufhebung - darunter eine auswahlgleiche Gegenprobe zu dem Roster, das in der Daemonic Legion feuert. Die Sichtbarkeitsgatter beider Einheiten (set hidden=true bei instanceOf 'Archaon's Horde (SoC)' f1d2-edba-0f35-030a bzw. zusaetzlich bei 'Morghur' 1d54-5b22-90c0-96c4) sind bewusst nicht ausgeloest: kein Roster nutzt dieses Kontingent oder diesen Charakter.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-daemonic-legion-no-bloodletters-max-0.ros",
+      "description": "Kontingent 'Daemonic Legion (SoC)' mit EINER Einheit Flesh Hounds (5 Modelle) und KEINER Bloodletters-Auswahl. Der set -1 greift nicht (notInstanceOf haelt im eigenen Kontingent nicht), der increment ist zwar gegattert-an, sein <repeat> zaehlt aber 0 Bloodletters => 0 Anwendungen. Die Grenze 7f35-5f3f-42c9-be19 behaelt ihren geschriebenen Basiswert max 0 und feuert mit Ist 1. Damit ist der unwiederholte Basiswert gepinnt.",
+      "expect": {
+        "firing": [
+          { "limitId": "7f35-5f3f-42c9-be19", "actual": 1, "bound": 0 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "93f4-7522-86e9-7d45",
+            "name": "Flesh Hounds",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-bloodletters-two-flesh-hounds-max-1-fires.ros",
+      "description": "Dasselbe Kontingent, zusaetzlich EINE Einheit Bloodletters (10 Modelle, Hand Weapon, Light Armour). Der <repeat> zaehlt 1 Treffer => der increment 1 wird EINMAL angewendet => wirksames Maximum 0 + 1 = 1. Der Flesh-Hounds-Traeger steht mit number=2 und feuert die Grenze mit Ist 2 / Grenze 1 - der erste Wiederholungsschritt ist damit als genau ein Schritt gepinnt (nicht als Pauschale und nicht als zwei).",
+      "expect": {
+        "firing": [
+          { "limitId": "7f35-5f3f-42c9-be19", "actual": 2, "bound": 1 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "93f4-7522-86e9-7d45",
+            "name": "Flesh Hounds",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-bloodletters-two-flesh-hounds-max-2.ros",
+      "description": "ZWEI getrennte Auswahlen Bloodletters (je number=1) im selben Kontingent => der <repeat> zaehlt 2 Treffer => der increment greift ZWEIMAL => wirksames Maximum 0 + 2 = 2. Der Flesh-Hounds-Traeger steht mit number=2 und passt damit genau hinein: 7f35-5f3f-42c9-be19 feuert NICHT, der Slot meldet Ist 2 bei effectiveMax 2, headroom 0, isBlocked. Zweiter Wiederholungsschritt.",
+      "expect": {
+        "firing": [],
+        "absent": ["7f35-5f3f-42c9-be19"],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "93f4-7522-86e9-7d45",
+            "name": "Flesh Hounds",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 2,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-two-bloodletters-three-flesh-hounds-max-2-fires.ros",
+      "description": "Wie Roster 03 (zwei gezaehlte Bloodletters => wirksames Maximum 2), aber der Flesh-Hounds-Traeger steht mit number=3. Die Grenze feuert mit Ist 3 gegen den ANGEHOBENEN bound 2 - zwei Wiederholungsschritte ueber dem geschriebenen Basiswert 0 aus Roster 01.",
+      "expect": {
+        "firing": [
+          { "limitId": "7f35-5f3f-42c9-be19", "actual": 3, "bound": 2 }
+        ],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "93f4-7522-86e9-7d45",
+            "name": "Flesh Hounds",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 2,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-three-bloodletters-three-flesh-hounds-max-3.ros",
+      "description": "DREI Auswahlen Bloodletters, sonst identisch zu Roster 04: der <repeat> zaehlt 3 Treffer => der increment greift DREIMAL => wirksames Maximum 0 + 3 = 3. Dieselben drei Einheiten Flesh Hounds, die in Roster 04 feuerten, sind hier legal - der Faktor waechst also ueber zwei Wiederholungen hinaus weiter. 7f35-5f3f-42c9-be19 feuert NICHT, der Slot meldet Ist 3 bei effectiveMax 3, headroom 0, isBlocked.",
+      "expect": {
+        "firing": [],
+        "absent": ["7f35-5f3f-42c9-be19"],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "93f4-7522-86e9-7d45",
+            "name": "Flesh Hounds",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": 3,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-standard-force-no-bloodletters-unlimited.ros",
+      "description": "Kontingent 'Standard (HC-AB + BC-AB)' d403-5cc9-152c-2093 - NICHT die Daemonic Legion. Die notInstanceOf-Bedingung haelt, der set -1 schreibt den Sentinel -1 auf 7f35-5f3f-42c9-be19: die Grenze ist aufgehoben (hingeschriebener Wert, docs/battlescribe-data-format.md 7.6). Zwei Einheiten Flesh Hounds ohne jede Bloodletters-Auswahl sind legal, obwohl in Roster 01 bereits EINE gegen die Basis 0 feuerte. Der Slot meldet kein Hoechstmass (effectiveMax null, headroom null, nicht blockiert).",
+      "expect": {
+        "firing": [],
+        "absent": ["7f35-5f3f-42c9-be19"],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "d403-5cc9-152c-2093",
+            "name": "Flesh Hounds",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/07-standard-force-two-bloodletters-unlimited.ros",
+      "description": "AUSWAHLGLEICHE Gegenprobe zu Roster 04 (zwei Bloodletters, drei Flesh Hounds), nur im Kontingent 'Standard (HC-AB + BC-AB)'. Der increment mit dem <repeat> ist hier ausgegattert (instanceOf haelt nicht), stattdessen greift der set -1: die Grenze ist aufgehoben statt auf 2 gestaffelt. Dieselben drei Einheiten Flesh Hounds feuern NICHT. Der Unterschied zwischen 04 und 07 ist ausschliesslich das Kontingent - damit ist gepinnt, dass der <repeat> nur zaehlt, wenn die Bedingung des tragenden Modifikators haelt, und dass die Bloodletters ausserhalb der Daemonic Legion keine Slots erzeugen.",
+      "expect": {
+        "firing": [],
+        "absent": ["7f35-5f3f-42c9-be19"],
+        "capabilities": [
+          {
+            "defId": "eaf6-a701-f67e-7c26",
+            "anchorKind": "occupied",
+            "frameDefId": "d403-5cc9-152c-2093",
+            "name": "Flesh Hounds",
+            "current": 3,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isBlocked": false
+          }
+        ]
+      }
+    }
+  ]
+}

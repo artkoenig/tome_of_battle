@@ -646,6 +646,13 @@
         "docs/testing/equal-to-self-general-black-arc"
       ],
       "rationale": "Four rosters over the Dark Elves characters Highborn (79af-7092-a9a9-393d) and Noble (bd43-41c0-298e-22be). Both carry the byte-identical append 'Captain of the Black Arc' on field=\"name\", gated by an and-group of an equalTo 1 condition with scope=\"self\" on their own General entryLink (7a1e-c134-434e-3313 resp. 030a-4b09-0210-225c) and an instanceOf of the contingent The Raiding Army (4b5b-aebb-1526-91bb). Roster 01 puts both characters into that contingent with the General on the Highborn only: his name gains the suffix, the Noble keeps his plain name - a force- or roster-wide frame would name both. Roster 02 mirrors it onto the Noble, roster 03 drops the General so the counter is 0 and neither name changes, roster 04 repeats 01 in a different contingent so the second member of the and-group falls. A counter above one is not buildable - the shared General upgrade 1b7c-2c90-6d96-28c9 carries max 1 scope=\"parent\" and max 1 scope=\"force\" - and the README records that instead of inventing a roster, together with the note that the pair therefore does not separate equalTo from atLeast on the upper side. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/force-repeat-bloodletters-flesh-hound-slots"
+      ],
+      "rationale": "Seven rosters over the Forces of Chaos unit Flesh Hounds (eaf6-a701-f67e-7c26), whose force-scoped max 7f35-5f3f-42c9-be19 is written as 0 and raised by an increment 1 whose <repeat> counts the Bloodletters unit (7dc4-fb32-003b-c289) with scope=\"force\", repeats=1, includeChildSelections and includeChildForces true. Inside the contingent Daemonic Legion (SoC) 93f4-7522-86e9-7d45 the rosters walk the repetition ladder: 0 Bloodletters leaves the base value and fires at 1/0, one allows one and fires at 2/1, two allow two - silent at 2/2, firing at 3/2 - and three allow three, silent at 3/3. Two more rosters run the identical selections in a contingent that is not the Daemonic Legion, where the sibling set -1 lifts the limit instead and the gated increment never applies, so effectiveMax is unbounded; roster 07 is selection-identical to the firing roster 04 and stays silent. The bound is read off the limit itself (actual/bound) and off effectiveMax on the slot. Scenario is green."
     }
   ]
 }
