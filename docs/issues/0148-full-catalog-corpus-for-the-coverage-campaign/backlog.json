@@ -305,7 +305,7 @@
       "depth": "full",
       "status": "todo",
       "note": "This is INC-2 re-cut, not INC-2 handed back: what blocked it was a document no criterion named, so the bsdata reference is now in scope with an explicit sweep-the-whole-file criterion, and the three remaining reference documents are explicitly pushed to INC-4 so the same out-of-criteria discovery cannot block this one again. The fixture landing itself is a solved problem: the blocked branch claude/evaluator-ergofang-daten-ni8js9--INC-2 carries the seven verified files, the re-baselined corpus test, the regenerated worklist and two of the three bsdata corrections, all with exit-0 commands in three rounds, and its recorded steps hold the measured figures and checksums. Starting from that branch instead of from nothing is the obvious economy. The risk left is the sweep's completeness, which is why it is a criterion about enumeration rather than about individual figures.",
-      "branch": "",
+      "branch": "claude/evaluator-ergofang-daten-ni8js9--INC-3",
       "steps": [],
       "attempts": []
     },
