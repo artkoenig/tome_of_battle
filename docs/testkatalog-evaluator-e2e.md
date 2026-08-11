@@ -178,7 +178,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`force-repeat-bloodletters-flesh-hound-slots`](testing/force-repeat-bloodletters-flesh-hound-slots/) | Definitive Forces of Chaos + Mercenaries | 7 |
 | [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
 | [`greater-than-self-blessed-spawning-slots`](testing/greater-than-self-blessed-spawning-slots/) | Definitive Lizardmen + Mercenaries | 5 |
-| **Summe** | | **440** |
+| [`id-scope-repeat-powerhouses-per-pack`](testing/id-scope-repeat-powerhouses-per-pack/) | Definitive Skaven + Mercenaries | 7 |
+| **Summe** | | **447** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2321,3 +2322,28 @@ genau 0, 1 und 2.
 | 03 | Je eine Option in beiden | Beide Special — bei eins hält „mehr als eins" noch nicht |
 | 04 | Je zwei Optionen in beiden | Beide Rare, und die Rare-Obergrenze feuert |
 | 05 | Zwei Optionen nur im ersten Regiment | Rahmen-Beweis: das andere bleibt Core, ein kontingentweiter Zähler läse null Core |
+
+## `id-scope-repeat-powerhouses-per-pack`
+
+Prüft einen `<repeat>`, dessen `scope` eine **Eintrags-Id** ist: derselbe
+Rahmen wie bei einer Bedingung mit Eintrags-Id, und der Modifikator greift je
+gezähltem Schritt einmal. Beleg: die Skaven-Option „Powerhouses"
+(`259c-906d-4b40-2b31`, Grundkosten 0) trägt einen Aufschlag von 10 Punkten je
+„Ogre Pack" im Rahmen der Einheit „Mutant Rat Ogres" (`7a4a-301b-af31-9ee0`) —
+die Option hängt dabei zwei Ebenen unter dem Rahmen. Gemessen wird über das
+eingestellte Punktebudget.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Pack, Option gewählt | Genau eine Anwendung: der Aufschlag trennt sich von den Grundkosten der Option |
+| 02 | Zwei Packs | Zweite Wiederholung |
+| 03 | Drei Packs | Dritte Wiederholung |
+| 04 | Drei Packs, **ohne** Option | Nullpunkt: die Differenz zu 03 ist genau dreimal zehn |
+| 05 | Wie 03, Limit einen Punkt darüber | Gegenprobe: das Budget schweigt |
+| 06 | Drei Packs, zwei andere Optionen derselben Bauart | Zwei unabhängige Ablesungen desselben Musters |
+| 07 | Zwei Einheiten mit zwei und drei Packs, Option nur in der ersten | Rahmen-Beweis: ein kontingentweiter Rahmen läge dreißig Punkte höher |
+
+> **Offen erklärt:** Ob `includeChildSelections="false"` hier enger zählt als
+> `"true"`, ist auf diesen Daten **nicht** beobachtbar — kein `entryLink` im
+> Korpus hängt das „Ogre Pack" tiefer als direkt unter die Einheit. Das
+> Szenario sagt das, statt einen Roster zu erfinden.
