@@ -674,6 +674,13 @@
         "docs/testing/id-scope-repeat-powerhouses-per-pack"
       ],
       "rationale": "Seven rosters over the Skaven unit Mutant Rat Ogres (7a4a-301b-af31-9ee0) in the contingent Hell Pit (WD-311), the only one that reveals it. The option Powerhouses (259c-906d-4b40-2b31, base cost 0) carries an increment of 10 points on the pts cost type whose <repeat> names the unit's own id as its scope and counts the Ogre Pack model (8ea5-88f7-6636-7aaf); the option sits two levels below the frame, so the frame is an ancestor of the carrier. Measured through the roster budget with the limit set one point below the derived sum: one pack costs 75, two 150, three 225, and the same unit without the option 195, so the delta is exactly three times ten. One roster sets the limit one point above the sum and stays silent, one takes the sibling options Quadrupedal (5) and Resilient (12) for two further independent readings of the same shape, and the last holds two Mutant Rat Ogres units with two and three packs where only the first carries the option - a contingent-wide frame would price it thirty points higher. Openly declared in the README as not observable on this data: includeChildSelections=\"false\" cannot be told from \"true\", because no entryLink nests the Ogre Pack deeper than a direct child of the unit anywhere in the corpus. Scenario is green."
+    },
+    {
+      "key": "condition|equalTo|roster|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/equal-to-roster-royal-pegasus-gate"
+      ],
+      "rationale": "Five rosters over the Bretonnia unit Pegasus Knights (ff3a-61e9-e154-92cc), whose roster-wide max of one (968c-6c14-9c73-d0c5) a set -1 modifier lifts to unlimited exactly when the army holds exactly one Royal Pegasus (bfa3-6734-c03f-3594). Rosters 02 and 04 carry the same actual of two units and differ only in the bound: with no Royal Pegasus and with two of them the equalTo is false and the limit fires, which is what forbids reading the condition as an atLeast; roster 03 holds one Royal Pegasus over one of five carrier links and the limit stays silent, roster 05 shows three units under the same gate, which separates the -1 sentinel from a bound merely raised to two. Scenario is green."
     }
   ]
 }

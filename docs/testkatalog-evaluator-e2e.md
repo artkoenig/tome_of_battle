@@ -2347,3 +2347,26 @@ eingestellte Punktebudget.
 > `"true"`, ist auf diesen Daten **nicht** beobachtbar — kein `entryLink` im
 > Korpus hängt das „Ogre Pack" tiefer als direkt unter die Einheit. Das
 > Szenario sagt das, statt einen Roster zu erfinden.
+
+## `equal-to-roster-royal-pegasus-gate`
+
+Prüft eine Bedingung `equalTo` im armeeweiten Rahmen: sie hält bei **genau**
+dem geschriebenen Wert und ist darunter wie darüber gleichermaßen falsch — sie
+ist also kein Mindestmaß. Beleg: die Bretonnia-Einheit „Pegasus Knights"
+(`ff3a-61e9-e154-92cc`) darf armeeweit nur einmal aufgestellt werden
+(`968c-6c14-9c73-d0c5`); ein Modifikator hebt diese Grenze auf „unbegrenzt",
+sobald in der Armee **genau ein** „Royal Pegasus" (`bfa3-6734-c03f-3594`)
+steht — ein Reittier, das an fünf verschiedenen Charakteren angeboten wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Eine Einheit, kein Royal Pegasus | Grundlinie: die Grenze steht auf 1 und wird von einer Einheit nicht gerissen |
+| 02 | Zwei Einheiten, kein Royal Pegasus | Die Grenze feuert — Ist 2 gegen 1 |
+| 03 | Zwei Einheiten, ein Royal Pegasus | Das Gatter hält, die Grenze ist aufgehoben und schweigt |
+| 04 | Zwei Einheiten, **zwei** Royal Pegasus | Die Grenze feuert wieder — genau das trennt „gleich" von „mindestens" |
+| 05 | Drei Einheiten, ein Royal Pegasus | „Unbegrenzt" heißt unbegrenzt, nicht „Grenze auf 2 gehoben" |
+
+> **Offen erklärt:** Die parent-skopierte Eigengrenze des Royal Pegasus
+> (`efa6-a391-f62d-8034`) behauptet das Szenario in Roster 04 **nicht** — wie
+> `shared="true"` mit einem engeren `scope` zusammenwirkt, sagt keine Quelle,
+> und das Szenario rät nicht.

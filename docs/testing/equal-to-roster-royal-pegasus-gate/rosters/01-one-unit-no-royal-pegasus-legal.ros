@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="etrpg-01" name="ETRPG 01 - eine Einheit Pegasus Knights, kein Royal Pegasus (legal)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored equal-to-roster-royal-pegasus-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (BR-AB)" entryId="3a8b-8c11-beff-0534" catalogueId="a5c3-073c-b4e8-4284" catalogueRevision="1" catalogueName="Bretonnia">
+      <selections>
+        <selection id="sel-pk1" name="Pegasus Knights" entryId="ff3a-61e9-e154-92cc" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-pk1-models" name="Pegasus Knights" entryId="bfef-1015-d60c-1035" entryLinkId="" number="3" type="model" collective="false"/>
+            <selection id="sel-pk1-pegasus" name="Pegasus" entryId="f299-077e-3d74-9e8c" entryLinkId="" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pk1-gallant" name="Gallant" entryId="2995-2018-2931-43c8" entryLinkId="" entryGroupId="5dbc-1de3-4cd7-68c3" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pk1-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="ff7d-2f06-eea7-f541" entryGroupId="b03a-42a8-a13f-1c09" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pk1-lance" name="Lance" entryId="8649-8ac8-5a6f-fd8d" entryLinkId="77dd-73b2-dc08-6d33" entryGroupId="b03a-42a8-a13f-1c09" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pk1-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="6a05-995e-9317-c524" entryGroupId="b03a-42a8-a13f-1c09" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-pk1-heavy-armour" name="Heavy Armour" entryId="dde4-0ba8-7b3c-57b7" entryLinkId="5cc3-7722-5ed8-dcde" entryGroupId="b03a-42a8-a13f-1c09" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

@@ -7,101 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 118,
-    "uncovered": 12
+    "covered": 119,
+    "uncovered": 11
   },
   "cells": [
-    {
-      "key": "condition|equalTo|roster|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "roster",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 5,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 2,
-        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 3
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "ff3a-61e9-e154-92cc",
-            "name": "Pegasus Knights"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "roster",
-            "childId": "bfa3-6734-c03f-3594"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "0227-ea15-966b-4a20",
-            "name": "Grail Reliquae with Battle Pilgrims"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "roster",
-            "childId": "9baa-5682-a28d-8c4e"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "e235-3d94-2bdc-6a1a",
-            "name": "Temple Guard"
-          },
-          "path": [
-            "catalogue",
-            "selectionEntries",
-            "selectionEntry",
-            "modifierGroups",
-            "modifierGroup",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "roster",
-            "childId": "5c12-eebd-de21-0b3d"
-          }
-        }
-      ]
-    },
     {
       "key": "modifier|prepend|name",
       "kind": "modifier",
