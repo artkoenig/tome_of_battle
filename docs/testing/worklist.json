@@ -7,54 +7,8 @@
   ],
   "totals": {
     "cells": 105,
-    "covered": 104,
-    "uncovered": 1
+    "covered": 105,
+    "uncovered": 0
   },
-  "cells": [
-    {
-      "key": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
-      "kind": "repeat",
-      "axes": {
-        "field": "selectionCount",
-        "scope": "parent",
-        "childId": "any",
-        "repeats": "1",
-        "shared": true,
-        "includeChildSelections": false,
-        "includeChildForces": false,
-        "roundUp": false,
-        "percentValue": false
-      },
-      "occurrences": 1,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst": 1
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
-          "id": null,
-          "ancestor": {
-            "tag": "selectionEntry",
-            "id": "6eac-4ed9-4511-ff14",
-            "name": "Grappling Hooks"
-          },
-          "path": [
-            "gameSystem",
-            "sharedSelectionEntries",
-            "selectionEntry",
-            "modifiers",
-            "modifier",
-            "repeats",
-            "repeat"
-          ],
-          "raw": {
-            "field": "selections",
-            "scope": "parent",
-            "childId": "any",
-            "repeats": "1"
-          }
-        }
-      ]
-    }
-  ]
+  "cells": []
 }
