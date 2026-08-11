@@ -19,7 +19,7 @@
       "depth": "full",
       "status": "todo",
       "note": "First because it carries the run's only unknown: the puppeteer app E2E zips every .cat/.gst of this directory, so the app under test changes shape here and nowhere else. It is also the only book whose cell is unreachable from the definitive set.",
-      "branch": "",
+      "branch": "claude/evaluator-ergofang-daten-ni8js9--INC-1",
       "steps": [],
       "attempts": []
     },
