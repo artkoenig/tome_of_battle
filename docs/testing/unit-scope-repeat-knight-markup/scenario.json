@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "name": "unit-scope-repeat-knight-markup",
+  "description": "Pinnt einen <repeat field=\"selections\" scope=\"unit\" childId=\"7b8d-8405-0e74-9f46\" value=\"1\" repeats=\"1\" includeChildSelections=\"true\"> fest, dessen childId KEIN Typ-Schluesselwort, sondern eine konkrete Eintrags-Id ist: der entryLink 'Exemplars of Sigmar (Knights)' dcf8-3a0e-7f04-4dd4 (Ziel 8c35-c7e7-0a70-7a90) traegt increment 2 auf die pts-Kostenart ecfa-8486-4f6c-c249 und wird einmal je gezaehltem Ritter-Modell der UMSCHLIESSENDEN Einheit angewandt. Der Traeger haengt drei Ebenen unter der Einheit 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f (Gruppe 'Knightly Order' 06b5 -> 'Custom Knightly Order' 0bd1 -> 'Knightly advantages' e82b), alle Zwischenstufen type=\"upgrade\" — der Rahmen ist also der naechste Vorfahre mit type=\"unit\". Drei Roster variieren ALLEIN die Ritterzahl (5/8/12) und fordern damit 10/16/24 pts Aufschlag; zwei Kontrollen mit derselben Ritterzahl (8) ohne den Traeger liefern den Nullpunkt 184; ein sechstes Roster mit ZWEI Ritterregimentern (5 mit Traeger, 8 ohne) fordert, dass nur die Ritter der eigenen Einheit zaehlen (309, nicht 325). Beobachtbar gemacht wird die Summe ueber die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249, deren 'actual' die verplante Gesamtsumme traegt; das Punktelimit steht je Roster eine Einheit unter der korrekten Summe. Die force-skopierte Obergrenze der Einheit 2943-aa1c-4532-4fb2 (max 0) ist im Kontingent 'Standard (EM-AB)' per set -1 aufgehoben und darf in keinem Roster feuern.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-knights-5-exemplars.ros",
+      "description": "Kleinstes legales Ritterregiment: 5 Ritter (je 23 pts = 115), Pflichtausruestung Shield/Lance/Hand Weapon/Full Plate Armour und Empire Warhorse (alle 0 pts), dazu der Schalter 'Allow experimental rules?' mit dem Unterpunkt White-Dwarf/Citadel-Journal (0 pts), der die verborgene 'Custom Knightly Order' aufdeckt. Der Exemplars-Link traegt increment 2 je gezaehltem Ritter im unit-Rahmen: 5 x 2 = 10 pts. Summe 125, Punktelimit 124 — das Budget feuert mit Ist 125. Ohne Aufschlag (115) oder bei einmaliger Anwendung (117) bliebe es still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 125, "bound": 124 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 5,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "8c35-c7e7-0a70-7a90",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "1d77-9e6e-a6ab-573f",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/02-knights-8-exemplars.ros",
+      "description": "Byte-gleicher Aufbau wie Roster 01, nur die Ritterzahl steht auf 8 (184 pts). Der Aufschlag muss mitwachsen: 8 x 2 = 16 pts, Summe 200, Punktelimit 199 — das Budget feuert mit Ist 200. Gegenueber Roster 01 waechst der Aufschlag um genau 6 = 3 zusaetzliche Ritter x increment 2; ein konstanter Zuschlag ergaebe 186.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 200, "bound": 199 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 8,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "8c35-c7e7-0a70-7a90",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/03-knights-12-exemplars.ros",
+      "description": "Byte-gleicher Aufbau, Ritterzahl 12 (276 pts). Aufschlag 12 x 2 = 24 pts, Summe 300, Punktelimit 299 — das Budget feuert mit Ist 300. Drei Stuetzstellen (5/8/12 -> 125/200/300) legen die Gerade eindeutig fest: Steigung 25 pts je Ritter, davon 23 Modellkosten und 2 Aufschlag.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 300, "bound": 299 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 12,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "8c35-c7e7-0a70-7a90",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/04-knights-8-no-advantage.ros",
+      "description": "Kontrolle zu Roster 02: dieselben 8 Ritter, dieselbe Kette bis 'Knightly advantages', aber KEIN Vorteil gewaehlt — der Traeger des Modifikators fehlt. Ohne ihn entfaellt der Aufschlag vollstaendig: Summe 184, Punktelimit 183, das Budget feuert mit Ist 184. Die Differenz zu Roster 02 ist damit exakt 16 = 8 Ritter x increment 2. Die Obergrenze der Vorteilsgruppe (max 1) bleibt bei Ist 0 still; eine Untergrenze traegt die Kette nicht.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 184, "bound": 183 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 8,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/05-knights-8-blessed-control.ros",
+      "description": "Zweite Kontrolle zu Roster 02: dieselben 8 Ritter, ein Vorteil IST gewaehlt — aber 'Blessed (Knights)' (Link e5dd-925e-7519-badf), der als einziger Vorteil der Gruppe KEINEN repeat-Modifikator traegt und dessen Link ausdruecklich pts 0 setzt (die geteilte Definition e252-623d-12ed-6efd traegt 1 pt; Kosten am Link gehen vor). Summe 184, Punktelimit 183, Budget feuert mit Ist 184 — genau wie in Roster 04. Damit ist belegt: der Aufschlag haengt am Exemplars-LINK, nicht daran, dass ueberhaupt ein Vorteil gewaehlt wurde.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 184, "bound": 183 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "407a-f9c7-b69d-9d28",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "capabilities": [
+          {
+            "defId": "7b8d-8405-0e74-9f46",
+            "anchorKind": "occupied",
+            "current": 8,
+            "effectiveMin": 5,
+            "effectiveMax": null,
+            "headroom": null,
+            "isMandatoryUnmet": false
+          },
+          {
+            "targetDefId": "e252-623d-12ed-6efd",
+            "anchorKind": "occupied",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    },
+    {
+      "file": "rosters/06-two-units-only-carrier-unit-counts.ros",
+      "description": "Der Rahmen-Beweis: ZWEI Ritterregimenter im selben Kontingent. Regiment A hat 5 Ritter und traegt die Exemplars, Regiment B hat 8 Ritter und keinen Knightly Order. Gezaehlt werden duerfen nur die 5 Ritter der Einheit, in der der Traeger steht: 115 + 10 + 184 = 309, Punktelimit 308, Budget feuert mit Ist 309. Zaehlte die Wiederholung force-/roster-weit (13 Ritter), waeren es 26 pts Aufschlag und damit 325 — der Fall bricht. Zaehlte sie gar nicht, waeren es 299 und das Budget bliebe still.",
+      "expect": {
+        "firing": [
+          { "limitId": "budget::ecfa-8486-4f6c-c249", "actual": 309, "bound": 308 }
+        ],
+        "absent": [
+          "2943-aa1c-4532-4fb2",
+          "24bb-871e-6aa3-e4b5",
+          "9941-5a64-0bde-add3",
+          "7944-27db-49ec-7bbd",
+          "21ca-c541-0b3d-6d4d",
+          "9ff4-e65c-ebb1-1f3c",
+          "5f81-d4a6-b74f-6fc3",
+          "ee36-a6dc-84a1-51b7",
+          "1e3a-4402-70e8-2b08",
+          "f0ce-7b2e-0be1-9dd1",
+          "50ac-f86f-cfa1-d050",
+          "8d09-7d84-af64-cb83",
+          "22cd-67c5-1c2c-2266",
+          "30c1-0e8a-ca51-3eee"
+        ],
+        "diagnostics": {
+          "absent": [
+            { "kind": "UNSUPPORTED_REPEAT" },
+            { "kind": "UNRESOLVED_SCOPE", "scope": "unit" }
+          ]
+        }
+      }
+    }
+  ]
+}

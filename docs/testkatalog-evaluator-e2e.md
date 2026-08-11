@@ -169,7 +169,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`instance-of-parent-sky-chariot-gate`](testing/instance-of-parent-sky-chariot-gate/) | Definitive VC + Mercenaries | 6 |
 | [`at-least-self-equipment-save`](testing/at-least-self-equipment-save/) | Definitive Bretonnia + Mercenaries | 7 |
 | [`less-than-self-mount-and-weapon-gate`](testing/less-than-self-mount-and-weapon-gate/) | Definitive Dark Elves + Mercenaries | 5 |
-| **Summe** | | **393** |
+| [`unit-scope-repeat-knight-markup`](testing/unit-scope-repeat-knight-markup/) | Definitive Empire + Mercenaries | 6 |
+| **Summe** | | **399** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2103,3 +2104,25 @@ seinem Profil-Verweis (`7ae07422-6715-4692-aeb9-89fbd4ed033f`) acht
 
 > Roster 02 nagelt zusätzlich fest, dass die **Pflicht-Handwaffe** des Highborn
 > kein Mitglied der Gruppe „CC Weapons" ist und deshalb nicht mitzählt.
+
+## `unit-scope-repeat-knight-markup`
+
+Prüft die **Wiederholung** mit `scope="unit"` und einer Eintrags-Id als
+`childId` (§7.7/§13.2 der Formatdoku): gezählt wird in der umschließenden
+Einheit des Trägers, und der Modifikator greift einmal je gezählter Auswahl.
+Beleg: der ritterliche Vorteil „Exemplars of Sigmar"
+(`dcf8-3a0e-7f04-4dd4`, The Empire) trägt `increment 2` auf die Punkte,
+wiederholt je Ritter-Modell (`7b8d-8405-0e74-9f46`) der Einheit „Knights of
+the Knightly Orders" (`1d77-9e6e-a6ab-573f`). Weil eine Kostenart kein Feld
+am Slot hat, wird der Aufschlag über das eingestellte Punktebudget gemessen:
+das Limit steht in jedem Roster genau einen Punkt unter der hergeleiteten
+Summe.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Kleinstes Regiment: 5 Ritter mit dem Vorteil | Der Aufschlag greift fünfmal — das Budget kippt |
+| 02 | 8 Ritter mit dem Vorteil | Achtmal |
+| 03 | 12 Ritter mit dem Vorteil | Zwölfmal. Drei Stützstellen schließen eine einmalige Anwendung aus |
+| 04 | 8 Ritter **ohne** den Vorteil | Nullpunkt: kein Aufschlag, die Differenz zu Roster 02 ist genau der Aufschlag |
+| 05 | 8 Ritter mit dem Schwester-Vorteil „Blessed" | Der trägt keine Wiederholung: ebenfalls kein Aufschlag |
+| 06 | Zwei Regimenter — 5 Ritter mit Vorteil, 8 ohne | Rahmen-Beweis: nur die eigene Einheit zählt. Kontingentweit wären es 13 Ritter und der Aufschlag entsprechend höher |

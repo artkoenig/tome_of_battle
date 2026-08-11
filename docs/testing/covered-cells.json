@@ -597,6 +597,13 @@
         "docs/testing/less-than-self-mount-and-weapon-gate"
       ],
       "rationale": "Five rosters over the Dark Elf Highborn (79af-7092-a9a9-393d, Dark Elves), whose profile infoLink 7ae07422-6715-4692-aeb9-89fbd4ed033f carries an and-group of two lessThan conditions (scope=\"self\", childIds ba90-e917-dbad-292c 'Mounts' and 4c8c-ab06-0b67-d4e8 'CC Weapons' - both selectionEntryGroup ids) beside an atLeast on the shield. Roster 01 pins the unconditional decrement 4 alone; 02 is the measuring baseline with the shield and neither mount nor weapon; 03 differs from it only by a great weapon inside the CC-Weapons group and 04 only by a Dark Pegasus inside the Mounts group - a mount chosen because it carries no Sv modifier of its own, so the falling and-group is the only moving part. Roster 05 records the Dark Steed as the control that cannot separate the two effects. Roster 02 also pins that the mandatory direct child Hand Weapon does not count toward the CC-Weapons group. Scenario is green."
+    },
+    {
+      "key": "repeat|selectionCount|unit|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "evidence": [
+        "docs/testing/unit-scope-repeat-knight-markup"
+      ],
+      "rationale": "Six rosters over 'Knights of the Knightly Orders' (1d77-9e6e-a6ab-573f, The Empire). The entryLink 'Exemplars of Sigmar (Knights)' (dcf8-3a0e-7f04-4dd4) carries increment 2 pts repeated once per Knight model (7b8d-8405-0e74-9f46) counted with scope=\"unit\", and the surcharge is measured through the roster budget budget::ecfa-8486-4f6c-c249, whose limit is set one point below the derived sum in every roster. Rosters 01/02/03 give three support points at 5, 8 and 12 knights, so a single application or a missing one is excluded; 04 is the zero point without the advantage and 05 the sibling advantage that carries no repeat. Roster 06 is the frame witness: a second knight regiment without the advantage leaves the surcharge untouched, where a force-wide count would raise it. Scenario is green."
     }
   ]
 }
