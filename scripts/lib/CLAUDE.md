@@ -63,7 +63,11 @@ for every kind, the same form `evaluator-coverage-corpus.test.js` itself uses.
 It also checks the corpus against the committed `docs/testing/worklist.json` /
 `docs/testing/covered-cells.json` (drift guard: recompute and deep-equal the
 committed file, the same shape as `generate-schema-module.test.js`'s SSOT
-guard). It also carries the `loadCoverageRecords` failure-path tests:
+guard). Of the worklist totals only the **cell count** is asserted as a
+number — that is a property of the frozen corpus. The covered/uncovered split
+is deliberately not pinned: the coverage campaign moves it with every cell it
+closes, and the deep-equal against the committed file already catches a
+forgotten regeneration. It also carries the `loadCoverageRecords` failure-path tests:
 temp-directory cases (`mkdtempSync`, cleaned up in `afterEach`) that feed it a
 malformed or missing `covered-cells.json` and a malformed or scenario-less
 manifest sub-directory, asserting it reports failures instead of throwing.

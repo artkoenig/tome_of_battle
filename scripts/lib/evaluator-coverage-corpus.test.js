@@ -127,11 +127,17 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // uncovered by design — closing it is the coverage campaign's work, out of
     // scope for issue 0148.
     // Issue 0148, increment 2: the seven definitive books add 24 further
-    // cells, all uncovered by design (closing them is out of scope here too),
-    // so the worklist holds 25 entries — the 24 definitive additions plus the
-    // Dogs of War cell from increment 1. covered stays 105 because no
-    // scenario's dataset names any of the added files.
-    expect(recomputed.totals).toEqual({ cells: 130, covered: 105, uncovered: 25 });
+    // cells, all uncovered at first (closing them is out of scope there), so
+    // the worklist held 25 entries — the 24 definitive additions plus the Dogs
+    // of War cell from increment 1.
+    //
+    // Only the cell count is asserted here. It is a property of the corpus,
+    // which is frozen, so it drifts only when a fixture file is added or
+    // removed. The covered/uncovered split is not: the coverage campaign moves
+    // it with every closed cell, and a snapshot of it would fail on each one
+    // while proving nothing the deep-equal above has not already proven.
+    expect(recomputed.totals.cells).toBe(130);
+    expect(recomputed.totals.covered + recomputed.totals.uncovered).toBe(recomputed.totals.cells);
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
