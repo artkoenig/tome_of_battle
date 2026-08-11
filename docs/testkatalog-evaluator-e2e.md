@@ -172,7 +172,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`unit-scope-repeat-knight-markup`](testing/unit-scope-repeat-knight-markup/) | Definitive Empire + Mercenaries | 6 |
 | [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
 | [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
-| **Summe** | | **409** |
+| [`equal-to-unit-inner-circle-markup`](testing/equal-to-unit-inner-circle-markup/) | Definitive Empire + Mercenaries | 5 |
+| **Summe** | | **414** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2174,3 +2175,26 @@ eingeblendet wird.
 | 02 | Dieselbe Einheit mit einem Brain transplant | Eine einzige Auswahl kippt fünf Konstrukte zugleich: die Regel verschwindet, „Regeneration" erscheint, zwei Profilwerte steigen, die Pflicht fällt auf null |
 | 03 | Zwei Optionen — „Powerhouses" **und** Brain transplant | Der Rahmen zählt alles unter sich, nicht nur das erste Kind |
 | 04 | Zwei Einheiten, nur eine mit Transplantat | Rahmen-Beweis: die untransplantierte Einheit behält ihre Pflicht — der Rahmen ist die benannte Auswahl, nicht das Kontingent |
+
+## `equal-to-unit-inner-circle-markup`
+
+Prüft die `equalTo`-Bedingung mit `scope="unit"` und einer **Link**-Id als
+`childId` (§7.7/§13.2 der Formatdoku): gezählt wird in der umschließenden
+Einheit, und die Bedingung hält nur bei exakt dem geschriebenen Wert. Beleg:
+der Ritterorden „Knights of the Blazing Sun" (`f711-222f-99ff-5e01`, The
+Empire) trägt zwei einander ausschließende Aufschläge je Ritter-Modell — 3
+Punkte bei genau null, 5 Punkte bei genau einer Auswahl des Inner-Circle-Links
+(`6e1d-9e41-114f-8128`). Gemessen wird über das eingestellte Punktebudget.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Orden, kein Innerer Zirkel | Der Zähler steht auf null: der kleine Aufschlag greift |
+| 02 | Orden **und** Innerer Zirkel | Der Zähler steht auf eins: der größere Aufschlag greift |
+| 03 | Orden **und** das Schwester-Link „White Wolf" | Ein anderer Link mit anderem Ziel erfüllt die benannte Id nicht — der kleine Aufschlag bleibt |
+| 04 | Innerer Zirkel ohne Orden | Zerlegt die Differenz: der Zirkel hat einen eigenen Aufschlag, der nichts mit der Bedingung zu tun hat |
+| 05 | Zwei Regimenter, der Zirkel im **anderen** | Rahmen-Beweis: die Bedingung sieht nur die eigene Einheit |
+
+> **Nicht baubar, offen erklärt:** Ein Zähler über eins ist auf diesen Daten
+> nicht herstellbar — die `max 1`-Grenze am Link wird von keinem Modifikator
+> des Armeebuchs angefasst. Das Szenario behauptet deshalb nichts über diesen
+> Fall, statt einen Roster zu erfinden.

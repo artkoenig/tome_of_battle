@@ -7,104 +7,10 @@
   ],
   "totals": {
     "cells": 130,
-    "covered": 111,
-    "uncovered": 19
+    "covered": 112,
+    "uncovered": 18
   },
   "cells": [
-    {
-      "key": "condition|equalTo|unit|selectionCount|child=id",
-      "kind": "condition",
-      "axes": {
-        "type": "equalTo",
-        "scope": "unit",
-        "field": "selectionCount",
-        "childId": "id"
-      },
-      "occurrences": 13,
-      "files": {
-        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 13
-      },
-      "examples": [
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "f711-222f-99ff-5e01",
-            "name": "Knights of the Blazing Sun"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "6e1d-9e41-114f-8128"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "f711-222f-99ff-5e01",
-            "name": "Knights of the Blazing Sun"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "6e1d-9e41-114f-8128"
-          }
-        },
-        {
-          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-          "id": null,
-          "ancestor": {
-            "tag": "entryLink",
-            "id": "07a9-8f33-4435-2a18",
-            "name": "Reiksguard Knights"
-          },
-          "path": [
-            "catalogue",
-            "sharedSelectionEntryGroups",
-            "selectionEntryGroup",
-            "entryLinks",
-            "entryLink",
-            "modifiers",
-            "modifier",
-            "conditions",
-            "condition"
-          ],
-          "raw": {
-            "type": "equalTo",
-            "field": "selections",
-            "scope": "unit",
-            "childId": "6e1d-9e41-114f-8128"
-          }
-        }
-      ]
-    },
     {
       "key": "condition|atLeast|id|selectionCount|child=id",
       "kind": "condition",

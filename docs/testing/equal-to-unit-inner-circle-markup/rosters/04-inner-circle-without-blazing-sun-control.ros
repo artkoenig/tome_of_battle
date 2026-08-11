@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="etuic-04" name="ETUIC 04 - Kontrolle: Inner Circle OHNE Knightly Order, isoliert dessen eigenen Aufschlag von 3 pts je Ritter - Summe 130, Limit 129" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored equal-to-unit-inner-circle-markup E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="129.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (EM-AB)" entryId="e821-88b8-2071-6b6a" catalogueId="3938-8369-a300-4a03" catalogueRevision="1" catalogueName="The Empire">
+      <selections>
+        <selection id="sel-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="2961-128d-196e-c6c6" number="1" type="upgrade">
+          <selections>
+            <selection id="sel-experimental-wd" name="Allow experimental rules from White-Dwarf and Citadel Journal issues" entryId="cc03-e8fe-c143-6863" entryLinkId="" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="sel-knights" name="Knights of the Knightly Orders" entryId="1d77-9e6e-a6ab-573f" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-knight-models" name="Knight" entryId="7b8d-8405-0e74-9f46" entryLinkId="" number="5" type="model"/>
+            <selection id="sel-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="9ccc-ad24-583e-41e0" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-lance" name="Lance" entryId="8649-8ac8-5a6f-fd8d" entryLinkId="e082-13b2-e746-34e0" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d2a3-c146-1dbb-118f" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-plate" name="Full Plate Armour" entryId="199f-b4b9-aaca-490f" entryLinkId="8757-aa59-69fa-1060" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-warhorse" name="Empire Warhorse" entryId="a1e3-7f97-5fc6-abaa" entryLinkId="aaf2-8dbc-b925-fac5" number="1" type="upgrade"/>
+            <selection id="sel-inner-circle" name="Knights of the Inner Circle" entryId="2cbd-fee0-a336-0e5d" entryLinkId="6e1d-9e41-114f-8128" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
