@@ -1700,15 +1700,18 @@ Zauberer.
 
 | # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
 | :--- | :--- | :--- |
-| 01 | Zacharias the Everliving mit der Lore | Das Merkmal „Effect" trägt die angehängte 15+-Zeile, getrennt durch das eine Leerzeichen aus `join=" "` — und weil der Basistext **nicht** mit einem Umbruch endet, landet sie in derselben Textzeile |
+| 01 | Zacharias the Everliving mit der Lore | Das Merkmal „Effect" trägt die angehängte 15+-Zeile, getrennt durch das eine Leerzeichen aus `join=" "` — und weil der Basistext **nicht** mit einem Umbruch endet, landet sie in derselben Textzeile; ebenso trägt „Cast" den Basiswert, ein Leerzeichen und den angehängten Wert |
 | 02 | Ein Necromancer mit derselben Lore | Beide Merkmale stehen auf ihren Basistexten: der Modifikator gehört zum Profil, greift aber nur unter seiner Einheit |
 
-> **Offene Frage (Kampagne).** Der zweite Modifikator dieses Szenarios trägt `position="-1"` — ein
-> Attribut, das weder die Formatdoku noch das Wiki kennt und das die vendorte
-> `Catalogue.xsd` nicht zulässt. Es kommt genau einmal im ganzen Korpus vor,
-> seine Bedeutung ist aus den Daten nicht erschließbar. Das Szenario behauptet
-> das betroffene Merkmal „Cast" deshalb nur im **nicht** greifenden Roster, wo
-> jede Lesart denselben Basistext ergibt.
+> **Entschiedene Frage (Kampagne, 2026-08-11).** Der zweite Modifikator dieses
+> Szenarios trägt `position="-1"` — ein Attribut, das weder die Formatdoku noch
+> das Wiki kennt und das die vendorte `Catalogue.xsd` nicht zulässt. Es kommt
+> genau einmal im ganzen Korpus vor, seine Bedeutung ist aus den Daten nicht
+> erschließbar. Der Wartungsentscheid: Es gilt als Datenfehler und wird bei der
+> Auswertung ignoriert, die XSD bleibt unverändert. Roster 01 behauptet das
+> betroffene Merkmal „Cast" deshalb jetzt auch im greifenden Zweig — was es
+> festnagelt, ist die **Wirkungslosigkeit** eines nirgends spezifizierten
+> Attributs, nicht eine Bedeutung von `position`.
 
 ## `set-unresolved-target-inert-lord-slot`
 
