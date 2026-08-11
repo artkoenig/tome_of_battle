@@ -6,11 +6,1727 @@
     "src/__fixtures__/whfb6"
   ],
   "totals": {
-    "cells": 106,
+    "cells": 130,
     "covered": 105,
-    "uncovered": 1
+    "uncovered": 25
   },
   "cells": [
+    {
+      "key": "condition|atLeast|self|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "atLeast",
+        "scope": "self",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 181,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 17,
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 36,
+        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 7,
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 6,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 8,
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 34,
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 73
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+            "name": "Bretonnian Lord"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "self",
+            "childId": "50e2-1873-a856-03e7"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+            "name": "Bretonnian Lord"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "self",
+            "childId": "3211-d836-02f1-01d0"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "c2cae708-0b6f-4553-9adc-754be21e3d2e",
+            "name": "Bretonnian Lord"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "self",
+            "childId": "adc2-53db-4a9e-b8ea"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|unit|child=id|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "unit",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 51,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 51
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "dcf8-3a0e-7f04-4dd4",
+            "name": "Exemplars of Sigmar (Knights)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "unit",
+            "childId": "7b8d-8405-0e74-9f46",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "744f-c0d1-fcb2-d205",
+            "name": "Fearless (Knights)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "unit",
+            "childId": "7b8d-8405-0e74-9f46",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "50b4-ddbf-453a-3598",
+            "name": "Resolute (Knights)"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "unit",
+            "childId": "7b8d-8405-0e74-9f46",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|lessThan|self|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "lessThan",
+        "scope": "self",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 29,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 6,
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 19
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+            "name": "Highborn"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "ba90-e917-dbad-292c"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "7ae07422-6715-4692-aeb9-89fbd4ed033f",
+            "name": "Highborn"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "4c8c-ab06-0b67-d4e8"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "5c2e1a49-8ece-4726-8d67-81eb7b45df58",
+            "name": "Noble"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "e26c-c1cc-c821-d48e"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|atLeast|roster|limitValue|child=model",
+      "kind": "condition",
+      "axes": {
+        "type": "atLeast",
+        "scope": "roster",
+        "field": "limitValue",
+        "childId": "model"
+      },
+      "occurrences": 13,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 10,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "d1d3-6362-e2f7-23c9",
+            "name": "Lord"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "model"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "d1d3-6362-e2f7-23c9",
+            "name": "Lord"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "model"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "fd99-e5c2-6205-d6c4",
+            "name": "Characters"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "model"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|equalTo|unit|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "equalTo",
+        "scope": "unit",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 13,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 13
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "f711-222f-99ff-5e01",
+            "name": "Knights of the Blazing Sun"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "unit",
+            "childId": "6e1d-9e41-114f-8128"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "f711-222f-99ff-5e01",
+            "name": "Knights of the Blazing Sun"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "unit",
+            "childId": "6e1d-9e41-114f-8128"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "07a9-8f33-4435-2a18",
+            "name": "Reiksguard Knights"
+          },
+          "path": [
+            "catalogue",
+            "sharedSelectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "unit",
+            "childId": "6e1d-9e41-114f-8128"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|greaterThan|id|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "greaterThan",
+        "scope": "id",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 12,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 10,
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 2
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "12c2-071e-1e09-5918",
+            "name": "Loss of Packmaster Ogres"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8b1c-de3a-982e-e323"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "7105-391b-fc3a-3771",
+            "name": "Regeneration"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8b1c-de3a-982e-e323"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "90fa-58e6-5fdf-28c7",
+            "name": "Packmaster each pack"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8b1c-de3a-982e-e323"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|limitValue|roster|child=any|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "limitValue",
+        "scope": "roster",
+        "childId": "any",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": true,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 12,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 10,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "d1d3-6362-e2f7-23c9",
+            "name": "Lord"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "any",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "fd99-e5c2-6205-d6c4",
+            "name": "Characters"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "any",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryLink",
+            "id": "b6ed-cb72-5641-9f0e",
+            "name": "Lord"
+          },
+          "path": [
+            "catalogue",
+            "forceEntries",
+            "forceEntry",
+            "categoryLinks",
+            "categoryLink",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "any",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|atLeast|id|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "atLeast",
+        "scope": "id",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 11,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 11
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "b968-23a8-1f42-6af7",
+            "name": "Elite"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "1d77-9e6e-a6ab-573f",
+            "childId": "6e1d-9e41-114f-8128"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "b968-23a8-1f42-6af7",
+            "name": "Elite"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "1d77-9e6e-a6ab-573f",
+            "childId": "8229-6f9b-ba74-c239"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "7310-540c-a461-d9e9",
+            "name": "Elite Champion"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "1d77-9e6e-a6ab-573f",
+            "childId": "6e1d-9e41-114f-8128"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|equalTo|self|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "equalTo",
+        "scope": "self",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 11,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 6,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 3
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "79af-7092-a9a9-393d",
+            "name": "Highborn"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "self",
+            "childId": "7a1e-c134-434e-3313"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "bd43-41c0-298e-22be",
+            "name": "Noble"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "self",
+            "childId": "030a-4b09-0210-225c"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "e637-be84-b4ee-d47c",
+            "name": "Warriors of Chaos"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "self",
+            "childId": "c7ff-31af-939e-0fbd"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|force|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "force",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": true,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 9,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat": 9
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "eaf6-a701-f67e-7c26",
+            "name": "Flesh Hounds"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "force",
+            "childId": "7dc4-fb32-003b-c289",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "65a1-b008-9ddc-1e1c",
+            "name": "Nurglings"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "force",
+            "childId": "c417-3a98-07c2-08dd",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "96c1-5655-edfe-4cb8",
+            "name": "Screamers"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "force",
+            "childId": "c539-4c54-33b5-47c3",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeatList|n=gt1|on=modifier",
+      "kind": "repeatList",
+      "axes": {
+        "count": "gt1",
+        "on": "modifier"
+      },
+      "occurrences": 8,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 7
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "0cea-8641-a1ca-ae06",
+            "name": "Dwarf Warriors"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats"
+          ],
+          "raw": {
+            "count": 3,
+            "on": "modifier"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "categoryEntry",
+            "id": "03f5-490b-d79d-08a2",
+            "name": "Knight  of Inner Circle"
+          },
+          "path": [
+            "catalogue",
+            "categoryEntries",
+            "categoryEntry",
+            "modifiers",
+            "modifier",
+            "repeats"
+          ],
+          "raw": {
+            "count": 2,
+            "on": "modifier"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "6e1d-9e41-114f-8128",
+            "name": "Knights of the Inner Circle"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "repeats"
+          ],
+          "raw": {
+            "count": 2,
+            "on": "modifier"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|greaterThan|self|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "greaterThan",
+        "scope": "self",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 7,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 7
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "2258-e16e-24dd-6e85",
+            "name": "Saurus Warriors"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "bd30-a138-fa7a-ecbe"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "2258-e16e-24dd-6e85",
+            "name": "Saurus Warriors"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "bd30-a138-fa7a-ecbe"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "2258-e16e-24dd-6e85",
+            "name": "Saurus Warriors"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "greaterThan",
+            "field": "selections",
+            "scope": "self",
+            "childId": "bd30-a138-fa7a-ecbe"
+          }
+        }
+      ]
+    },
+    {
+      "key": "repeat|selectionCount|id|child=id|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
+      "kind": "repeat",
+      "axes": {
+        "field": "selectionCount",
+        "scope": "id",
+        "childId": "id",
+        "repeats": "1",
+        "shared": true,
+        "includeChildSelections": false,
+        "includeChildForces": false,
+        "roundUp": false,
+        "percentValue": false
+      },
+      "occurrences": 6,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 6
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "259c-906d-4b40-2b31",
+            "name": "Powerhouses"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8ea5-88f7-6636-7aaf",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "d9b9-4315-f6b5-e02e",
+            "name": "Quadrupedal"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8ea5-88f7-6636-7aaf",
+            "repeats": "1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "b03e-5d16-19d6-d9fa",
+            "name": "Resilient"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "repeats",
+            "repeat"
+          ],
+          "raw": {
+            "field": "selections",
+            "scope": "7a4a-301b-af31-9ee0",
+            "childId": "8ea5-88f7-6636-7aaf",
+            "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|equalTo|roster|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "equalTo",
+        "scope": "roster",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 5,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 2,
+        "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat": 3
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "ff3a-61e9-e154-92cc",
+            "name": "Pegasus Knights"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "roster",
+            "childId": "bfa3-6734-c03f-3594"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "0227-ea15-966b-4a20",
+            "name": "Grail Reliquae with Battle Pilgrims"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "roster",
+            "childId": "9baa-5682-a28d-8c4e"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "e235-3d94-2bdc-6a1a",
+            "name": "Temple Guard"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "equalTo",
+            "field": "selections",
+            "scope": "roster",
+            "childId": "5c12-eebd-de21-0b3d"
+          }
+        }
+      ]
+    },
+    {
+      "key": "modifier|prepend|name",
+      "kind": "modifier",
+      "axes": {
+        "type": "prepend",
+        "targetField": "name"
+      },
+      "occurrences": 5,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 1,
+        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 3,
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "7843-05b6-ba2d-cc2b",
+            "name": "Knights of Chaos"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "prepend",
+            "field": "name"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "422b-3baf-0e9f-79d8",
+            "name": "Dwarf"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "prepend",
+            "field": "name"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "infoLink",
+            "id": "eca0-b3e3-1e6c-c93d",
+            "name": "Dwarf"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "infoLinks",
+            "infoLink",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "prepend",
+            "field": "name"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|lessThan|id|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "lessThan",
+        "scope": "id",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 4,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 4
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "1d77-9e6e-a6ab-573f",
+            "name": "Knights of the Knightly Orders"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "1d77-9e6e-a6ab-573f",
+            "childId": "8229-6f9b-ba74-c239"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "cc8d-7cc1-0e80-0108",
+            "name": "Cavalry hammer "
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "8ab4-17be-8a49-b3f7",
+            "childId": "c071-eb48-3009-9ec1"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "ebfe-5617-1c16-0ead",
+            "name": "General"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "entryLinks",
+            "entryLink",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "lessThan",
+            "field": "selections",
+            "scope": "8ab4-17be-8a49-b3f7",
+            "childId": "32c2-bfbe-88b1-8425"
+          }
+        }
+      ]
+    },
+    {
+      "key": "modifier|unset-primary|category",
+      "kind": "modifier",
+      "axes": {
+        "type": "unset-primary",
+        "targetField": "category"
+      },
+      "occurrences": 4,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 3,
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "fcdd-429a-3b79-7e8d",
+            "name": "Men at Arms"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "unset-primary",
+            "field": "category"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "9572-ac32-c59e-134c",
+            "name": "Peasant Bowmen"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "unset-primary",
+            "field": "category"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "0227-ea15-966b-4a20",
+            "name": "Grail Reliquae with Battle Pilgrims"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifierGroups",
+            "modifierGroup",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "unset-primary",
+            "field": "category"
+          }
+        }
+      ]
+    },
+    {
+      "key": "modifier|multiply|costValue",
+      "kind": "modifier",
+      "axes": {
+        "type": "multiply",
+        "targetField": "costValue"
+      },
+      "occurrences": 3,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 3
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "fe43-aa5e-3d37-9772",
+            "name": "Gyrocopter"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "multiply",
+            "field": "ecfa-8486-4f6c-c249"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "b767-3b91-f82d-efb6",
+            "name": "Organ Gun"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "multiply",
+            "field": "ecfa-8486-4f6c-c249"
+          }
+        },
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "6abc-75c5-412f-011d",
+            "name": "Flame Cannon"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier"
+          ],
+          "raw": {
+            "type": "multiply",
+            "field": "ecfa-8486-4f6c-c249"
+          }
+        }
+      ]
+    },
     {
       "key": "repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
       "kind": "repeat",
@@ -118,6 +1834,268 @@
             "scope": "parent",
             "childId": "upgrade",
             "repeats": "1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|atLeast|parent|selectionCount|child=model",
+      "kind": "condition",
+      "axes": {
+        "type": "atLeast",
+        "scope": "parent",
+        "field": "selectionCount",
+        "childId": "model"
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "21f9-b4f6-b59e-8892",
+            "name": "Champion"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "parent",
+            "childId": "model"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|atLeast|self|selectionCount|child=any",
+      "kind": "condition",
+      "axes": {
+        "type": "atLeast",
+        "scope": "self",
+        "field": "selectionCount",
+        "childId": "any"
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntryGroup",
+            "id": "7f4e-4b7b-fbc4-a138",
+            "name": "War Hydras of Naggaroth"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "atLeast",
+            "field": "selections",
+            "scope": "self",
+            "childId": "any"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|notEqualTo|parent|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "notEqualTo",
+        "scope": "parent",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "entryLink",
+            "id": "e082-13b2-e746-34e0",
+            "name": "Lance"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntryGroups",
+            "selectionEntryGroup",
+            "entryLinks",
+            "entryLink",
+            "modifierGroups",
+            "modifierGroup",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "notEqualTo",
+            "field": "selections",
+            "scope": "parent",
+            "childId": "44f9-f44d-d693-84f8"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|notEqualTo|roster|limitValue|child=any",
+      "kind": "condition",
+      "axes": {
+        "type": "notEqualTo",
+        "scope": "roster",
+        "field": "limitValue",
+        "childId": "any"
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "2f57-db88-56b5-180f",
+            "name": "Paladin Battle Standard Bearer"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "notEqualTo",
+            "field": "limit::ecfa-8486-4f6c-c249",
+            "scope": "roster",
+            "childId": "any"
+          }
+        }
+      ]
+    },
+    {
+      "key": "condition|notEqualTo|roster|selectionCount|child=id",
+      "kind": "condition",
+      "axes": {
+        "type": "notEqualTo",
+        "scope": "roster",
+        "field": "selectionCount",
+        "childId": "id"
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+          "id": null,
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "d0aa-b183-877e-e731",
+            "name": "Rat Riders"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "modifiers",
+            "modifier",
+            "conditionGroups",
+            "conditionGroup",
+            "conditions",
+            "condition"
+          ],
+          "raw": {
+            "type": "notEqualTo",
+            "field": "selections",
+            "scope": "roster",
+            "childId": "4fed-b911-e6e0-927b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false",
+      "kind": "constraint",
+      "axes": {
+        "type": "min",
+        "field": "selectionCount",
+        "scope": "parent",
+        "shared": true,
+        "includeChildSelections": true,
+        "includeChildForces": false,
+        "percentValue": false
+      },
+      "occurrences": 1,
+      "files": {
+        "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat": 1
+      },
+      "examples": [
+        {
+          "file": "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+          "id": "41ec-bee5-0865-0448",
+          "ancestor": {
+            "tag": "selectionEntry",
+            "id": "8d99-db74-0051-4a45",
+            "name": "Reaper Bolt Thrower team"
+          },
+          "path": [
+            "catalogue",
+            "selectionEntries",
+            "selectionEntry",
+            "selectionEntries",
+            "selectionEntry",
+            "constraints",
+            "constraint"
+          ],
+          "raw": {
+            "type": "min",
+            "field": "selections",
+            "scope": "parent"
           }
         }
       ]
