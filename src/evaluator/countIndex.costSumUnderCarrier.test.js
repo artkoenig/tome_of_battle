@@ -100,9 +100,19 @@ function heroViolation(report) {
   return report.violations.find(violation => violation.limitId === HERO_LIMIT_ID);
 }
 
-/** Der Faehigkeitsdatensatz des Helden — er traegt den Ist-Wert auch ohne Verstoss. */
+/** Der Faehigkeitsdatensatz des Helden. */
 function heroCapability(report) {
   return [...report.capabilities.values()].find(capability => capability.defId === HERO_ID);
+}
+
+/**
+ * Die Punktsumme, die die Kostenart-Grenze des Helden misst — abgelesen an seinen
+ * `costLimits`, wo jede kostenbezogene Grenze ihren eigenen Datensatz hat. Sie
+ * steht dort auch ohne Verstoss; die Stueckzahl-Felder des Slots (`current` &c.)
+ * tragen dagegen nie eine Punktsumme (`report.js`).
+ */
+function heroCostSum(report) {
+  return heroCapability(report)?.costLimits.find(limit => limit.limitId === HERO_LIMIT_ID)?.current;
 }
 
 describe('Kostenart-Grenze am Eintrag: includeChildSelections="true" summiert die Nachfahren mit', () => {
@@ -129,7 +139,7 @@ describe('Kostenart-Grenze am Eintrag: includeChildSelections="true" summiert di
     const report = evaluate(heroCatalogue(true), rosterWithItems(0));
 
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 });
 
@@ -139,7 +149,7 @@ describe('Kostenart-Grenze am Eintrag: includeChildSelections="false" bleibt bei
 
     // „just `scope`'s `field`" (§7.6): die verschachtelte Auswahl bleibt aussen vor.
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 });
 
@@ -248,7 +258,7 @@ describe('Verschachtelter Traeger (Issue 0113): die roster-Grenze liest seine Ei
     // §9.4/Issue 083); 110 hiesse: der Nachfahre zaehlt mit (Verstoss gegen
     // §7.6/Issue 091). Richtig ist genau der Traeger selbst: 50.
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 });
 

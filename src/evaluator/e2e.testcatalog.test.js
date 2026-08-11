@@ -96,13 +96,31 @@
  *                                                        // mehrfach im Roster steht
  *               // ── Aussagen ueber den getroffenen Slot ──
  *               "name": "<effektiver Anzeigename>"?,     // nach allen Namens-Modifikatoren
- *               "current": <ist>?,                       // aktueller Stand im Bezugsrahmen
+ *               "current": <ist>?,                       // aktueller Stand im Bezugsrahmen, als STUECKZAHL
  *               "effectiveMin": <grenze>|null?,          // effektives Mindestmass (null = keines)
  *               "effectiveMax": <grenze>|null?,          // effektives Hoechstmass (null = keines)
  *               "headroom": <rest>|null?,                // verbleibender Spielraum (null ohne Hoechstmass)
+ *                                                        // Die vier Zahlen nennen ausschliesslich die
+ *                                                        // ZAEHLENDEN Grenzen des Slots; kostenbezogene
+ *                                                        // stehen in "costLimits" unten.
  *               "isHidden": true|false?,                 // vom Katalog ausgeblendet
- *               "isBlocked": true|false?,                // Hoechstmass ausgeschoepft
- *               "isMandatoryUnmet": true|false?,         // Mindestmass unerfuellt
+ *               "isBlocked": true|false?,                // ein Hoechstmass ausgeschoepft (auch ein
+ *                                                        // kostenbezogenes)
+ *               "isMandatoryUnmet": true|false?,         // ein Mindestmass unerfuellt (dito)
+ *               "costLimits": [                          // TEILMENGE: nur die genannten Kostengrenzen
+ *                 {
+ *                   "limitId": "<constraint-Id>",        // PFLICHT: benennt die Grenze; muss genau
+ *                                                        // eine kostenbezogene Grenze des Slots treffen
+ *                   "costTypeId": "<costType-Id>"?,      // die gemessene Kostenart
+ *                   "measure": "costSum|budgetLimit"?,   // verplante Summe der Kostenart bzw. die
+ *                                                        // eingestellte Roster-Kostengrenze
+ *                   "kind": "min|max"?,                  // Art der Grenze
+ *                   "bound": <grenze>?,                  // ihr effektiver Wert
+ *                   "current": <ist>?,                   // die gemessene Summe
+ *                   "headroom": <rest>|null?,            // nur am Hoechstmass; am Mindestmass null
+ *                   "satisfied": true|false?             // ob die Grenze haelt
+ *                 }
+ *               ]?,
  *               "authorMessages": [                      // die Autor-Meldungen des Slots,
  *                 { "severity": "error|warning|info", "text": "<Katalogtext>" }
  *               ]?,                                      // VOLLSTAENDIG: [] fordert „keine"
@@ -160,9 +178,9 @@
  * Punktelimit, weitere Diagnose-Arten) duerfen zusaetzlich auftreten, ohne einen Fall
  * zu brechen. Innerhalb *eines* genannten Slots gilt das feiner: `name` ist eine
  * Gleichheit, `authorMessages` eine vollstaendige (aber reihenfolge-freie) Aussage
- * ueber die Meldungen dieses Slots, `infoElements` eine Teilmengen-Aussage — und
- * innerhalb eines genannten Info-Elements sind auch dessen `characteristics` eine
- * Teilmenge.
+ * ueber die Meldungen dieses Slots, `costLimits` und `infoElements` sind
+ * Teilmengen-Aussagen — und innerhalb eines genannten Info-Elements sind auch
+ * dessen `characteristics` eine Teilmenge.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -467,6 +485,40 @@ const COMPARABLE_INFO_ELEMENT_FIELDS = Object.freeze([
 ]);
 
 /**
+ * Die **Skalarfelder einer kostenbezogenen Grenze**, die eine Erwartung direkt
+ * vergleichen kann. Die Grenze selbst benennt das Manifest ueber ihre `limitId`.
+ */
+const COMPARABLE_COST_LIMIT_FIELDS = Object.freeze([
+  'costTypeId',
+  'measure',
+  'kind',
+  'bound',
+  'current',
+  'headroom',
+  'satisfied',
+]);
+
+/**
+ * Prueft die `costLimits`-Aussagen eines Slots — je genannter Grenze eine
+ * Teilmengen-Aussage, wie bei den Info-Elementen. Ueber die nicht genannten
+ * Grenzen des Slots sagt sie nichts.
+ */
+function assertCostLimitsMatchExpectation(capability, specs, manifestPath) {
+  for (const spec of specs) {
+    assertManifest(typeof spec.limitId === 'string', manifestPath,
+      'costLimits: Feld "limitId" fehlt (die Id der Grenze benennt den Eintrag).');
+    const matches = capability.costLimits.filter(limit => limit.limitId === spec.limitId);
+    assertManifest(matches.length === 1, manifestPath,
+      `costLimits: limitId="${spec.limitId}" trifft ${matches.length} kostenbezogene Grenzen am Slot.`);
+
+    for (const field of COMPARABLE_COST_LIMIT_FIELDS) {
+      if (spec[field] === undefined) continue;
+      expect(matches[0][field], `Kostengrenze ${spec.limitId}: ${field}`).toEqual(spec[field]);
+    }
+  }
+}
+
+/**
  * Der eine Eintrag der Info-Projektion, den eine Erwartung meint — benannt ueber
  * die Id seines **Vorkommens** (bei einem Info-Verweis die des Verweises). Trifft
  * die Id mehrere Eintraege, meint das Szenario nicht eindeutig einen: derselbe
@@ -539,6 +591,7 @@ function assertCapabilitiesMatchExpectation(report, expectation, manifestPath) {
         expect(capability.authorMessages, `Slot ${spec.defId}: Autor-Meldung`).toContainEqual(message);
       }
     }
+    assertCostLimitsMatchExpectation(capability, spec.costLimits ?? [], manifestPath);
     assertInfoElementsMatchExpectation(capability, spec.infoElements ?? [], manifestPath);
     assertInfoElementsAbsent(capability, spec.infoElementsAbsent ?? [], spec);
   }

@@ -11,7 +11,7 @@ import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
 function evaluate(catalogXml, roster) {
   return evaluateDataset(prepareDataset({ catalogues: [catalogXml] }), roster);
 }
-import { AnchorKind, MessageSeverity } from './model.js';
+import { AnchorKind, ConstraintKind, LimitMeasure, MessageSeverity } from './model.js';
 import { PreparedDataset } from './datasetPreparation.js';
 import { buildEvalTree, selectableSlotsOf } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
@@ -130,16 +130,19 @@ describe('Bericht: ein Slot mit zaehlender UND kostenmessender Max-Grenze', () =
   // nennen die zaehlende. Ohne diese Regel entschiede die Reihenfolge im
   // Katalogtext, und die Oberflaeche laese die 50 als Stueckzahl.
   const POINTS_ID = 'cost-points';
+  const DICE_ID = 'cost-dice';
   const ITEM_DEF_ID = 'entry-magic-items';
   const COUNT_MAX = 1;
   const POINTS_MAX = 50;
+  const DICE_MAX = 2;
 
-  /** `constraintsXml` ist die Reihenfolge der beiden Grenzen im Katalogtext. */
+  /** `constraintsXml` ist die Reihenfolge der Grenzen im Katalogtext. */
   function catalogueWith(constraintsXml) {
     return `<?xml version="1.0" encoding="utf-8"?>
       <catalogue id="cat-cap-mixed-max" name="Capability Mixed MAX Catalogue">
         <costTypes>
           <costType id="${POINTS_ID}" name="pts" defaultCostLimit="-1"/>
+          <costType id="${DICE_ID}" name="Casting Dice" defaultCostLimit="-1"/>
         </costTypes>
         <selectionEntries>
           <selectionEntry id="${WARRIOR_DEF_ID}" name="${WARRIOR_NAME}" type="unit">
@@ -155,19 +158,47 @@ describe('Bericht: ein Slot mit zaehlender UND kostenmessender Max-Grenze', () =
 
   const COUNT_LIMIT = `<constraint id="max-items" type="max" value="${COUNT_MAX}" field="selections" scope="parent"/>`;
   const POINTS_LIMIT = `<constraint id="max-points" type="max" value="${POINTS_MAX}" field="${POINTS_ID}" scope="parent"/>`;
+  const DICE_LIMIT = `<constraint id="max-dice" type="max" value="${DICE_MAX}" field="${DICE_ID}" scope="parent"/>`;
+
+  /** Der Slot des Magiegegenstands-Blocks — noch nicht gewaehlt, also ein Anker. */
+  function itemSlot(constraintsXml) {
+    const report = evaluate(catalogueWith(constraintsXml), rosterOf(WARRIOR_DEF_ID, 1));
+    return slotByDefId(report, ITEM_DEF_ID, { phantom: true }).capability;
+  }
 
   it.each([
     ['zaehlende Grenze zuerst', COUNT_LIMIT + POINTS_LIMIT],
     ['kostenmessende Grenze zuerst', POINTS_LIMIT + COUNT_LIMIT],
   ])('nennt in effectiveMax die Stueckzahl-Grenze, nicht das Punktebudget (%s)', (_name, constraintsXml) => {
-    const report = evaluate(catalogueWith(constraintsXml), rosterOf(WARRIOR_DEF_ID, 1));
-
-    const { capability } = slotByDefId(report, ITEM_DEF_ID, { phantom: true });
-    expect(capability).toMatchObject({
+    expect(itemSlot(constraintsXml)).toMatchObject({
       effectiveMax: COUNT_MAX,
       current: 0,
       headroom: COUNT_MAX,
     });
+  });
+
+  it('fuehrt das Punktebudget daneben als eigene kostenbezogene Grenze', () => {
+    expect(itemSlot(COUNT_LIMIT + POINTS_LIMIT).costLimits).toEqual([{
+      limitId: 'max-points',
+      costTypeId: POINTS_ID,
+      measure: LimitMeasure.COST_SUM,
+      kind: ConstraintKind.MAX,
+      bound: POINTS_MAX,
+      current: 0,
+      headroom: POINTS_MAX,
+      satisfied: true,
+    }]);
+  });
+
+  it('haelt zwei Kostenarten nebeneinander — keine verdraengt die andere', () => {
+    const costLimits = itemSlot(POINTS_LIMIT + DICE_LIMIT).costLimits;
+
+    expect(costLimits.map(limit => [limit.costTypeId, limit.bound]))
+      .toEqual([[POINTS_ID, POINTS_MAX], [DICE_ID, DICE_MAX]]);
+  });
+
+  it('laesst die Stueckzahl-Felder leer, wenn der Slot nur kostenbezogene Grenzen traegt', () => {
+    expect(itemSlot(POINTS_LIMIT)).toMatchObject({ effectiveMin: null, effectiveMax: null, headroom: null });
   });
 });
 

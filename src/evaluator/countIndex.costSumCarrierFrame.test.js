@@ -112,9 +112,19 @@ function heroViolation(report) {
   return report.violations.find(violation => violation.limitId === HERO_LIMIT_ID);
 }
 
-/** Der Faehigkeitsdatensatz des Helden — er traegt den Ist-Wert auch ohne Verstoss. */
+/** Der Faehigkeitsdatensatz des Helden. */
 function heroCapability(report) {
   return [...report.capabilities.values()].find(capability => capability.defId === HERO_ID);
+}
+
+/**
+ * Die Punktsumme, die die Kostenart-Grenze des Helden misst — abgelesen an seinen
+ * `costLimits`, wo jede kostenbezogene Grenze ihren eigenen Datensatz hat. Sie
+ * steht dort auch ohne Verstoss; die Stueckzahl-Felder des Slots (`current` &c.)
+ * tragen dagegen nie eine Punktsumme (`report.js`).
+ */
+function heroCostSum(report) {
+  return heroCapability(report)?.costLimits.find(limit => limit.limitId === HERO_LIMIT_ID)?.current;
 }
 
 describe('Kostenart-Grenze im scope="self"-Rahmen', () => {
@@ -126,7 +136,7 @@ describe('Kostenart-Grenze im scope="self"-Rahmen', () => {
 
     // „just scope's field": der Gegenstand (60) bleibt aussen vor — 50 <= 100.
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 
   it('summiert mit includeChildSelections="true" den Nachfahren mit (110 gegen 100)', () => {
@@ -151,7 +161,7 @@ describe('Kostenart-Grenze mit shared="false" (wertet im eigenen Rahmen des Trae
     );
 
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 
   it('summiert mit includeChildSelections="true" den Nachfahren mit (110 gegen 100)', () => {
@@ -177,7 +187,7 @@ describe('Verschachtelungstiefe 2: das Flag schaltet den ganzen Teilbaum einheit
 
     // Kein Hybrid: weder Kind (60) noch Enkelkind (40) duerfen hereinzaehlen.
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 
   it('summiert mit includeChildSelections="true" ALLE Nachfahren (150 gegen 100)', () => {

@@ -376,14 +376,23 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                           categoryIds: Id[],            // die EFFEKTIVEN Kategorie-IDs des Slots
                           primaryCategoryId: Id?,       // die effektive Primärkategorie darunter
                                                         // (nach set-primary/unset-primary); null = keine
-                          effectiveMin: number?, effectiveMax: number?,
-                          current: number, headroom: number?,
+                          effectiveMin: number?, effectiveMax: number?,   // STUECKZAHLEN: allein
+                          current: number, headroom: number?,            // aus den zaehlenden Grenzen
+                          costLimits: CostLimit[],      // die kostenbezogenen Grenzen des Slots, je
+                                                        // Grenze eine — keine verdraengt eine andere
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
                           isValueUnstable: bool,        // lag in der instabilen Knotenmenge
                           authorMessages: { severity, text }[],
                           infoElements: InfoEntry[] }   // die Info-Projektion: eigene UND aus den
                                                         // belegten Unter-Auswahlen geerbte Profile
                                                         // und Regeltexte, Verstecktes ausgenommen
+
+record CostLimit        { limitId: Id, costTypeId: Id?,  // welche Kostenart die Grenze misst
+                          measure: LimitMeasure,        // COST_SUM (verplante Summe) oder
+                                                        // BUDGET_LIMIT (eingestellte Kostengrenze)
+                          kind: ConstraintKind, bound: number, current: number,
+                          headroom: number?,            // nur am MAX; am MIN null
+                          satisfied: bool }
 
 record Report { violations: Message[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
@@ -715,6 +724,10 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED
 function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
+    // findResult nimmt NUR die zaehlenden Grenzen (selectionCount/forceCount): ein
+    // Slot kann eine zaehlende und eine kostenmessende Grenze derselben Art tragen
+    // ("hoechstens 1 davon, und darin hoechstens 50 Punkte"), und eine Punktsumme in
+    // einem Stueckzahl-Feld laese die Oberflaeche als Anzahl.
     minResult = findResult(results, node, MIN)
     maxResult = findResult(results, node, MAX)
     capabilities[pathOf(node)] = SlotCapability(
@@ -727,8 +740,9 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       effectiveMax  = maxResult?.bound,
       current       = maxResult?.actual ?? minResult?.actual ?? 0,
       headroom      = maxResult != null ? max(0, maxResult.bound - maxResult.actual) : null,
-      isMandatoryUnmet = minResult != null and not minResult.satisfied,
-      isBlocked     = maxResult != null and maxResult.actual >= maxResult.bound,
+      costLimits    = costLimitsOf(results, node),     // je kostenbezogener Grenze eine
+      isMandatoryUnmet = any(results[node][MIN], r -> not r.satisfied),   // JEDE Grenze,
+      isBlocked     = any(results[node][MAX], r -> r.actual >= r.bound),  // auch die kostenbezogene
       isHidden      = effective.isHidden(node),
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       defId         = node.def.id,

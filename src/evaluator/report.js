@@ -17,7 +17,8 @@
  *   **effektiver** Anzeigename, die **effektiven Kategorie-IDs** samt der effektiven
  *   **Primaerkategorie** (der Anzeige-Bucket nach `set-primary`/`unset-primary`,
  *   `docs/battlescribe-data-format.md` §8), effektives min/max, aktueller
- *   Stand, Restspielraum, die
+ *   Stand, Restspielraum (alle vier als **Stueckzahl**), die **kostenbezogenen
+ *   Grenzen** des Slots je Kostenart (`costLimits`), die
  *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
  *   **Autor-Meldungen** des Katalogs und die **Info-Projektion** — die fuer den
  *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
@@ -335,30 +336,56 @@ function resultsOfKind(resultsByAnchor, node, kind) {
 }
 
 /**
- * Das Ergebnis der Grenze gegebener Art (MIN/MAX) am Knoten, oder `null`, wenn
- * der Knoten keine solche (nicht suspendierte) Grenze traegt.
- *
- * Traegt der Knoten mehrere Grenzen dieser Art, hat die **zaehlende** Vorrang —
- * im Katalog der Regelfall bei einem Eintrag, der eine Stueckzahl und ein
- * Punktebudget nebeneinander deckelt („hoechstens 1 Magiegegenstands-Block, und
- * darin hoechstens 50 Punkte"). Ohne diesen Vorrang entschiede die
- * Deklarationsreihenfolge im Katalog, und die Punktgrenze stuende in den
- * Stueckzahl-Feldern des Slots: die Oberflaeche laese „hoechstens 50 Punkte" als
- * „hoechstens 50 Stueck" und boete einen Mengensteller an, wo genau eine Auswahl
- * erlaubt ist. Unter mehreren gleichartigen gilt die zuletzt ausgewertete.
- *
- * Traegt der Knoten **nur** kostenmessende Grenzen, bleibt es bei deren Ergebnis:
- * dort ist der Punktwert das einzige, was der Slot ueber seine Grenze zu sagen
- * hat.
+ * Das Ergebnis der **zaehlenden** Grenze gegebener Art (MIN/MAX) am Knoten, oder
+ * `null`, wenn der Knoten keine solche (nicht suspendierte) Grenze traegt. Es
+ * speist die Stueckzahl-Felder des Faehigkeitsdatensatzes; eine kostenmessende
+ * Grenze desselben Knotens bleibt hier aussen vor und erscheint stattdessen in
+ * {@link costLimitsOf} — eine Punktsumme in einem Stueckzahl-Feld laese die
+ * Oberflaeche als Anzahl („hoechstens 50 Punkte" wuerde „hoechstens 50 Stueck").
+ * Unter mehreren zaehlenden Grenzen derselben Art gilt die zuletzt ausgewertete.
  */
 function findResult(resultsByAnchor, node, kind) {
   const ofKind = resultsOfKind(resultsByAnchor, node, kind);
-  let fallback = null;
-  for (const result of ofKind) {
-    if (COUNTING_MEASURES.has(result.measure)) fallback = result;
-    else if (fallback === null || !COUNTING_MEASURES.has(fallback.measure)) fallback = result;
+  for (let i = ofKind.length - 1; i >= 0; i -= 1) {
+    if (COUNTING_MEASURES.has(ofKind[i].measure)) return ofKind[i];
   }
-  return fallback;
+  return null;
+}
+
+/**
+ * Die **kostenbezogenen Grenzen** eines Slots: je ausgewerteter Grenze ein
+ * eigener Datensatz, in Auswertungsreihenfolge. Keine verdraengt eine andere —
+ * ein Slot kann eine Punkt- und eine Zauberwuerfel-Grenze nebeneinander tragen,
+ * und beide gehoeren in den Bericht (dieselbe Kostenart darf ausserdem ein Min
+ * und ein Max haben).
+ *
+ * `costTypeId` sagt, **welche** Kostenart die Grenze misst; `measure`
+ * unterscheidet die beiden kostenbezogenen Messgroessen: `COST_SUM` ist die
+ * verplante Summe dieser Kostenart unter dem Slot, `BUDGET_LIMIT` die
+ * eingestellte Roster-Kostengrenze (`limit::<costTypeId>`) — grundverschiedene
+ * Groessen, die die Oberflaeche nicht verwechseln darf. `headroom` gibt es nur am
+ * Hoechstmass; am Mindestmass ist er `null`.
+ */
+function costLimitsOf(resultsByAnchor, node) {
+  const byKind = resultsByAnchor.get(node);
+  if (byKind === undefined) return [];
+  const costLimits = [];
+  for (const kind of [ConstraintKind.MIN, ConstraintKind.MAX]) {
+    for (const result of byKind.get(kind) ?? []) {
+      if (COUNTING_MEASURES.has(result.measure)) continue;
+      costLimits.push({
+        limitId: result.limit.id,
+        costTypeId: result.limit.field.costTypeId ?? null,
+        measure: result.measure,
+        kind,
+        bound: result.bound,
+        current: result.actual,
+        headroom: kind === ConstraintKind.MAX ? headroomOf(result) : null,
+        satisfied: result.satisfied,
+      });
+    }
+  }
+  return costLimits;
 }
 
 /**
@@ -439,11 +466,16 @@ function headroomOf(maxResult) {
  * deklariert) — nach derselben Link-vor-Ziel-Regel wie `sourceId` (Issue 0133).
  * Die Flags sind konsistent zu den ausgewerteten Grenzen: gesperrt am MAX,
  * Pflicht-unerfuellt unter dem MIN, versteckt aus dem effektiven Zustand.
- * `effectiveMin`/`effectiveMax`/`current`/`headroom` nennen dabei die
- * **zaehlende** Grenze des Slots, wo er eine traegt — auch wenn daneben eine
- * kostenmessende steht ({@link findResult}); `isBlocked`/`isMandatoryUnmet`
- * lesen umgekehrt **jede** Grenze: ein ausgeschoepftes Punktebudget sperrt
- * genauso wie eine erreichte Stueckzahl.
+ * `effectiveMin`/`effectiveMax`/`current`/`headroom` sind durchweg
+ * **Stueckzahlen**: sie nennen allein die zaehlenden Grenzen des Slots
+ * ({@link findResult}). Seine **kostenbezogenen** Grenzen stehen daneben in
+ * `costLimits` — je Grenze ein Datensatz mit ihrer Kostenart, keine verdraengt
+ * eine andere ({@link costLimitsOf}). Ein Slot mit „hoechstens 1 davon, und
+ * darin hoechstens 50 Punkte" meldet also `effectiveMax` 1 und daneben die
+ * 50-Punkte-Grenze; ein Slot mit einer Punkt- und einer Zauberwuerfel-Grenze
+ * meldet beide. `isBlocked`/`isMandatoryUnmet` lesen umgekehrt **jede** Grenze
+ * des Slots: ein ausgeschoepftes Punktebudget sperrt genauso wie eine erreichte
+ * Stueckzahl.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
  * die **effektiven** Eigenkosten EINER Instanz (nach Kosten-Modifikatoren, auch
  * an Angebots-Ankern: was EINE Instanz beim Waehlen kosten wuerde) und die
@@ -487,6 +519,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax: maxResult === null ? null : maxResult.bound,
+    costLimits: costLimitsOf(resultsByAnchor, node),
     // Wo eine Grenze ausgewertet wurde, ist deren Ist-Wert die berichtete Zahl —
     // zu ihm passen Hoechstmass, Restspielraum und Sperrung daneben. Erst ohne
     // Grenzergebnis greifen die Rueckfallstufen: die gezaehlte Belegung (nur
