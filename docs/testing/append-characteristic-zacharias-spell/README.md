@@ -66,6 +66,7 @@ sofern nicht anders vermerkt.
 | **ACZ-R7** | **Beide Roster erreichen dasselbe Profil-Vorkommen ueber denselben Weg.** Der Eintrag *Lore of Necromancy* traegt eine `infoGroup`, deren `infoLink` auf das Profil zeigt; das Vorkommen wird damit unter der Id des **Verweises** gefuehrt. | `selectionEntry type="upgrade" name="Lore of Necromancy" id="f7e9-c0a4-549e-33e0"` (Z. 13722) → `infoGroup name="Spells rules" id="4489-d8e2-ff78-1a27" hidden="false"` (Z. 13727) → `infoLink name="1. Invocation of Nehek" id="cb2b-7a42-2b40-f03d" hidden="false" type="profile" targetId="6484-4a1a-e62b-2ce1"` (Z. 13735). Zacharias zieht den Eintrag per `entryLink 8634-66c5-4d08-03fb` (Z. 4901), der Necromancer per `entryLink 9958-1cdd-fdc9-3781` (Z. 2589) herein. |
 | **ACZ-R8** | **Der Necromancer ist ein sauberes Gegenstueck.** Er ist `type="unit"`, traegt dieselbe Lore und ist im Kontingent *Standard (VC-AB)* nicht versteckt; seine Definitions-Id, seine Kategorien und sein roher Typ sind allesamt nicht `1c05-5813-2f0c-f878`. | `selectionEntry id="b5d8-db21-a4b7-9e94" name="Necromancer" … type="unit"` (Z. 2485), `categoryLinks` Z. 2508–2509 (`Heroes` `c16b-f319-2c62-2c12` primaer, `Characters` `7a1c-d611-c2dc-def1`). Sein `set hidden="true"`-Modifikator (Z. 2687–2698) ist auf vier **andere** Kontingente gegatet; `e989-15b8-7eb6-9668` ist keines davon. |
 | **ACZ-R9** | **Zacharias ist im Roster legal waehlbar.** Seine armeeweite Grenze `max 0` wird durch den Schalter *Allow special characters?* auf 1 gehoben; damit ist Ist 1 = Grenze 1. | `constraint field="selections" scope="roster" value="0" … id="f74f-ffa2-0ea8-22cb" type="max"` (Z. 4853) und `modifier type="set" value="1" field="f74f-ffa2-0ea8-22cb"` mit `condition atLeast 1 scope="force" childId="6411-4be3-864f-a963"` (Z. 5061–5065). `6411-4be3-864f-a963` ist der VC-Wurzel-`entryLink` auf den `.gst`-Eintrag `8923-5946-7b10-8957` (Z. 29575; `.gst` Z. 1935); seine eigene Grenze `9149-ce10-44d6-2d99` ist `min 0` (Z. 29577). Das Roster fuehrt die Auswahl mit `entryId="8923-5946-7b10-8957"` **und** `entryLinkId="6411-4be3-864f-a963"`, trifft also beide Schreibweisen der `childId`. |
+| **ACZ-R10** | **Das von keiner Quelle spezifizierte Attribut `position="-1"` ist wirkungslos.** Der zweite `append` verhaelt sich exakt so, wie §7.7 es fuer `type="append"` beschreibt — Basistext + `join` + `value` —, als traege er das Attribut nicht. Auf *Cast* ergibt das bei Zacharias `3+/7+/11+ /15+`. | `modifier type="append" value="/15+" field="f1e6-8816-26e0-8a70" join=" " position="-1"` (Z. 27118), Basiswert `<characteristic name="Cast" typeId="f1e6-8816-26e0-8a70">3+/7+/11+</characteristic>` (Z. 27096). Grundlage der Regel ist der Wartungsentscheid vom **2026-08-11** (siehe Abschnitt *Das Attribut `position="-1"`*), nicht eine Fundstelle in Formatdoku, Wiki oder XSD — dort ist das Attribut unbekannt. |
 
 ### ACZ-R3/R4 im Detail — die erwarteten Zeichenketten
 
@@ -109,7 +110,7 @@ Erwartung anzupassen.
 
 ---
 
-## Die Luecke `position="-1"` — und wie dieses Szenario damit umgeht
+## Das Attribut `position="-1"` — Befund und Entscheid
 
 Der zweite `append` (Z. 27118) lautet vollstaendig:
 
@@ -117,7 +118,7 @@ Der zweite `append` (Z. 27118) lautet vollstaendig:
 <modifier type="append" value="/15+" field="f1e6-8816-26e0-8a70" join=" " position="-1">
 ```
 
-Das Attribut `position` ist **aus keiner der erlaubten Quellen ableitbar**:
+### Der Befund: keine Quelle kennt das Attribut
 
 | Quelle | Befund |
 |--------|--------|
@@ -126,36 +127,59 @@ Das Attribut `position` ist **aus keiner der erlaubten Quellen ableitbar**:
 | Vendorte [`Catalogue.xsd`](../../../src/parser/schema/Catalogue.xsd) | `complexType "Modifier"` (Z. 482–495) deklariert **genau vier** Attribute: `type`, `field`, `value` (alle `use="required"`) und das laut ADR 0016 bewusst ergaenzte `join` (`use="optional"`). Es gibt **kein** `anyAttribute`. Das Element ist damit gegen die Konformitaetsquelle schema-**ungueltig**; der Schema-Schritt ist laut §2 beratend und blockiert den Import nicht. |
 | Die Fixture-Kataloge selbst | `position` als Attribut kommt in allen fuenf Datendateien **genau einmal** vor: in dieser Zeile. Es gibt keine zweite Fundstelle, aus der sich die Bedeutung durch Vergleich erschliessen liesse. |
 
-Damit bleiben mindestens drei Lesarten offen, die auf dem Merkmal *Cast*
-(Basistext `3+/7+/11+`, Z. 27096) **verschiedene** Ergebnisse liefern:
+### Der Entscheid (2026-08-11)
 
-1. *Unbekanntes Attribut wird ignoriert* → `3+/7+/11+ /15+`.
-2. *`position` ist ein Einfuegeindex in den Zieltext, `-1` zaehlt vom Ende* →
-   z. B. `3+/7+/11 /15++` (Einfuegen vor dem letzten Zeichen) oder wiederum
-   `3+/7+/11+ /15+` (`-1` als Synonym fuer „ans Ende") — je nach Zaehlkonvention.
-3. *`position` ordnet Modifikatoren untereinander* → hier ohne Wirkung, also wie 1.
+Der Maintainer hat entschieden — und dieser Entscheid ist ab hier Teil der Regel,
+aus der dieses Szenario ableitet:
 
-**Was dieses Szenario tut:** Es behauptet das Merkmal *Cast* **nur in Roster 02**,
-wo der Modifikator gar nicht greift — dort ist der Basistext `3+/7+/11+` unter
-**jeder** Lesart von `position` korrekt, denn ein Modifikator, dessen Bedingung
-nicht haelt, veraendert nichts. In Roster 01 wird *Cast* **bewusst nicht**
-behauptet. Der Weg „eine Erwartung formulieren, die unter jeder Lesart haelt" ist
-dort nicht gangbar: `capabilities[].infoElements[].characteristics[].value` ist
-eine **exakte Zeichenkettengleichheit**, das Manifest kennt keine „eines von
-diesen"-Form. Eine der drei Lesarten hineinzuschreiben hiesse, sie zu **raten** —
-und zwar genau an der Stelle, an der die Quellen schweigen.
+> `position="-1"` ist ein **Datenfehler**. Die Auswertung ignoriert das Attribut
+> vollstaendig. Der `append` wirkt damit **genau so**, wie
+> [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md) §7.7 es
+> fuer `type="append"` beschreibt: der `value` des Modifikators wird an den Text
+> des im `field` genannten Merkmals des Profil-Vorkommens angehaengt, an dem der
+> Modifikator haengt, getrennt durch das **verbatim** uebernommene `join`. Die
+> vendorte `Catalogue.xsd` bleibt unveraendert.
 
-Auf das Merkmal *Effect* wirkt sich die Luecke **nicht** aus: sein `append`
+Die hinzugefuegte Zusicherung pinnt damit eine Aussage, die staerker ist als „wir
+haben uns fuer eine Lesart entschieden": **ein Attribut, das keine Quelle
+spezifiziert, ist inert** — es darf die Auswertung in **keiner** Weise
+veraendern, weder den Zieltext noch die Reihenfolge der Modifikatoren.
+
+### Die abgeleitete Zeichenkette fuer *Cast*
+
+| Bestandteil | Wert | Beleg |
+|-------------|------|-------|
+| Basiswert des Merkmals *Cast* | `3+/7+/11+` | Z. 27096: `<characteristic name="Cast" typeId="f1e6-8816-26e0-8a70">3+/7+/11+</characteristic>` — kein fuehrender/nachfolgender Leerraum, Textinhalt beginnt direkt hinter `>` und endet direkt vor `</characteristic>`. |
+| Trenner | ein einzelnes U+0020 | Z. 27118: `join=" "` — dieselbe Sorte Leerzeichen wie beim *Effect*-`append` (ACZ-R3), **kein** NBSP. |
+| Anzuhaengender Text | `/15+` | Z. 27118: `value="/15+"` — vier Zeichen, keine Entity-Ersetzung noetig. |
+| Attribut `position="-1"` | wirkungslos | Entscheid 2026-08-11, ACZ-R10. |
+
+Daraus folgt Zeichen fuer Zeichen (`␣` = U+0020):
+
+```
+3+/7+/11+␣/15+
+```
+
+- **Roster 01 (Zacharias, Bedingung haelt):** `3+/7+/11+ /15+` — vierzehn Zeichen.
+- **Roster 02 (Necromancer, Bedingung haelt nicht):** `3+/7+/11+` — der
+  unveraenderte Basiswert; ein Modifikator, dessen Bedingung nicht haelt,
+  veraendert nichts.
+
+Gelesen als Aufzaehlung von Sprungwerten ist `3+/7+/11+ /15+` — mit dem
+Leerzeichen mitten in der Liste — **unschoen**, genau wie die kaputte
+*Effect*-Tabelle aus ACZ-R4. Auch hier gilt: `join` wird verbatim uebernommen.
+Eine Engine, die das Leerzeichen unterdrueckt (etwa weil sie den Zieltext als
+Werteliste erkennt) oder die `/15+` wegen `position="-1"` an anderer Stelle
+einfuegt, ist zu **untersuchen**, nicht die Erwartung anzupassen.
+
+Auf das Merkmal *Effect* wirkt sich die Frage ohnehin **nicht** aus: sein `append`
 (Z. 27113) traegt kein `position`, und die beiden Modifikatoren adressieren
 verschiedene Merkmale, koennen sich also auch ueber keine Reihenfolge-Lesart
-beeinflussen. Die Effect-Zusicherung steht deshalb in **beiden** Rostern.
+beeinflussen.
 
-Der zweite `append` ist damit in diesem Szenario **halb** abgedeckt: seine
-**Bedingung** (greift / greift nicht) ist ueber Roster 02 gepinnt, seine
-**Wirkung** nicht. Wird `position` irgendwann in `docs/battlescribe-data-format.md`
-oder in der XSD entschieden, gehoert die fehlende Zusicherung in Roster 01
-nachgetragen; bis dahin ist sie eine offene Luecke der Quelle, keine Auslassung
-aus Bequemlichkeit.
+Damit ist der zweite `append` **vollstaendig** abgedeckt: seine **Bedingung**
+(greift / greift nicht) ueber den Vergleich beider Roster, seine **Wirkung** ueber
+die *Cast*-Zusicherung in Roster 01.
 
 ---
 
@@ -163,12 +187,12 @@ aus Bequemlichkeit.
 
 | Facette | Warum nicht abgedeckt |
 |---------|------------------------|
-| Das Merkmal *Cast* in Roster 01 | Siehe oben: `position="-1"` ist nicht ableitbar. |
 | `isHidden` der *Lore of Necromancy*-Slots | Beide Traegergruppen — `3240-32da-ecd5-ee0f` (Zacharias, Z. 4896) und `82b0-b07e-fc26-a50a` (Necromancer, Z. 2584) — sind `hidden="true"`. Nach §8 versteckt eine verborgene `selectionEntryGroup`, was sie haelt; die Slots waeren also in **beiden** Rostern verborgen. Das ist Sichtbarkeitslogik und Gegenstand von `unit-scope-instance-of-category`, nicht dieses Szenarios — deshalb keine `isHidden`-Aussage. Der `infoLink` selbst ist `hidden="false"` (Z. 13735), sein Vorkommen darf also in der Info-Projektion stehen. |
+| Die **Bedeutung** von `position` als Attribut | Das Szenario pinnt nur, dass das Attribut **inert** ist (ACZ-R10). Es sagt nichts darueber, wie ein `position` mit anderem Wert oder an einem anderen Modifikatortyp zu behandeln waere — dafuer gibt es weder eine Quelle noch eine zweite Fundstelle im Korpus. |
 | `type="prepend"` auf ein Merkmalsfeld | Kommt in den Fixture-Katalogen kein einziges Mal vor. |
 | `append` **ohne** `join` auf ein Merkmalsfeld | Der einzige `join`-lose `append` des Korpus haengt an `field="name"` (`Mercenaries`-`.cat`); auf einem Merkmalsfeld existiert keiner. |
 | Die unerfuellten Pflicht-Unterauswahlen beider Zauberer | Beide Roster sind bewusst minimal (siehe Kommentare in den `.ros`). Die entstehenden `min`-Verletzungen sind fuer die Merkmalsaussagen ohne Belang und stehen weder in `firing` noch in `absent`. |
-| Der Verletzungsbericht als Traeger der Regel | Ein Merkmalstext ist keine zaehlende Schranke; aus ACZ-R1…R9 wird **keine** feuernde Grenze erwartet. `firing` ist in beiden Rostern leer. |
+| Der Verletzungsbericht als Traeger der Regel | Ein Merkmalstext ist keine zaehlende Schranke; aus ACZ-R1…R10 wird **keine** feuernde Grenze erwartet. `firing` ist in beiden Rostern leer. |
 
 ---
 
@@ -182,7 +206,7 @@ Unterschied ist der Ausloeser.
 
 | # | Testtitel | Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) | Fixture |
 |---|-----------|----------------|----------------------------------------|---------|
-| 01 | Bedingung **haelt** → `append` greift | **Zacharias the Everliving** (`1c05-5813-2f0c-f878`) mit *Lore of Necromancy*. | **ACZ-R2/R3/R4:** Das Merkmal *Effect* des Spruchprofils traegt die vierte Tabellenzeile — angehaengt an die 11+-Zeile, getrennt durch **ein** Leerzeichen, **ohne** Zeilenumbruch. **ACZ-R6:** *Range* bleibt `18"`. *Cast* wird nicht behauptet (Luecke `position`). Keine der gepinnten Grenzen feuert. | [`01-zacharias-append-fires.ros`](rosters/01-zacharias-append-fires.ros) |
+| 01 | Bedingung **haelt** → beide `append`s greifen | **Zacharias the Everliving** (`1c05-5813-2f0c-f878`) mit *Lore of Necromancy*. | **ACZ-R2/R3/R4:** Das Merkmal *Effect* des Spruchprofils traegt die vierte Tabellenzeile — angehaengt an die 11+-Zeile, getrennt durch **ein** Leerzeichen, **ohne** Zeilenumbruch. **ACZ-R10:** *Cast* steht auf `3+/7+/11+ /15+`; `position="-1"` bleibt wirkungslos. **ACZ-R6:** *Range* bleibt `18"`. Keine der gepinnten Grenzen feuert. | [`01-zacharias-append-fires.ros`](rosters/01-zacharias-append-fires.ros) |
 | 02 | Bedingung **haelt nicht** → Basistext | **Necromancer** (`b5d8-db21-a4b7-9e94`) mit derselben *Lore of Necromancy*. | **ACZ-R8:** Der `scope="unit"`-Rahmen ist der Necromancer, beide `instanceOf`-Bedingungen halten nicht. *Effect* steht auf dem fuenfzeiligen Basistext, *Cast* auf `3+/7+/11+`, *Range* auf `18"`. Keine der gepinnten Grenzen feuert. | [`02-necromancer-append-silent.ros`](rosters/02-necromancer-append-silent.ros) |
 
 ---
@@ -209,6 +233,10 @@ wegzudefinieren. Die erwartungsgemaess heiklen Stellen:
 4. **ACZ-R9** — ob die `childId` einer Bedingung auch dann greift, wenn sie die
    Id eines `entryLink`s (`6411-4be3-864f-a963`) statt der Ziel-Id nennt; das
    Roster fuehrt beide Ids an derselben Auswahl.
+5. **ACZ-R10** — ob das unbekannte Attribut `position="-1"` tatsaechlich spurlos
+   ignoriert wird. Weicht *Cast* in Roster 01 von `3+/7+/11+ /15+` ab, wertet die
+   Engine ein Attribut aus, das keine Quelle spezifiziert — das waere ein Befund
+   an der Engine, kein Anlass, die Erwartung zu aendern.
 
 ### Verifizierte Bausteine (aus den Katalogdaten)
 
@@ -218,8 +246,9 @@ wegzudefinieren. Die erwartungsgemaess heiklen Stellen:
 | Geteiltes Profil „1. Invocation of Nehek" (Traeger beider `append`s) | `6484-4a1a-e62b-2ce1` (Z. 27094) |
 | `profileType` „Spell" (`.gst`) | `07eb-6084-5f84-a505` (`.gst` Z. 197) |
 | Merkmal *Cast* / *Range* / *Effect* (`.gst`) | `f1e6-8816-26e0-8a70` (Z. 199) / `42e6-553f-842f-0b91` (Z. 200) / `7d21-349e-b0a8-fc7d` (Z. 204) |
+| Basiswert des Merkmals *Cast* am Profil | `3+/7+/11+` (Z. 27096) |
 | `append` auf *Effect*, `join=" "` | Z. 27113, Bedingung Z. 27115 |
-| `append` auf *Cast*, `join=" "` **und** `position="-1"` | Z. 27118, Bedingung Z. 27120 |
+| `append` auf *Cast*, `value="/15+"`, `join=" "` **und** `position="-1"` (wirkungslos, ACZ-R10) | Z. 27118, Bedingung Z. 27120 |
 | `set "24\""` auf *Range* (Kontrolle) | Z. 27108, Bedingung Z. 27110 (`childId="e5b7-4a3d-b074-24ad"`) |
 | Einheit „Zacharias the Everliving" (`childId` beider Bedingungen) | `1c05-5813-2f0c-f878` (Z. 4851) |
 | Einheit „Necromancer" (Gegenprobe) | `b5d8-db21-a4b7-9e94` (Z. 2485) |

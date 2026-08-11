@@ -114,8 +114,8 @@
         "docs/bsdata-catalogue-development-wiki/Data-structure-overview.md (Abschnitt Modifier)"
       ],
       "parkedAt": "2026-08-10",
-      "status": "open",
-      "answer": null
+      "status": "answered",
+      "answer": "Treat position=\"-1\" as a data error: the evaluation ignores the attribute, so the append applies with its join separator and Cast becomes the base value, one space, then the appended fragment. The vendored Catalogue.xsd stays unchanged. The scenario may now assert the Cast characteristic on the holding roster; what it pins is that an attribute no source specifies is inert. Decision by the maintainer, 2026-08-11, transcribed from the session chat by the campaign driver."
     },
     {
       "cellKey": "repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false",
@@ -126,17 +126,17 @@
         "docs/battlescribe-data-format.md 7.7 (childId values) and 5.6/8 (force slots resolve through categoryLinks)"
       ],
       "parkedAt": "2026-08-10",
-      "status": "open",
-      "answer": null
+      "status": "answered",
+      "answer": "Cover the cell on the synthetic unit-test track under src/evaluator/, do not waive it. The maintainer's source https://6th.whfb.app/appendix-four-rules-of-siege/grappling-hooks shows the entry models a real rule - 1 point per grappling hook and rope, every model of a skirmishing infantry unit carries exactly one - which matches the entry's own comment \"1p/model\" and its increment of 1 pts repeated per counted selection, so the missing incoming link is an upstream data gap and not a meaningless construct. The counting rule for scope=parent with childId=any is already pinned from real data by the green scenario docs/testing/at-least-parent-any-reveal; the unit test carries that rule over to the repeat axis on a synthetic dataset. Decision by the maintainer, 2026-08-11, transcribed from the session chat by the campaign driver."
     }
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-uhbxfy",
+    "branch": "claude/evaluator-abschluss-kampagne-2bsuve",
     "campaignIssue": "docs/issues/0147-evaluator-coverage-gaps",
-    "runs": 16,
-    "lastRunAt": "2026-08-10T23:18:35Z",
-    "lastRunOutcome": "stopped-waiting-on-human",
+    "runs": 17,
+    "lastRunAt": "2026-08-11T06:06:03Z",
+    "lastRunOutcome": "terminated",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -212,6 +212,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 16 did the termination check and stopped without re-arming. The campaign is NOT closed: the inventory exits 1 with one uncovered cell, but that cell is parked and no pinned gap is open, so there is no takeable work of any kind. Both open parkedQuestions entries wait on a human answer. This outcome value is not one of the three the skill names; it means \"unfinished, but nothing to do\" and was chosen over another empty hourly run. A later run must be started by the human, or by answering a parked question and re-invoking the evaluator-closure-loop skill; do not read the missing re-arm as termination."
+    "reArmNote": "Run 17 terminated the campaign. All three termination conditions held at once: node scripts/evaluator-coverage-inventory.js exits 0 with a worklist of 105/105 cells covered and 0 uncovered; npx vitest run src/evaluator passes with 1369 cases and no failing one; and nothing is open - every parkedQuestions entry is answered and no driver.gaps entry is parked. The run folded in the maintainer's answers to the last two parked questions: position=\"-1\" is a data error and inert, which let the scenario docs/testing/append-characteristic-zacharias-spell assert the Cast characteristic in its holding branch (green on the untouched engine); and the unreachable repeat with childId=\"any\" is covered on the synthetic unit-test track, which phase B delivered as src/evaluator/modifiers.repeatParentAny.test.js together with the coverage record. No re-arming: the campaign is closed. A later run is only started by a human."
   }
 }
