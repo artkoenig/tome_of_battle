@@ -114,7 +114,11 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // evidence resolution is in place: the force/roster swap of the
     // duplicated id 1077-7379-f142-f382 (B1/B2) is a wash on the totals even
     // though the specific covered/uncovered cell each resolves to changes.
-    expect(recomputed.totals).toEqual({ cells: 105, covered: 104, uncovered: 1 });
+    // Issue 0147, unit-test-track round: the campaign's last open cell
+    // (repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false)
+    // is covered by src/evaluator/modifiers.repeatParentAny.test.js, so cells
+    // stays 105 (the corpus is frozen) and covered/uncovered move to 105/0.
+    expect(recomputed.totals).toEqual({ cells: 105, covered: 105, uncovered: 0 });
   });
 
   it('keeps totals internally consistent: covered + uncovered === cells, and cells.length === totals.uncovered', () => {
