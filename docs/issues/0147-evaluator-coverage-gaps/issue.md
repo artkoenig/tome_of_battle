@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/evaluator-abschluss-kampagne-2bsuve
-pr:
+pr: 209
 ---
 
 # Evaluator gaps pinned by the coverage campaign
