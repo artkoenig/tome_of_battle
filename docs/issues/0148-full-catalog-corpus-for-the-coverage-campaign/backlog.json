@@ -301,6 +301,111 @@
             "summary": "Researched increment 2 of issue 0148 and settled every baseline from the corpus itself: the seven definitive books were fetched at the pinned commit, measured in place and removed again, confirming 17 files (12 definitive, 5 other), 130 cells, 105 covered, 25 uncovered, plus the exact per-kind, R7, R8 and per-book figures the drift guard has to carry. Two cases outside the criteria's enumerated list also move — case 23's conditionGroup|not|nested (2 to 4) and case B5, where The Empire defines the two ids the showcase-empire scenarios name, flipping them from unknown-id to outside-dataset — while the Dogs of War case stands unedited."
           },
           "prompt": "Issue directory: docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign\nThis increment is worked on its own branch: `claude/evaluator-ergofang-daten-ni8js9--INC-2`, off `claude/evaluator-ergofang-daten-ni8js9`.\nBefore anything else, on `claude/evaluator-ergofang-daten-ni8js9`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 claude/evaluator-ergofang-daten-ni8js9--INC-2`, commit that state change and push `claude/evaluator-ergofang-daten-ni8js9`. Then create the branch with `git checkout -b claude/evaluator-ergofang-daten-ni8js9--INC-2`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md one increment at a time, and increment 2 is yours:\n  The seven definitive books enter the corpus and the inventory is re-baselined — The definitive fixture set carries the seven books that hold the rule constructs the frozen corpus misses, its README records their provenance and why they are there, both the corpus drift guard and the coverage inventory report the seventeen-file corpus, the regenerated worklist is committed, and the suite doc no longer states figures the added books made false.\nWhat it has to satisfy:\n  - src/evaluator/__fixtures__/whfb6-definitive/ carries 'The Empire', 'Bretonnia', 'Dark Elves', 'Dwarfs (2005)', 'Skaven', 'Lizardmen' and 'Forces of Chaos', each with its ' (6th definitive edition).cat' suffix, byte-identical to artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition at commit 4a558216aabea1719d15c8f45bf52b6ee0cd5e3e.\n  - The five files already in that directory are byte-identical to their committed state, and nothing under src/__fixtures__/whfb6/ changes at all — that directory was finished by INC-1.\n  - src/evaluator/__fixtures__/whfb6-definitive/README.md records the provenance of the added books and states why they are there: they carry rule constructs no other book of the set carries.\n  - node scripts/evaluator-coverage-inventory.js reports 17 corpus files, 130 cells, 105 covered and 25 uncovered, and exits 1; the regenerated docs/testing/worklist.json with its 25 entries is committed. Where the computed tally differs from those numbers, the corpus decides and the deviation is reported, not massaged.\n  - npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes. Its baselines currently stand at the ten-file corpus INC-1 left (106 cells, 105 covered, 1 uncovered) and have to move to the seventeen-file one: the file counts of case 21 (17 in total, 12 definitive, 5 in the other set), the per-kind occurrence totals of case 22, the distinct repeat| cell count of R7, the landmark occurrence counts of R8 and the worklist totals. Recompute each from the corpus itself, with case 22's own documented grep arbitrating a mismatch.\n  - The case INC-1 added, which pins the Dogs of War-only childId=\"upgrade\" repeat cell at 3 occurrences with a files map naming only that book, still passes unedited — or, if one of the seven added books does carry that construct, its numbers are recomputed and the change is called out.\n  - The beforeAll hook of that test file has a timeout that survives parsing 17 files instead of 10, so the file does not fail before its cases run.\n  - scripts/lib/CLAUDE.md states no corpus figure the seven added books made false.\n  - npm test passes.\n  - No cell of the worklist is pinned or closed, no file under docs/testing/ other than worklist.json changes, and no production code under src/ changes.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 research:INC-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 research:INC-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:INC-2.0",
+          "at": "2026-08-11T11:53:33.480Z",
+          "return": {
+            "cases": [
+              {
+                "case": "beforeAll timeout (criterion: the hook survives 17 files)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "beforeAll hook (module-level, not an it())",
+                "demands": "Explicit 120_000 ms timeout on the beforeAll that calls loadCorpus/extractCells, no global hookTimeout change.",
+                "got": "Added `}, 120_000);` to the beforeAll. Not independently provable red/green (a timeout only bites under load); confirmed the full suite still parses and completes well under it once fixtures exist is not testable pre-fixture, so this is a static check of the added argument."
+              },
+              {
+                "case": "Case 21 — loadCorpus file counts (17 total / 12 definitive / 5 other)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "loadCorpus — static walk of both fixture sets > returns exactly seventeen catalogue/game-system files, excludes each README.md, and reports no parsererror",
+                "demands": "corpus.sources has length 17, 12 files path-containing 'whfb6-definitive', 5 the rest, no README.md among them, title updated.",
+                "got": "AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(7) ] to have a length of 17 but got 10"
+              },
+              {
+                "case": "Case 22 — per-kind occurrence totals (constraint 10287, condition 4426, conditionGroup 792, modifier 4755, modifierGroup 417, repeat 506, repeatList 496)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — occurrence totals match a plain tag count > totals %s occurrences to %i (it.each)",
+                "demands": "Seven it.each rows with the new totals, comment naming the seventeen-file corpus and that every kind moved.",
+                "got": "AssertionError: expected 5652 to be 10287 (and the same shape for the other six rows, e.g. conditionGroup: expected 261 to be 792, repeatList: expected 243 to be 496)"
+              },
+              {
+                "case": "Case 23 — conditionGroup|not|nested moves from 2 to 4 occurrences",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — known landmark cells > contains conditionGroup|not|nested with 4 occurrences (Vampire Counts, Lizardmen, Skaven)",
+                "demands": "cell.occurrences === 4, title naming all three books.",
+                "got": "AssertionError: expected 2 to be 4. The other three cases of the block (greaterThanOrEqualTo, unresolvedTarget, all-seven-kinds) were left untouched per the plan and still pass."
+              },
+              {
+                "case": "Cases 24–26 — worklist totals move to { cells: 130, covered: 105, uncovered: 25 }",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "docs/testing/worklist.json — drift guard against the committed file > deep-equals the worklist recomputed from the corpus, the manifests, and covered-cells.json",
+                "demands": "recomputed.totals deep-equals { cells: 130, covered: 105, uncovered: 25 }, stale comment replaced explaining the 24 further uncovered cells plus the INC-1 Dogs of War cell; the other two cases of the block (internal consistency, deterministic ordering) left unedited.",
+                "got": "AssertionError: expected { cells: 106, covered: 105, ... } to deeply equal { cells: 130, covered: 105, uncovered: 25 }"
+              },
+              {
+                "case": "Cases B1/B2 — duplicated id; no edit",
+                "file": "",
+                "testName": "",
+                "demands": "Leave both cases exactly as they are.",
+                "got": "Not edited. Both still pass at 17-file-corpus fixture-absent state (they assert structural non-membership/one-occurrence facts unaffected by the missing added books), confirmed in the run: 'does not list the definitive set's force-scope cell...' and 'keeps the other set's roster-scope cell...' both green."
+              },
+              {
+                "case": "Case B4 — partition; no edit",
+                "file": "",
+                "testName": "",
+                "demands": "Structural, holds at any corpus size.",
+                "got": "Not edited. Still passes ('sums covered and uncovered to the full inventory size, with no key in both (B4)')."
+              },
+              {
+                "case": "Case B5 — resolution failures: outsideDataset gets exactly 2 entries (The Empire's two ids), unknownIds drops to the remaining 4",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "coveredKeysFromManifests over the real corpus and manifests — resolution failures > reports exactly two outside-dataset entries and exactly the four remaining known unknown-id ids (B5)",
+                "demands": "outsideDataset deep-equals the two named { id, evidence, reason } entries in manifest-walk order; unknownIds is the Set of the four remaining ids (the two budget:: ids, ce6e..., a59d...); title updated; comment explains The Empire now defining both ids but the scenarios running against a dataset the corpus does not hold.",
+                "got": "AssertionError: expected [] to deeply equal [ { id: '02cd-cabf-7e25-2b09', evidence: 'docs/testing/group-scope-missing-mandatory', reason: 'outside-dataset' }, { id: 'd96c-c95f-8224-7c87', evidence: 'docs/testing/parent-scope-missing-mandatory', reason: 'outside-dataset' } ] — the fixtures are absent so both ids are still fully unresolvable rather than outside-dataset."
+              },
+              {
+                "case": "Case 27 / R7 — distinct repeat| cells: 16 (was 12)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — repeat cell count once shared/includeChildSelections/includeChildForces separate cells > yields exactly 16 distinct repeat| cells (R7)",
+                "demands": "repeatCells.length === 16.",
+                "got": "AssertionError: expected [ { …(6) }, { …(6) }, { …(6) }, …(9) ] to have a length of 16 but got 12"
+              },
+              {
+                "case": "Case 28 / R8 — flagged repeat landmarks move to 34 and 13 occurrences",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — landmark flagged repeat cells (R8) > contains repeat|selectionCount|parent|child=model|...|pct=false with 34 occurrences / contains repeat|selectionCount|roster|child=id|...|pct=false with 13 occurrences",
+                "demands": "Two cell.occurrences values move to 34 and 13 respectively, titles updated with the new numbers.",
+                "got": "AssertionError: expected 16 to be 34 (first case); AssertionError: expected 12 to be 13 (second case)"
+              },
+              {
+                "case": "Case 35 — the Dogs of War cell; no edit (still passes unedited)",
+                "file": "",
+                "testName": "",
+                "demands": "Leave the case byte-for-byte as it is; still 3 occurrences, files map naming only Dogs of War.cat.",
+                "got": "Not edited. Confirmed green in the run: 'extractCells over the real corpus — Dogs of War carries a construct no other book of its set carries > contains repeat|selectionCount|parent|child=upgrade|...|pct=false with 3 occurrences, found only in Dogs of War.cat' passes even with the seven added books absent, and none of the seven's landmark cells (case 36) is the upgrade-repeat construct, so no recomputation was needed."
+              },
+              {
+                "case": "New case 36 — each of the seven added books owns a cell no other file carries (it.each of the seven { file, key, occurrences } pairs)",
+                "file": "scripts/lib/evaluator-coverage-corpus.test.js",
+                "testName": "extractCells over the real corpus — each of the seven added definitive books carries a construct no other book of either set carries > %s owns cell %s with %i occurrences and no other file (it.each)",
+                "demands": "For each of the seven books: the named cell exists, has the given occurrence count, and its files map names only that book's path under src/evaluator/__fixtures__/whfb6-definitive/.",
+                "got": "AssertionError: expected undefined to be defined, for all seven rows (The Empire, Bretonnia, Dark Elves, Dwarfs (2005), Skaven, Lizardmen, Forces of Chaos) — none of the seven books' fixtures exist yet, so none of their cells exist in the inventory."
+              },
+              {
+                "case": "Cases 29–34 — temp-directory failure paths; no edit",
+                "file": "",
+                "testName": "",
+                "demands": "They never touch the corpus.",
+                "got": "Not edited. All six (E1-E6) still pass, confirmed in the run."
+              }
+            ],
+            "openQuestions": [
+              "The test plan's case-36 instruction 'German it() title, as the suite doc requires' does not match scripts/lib/CLAUDE.md, which only asks for English comments and shows every existing it() title in this file in English — src/evaluator/CLAUDE.md is the file with the German-titles convention, a different suite. I wrote case 36's it.each title in English, matching every other title in this file and the doc I actually read; flag this for correction so the researcher's claim about 'the suite doc' is either fixed or the plan is confirmed to mean a different suite doc than the one this step reads."
+            ],
+            "questions": [],
+            "summary": "Edited scripts/lib/evaluator-coverage-corpus.test.js per the test plan (beforeAll timeout, cases 21/22/23/24-26/27/28/B5 updated, new case 36 added) and updated scripts/lib/CLAUDE.md to drop the ten-file-corpus figures the seven added books made false; `npx vitest run scripts/lib/evaluator-coverage-corpus.test.js` runs 36 tests, 21 fail (all the touched/new assertions) and 15 pass (the untouched B1/B2/B4/35/29-34 cases plus three unedited landmark cases), confirming every planned case is genuinely red against the still-missing fixtures rather than broken by a typo."
+          },
+          "prompt": "Issue directory: docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign\nThis increment is worked on branch `claude/evaluator-ergofang-daten-ni8js9--INC-2`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-ergofang-daten-ni8js9--INC-2` and check it out; if the remote does not have it, create it from `claude/evaluator-ergofang-daten-ni8js9` and push it with `-u`.\nThis run works docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/issue.md one increment at a time, and increment 2 is yours:\n  The seven definitive books enter the corpus and the inventory is re-baselined — The definitive fixture set carries the seven books that hold the rule constructs the frozen corpus misses, its README records their provenance and why they are there, both the corpus drift guard and the coverage inventory report the seventeen-file corpus, the regenerated worklist is committed, and the suite doc no longer states figures the added books made false.\nWhat it has to satisfy:\n  - src/evaluator/__fixtures__/whfb6-definitive/ carries 'The Empire', 'Bretonnia', 'Dark Elves', 'Dwarfs (2005)', 'Skaven', 'Lizardmen' and 'Forces of Chaos', each with its ' (6th definitive edition).cat' suffix, byte-identical to artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition at commit 4a558216aabea1719d15c8f45bf52b6ee0cd5e3e.\n  - The five files already in that directory are byte-identical to their committed state, and nothing under src/__fixtures__/whfb6/ changes at all — that directory was finished by INC-1.\n  - src/evaluator/__fixtures__/whfb6-definitive/README.md records the provenance of the added books and states why they are there: they carry rule constructs no other book of the set carries.\n  - node scripts/evaluator-coverage-inventory.js reports 17 corpus files, 130 cells, 105 covered and 25 uncovered, and exits 1; the regenerated docs/testing/worklist.json with its 25 entries is committed. Where the computed tally differs from those numbers, the corpus decides and the deviation is reported, not massaged.\n  - npx vitest run scripts/lib/evaluator-coverage-corpus.test.js passes. Its baselines currently stand at the ten-file corpus INC-1 left (106 cells, 105 covered, 1 uncovered) and have to move to the seventeen-file one: the file counts of case 21 (17 in total, 12 definitive, 5 in the other set), the per-kind occurrence totals of case 22, the distinct repeat| cell count of R7, the landmark occurrence counts of R8 and the worklist totals. Recompute each from the corpus itself, with case 22's own documented grep arbitrating a mismatch.\n  - The case INC-1 added, which pins the Dogs of War-only childId=\"upgrade\" repeat cell at 3 occurrences with a files map naming only that book, still passes unedited — or, if one of the seven added books does carry that construct, its numbers are recomputed and the change is called out.\n  - The beforeAll hook of that test file has a timeout that survives parsing 17 files instead of 10, so the file does not fail before its cases run.\n  - scripts/lib/CLAUDE.md states no corpus figure the seven added books made false.\n  - npm test passes.\n  - No cell of the worklist is pinned or closed, no file under docs/testing/ other than worklist.json changes, and no production code under src/ changes.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 research:INC-2.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 tests:INC-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0148-full-catalog-corpus-for-the-coverage-campaign/backlog.json INC-2 tests:INC-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
