@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "name": "greater-than-id-scope-brain-transplant",
+  "description": "Eine condition type=\"greaterThan\" field=\"selections\", deren scope KEIN Schluesselwort, sondern die Id eines Katalog-Eintrags ist: scope=\"7a4a-301b-af31-9ee0\" benennt die tragende Einheit 'Mutant Rat Ogres' des Skaven-Katalogs selbst. Der Rahmen ist damit die Selektion dieser Einheit; mit includeChildSelections=\"true\" zaehlt er ALLES unter sich, beliebig tief - die gezaehlte Aufwertung 'Brain transplant' (8b1c-de3a-982e-e323) steht zwei Ebenen tiefer, in der Gruppe 'Options' (a0a2-1a3d-86d3-4a67) unter der Aufwertung 'Rat Ogre' (40c5-05e4-da1d-6194). greaterThan 0 haelt, sobald genau eine solche Selektion existiert. Am infoLink 'Loss of Packmaster Ogres' (12c2-071e-1e09-5918, type=rule, targetId c78e-7036-f2ed-c05b) haengt daran ein einziger modifier set hidden=true: mit Brain transplant faellt die Regel aus der Info-Projektion der Einheit, ohne sie steht sie darin. Dieselbe Bedingung (identische Attribute) traegt vier Geschwister-Konstrukte derselben Einheit: sie blendet die Basis-verborgene Regel 'Regeneration' (infoLink 7105-391b-fc3a-3771) EIN, versteckt die Aufwertung 'Packmaster each pack' (90fa-58e6-5fdf-28c7) und setzt deren Mindestmass 6fda-622a-eae1-fc61 von 1 auf 0, und setzt am Rat-Ogre-Profil (infoLink a9e1-ff0e-140a-a6f4) Ld auf 7 und WS auf 4. Beobachtet wird die Zelle deshalb doppelt: ueber expect.capabilities (infoElements / infoElementsAbsent des Einheiten-Slots und Merkmalswerte des Rat-Ogre-Slots) UND ueber die Grenze 6fda-622a-eae1-fc61, die nur ohne Brain transplant feuert. Die condition selbst ist keine zaehlende Grenze und taucht im Verletzungsbericht nie auf.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-hell-pit-no-brain-transplant.ros",
+      "description": "Kontingent 'Hell Pit (WD-311)' (9f0b-5346-a3bc-b5fe) - das einzige, in dem die Basis-verborgene Einheit 'Mutant Rat Ogres' eingeblendet wird. Die Einheit traegt ihren Pflicht-Ogre-Pack (8ea5-88f7-6636-7aaf, min 1) und ihre Pflicht-Aufwertung 'Rat Ogre' (40c5-05e4-da1d-6194, min 1 / max 1), aber KEINE Option. Die Zaehlung von 8b1c-de3a-982e-e323 im Rahmen der Einheit ist 0, greaterThan 0 haelt nicht: alle fuenf daran gegatteten Konstrukte bleiben aus. Die Regel 'Loss of Packmaster Ogres' (Vorkommen 12c2-071e-1e09-5918) steht sichtbar in der Info-Projektion der Einheit, die Basis-verborgene 'Regeneration' (7105-391b-fc3a-3771) fehlt, das Rat-Ogre-Profil steht auf seinen Katalog-Basiswerten (WS 3, Ld 5, S 5, Mv 6), und die Pflicht 'Packmaster each pack' behaelt ihren geschriebenen Wert min 1: 6fda-622a-eae1-fc61 feuert mit Ist 0 / Grenze 1, genau einmal.",
+      "expect": {
+        "firing": [
+          { "limitId": "6fda-622a-eae1-fc61", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "14e8-5762-d2d0-ee18",
+          "c161-77b3-0542-5ff1"
+        ],
+        "capabilities": [
+          {
+            "defId": "7a4a-301b-af31-9ee0",
+            "anchorKind": "occupied",
+            "frameDefId": "9f0b-5346-a3bc-b5fe",
+            "name": "Mutant Rat Ogres",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "4f84-868d-b76b-8cf9",
+                "kind": "rule",
+                "name": "Mixed Units"
+              },
+              {
+                "id": "12c2-071e-1e09-5918",
+                "kind": "rule",
+                "name": "Loss of Packmaster Ogres",
+                "text": "If all Packmasters are killed and there are no characters in the unit the Rat ogres suffer from Stupidity."
+              },
+              {
+                "id": "cd83-0b1a-0a82-1d44",
+                "kind": "rule",
+                "name": "Fear",
+                "text": "Unit causes Fear"
+              }
+            ],
+            "infoElementsAbsent": ["7105-391b-fc3a-3771"]
+          },
+          {
+            "defId": "40c5-05e4-da1d-6194",
+            "anchorKind": "occupied",
+            "frameDefId": "7a4a-301b-af31-9ee0",
+            "name": "Rat Ogre",
+            "infoElements": [
+              {
+                "id": "a9e1-ff0e-140a-a6f4",
+                "kind": "profile",
+                "name": "Mutant Rat Ogre",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "3" },
+                  { "typeId": "b690-4bc0-bb73-267b", "name": "S", "value": "5" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "5" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-hell-pit-with-brain-transplant.ros",
+      "description": "IDENTISCHER Aufbau wie 01, einziger Unterschied: unter der Aufwertung 'Rat Ogre' steht EINE Selektion 'Brain transplant' (8b1c-de3a-982e-e323, number=1). Sie liegt zwei Ebenen unter dem benannten Rahmen - nur includeChildSelections=\"true\" erreicht sie. Der Rahmen zaehlt 1, 1 > 0 haelt: die Regel 'Loss of Packmaster Ogres' wird per set hidden=true aus der Info-Projektion der Einheit genommen (infoElementsAbsent), die Basis-verborgene 'Regeneration' per set hidden=false hineingenommen, das Rat-Ogre-Profil meldet Ld 7 und WS 4 (S und Mv unveraendert), und das Mindestmass der Aufwertung 'Packmaster each pack' wird per set auf 0 gesenkt (die Aufwertung ist zudem versteckt): 6fda-622a-eae1-fc61 feuert NICHT. Eine Engine, die den Id-Rahmen nicht aufloest oder nur die direkten Kinder des Rahmens zaehlt, saehe hier den Zustand von Roster 01 - die Regel bliebe sichtbar und 6fda-622a-eae1-fc61 wuerde feuern.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6fda-622a-eae1-fc61",
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "14e8-5762-d2d0-ee18",
+          "c161-77b3-0542-5ff1"
+        ],
+        "capabilities": [
+          {
+            "defId": "7a4a-301b-af31-9ee0",
+            "anchorKind": "occupied",
+            "frameDefId": "9f0b-5346-a3bc-b5fe",
+            "name": "Mutant Rat Ogres",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "4f84-868d-b76b-8cf9",
+                "kind": "rule",
+                "name": "Mixed Units"
+              },
+              {
+                "id": "cd83-0b1a-0a82-1d44",
+                "kind": "rule",
+                "name": "Fear",
+                "text": "Unit causes Fear"
+              },
+              {
+                "id": "7105-391b-fc3a-3771",
+                "kind": "rule",
+                "name": "Regeneration"
+              }
+            ],
+            "infoElementsAbsent": ["12c2-071e-1e09-5918"]
+          },
+          {
+            "defId": "40c5-05e4-da1d-6194",
+            "anchorKind": "occupied",
+            "frameDefId": "7a4a-301b-af31-9ee0",
+            "name": "Rat Ogre",
+            "infoElements": [
+              {
+                "id": "a9e1-ff0e-140a-a6f4",
+                "kind": "profile",
+                "name": "Mutant Rat Ogre",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "4" },
+                  { "typeId": "b690-4bc0-bb73-267b", "name": "S", "value": "5" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "7" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-hell-pit-brain-transplant-second-option.ros",
+      "description": "Wie 02, aber der 'Brain transplant' ist NICHT die einzige und nicht die erste Option: die Gruppe 'Options' (a0a2-1a3d-86d3-4a67, max 2 = 8fcf-0d32-a63c-37a1) traegt zusaetzlich 'Powerhouses' (259c-906d-4b40-2b31), und zwar VOR dem Brain transplant in der Reihenfolge des Rosters. Der Rahmen zaehlt weiterhin 1 Selektion von 8b1c-de3a-982e-e323 (die childId filtert, der Rahmen zaehlt alles unter sich): dieselbe Wirkung wie in 02. Zusaetzlich haelt die Powerhouses-Bedingung derselben Bauform und hebt S um 1 auf 6 - beide Gatter wirken nebeneinander (Ld 7, WS 4, S 6, Mv 6). Eine Engine, die im Rahmen nur das erste Kind oder nur bis zur ersten Uebereinstimmung sucht, faellt hier auf. Die Gruppengrenze max 2 ist mit genau 2 Optionen exakt erreicht, nicht ueberschritten.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "6fda-622a-eae1-fc61",
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "14e8-5762-d2d0-ee18",
+          "c161-77b3-0542-5ff1"
+        ],
+        "capabilities": [
+          {
+            "defId": "7a4a-301b-af31-9ee0",
+            "anchorKind": "occupied",
+            "frameDefId": "9f0b-5346-a3bc-b5fe",
+            "name": "Mutant Rat Ogres",
+            "isHidden": false,
+            "infoElements": [
+              {
+                "id": "7105-391b-fc3a-3771",
+                "kind": "rule",
+                "name": "Regeneration"
+              }
+            ],
+            "infoElementsAbsent": ["12c2-071e-1e09-5918"]
+          },
+          {
+            "defId": "40c5-05e4-da1d-6194",
+            "anchorKind": "occupied",
+            "frameDefId": "7a4a-301b-af31-9ee0",
+            "name": "Rat Ogre",
+            "infoElements": [
+              {
+                "id": "a9e1-ff0e-140a-a6f4",
+                "kind": "profile",
+                "name": "Mutant Rat Ogre",
+                "profileTypeId": "a54a-7f00-29bf-12b1",
+                "profileTypeName": "Profile",
+                "characteristics": [
+                  { "typeId": "0e92-d038-82bf-fb41", "name": "Mv", "value": "6" },
+                  { "typeId": "f95b-da01-0578-3bdc", "name": "WS", "value": "4" },
+                  { "typeId": "b690-4bc0-bb73-267b", "name": "S", "value": "6" },
+                  { "typeId": "2d45-18fe-9eb3-b113", "name": "Ld", "value": "7" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-hell-pit-two-units-frame-per-unit.ros",
+      "description": "Der Rahmen-Fall: ZWEI Einheiten 'Mutant Rat Ogres' im selben Kontingent (die Einheit traegt keine eigene Stueckzahl-Grenze, zwei Selektionen sind also baubar). Einheit A hat den Brain transplant, Einheit B nicht; beide sonst baugleich zu 01/02. Weil der scope die JEWEILS eigene Einheit benennt, haelt die Bedingung fuer A und faellt fuer B: As Pflicht 'Packmaster each pack' wird auf 0 gesenkt und still, Bs Pflicht behaelt min 1 und feuert mit Ist 0 / Grenze 1 - GENAU EINMAL. Eine Engine, die den Id-Rahmen zu einem kontingent- oder rosterweiten Zaehlrahmen verbreitert (oder shared=\"true\" so liest), saehe auch fuer B eine Selektion und meldete gar keine Verletzung; eine Engine, die den Id-Rahmen ueberhaupt nicht aufloest, meldete zwei. Ueber capabilities wird hier bewusst nichts behauptet: jede Definition dieses Rosters steht zweimal unter demselben frameDefId.",
+      "expect": {
+        "firing": [
+          { "limitId": "6fda-622a-eae1-fc61", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": [
+          "40f9-18a7-a6cf-c6f3",
+          "f4c1-c87e-2fcf-5ce9",
+          "0352-7667-f50c-5eda",
+          "b296-d0c8-b18b-b5cd",
+          "fab5-b1e4-3574-fbb3",
+          "8fcf-0d32-a63c-37a1",
+          "14e8-5762-d2d0-ee18",
+          "c161-77b3-0542-5ff1"
+        ]
+      }
+    }
+  ]
+}

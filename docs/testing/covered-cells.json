@@ -618,6 +618,13 @@
         "docs/testing/at-least-roster-limit-lord-slots"
       ],
       "rationale": "Pinned by the same scenario as the sibling condition cell: the increment on the Lord limit d7e7-599d-12cf-1fd1 carries the repeat <repeat value=\"1000\" repeats=\"1\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"roster\" childId=\"any\" ics=\"true\" icf=\"true\"/>, and rosters 04 (costLimit 2000, bound 1) and 06 (costLimit 3000, bound 2) are two support points of its arithmetic - the modifier is applied floor(budget/1000) times, so a single application or a missing repetition would give a different bound in at least one of them. Scenario is green."
+    },
+    {
+      "key": "condition|greaterThan|id|selectionCount|child=id",
+      "evidence": [
+        "docs/testing/greater-than-id-scope-brain-transplant"
+      ],
+      "rationale": "Four rosters over the Skaven 'Mutant Rat Ogres' (7a4a-301b-af31-9ee0), whose infoLinks carry conditions whose scope is not a keyword but that unit's own id, counting the Brain transplant (8b1c-de3a-982e-e323) two levels below it with includeChildSelections=\"true\". Rosters 01 and 02 differ by exactly that one selection and flip five gated constructs at once - the rule occurrence 12c2-071e-1e09-5918 leaves the info projection, Regeneration enters it, the Ld and WS values move and the mandatory packmaster limit 6fda-622a-eae1-fc61 drops to 0. Roster 03 puts a second Options member beside the transplant, so the frame is proven to count everything under it rather than the first child; roster 04 holds two units, one transplanted and one not, and the single remaining violation proves the frame is the named entry's own selection and not the force. Scenario is green."
     }
   ]
 }

@@ -171,7 +171,8 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`less-than-self-mount-and-weapon-gate`](testing/less-than-self-mount-and-weapon-gate/) | Definitive Dark Elves + Mercenaries | 5 |
 | [`unit-scope-repeat-knight-markup`](testing/unit-scope-repeat-knight-markup/) | Definitive Empire + Mercenaries | 6 |
 | [`at-least-roster-limit-lord-slots`](testing/at-least-roster-limit-lord-slots/) | Definitive Bretonnia + Mercenaries | 6 |
-| **Summe** | | **405** |
+| [`greater-than-id-scope-brain-transplant`](testing/greater-than-id-scope-brain-transplant/) | Definitive Skaven + Mercenaries | 4 |
+| **Summe** | | **409** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2154,3 +2155,22 @@ allein die eingestellte Punktgrenze bewegt sich, verplant sind nie mehr als
 > „unbegrenzt" ist — der gilt laut Formatdoku §7.6 nur für hingeschriebene
 > Werte. Eine Lesart, die hier auf „unbegrenzt" umschaltete, erlaubte bei 1500
 > Punkten beliebig viele Lords.
+
+## `greater-than-id-scope-brain-transplant`
+
+Prüft eine Bedingung, deren `scope` **kein Schlüsselwort**, sondern die Id
+eines Katalog-Eintrags ist (§7.6, Zeile „(Spezifische ID)"): Zählrahmen ist
+die Auswahl dieses Eintrags, und mit `includeChildSelections="true"` zählt
+alles darunter, gleich wie tief. Beleg: die Skaven-Einheit „Mutant Rat Ogres"
+(`7a4a-301b-af31-9ee0`) trägt zehn Bedingungen dieser Form auf ihre eigene Id;
+fünf davon hängen am „Brain transplant" (`8b1c-de3a-982e-e323`), der zwei
+Ebenen tiefer in der Options-Gruppe eines Rat Ogre steht. Gespielt wird im
+Kontingent „Hell Pit (WD-311)" — dem einzigen, in dem die Einheit überhaupt
+eingeblendet wird.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne jede Option | Nichts hält: die Regel „Loss of Packmaster Ogres" steht sichtbar in der Info-Projektion, das Profil auf Basiswerten, die Packmaster-Pflicht feuert |
+| 02 | Dieselbe Einheit mit einem Brain transplant | Eine einzige Auswahl kippt fünf Konstrukte zugleich: die Regel verschwindet, „Regeneration" erscheint, zwei Profilwerte steigen, die Pflicht fällt auf null |
+| 03 | Zwei Optionen — „Powerhouses" **und** Brain transplant | Der Rahmen zählt alles unter sich, nicht nur das erste Kind |
+| 04 | Zwei Einheiten, nur eine mit Transplantat | Rahmen-Beweis: die untransplantierte Einheit behält ihre Pflicht — der Rahmen ist die benannte Auswahl, nicht das Kontingent |
