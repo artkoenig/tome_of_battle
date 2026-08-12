@@ -153,11 +153,11 @@
   ],
   "driver": {
     "schemaVersion": 1,
-    "branch": "claude/evaluator-abschluss-kampagne-sxcj5z",
+    "branch": "claude/evaluator-kampagne-fortsetzen-32ripg",
     "campaignIssue": "docs/issues/0149-evaluator-coverage-gaps",
-    "runs": 21,
-    "lastRunAt": "2026-08-11T23:05:00Z",
-    "lastRunOutcome": "phase-b-done-not-rearmed",
+    "runs": 22,
+    "lastRunAt": "2026-08-12T06:53:00Z",
+    "lastRunOutcome": "terminated",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -251,6 +251,6 @@
         "answer": null
       }
     },
-    "reArmNote": "Run 21, the first run after the maintainer restarted the campaign. Six explorer invocations spent the full cell cap and emptied the worklist: the coverage inventory now exits 0 with 130 of 130 cells covered. Four cells came out green (at-least-parent-model-champion-gate, not-equal-to-parent-lance-pistol-gate, not-equal-to-roster-limit-paladin-bsb, not-equal-to-roster-experimental-rat-riders), two red and pinned (at-least-self-any-experimental-hydra-warning: an author message carried by a selectionEntryGroup never reaches the report at that group anchor; parent-min-include-children-bolt-thrower: a shared parent-scoped maximum reports one violation per counted selection instead of one per frame). Phase B ran after all and closed BOTH gaps in one round, so the evaluator suite is fully green again (1513 tests). It did NOT run through uroboros:agile-loop: in this session every tool call of a workflow-spawned agent is rejected before execution by a broken permission handler (updatedInput fails the tool own input schema), which killed the planner at the first structured return; agents started directly through the Agent tool are unaffected, so the round was worked by a directly spawned subagent instead and verified, committed and pushed by the driver. If a later run needs the workflow, that session-level handler has to be fixed first. The termination check now holds on all three counts - inventory exit 0, suite green, nothing open - so the next run terminates the campaign unless new cells appear. No next run is scheduled: the maintainer asked explicitly not to re-arm, so only a human starts it. Carried forward from run 20 and still true: the container starts without node_modules, so npm ci comes before the inventory. New this run: the E2E test catalogue docs/testkatalog-evaluator-e2e.md had drifted - thirteen committed scenarios were missing from its index table and its roster sum was 447 instead of 510 - which is now reconciled; that index has no generator and no CI gate, so it must be updated by hand with every scenario."
+    "reArmNote": "Run 22 closed the campaign. The termination check held on all three counts before any phase ran: the coverage inventory exited 0 with 130 of 130 cells covered (23 derived from manifests, 107 by manual record) and an empty worklist, the evaluator suite npx vitest run src/evaluator was fully green (91 files, 1525 tests), and nothing was open - all ten pinned gaps are recorded closed in driver.gaps, and all three parked questions carry status answered with the cells they blocked now covered (condition|instanceOf|id|selectionCount|child=model by docs/testing/category-id-scope-instance-of, modifier|append|characteristic by docs/testing/append-characteristic-zacharias-spell, the parent/child=any repeat by the synthetic unit test src/evaluator/modifiers.repeatParentAny.test.js, as its answer directed). No cell was taken and no phase B round ran; the run is a pure termination. Not re-armed, per the termination rule - only a human restarts the campaign, and only new catalog data or a new corpus file could produce new cells. Carried forward and still true: the container starts without node_modules, so npm ci comes before the inventory; the E2E test catalogue docs/testkatalog-evaluator-e2e.md has no generator and no CI gate and must be updated by hand with every new scenario; and the inventory prints WARNING lines about manifest ids naming no corpus constraint (mostly the synthetic budget::ecfa-8486-4f6c-c249 anchor) which are informational and did not affect the exit code. Also unchanged from run 21: uroboros:agile-loop could not be used in that session because a broken permission handler rejected every tool call of a workflow-spawned agent; this was not re-tested in run 22, since no phase B round was needed."
   }
 }
