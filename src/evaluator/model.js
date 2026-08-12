@@ -107,21 +107,28 @@ export const BudgetLimitUnresolvedReason = Object.freeze({
 /**
  * Bezugsrahmen-Schluesselwoerter (Scope) einer Query
  * (`docs/evaluator-architecture.md` §4.1: `ScopeKeyword { ROSTER, FORCE, PARENT,
- * SELF, UNIT, ANCESTOR, PRIMARY_CATALOGUE }`). Ein Scope, der keines dieser
- * Woerter ist, wird als **ID** gelesen: eine Eintrags-ID (naechster Vorfahre mit
- * dieser ID) oder eine Kategorie-ID (naechster Vorfahre, der diese Kategorie
- * effektiv traegt) — beides Vorfahren-Rahmen.
+ * SELF, UNIT, MODEL_OR_UNIT, ANCESTOR, PRIMARY_CATALOGUE, PRIMARY_CATEGORY }`).
+ * Ein Scope, der keines dieser Woerter ist, wird als **ID** gelesen: eine
+ * Eintrags-ID (naechster Vorfahre mit dieser ID) oder eine Kategorie-ID
+ * (naechster Vorfahre, der diese Kategorie effektiv traegt) — beides
+ * Vorfahren-Rahmen.
  *
  * `UNIT` ist ein regulaerer Zaehlrahmen: die **umschliessende Einheit**, also der
  * naechste Vorfahre — den Knoten selbst eingeschlossen — mit rohem `type="unit"`
- * (`query.js`, Issue 086, BSData §7.7).
+ * (`query.js`, Issue 086, BSData §7.7). `MODEL_OR_UNIT` ist derselbe Zaehlrahmen,
+ * nur eine Typstufe weiter gefasst: der naechste Vorfahre — den Knoten
+ * eingeschlossen — mit rohem `type="model"` **oder** `type="unit"` (2 Vorkommen
+ * in den Fixture-Daten, `Lizardmen (6th definitive edition).cat`, Issue 081).
  *
- * Zwei Werte fallen aus der Reihe, weil sie **keine Zaehlrahmen** sind:
+ * Drei Werte fallen aus der Reihe, weil sie **keine Zaehlrahmen** sind:
  * `PRIMARY_CATALOGUE` — ein Katalog ist kein Knoten des Instanzbaums, die Frage
  * lautet „ist das Armeebuch des umschliessenden Kontingents dieses hier?" und
- * wird als Identitaetspruefung beantwortet (`query.js`, Issue 077) — und
+ * wird als Identitaetspruefung beantwortet (`query.js`, Issue 077) —,
  * `ANCESTOR`, die Mitgliedschaftspruefung ueber die strikte Vorfahrenkette der
- * tragenden Auswahl (`query.js`, Issue 086).
+ * tragenden Auswahl (`query.js`, Issue 086), und `PRIMARY_CATEGORY`, die
+ * Identitaetspruefung gegen die **primaere** Kategorie des naechsten Vorfahren,
+ * der ueberhaupt eine traegt (4 Vorkommen in den Fixture-Daten, `Forces of Chaos
+ * (6th definitive edition).cat`, Issue 081).
  */
 export const ScopeKeyword = Object.freeze({
   ROSTER: 'roster',
@@ -129,8 +136,10 @@ export const ScopeKeyword = Object.freeze({
   PARENT: 'parent',
   SELF: 'self',
   UNIT: 'unit',
+  MODEL_OR_UNIT: 'model-or-unit',
   ANCESTOR: 'ancestor',
   PRIMARY_CATALOGUE: 'primary-catalogue',
+  PRIMARY_CATEGORY: 'primary-category',
 });
 
 /**
@@ -425,11 +434,18 @@ export function limitMeasureOfCountedField(field) {
  * naechsten Vorfahren, der diese Kategorie **effektiv** traegt (`query.js`,
  * §3.3) — beides Vorfahren-Rahmen, keiner von beiden armeeweit.
  *
- * `PRIMARY_CATALOGUE` und `ANCESTOR` sind dabei die beiden Rahmen, die auf
- * keinen Baumknoten zeigen: der eine benennt das Armeebuch des umschliessenden
- * Kontingents (Issue 077), der andere die Vorfahrenkette der tragenden Auswahl
- * (Issue 086). Die Oberflaeche unterscheidet beide wie jeden anderen Wert dieser
- * geschlossenen Aufzaehlung — sie muss sie nur nicht als Slot-Pfad lesen.
+ * `PRIMARY_CATALOGUE`, `ANCESTOR` und `PRIMARY_CATEGORY` sind dabei die drei
+ * Rahmen, die auf keinen Baumknoten zeigen: der erste benennt das Armeebuch des
+ * umschliessenden Kontingents (Issue 077), der zweite die Vorfahrenkette der
+ * tragenden Auswahl (Issue 086), der dritte die primaere Kategorie des naechsten
+ * Vorfahren, der eine traegt (Issue 081). Die Oberflaeche unterscheidet sie wie
+ * jeden anderen Wert dieser geschlossenen Aufzaehlung — sie muss sie nur nicht
+ * als Slot-Pfad lesen.
+ *
+ * Diese Aufzaehlung muss jedes Schluesselwort aus {@link ScopeKeyword} spiegeln:
+ * `violationClassification.js` baut seine Schluesselwort-Menge aus
+ * `Object.values(ScopeKeyword)` und gibt fuer jedes davon `kind: <scope>`
+ * zurueck — was hier fehlte, waere eine Art, die die Oberflaeche nicht kennt.
  */
 export const ScopeKind = Object.freeze({
   ROSTER: ScopeKeyword.ROSTER,
@@ -437,8 +453,10 @@ export const ScopeKind = Object.freeze({
   PARENT: ScopeKeyword.PARENT,
   SELF: ScopeKeyword.SELF,
   UNIT: ScopeKeyword.UNIT,
+  MODEL_OR_UNIT: ScopeKeyword.MODEL_OR_UNIT,
   ANCESTOR: ScopeKeyword.ANCESTOR,
   PRIMARY_CATALOGUE: ScopeKeyword.PRIMARY_CATALOGUE,
+  PRIMARY_CATEGORY: ScopeKeyword.PRIMARY_CATEGORY,
   ENTRY_ID: 'entryId',
   CATEGORY_ID: 'categoryId',
 });

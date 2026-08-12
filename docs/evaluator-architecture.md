@@ -177,13 +177,19 @@ enum ScopeKeyword   { ROSTER, FORCE, PARENT, SELF,
                       UNIT,                       // die umschließende Einheit: nächster
                       // Vorfahre (inkl. selbst) mit rohem type="unit" — ein regulärer
                       // Zählrahmen (Issue 086)
+                      MODEL_OR_UNIT,              // dasselbe eine Typstufe weiter: nächster
+                      // Vorfahre (inkl. selbst) mit rohem type="model" ODER type="unit" —
+                      // ebenfalls ein regulärer Zählrahmen (Issue 081)
                       ANCESTOR,                   // die Vorfahrenkette (`scope="ancestor"`,
                       // Issue 086) — kein Zählrahmen: §4.5 beantwortet ihn als
                       // Mitgliedschaftsprüfung über die strikte Vorfahrenkette
-                      PRIMARY_CATALOGUE }         // das Armeebuch des umschließenden
+                      PRIMARY_CATALOGUE,          // das Armeebuch des umschließenden
                       // Kontingents (`scope="primary-catalogue"`, Issue 077) — kein
                       // Zählrahmen: ein Katalog ist kein Knoten des Instanzbaums, also
                       // beantwortet §4.5 ihn als Identitätsprüfung vor jeder Indexarbeit
+                      PRIMARY_CATEGORY }          // die primäre Kategorie des nächsten
+                      // Vorfahren, der eine trägt (`scope="primary-category"`, Issue 081)
+                      // — kein Zählrahmen, sondern ebenfalls eine Identitätsprüfung
 type ScopeRef       = ScopeKeyword | EntryId | CategoryId
 
 record CountFlags {
@@ -294,11 +300,13 @@ enum LimitMeasure   { SELECTION_COUNT, FORCE_COUNT, COST_SUM,   // WAS die Grenz
                       BUDGET_LIMIT, ROSTER_BUDGET }             // die ersten vier je genau
                       // ein CountedFieldKind (limitMeasureOfCountedField), ROSTER_BUDGET
                       // ist die engine-eigene Regel „Armee zu teuer"
-enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // die Werte aus ScopeKeyword …
-                      UNIT, ANCESTOR,
-                      PRIMARY_CATALOGUE,
+enum ScopeKind      { ROSTER, FORCE, PARENT, SELF,   // ALLE Werte aus ScopeKeyword …
+                      UNIT, MODEL_OR_UNIT, ANCESTOR,
+                      PRIMARY_CATALOGUE, PRIMARY_CATEGORY,
                       ENTRY_ID, CATEGORY_ID }        // … plus die beiden ID-Rahmen: dem rohen
-                      // `scope` sieht man nicht an, welches von beidem er ist
+                      // `scope` sieht man nicht an, welches von beidem er ist. Die
+                      // Schlüsselwort-Hälfte muss ScopeKeyword vollständig spiegeln —
+                      // classifyScope liest sie aus Object.values(ScopeKeyword)
 
 record EvalNode {
   def: ResolvedDef
@@ -570,9 +578,23 @@ function query(ctx: QueryContext, field, scope, targetId, flags): number | UNRES
       ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0
     return count(a in strictAncestorsOf(ctx.node) where targetId == null or targetId in countableTargetsOf(a, ctx.effective))
 
+  // PRIMARY_CATEGORY ist wieder eine Identitätsprüfung statt eines Zählrahmens (Issue 081):
+  // gefragt ist die PRIMÄRE Kategorie des nächsten Vorfahren (inkl. selbst, Wurzel aus),
+  // der überhaupt eine trägt — der Träger ist oft ein geteiltes Reittier ohne eigene.
+  // Deshalb vor jeder Rahmen-/Indexarbeit und unabhängig von den Flags: eine primäre
+  // Kategorie wird durch eine Instanz nicht enger.
+  if scope == PRIMARY_CATEGORY:
+    if field != SELECTION_COUNT:
+      ctx.diagnostics.add(Diagnostic.UNSUPPORTED_FIELD(field)); return 0
+    primary = first non-null ctx.effective.primaryCategoryIdOf(a) for a in ctx.node..root
+    if primary == null:                           // kein Knoten der Kette trägt eine
+      ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node)); return 0
+    return targetId == null ? 1 : (targetId == primary ? 1 : 0)
+
   frame = resolveScopeFrame(ctx.node, scope)
   // ROSTER → Wurzel | FORCE → ctx.node.forceRoot | PARENT → ctx.node.parent
   // SELF → ctx.node | UNIT → nächster Vorfahre (inkl. selbst) mit rohem type="unit"
+  // MODEL_OR_UNIT → nächster Vorfahre (inkl. selbst) mit rohem type="model" oder "unit"
   // EntryId/CategoryId → nächster Vorfahre bzw. Kategorierahmen mit dieser ID
   if frame == null:
     ctx.diagnostics.add(Diagnostic.UNRESOLVED_SCOPE(scope, ctx.node))

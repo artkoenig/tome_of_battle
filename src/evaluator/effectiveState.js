@@ -183,11 +183,20 @@ export class EffectiveState {
 
   /**
    * Die **effektive Primaerkategorie** eines Knotens — `null`, wenn keine seiner
-   * Kategorien primaer ist. Sie ist reiner Anzeige-Zustand neben der
-   * Mitgliedschaft: die Zaehl- und Grenzenschicht liest sie nie (der
-   * zaehlrelevante Schluessel {@link countRelevantFingerprint} laesst sie bewusst
-   * aussen vor), die Berichtsschicht traegt sie je Slot in den
-   * Faehigkeitsdatensatz (`docs/battlescribe-data-format.md` §8).
+   * Kategorien primaer ist. Die Berichtsschicht traegt sie je Slot in den
+   * Faehigkeitsdatensatz (`docs/battlescribe-data-format.md` §8), und seit Issue
+   * 081 liest sie auch das Query-Primitiv: `scope="primary-category"` prueft
+   * gegen die primaere Kategorie des naechsten Vorfahren, der eine traegt
+   * (`query.js`).
+   *
+   * Der zaehlrelevante Schluessel {@link countRelevantFingerprint} laesst sie
+   * dennoch bewusst aussen vor: der Rahmen dieser Pruefung ist stets der Knoten
+   * selbst oder ein Vorfahre, und die Modifikator-Schicht laeuft in Vorordnung
+   * (`evalTree.js`, `allNodes`/`realNodes`) auf demselben Zustand, den sie
+   * gerade schreibt — jeder Vorfahre ist also schon in derselben Runde
+   * geschrieben, und ein `set-primary` am Knoten selbst landet vor dessen
+   * eigenen Info-Traegern. Ausserdem sichert {@link setPrimaryCategory} die
+   * Mitgliedschaft mit, und die **ist** im Schluessel.
    *
    * @param {object} node
    * @returns {string | null}
