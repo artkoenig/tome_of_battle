@@ -18,7 +18,7 @@
       "depth": "full",
       "status": "todo",
       "note": "The load-bearing half: it changes what a roster holds, so it moves costs, the card's rows and whatever else reads the tree. Worked first so the run learns its reach early — and so the display half is measured against the trees users will really have.",
-      "branch": "",
+      "branch": "claude/offene-aufgaben-pk52qh--inc-1",
       "steps": [],
       "attempts": []
     },
