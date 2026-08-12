@@ -1,183 +1,113 @@
 # Tome of Battle — Army Builder
 
-A Progressive Web App (PWA) built with React + Vite for creating and managing army lists for tabletop games based on **BattleScribe** data files (`.cat` / `.gst` XML).
+A Progressive Web App (React + Vite) for building and playing tabletop army lists
+from **BattleScribe** data files (`.cat` / `.gst` XML).
 
-The application runs entirely in the browser — there is no backend. Imported game systems and your army lists are stored locally in **IndexedDB**. This allows the app to work fully offline and be installed onto your device's home screen just like a native application.
+It runs entirely in the browser — no backend. Game systems and army lists live in
+**IndexedDB**, so the app works fully offline and installs onto your home screen
+like a native app.
 
----
-
-## Features
-
-- **Import BattleScribe Data** — Simply upload a `.bsz` or ZIP archive of your catalogs. The app parses the raw `.cat` and `.gst` XML files into a queryable game system.
-- **Build Army Lists** — Add units, select upgrades and options, and track point costs in real-time.
-- **Real-Time Validation** — A dedicated clean-room rules engine (`src/evaluator/`) checks point limits, category limits, and constraints on individual entries and groups as you build.
-- **Play Mode** — An additional, temporary view for tracking game rounds, victory points, command points (CP), and remaining wounds of individual models during a game.
-- **Offline-First PWA** — Installable, works completely offline, and updates reliably in the background using a service worker.
-- **Local & Secure** — All data remains in your browser's IndexedDB. No data is uploaded to any server.
-
-Catalog data for **Warhammer Fantasy Battle 6th Edition** is fetched at runtime from an external catalog repository, so it is not bundled with the app. A small frozen subset lives in `src/__fixtures__/whfb6/` and is used solely by the automated tests.
+**[Open the app](https://tome-of-battle.vercel.app)** · [Landing page](https://artkoenig.github.io/army_builder/)
 
 ---
 
 ## Screenshots
 
-### Desktop View
-| Bibliothekar (Library) | Roster Editor | Play Mode |
+| Import a game system | Configure a unit | Play mode |
 |:---:|:---:|:---:|
-| ![Bibliothekar](screenshots/desktop_01_importer_empty.png) | ![Roster Editor](screenshots/desktop_05_roster_editor.png) | ![Play Mode](screenshots/desktop_08_play_mode.png) |
+| ![Import](screenshots/showcase_01_system_selection.png) | ![Unit configuration](screenshots/showcase_02_unit_item_selection.png) | ![Play mode](screenshots/showcase_03_play_mode_long.png) |
 
-### Mobile View
-| Bibliothekar (Library) | Roster Editor | Play Mode |
-|:---:|:---:|:---:|
-| ![Bibliothekar](screenshots/mobile_01_importer_empty.png) | ![Roster Editor](screenshots/mobile_05_roster_editor.png) | ![Play Mode](screenshots/mobile_08_play_mode.png) |
+---
+
+## Features
+
+- **Import BattleScribe data** — pick a game system and its catalogues from the
+  online catalog repository, or upload your own `.bsz` / ZIP archive. Rosters
+  (`.ros` / `.rosz`) can be imported too.
+- **Build army lists** — add units, pick upgrades and options, watch point costs
+  update as you go.
+- **Real-time validation** — a clean-room rules engine (`src/evaluator/`) checks
+  point limits, category limits and entry constraints on every change.
+- **Play mode** — track rounds, victory points, command points and wounds during
+  a game.
+- **Offline-first PWA** — installable, works offline, updates in the background
+  via a service worker.
+- **Local only** — nothing is uploaded; all data stays in your browser.
+
+Catalog data is fetched at runtime and is not bundled with the app. A frozen
+subset lives in `src/__fixtures__/whfb6/` and is used only by the tests.
 
 ---
 
 ## Getting Started
 
-Requires Node.js 24 (see `.nvmrc`), including `npm`.
+Requires Node.js 24 (see `.nvmrc`).
 
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Start the Vite dev server
 npm run dev
 ```
 
-Open the local URL printed in your terminal and import a game system to begin. The Librarian view lists the game systems available from the external catalog repository; alternatively, import any BattleScribe data package of your own as a ZIP archive.
-
----
+Open the URL printed in the terminal and import a game system to begin.
 
 ## Scripts
 
-The following NPM scripts are available in the project:
-
 ```bash
-npm run dev        # Starts the Vite dev server with Hot Module Replacement (HMR)
-npm run build      # Creates the production build (also generates a fresh service worker cache version)
-npm run preview    # Local preview of the production build
-npm run lint       # Code analysis using oxlint
-npm run knip       # Cross-file dead-code / unused-export / unused-dependency analysis (warn-only)
-npm run depcruise  # Dependency-graph rules: layering, cycles, orphans (warn-only); the evaluator⇄roster separation and the evaluator facade (ADR 0030) are blocking (error)
-npm run analyze    # Runs knip and dependency-cruiser together
-npm run typecheck  # Type-checks the JSDoc annotations of the production code (tsc --noEmit, checkJs)
-npm test           # Runs unit & component tests (Vitest) and the Puppeteer E2E smoke test
+npm run dev        # dev server with HMR
+npm run build      # production build (injects a fresh service worker cache version)
+npm run preview    # preview the production build
+npm run lint       # oxlint
+npm run typecheck  # tsc --noEmit over the JSDoc types
+npm run analyze    # knip (dead code) + dependency-cruiser (layering, cycles)
+npm test           # Vitest unit/component tests + the Puppeteer E2E test
 ```
 
-### Running Specific Tests
-
-```bash
-npx vitest run <path>          # Runs a single test file
-npx vitest run -t "<name>"     # Runs tests matching a specific name
-```
-
-The Puppeteer end-to-end test (`e2e/ui.test.js`) is run separately via `npm test`. It simulates the entire flow from import to list building and play mode in a headless browser, and runs completely offline against the frozen catalog fixture.
-
-Screenshots of every main view, in both desktop and mobile size, are produced by:
-
-```bash
-node scripts/generate_screenshots.js   # writes to .screenshots/ (git-ignored)
-```
-
-Both share their setup — fixture, production build, static serving, network blocking, state reset — via `scripts/lib/e2e-harness.js`.
+`npx vitest run <path>` runs a single test file. The E2E test (`e2e/ui.test.js`)
+covers import → list building → play mode in a headless browser, completely
+offline against the frozen fixture. `node scripts/generate_screenshots.js` writes
+screenshots of every main view to `.screenshots/`.
 
 ---
 
 ## Architecture
 
-The data flow is structured as follows: **BattleScribe XML → IndexedDB → In-Memory Roster State**
+Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 
-1. **Import** (`src/parser/`) — `zipExtractor.js` extracts the `.bsz` ZIP archive, then each catalogue (`.cat`) and game-system (`.gst`) file is checked against the vendored BattleScribe XSD (`schemaValidator.js`, wired via `importSchemaGate.js`). This check is **advisory** (ADR 0016): a schema mismatch is logged to the console (`console.warn`, with the offending file and line) but never blocks the import and is not shown in the UI. Roster (`.ros`/`.rosz`) import (`handleImportRoster`) is a separate path and is **not** schema-validated. `xmlParser.js` then reads the catalog XML and translates it into a structured game system object (catalogs, categories, profiles, rules, constraints, modifiers, etc.).
-2. **Database** (`src/db/database.js`) — A Promise-based wrapper for IndexedDB with three object stores: `systems` (game systems), `rosters` (army lists), and `settings` (app-wide preferences, e.g. the whfb6 rule-linking toggle). This is the only place that accesses IndexedDB directly. `migrations.js` updates older data structures upon loading.
-3. **Roster State** (`src/hooks/useRoster.js`) — The central state manager for the roster currently being edited. It builds an immutable selection tree (`Selection`), debounces saves to IndexedDB (150ms), and recalculates costs and validations on every change.
-4. **Play State** (`src/hooks/usePlayState.js`) — Manages the transient state for the play mode.
+- `src/parser/` — extracts the ZIP archive and translates the catalog XML into a
+  structured game system.
+- `src/db/` — the only place that touches IndexedDB (`systems`, `rosters`,
+  `settings`), including migrations of older data.
+- `src/roster/` — the write model: creates, resolves and rewrites selection trees,
+  independent of React. Structural only; it does not judge a roster.
+- `src/evaluator/` — the rules engine, hard-isolated from the write model and
+  reached only through its facade `evaluate({ gameSystem, catalogues }, roster) → report`.
+  Pure function with its own parser, data model and report.
+- `src/evaluation/` — the bridge that feeds the report into the UI.
+- `src/components/`, `App.jsx` — the views (`rosters`, `importer`, `builder`,
+  `play`), switched without a router; responsive above a 900px breakpoint.
 
-### The Write Model (`src/roster/`)
+A `Roster` holds forces, which hold a recursive tree of selections. A selection
+references its catalog definition by ID instead of copying it; definitions are
+resolved at runtime. Types are documented as JSDoc in `src/types.js`.
 
-Everything the app needs to **build and edit** a roster, working completely
-independently of React. It is structural only: it creates, resolves and rewrites
-selection trees — judging a roster is the engine's job (see below).
-
-- `catalogResolver.js` — Resolves entry links (`EntryLinks`) and selections against the game system.
-- `selectionFactory.js` / `subSelectionEditing.js` — Create a selection from a definition and add, remove or re-count sub-selections.
-- `rosterTree.js` — Immutable traversal and rewriting of the selection tree.
-- `queryEngine.js` — The scope-agnostic counting primitive (ADR 0029), shared by the structural helpers below.
-- `modifierEvaluator.js` — Evaluates BattleScribe conditions and modifiers for the structural decisions the write model still makes (e.g. effective names, raisable group maxima).
-- `optionsCollector.js` — Collects the option/group **structure** of a unit (membership and the group hierarchy the catalogue declares, not state).
-- `rosterCounter.js` — Counts units and aggregates costs for the write model's own needs.
-- `rosterSync.js` — Reconciles stored and imported rosters against an updated catalogue.
-- `profileCollector.js` — Determines effective profile values and rules of a unit, taking modifiers into account.
-- `index.js` — A convenience barrel over the modules above (no enforced facade).
-
-Until issue 0121 this directory was `src/solver/` and also validated rosters. That
-engine was classified faulty ([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md))
-and has been removed; what survived is the write model above.
-
-### The Evaluator (`src/evaluator/`)
-
-A second, spatially separated rules engine, added as a clean-room realization of
-the reference architecture in [`docs/evaluator-architecture.md`](docs/evaluator-architecture.md)
-([ADR 0030](docs/adr/0030-zweite-eigenstaendige-auswertungs-engine.md), revised). Since
-issue 0121 it is **the** production engine: it replaced the former solver, which has
-been removed. It stays hard-isolated from the app's write model `src/roster/` in both
-directions (enforced as blocking `error` rules in `.dependency-cruiser.cjs`/`.oxlintrc.json`),
-and it is reached only through its own facade `evaluate({ gameSystem, catalogues }, roster) → report`.
-It is a pure function (own parser, own data model, own report with
-violations/capabilities/diagnostics) and realizes the full reference design
-**including** the fixpoint loop and phantom nodes that ADR 0029 deliberately left
-out. The UI reads its report directly — violations, per-slot capabilities and cost
-totals — through the bridge `src/evaluation/` (roster adapter, dataset cache) and the
-message projection `src/i18n/violationMessages.js`.
-
-It reads the **canonical** BattleScribe XSD attributes (`type`/`field`/`value`)
-directly and draws its closed enum sets (constraint, condition and modifier kinds)
-from the vendored XSD single-source-of-truth rather than a separately drifting copy
-([ADR 0031](docs/adr/0031-evaluator-liest-battlescribe-xsd-syntax-und-teilt-enum-ssot.md)).
-Reading a real `.cat` file therefore exercises not just constraints but genuinely
-evaluates real conditions and modifiers — including nested condition- and
-modifier-groups (`and`/`or`) and structurally read info elements
-(`profile`/`rule`/`infoGroup`/`infoLink`).
-
-It evaluates a **complete real dataset** — one game-system file (`.gst`) plus a
-list of army catalogues (`.cat`) — resolving cross-catalogue imports and link
-chains (`entryLink`/`infoLink`/`sharedSelectionEntries`/`catalogueLink`) over a
-single global `id→definition` table, and reporting coherence problems
-(`GAMESYSTEM_MISMATCH`, `MISSING_CATALOGUE_DEPENDENCY`) as diagnostics rather than
-mis-evaluating ([ADR 0032](docs/adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)).
-Its E2E suite runs against real Definitive-Edition catalogue data (see
-[`docs/testkatalog-evaluator-e2e.md`](docs/testkatalog-evaluator-e2e.md)).
-
-Known limitations (documented, not defects): incrementalization (architecture
-§4.9) is deferred future work.
-
-### User Interface (`src/`)
-
-`App.jsx` orchestrates the different views (`rosters`, `importer`, `builder`, `play`) via the `useAppNavigation` hook, as a single-page view switcher without an external router.
-- The builder/editor UI is located in `src/components/editor/`.
-- The play mode UI is located in `src/components/play/`.
-- Styling is based on global CSS classes and semantic typography classes. `src/index.css` only imports the per-area stylesheets under `src/styles/`, in cascade order (see [ADR 0004](docs/adr/0004-styling-conventions.md) §6).
-- The design is responsive above a breakpoint of **900px**. Detailed tooltips are displayed via hover on desktop and via a `BottomSheet` modal on mobile devices.
-- Fonts: *Cinzel* and *Lora* are used for a matching gothic/fantasy aesthetic.
-
----
-
-## Data Model
-
-A `Roster` consists of multiple forces (`Force[]`), which in turn contain a recursive tree of selections (`Selection[]`). A `Selection` references its definition in the catalog via IDs (`entryLinkId` or `selectionEntryId`) instead of duplicating it. Definitions are resolved dynamically at runtime. The type definitions are documented using JSDoc in `src/types.js`.
-
-For more in-depth details on the BattleScribe format, see [`docs/battlescribe-data-format.md`](docs/battlescribe-data-format.md). The upstream BSData community documentation is vendored as a submodule under [`docs/bsdata-catalogue-development-wiki/`](docs/bsdata-catalogue-development-wiki/). Contributor guidelines are available in [`CLAUDE.md`](CLAUDE.md).
+Further reading: [`docs/project-map.md`](docs/project-map.md) (where everything
+lives), [`docs/adr/`](docs/adr/) (architecture decisions),
+[`docs/battlescribe-data-format.md`](docs/battlescribe-data-format.md) (the data
+format), [`CLAUDE.md`](CLAUDE.md) (contributor guidelines).
 
 ---
 
 ## Tech Stack
 
-React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint · Knip · dependency-cruiser · TypeScript (JSDoc-Typprüfung)
+React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint ·
+Knip · dependency-cruiser · TypeScript (JSDoc type checking)
 
 ---
 
 ## License
 
-Licensed under the **GNU General Public License v3.0**. See [`LICENSE`](LICENSE).
+**GNU General Public License v3.0** — see [`LICENSE`](LICENSE).
 
-The BattleScribe catalog data fetched at runtime, and the frozen test fixture under `src/__fixtures__/`, belong to their respective community authors and are used here for testing and demonstration purposes.
+BattleScribe catalog data fetched at runtime, and the frozen test fixture under
+`src/__fixtures__/`, belong to their respective community authors and are used
+here for testing and demonstration.
