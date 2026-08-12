@@ -41,6 +41,17 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree with a control in the same run.
+  A `selectionEntry` carrying `min 1 scope="roster"` inside a root
+  `selectionEntryGroup` produces **no** violation for an empty force; the very
+  same entry directly under the catalogue root produces `duty-min error
+  actual=0 bound=1`. Cause unchanged: `PHANTOM_DEFINITION_KINDS`
+  (`src/evaluator/resolver.js:90-95`) holds `ENTRY`, `ENTRY_LINK`, `FORCE` and
+  `CATEGORY` but not `GROUP`, and `collectRootDefinitions` returns at the first
+  kind outside that set (`resolver.js:147`), so the group and its whole subtree
+  never reach the mandatory-phantom pass. Still no comment saying whether that
+  is intended.
+
 ## Checkpoints
 
 ### Before implementation

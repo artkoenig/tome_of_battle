@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -82,6 +82,22 @@ Acceptance criteria:
   *(Beobachtung; der Mensch entscheidet.)*
 
 ## Log
+
+- 2026-08-12 — Closed: fixed by PR #200. A category id in `@scope` now resolves
+  to the nearest ancestor that effectively carries that category, and fails
+  closed with a diagnostic when no ancestor does — pinned by
+  `src/evaluator/query.categoryScope.test.js`, whose header names this very
+  Strigoi/Mounts case, and by the E2E scenario `docs/testing/category-scope-bug`.
+  Re-measured on 2026-08-12 with the repro recipe of this file
+  (`rosterFromRos('src/utils/__fixtures__/blood-dragons.ros')` against
+  `prepareDataset` over `src/__fixtures__/whfb6/`): the three Strigoi violations
+  are gone, `6681-a071-a9f8-4146` and `6753-a69e-4550-a4c4` among them.
+  One error remains in that measurement — the game system's `General` mandate
+  `1077-7379-f142-f382` — and it is an artefact of the test-fixture reader, not
+  of the engine: `src/evaluator/__fixtures__/rosParser.js` keeps the `::`
+  qualifier of a roster `entryId`, while the production import path strips it
+  (`src/utils/rosterSerialization.js:417`). Stripping it in the probe makes that
+  violation disappear.
 
 - 2026-07-30: Gefunden beim Abriss des Solvers (Issue 0121, Task 10). Der
   vorher solver-basierte Test "Blood Dragons list validates without

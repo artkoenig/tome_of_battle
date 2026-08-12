@@ -69,6 +69,19 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced against the frozen fixture, and the measurement adds
+  one fact the file did not have. Empty Vampire Counts contingent over
+  `src/__fixtures__/whfb6/`, the Lord `categoryLink` `223a-0bf6-f992-7db0`:
+  - 1500 pts -> `effectiveMax 0` (the `set 0` below 2000 holds),
+  - 2000 pts -> `effectiveMax null` (unlimited),
+  - 3000 pts -> `effectiveMax null`.
+  So the cap does not merely fail to rise, it disappears the moment the list is
+  big enough to want it. The Heroes `categoryLink` `7697-ca4b-195e-cd8d` reads
+  `null` at every budget for a different reason: it carries no `<constraint>` in
+  the fixture at all, so there is nothing for a fork correction to fix there.
+  The engine reading is unchanged and correct per §7.6; the decision the file
+  asks for is still open.
+
 - 2026-07-30: In Prüfrunde 2 zu Issue 0121 gefunden (Befund B4), belegt
   über den Screenshot-Vergleich gegen die Merge-Base
   (`.screenshots/desktop_06_unit_adder.png`).

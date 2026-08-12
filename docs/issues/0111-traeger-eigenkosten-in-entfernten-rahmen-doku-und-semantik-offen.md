@@ -61,6 +61,22 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Re-measured; **the premise of criterion 1 no longer holds, the
+  rest of the issue does.** The round-2 repro rebuilt verbatim (Force -> Unit ->
+  Hero 50 pts carrying `max 100 field="pts" scope="roster"`, Hero holds an Item
+  of 60 pts) now reads **actual 110 in both flag positions**, not 0 for
+  `includeChildSelections="false"`. The reason is `countingFlagsOf`
+  (`src/evaluator/constraints.js:91-98`): for a shared, entry-anchored limit at
+  `roster` or `force` scope the flag is forced to `true`, so the carrier's own
+  costs are in the sum and the §9.4 sentence is true as written. That part of
+  the file is stale and needs no work.
+  What is left is criterion 3, and it is untouched: two nested ancestors sharing
+  one target id (both carrying category `cat-any`, a `max 10 field="pts"
+  scope="cat-any"` at the outer one, a 30 pts leaf below the inner one) read
+  **actual 30** — today's set-dedup, one contribution per frame. The alternative
+  reading (once per matching ancestor, 60) is neither chosen nor ruled out
+  anywhere in the documentation, and no test pins the 30.
+
 ## Checkpoints
 
 ### Before implementation

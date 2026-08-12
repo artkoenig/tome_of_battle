@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -50,6 +50,16 @@ Acceptance criteria:
   im 083-Lauf gefixt: außerhalb dessen Intents, und die Fachfrage ist offen.
 
 ## Log
+
+- 2026-08-12 — Closed: decided and implemented elsewhere. `countingFlagsOf`
+  (`src/evaluator/constraints.js:91-98`) now treats `scope="force"` like
+  `scope="roster"` — a shared, entry-anchored limit counts the nested
+  occurrences of its entry inside the contingent regardless of
+  `includeChildSelections="false"`, and the code comment carries the reason
+  (§7.6, "unchecked means just scope's field"). The review-round-1 repro of
+  issue 083 is pinned by `src/evaluator/constraints.forceScopeNestedOccurrences.test.js`,
+  which arrived with PR #204 during the coverage campaign. Verified on
+  2026-08-12: `npx vitest run src/evaluator` → 92 files, 1689 tests, exit 0.
 
 ## Checkpoints
 

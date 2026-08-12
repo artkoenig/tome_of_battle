@@ -89,6 +89,23 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Round 4 reproduced, and **narrowed**: it is a cross-catalogue
+  defect only. Category `cat-banned` carries `max 0 scope="force"`; a unit is
+  granted that category solely by `modifier type="add" field="category"`.
+  - Both in one catalogue: the limit **fires** (`banned-max error actual=1
+    bound=0`), same as with a static `categoryLink`. The dynamic membership is
+    counted correctly.
+  - Category declared in a second catalogue the roster does not name: the limit
+    is **silent**, no diagnostic. Control in the same run — the same foreign
+    category reached by a static `categoryLink` at the unit **does** fire
+    (`actual=1 bound=0`).
+  So the hole is precisely `referencedCategoryIdsUnder`
+  (`src/evaluator/evalTree.js:490-500`), which builds its reference set from
+  `linkedCategoryIdsOf` — static `categoryLink` children only — and is what
+  `synthesizeMandatoryPhantoms` consults to decide whether a foreign category
+  is in scope. Criterion 1 should be read as "across a catalogue boundary";
+  within one catalogue there is nothing to fix.
+
 ## Checkpoints
 
 ### Before implementation
