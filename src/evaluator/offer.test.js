@@ -280,6 +280,10 @@ describe('Angebot unter einer belegten Auswahl: die direkten Optionen, nicht meh
     expect(offeredIdsUnder(root, DEEP_UNIT_ID)).toContain(DEEPEST_MEMBER_ID);
   });
 
+  // The other half of this rule — once that link IS selected, its locally
+  // declared children are offered under it — lives in
+  // `evalTree.linkLocalChildren.test.js`, because it is `ownerDefinitionOf`
+  // that has to see both child sets.
   it('bietet einen Verweis auf eine Auswahl mit eigenen lokalen Kindern nur als Verweis an — die Kinder bleiben der inneren Auswahl (Grenze bleibt bestehen)', () => {
     const catalogueXml = `<?xml version="1.0" encoding="utf-8"?>
       <catalogue id="cat-offer-entry-link-children" name="Offer Entry Link Children Catalogue">
