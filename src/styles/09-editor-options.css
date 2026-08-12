@@ -96,13 +96,13 @@
    The indent carries its own guide line because the enclosing `.option-group-items`
    already draws one along ALL its rows: with a small indent alone, a sub-option of a
    chosen row (Empire Warhorse → Barding) read as a sibling of the other group members
-   (Pegasus) instead of as its child. The line is dimmer than the group's, so the
-   hierarchy stays readable rather than competing with it. */
+   (Pegasus) instead of as its child. Same rule as that enclosing line — a guide line
+   of this kind is dim gold; the offset alone tells the levels apart. */
 .nested-option-block {
   margin-top: 4px;
   margin-left: 12px;
   padding-left: 12px;
-  border-left: 2px solid var(--border-dark);
+  border-left: 2px solid var(--border-gold-dim);
 }
 
 /* Collapsible option group inside a unit card */
