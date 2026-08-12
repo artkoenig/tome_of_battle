@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "issue": "docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap - issue 81 (profile characteristic modifiers ignored in unit display)\n\nOne line per file the issue has to change or read as evidence. Reasons only; what changes inside a file is the researcher's call.\n\n- `src/evaluator/modifiers.js` - Applies modifiers per node and per info carrier, gates them on their conditions and condition groups, and writes characteristic values through the effective-state accessor - the layer where a gated profile modifier either takes effect or is dropped.\n- `src/evaluator/query.js` - Resolves a condition's scope to a frame node (roster, force, parent, self, unit, ancestor, primary-catalogue, entry id, category id) and answers the count the condition compares against; it is where a scope can be left unresolved.\n- `src/evaluator/effectiveState.js` - Holds the base and effective characteristic values keyed by (node, carrier) and serves characteristicValue/characteristicEntriesOf to the projection - any change to how a modified value is stored or read lands here.\n- `src/evaluator/infoProjection.js` - Builds the profile entries of a slot from the effective state, including the characteristic pairs the profile table renders.\n- `src/evaluator/report.js` - Assembles capability.infoElements, the sole source the UI profile table reads (ADR 0034).\n- `src/evaluator/catalogReader.js` - Reads profiles, infoLinks, modifiers, modifierGroups and their conditions out of the XML, including the modifierGroup that hangs on the infoLink to the shared Vampire Count profile.\n- `src/evaluator/model.js` - Declares the ScopeKeyword and ScopeKind enumerations the closed scope list has to be reconciled against.\n- `src/evaluator/modifiers.test.js` - Unit tests of the modifier layer, including characteristic targets - the natural home of new cases about gated characteristic modifiers.\n- `src/evaluator/query.unitScope.test.js` - Existing unit tests for scope=\"unit\" resolution; the scope sweep extends or is measured against them.\n- `src/evaluator/query.selfGatedInstanceOf.test.js` - Existing tests for instanceOf conditions gated on a self/entry-id scope, the exact condition shape the Vampire Count modifierGroup uses.\n- `src/evaluator/infoElements.test.js` - Tests of the info elements the report carries - the report-level regression pin for the modified characteristic value.\n- `src/evaluator/infoProjection.test.js` - Tests of the projection that turns effective characteristics into profile entries.\n- `src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat` - Frozen fixture carrying the reported case (selectionEntry 6822-0110-a7c9-cbb0, infoLink a106-4a05-36ea-cb01, shared profile fabd-ef67-72f5-6b3f); read-only evidence, never edited.\n- `src/__fixtures__/whfb6-lexicanum/vampire-selfscope-bloodline.cat.xml` - Reduced verbatim excerpt of the same IDs, usable as a small fixture for the new tests and extendable if a scope shape is missing from it.\n- `src/components/editor/UnitSelectionCard.jsx` - Renders the editor profile table from capability.infoElements; the display path the reported symptom is about, and the place a non-numeric value could still be mangled.\n- `src/components/editor/UnitSelectionCard.evaluator.test.jsx` - Component test fed by the evaluator report - where the user-visible regression pin belongs.\n- `src/components/play/PlayUnitDetails.jsx` - Renders the same profile table in play mode from the same report field.\n- `src/components/play/PlayUnitDetails.evaluator.test.jsx` - Component test fed by the evaluator report for the play-mode profile table.\n- `docs/battlescribe-data-format.md` - The canonical source for the closed list of scope values (§7.6/§7.7 and the scope boxes); it is corrected here if the list it documents proves incomplete.\n- `src/parser/schema/Catalogue.xsd` - The upstream schema the closed scope list is derived against; read-only evidence.\n- `docs/testing/modifier-characteristic-value/README.md` - Declares instanceOf with scope=\"unit\" on characteristic fields and non-numeric set values as deliberately uncovered; that coverage statement changes with this issue.\n- `docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md` - Holds the record of which scope values cannot be covered from the catalogue data in the repository, and the reason for each (AC 7).\n- `package.json` - Version bump for a user-visible fix before the issue is merged, per the project's release rule.\n",
+  "increments": [
+    {
+      "id": "inc-1",
+      "title": "Gated profile characteristic modifiers reach the unit profile display",
+      "goal": "A characteristic modifier whose condition holds for a unit changes the value the user sees in the unit profile table, for numeric and non-numeric values alike, with the reported Vampire Counts bloodline case as the worked example.",
+      "criteria": [
+        "The unit profile display shows the modified characteristic value whenever a profile modifier's condition holds for that unit (issue AC 1).",
+        "With the frozen whfb6-definitive Vampire Counts fixture, a Vampire Count in a force that has chosen the Blood Dragon bloodline reports WS as the catalogue base value plus 2, and reports the Sv, Sv+ and A values the same modifierGroup sets (issue AC 2).",
+        "The same Vampire Count in a force without that bloodline still reports the unmodified base values (issue AC 3).",
+        "A non-numeric characteristic value written by a gated set modifier, such as an armour save 5+, reaches the display unchanged in form (issue AC 4).",
+        "The regression is pinned by a test that exercises the path the user actually sees - the evaluator report and the component fed by it - and not only the legacy profileCollector (issue AC 8).",
+        "The evaluator unit tests and the evaluator E2E suite pass, and no existing test is weakened or skipped to make the new ones green."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "Ordered first: it is the reported defect and the load-bearing unknown of the whole issue. Where the condition gating a characteristic modifier is evaluated, and against which node, is the code fact the rest of the cut turns on; this increment answers it by making the reported case work. The frozen fixture condition uses an entry-id scope (scope=\"6822-0110-a7c9-cbb0\"), not scope=\"unit\" - the closed scope sweep is increment 2's business, not this one's.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "inc-2",
+      "title": "Every condition scope on a characteristic modifier is evaluated or recorded as uncoverable",
+      "goal": "The closed list of scope values a condition on a characteristic modifier may name is derived from the format documentation and the XSD, every value in it is evaluated against the node it names rather than silently dropped, and every value is either covered by a test or recorded in the issue file with the reason it cannot be covered from the catalogue data in the repository.",
+      "criteria": [
+        "A gated modifier whose condition uses scope=\"unit\" is evaluated against the unit, not silently dropped (issue AC 5).",
+        "Every scope a condition on a characteristic modifier may name is evaluated against the node it names, and none is silently dropped; the closed list of scope values is derived from docs/battlescribe-data-format.md and src/parser/schema/Catalogue.xsd rather than from the existing code, and the derivation is written down (issue AC 6).",
+        "Each scope value in that closed list is either covered by a test or listed in docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md with the reason it cannot be covered from the catalogue data present in the repository (issue AC 7).",
+        "npm test passes and the evaluator E2E suite passes (issue AC 9).",
+        "Where docs/testing/modifier-characteristic-value/README.md still names a shape as deliberately uncovered that this issue now covers, that statement is corrected."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "Held back to second because increment 1 establishes where scope resolution for characteristic-modifier conditions actually happens; sweeping the closed list before that would be a sweep of a guess. Carries the run-wide green gate (AC 9) so it is claimed exactly once. Authoring new docs/testing scenarios is the black-box e2e-testcase-author's track (ADR 0033) and is not required by any criterion here.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-12T13:46:20.696Z",
+        "return": {
+          "questions": [],
+          "summary": "Issue 81 is cut into two increments: inc-1 makes a gated profile characteristic modifier reach the unit profile display, worked and pinned on the reported Vampire Counts bloodline case (issue AC 1-4 and AC 8); inc-2 derives the closed list of condition scope values from the format doc and the XSD, ensures none is silently dropped on a characteristic modifier, and covers or records each one (issue AC 5-7, plus the run-wide green gate AC 9). The codemap of 23 files is written into backlog.json."
+        },
+        "prompt": "Issue directory: docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display\nOpen the run state for docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
