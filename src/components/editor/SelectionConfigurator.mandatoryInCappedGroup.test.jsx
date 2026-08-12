@@ -44,16 +44,17 @@ import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
  * Beobachtet wird, WELCHE Operation der Klick ausloest — nicht, wie der
  * Konfigurator zu seinem Schalter kommt.
  *
- * Dazu kommt eine Zusicherung ueber den *angezeigten* Zustand: die Pflichtwahl
- * ist genommen, ihr Schalter also angehakt. Kein nummeriertes Kriterium des
- * Issues entscheidet das; es ist eine ausdrueckliche Setzung des Koordinators,
- * weil Schreiben und Anzeige hier ein Defekt in einem Zweig sind und eine
- * Pflichtwahl sonst sichtbar ungenommen aussieht. Auf `origin/main` (`0598752`)
- * stand dort `<input disabled type="checkbox" checked>`.
- *
- * **Nicht** zugesichert ist `disabled`: das ist nur EIN Weg, nicht zu
- * schreiben — dass nichts geschrieben wird, halten die Klick-Tests bereits
- * fest, und ein aktiver Schalter, der nichts tut, genuegt Kriterium 6 ebenso.
+ * Die fruehere Zusicherung ueber den *angezeigten* Zustand — die Pflichtwahl
+ * sei genommen, ihr Schalter also angehakt (`<input disabled type="checkbox"
+ * checked>` auf `origin/main`, `0598752`) — ist mit Issue 0147 (`dce8b91`)
+ * ueberholt: Kein nummeriertes Kriterium des Issues hatte das je entschieden;
+ * es war eine ausdrueckliche Setzung des Koordinators, solange „angehakt"
+ * fuer jede Pflichtwahl galt, egal ob genommen oder offen. Issue 0145 dreht
+ * genau das um — eine Pflicht, die der Roster nicht haelt, rendert NICHT mehr
+ * angehakt (Kriterium 3) — also traegt diese Setzung nicht mehr. In diesem
+ * konkreten Fall stellt sich die Frage ohnehin nicht mehr: `Lore of
+ * Necromancy` liegt in einer per Modifikator versteckten Gruppe und erscheint
+ * gar nicht mehr auf der Karte (siehe die Assertions unten).
  */
 
 vi.mock('lucide-react', () => ({

@@ -89,6 +89,21 @@ export function isGroupSingleChoice(maxLimit, isGroupMaxRaisable) {
  * Verhaltensklasse einer Options-Zeile innerhalb einer Gruppe: Pflicht, Einzelwahl
  * (Radiobutton), binär (Checkbox) oder Mehrfachauswahl (Mengensteller).
  *
+ * `isMandatory` bleibt die reine Katalog-Lesart (min===max>0). `isMandatoryMet`
+ * sagt daneben, ob an dieser Zeile **keine offene Verpflichtung** aussteht: es
+ * ist wahr, solange der Bericht sie nicht als `isMandatoryUnmet` meldet — für
+ * eine Zeile ohne Pflicht also trivialerweise wahr. „Genommen und gesperrt"
+ * zeigt eine Zeile darum erst, wenn beide zusammen zutreffen
+ * (`isMandatory && isMandatoryMet`).
+ *
+ * Die Quelle dieser Unterscheidung ist der Bericht, nicht der Katalog:
+ * BattleScribe erzeugt beim Ausheben, was ein Minimum verlangt, und erzwingt es
+ * danach nicht mehr (`docs/battlescribe-data-format.md` §9.1) — ein nach der
+ * Erzeugung unerfülltes Minimum ist also eine **offene** Pflicht, keine
+ * eingelöste. Die Voreinstellung `false` für `isMandatoryUnmet` hält einen
+ * Aufrufer ohne dieses Feld beim bisherigen Verhalten, statt eine Zeile
+ * stillschweigend zu entsperren.
+ *
  * @param {Object} args
  * @param {number} args.minLimit                    effektives Options-Min (0, wenn keins).
  * @param {number} args.maxLimit                    effektives Options-Max (`Infinity`, wenn keins).
@@ -96,12 +111,15 @@ export function isGroupSingleChoice(maxLimit, isGroupMaxRaisable) {
  * @param {boolean} args.isCollective               kollektive (pro-Modell-)Ausrüstung.
  * @param {boolean} args.isRepeatableByGroupModifier siehe {@link isItemRepeatableWithinGroup}.
  * @param {boolean} args.groupSingleChoice          siehe {@link isGroupSingleChoice}.
- * @returns {{isMandatory: boolean, isRadio: boolean, hasQuantitySignal: boolean, isExplicitlyMulti: boolean, isBinary: boolean}}
+ * @param {boolean} [args.isMandatoryUnmet]         ob der Bericht die Pflicht als offen meldet.
+ * @returns {{isMandatory: boolean, isMandatoryMet: boolean, isRadio: boolean, hasQuantitySignal: boolean, isExplicitlyMulti: boolean, isBinary: boolean}}
  */
 export function classifyGroupItem({
-  minLimit, maxLimit, hasMaxConstraint, isCollective, isRepeatableByGroupModifier, groupSingleChoice
+  minLimit, maxLimit, hasMaxConstraint, isCollective, isRepeatableByGroupModifier, groupSingleChoice,
+  isMandatoryUnmet = false
 }) {
   const isMandatory = minLimit > 0 && minLimit === maxLimit;
+  const isMandatoryMet = isMandatoryUnmet !== true;
   // Eine wiederholbare Option verhält sich nie als ausschließender Radiobutton, obwohl
   // ihre Gruppe nominell auf max=1 gedeckelt ist (das Cap wird je Kopie gehoben).
   const isRadio = !isRepeatableByGroupModifier && groupSingleChoice;
@@ -113,22 +131,28 @@ export function classifyGroupItem({
     isRepeatableByGroupModifier ||
     (!hasMaxConstraint && !isRadio && hasQuantitySignal);
   const isBinary = !isExplicitlyMulti && ((hasMaxConstraint && maxLimit === 1) || isRadio || !hasMaxConstraint);
-  return { isMandatory, isRadio, hasQuantitySignal, isExplicitlyMulti, isBinary };
+  return { isMandatory, isMandatoryMet, isRadio, hasQuantitySignal, isExplicitlyMulti, isBinary };
 }
 
 /**
  * Verhaltensklasse einer eigenständigen (gruppenlosen) Options-Zeile im
  * Auswahl-Konfigurator: Pflicht (min>0 und min===max) und binär (max===1).
  *
+ * Zur Unterscheidung von `isMandatory` (Katalog-Lesart) und `isMandatoryMet`
+ * (eingelöste Pflicht) siehe {@link classifyGroupItem} — beide Pfade lesen
+ * dieselbe Regel.
+ *
  * @param {Object} args
  * @param {number} args.minLimit  effektives Min (0, wenn keins).
  * @param {number} args.maxLimit  effektives Max (`Infinity`, wenn keins).
- * @returns {{isMandatory: boolean, isBinary: boolean}}
+ * @param {boolean} [args.isMandatoryUnmet]  ob der Bericht die Pflicht als offen meldet.
+ * @returns {{isMandatory: boolean, isMandatoryMet: boolean, isBinary: boolean}}
  */
-export function classifyStandaloneOption({ minLimit, maxLimit }) {
+export function classifyStandaloneOption({ minLimit, maxLimit, isMandatoryUnmet = false }) {
   const isMandatory = minLimit > 0 && minLimit === maxLimit;
+  const isMandatoryMet = isMandatoryUnmet !== true;
   const isBinary = maxLimit === 1;
-  return { isMandatory, isBinary };
+  return { isMandatory, isMandatoryMet, isBinary };
 }
 
 /**

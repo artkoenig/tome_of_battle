@@ -23,9 +23,10 @@ import { useTranslation } from '../../i18n/useTranslation';
  *
  * - Options-Slots per `defId`/`targetDefId`; versteckte Slots (`isHidden`)
  *   erscheinen nicht, gesperrte (`isBlocked`) sind nicht erhöhbar,
- * - eine offene Pflicht (`mandatoryPhantom`/`isMandatoryUnmet`) rendert als
- *   angehakter, gesperrter Schalter — als Checkbox, in einer Gruppe mit
- *   Obergrenze als Radio,
+ * - eine **eingelöste** Pflicht (min===max>0, ohne `isMandatoryUnmet`) rendert
+ *   als angehakter, gesperrter Schalter; eine **offene** Pflicht
+ *   (`isMandatoryUnmet`) ist dagegen ein gewöhnliches offenes Angebot — nicht
+ *   angehakt, klickbar (Issue 0145),
  * - die Gruppen-Grenze liest der Gruppen-Anker (`defId === group.id`).
  *
  * Eine Gruppe kann ihrerseits **Gruppen halten**: `nestedSections` sind die vom
@@ -206,13 +207,14 @@ export default function OptionGroupComponent({
             const res = resolveEntry(system, option, activeCatalogue?.id);
             const isCollective = res?.collective || option.collective || false;
             const isRepeatableByGroupModifier = isItemRepeatableWithinGroup(option, res, group, groupModifiers);
-            const { isMandatory, isRadio, isBinary } = classifyGroupItem({
+            const { isMandatory, isMandatoryMet, isRadio, isBinary } = classifyGroupItem({
               minLimit,
               maxLimit,
               hasMaxConstraint,
               isCollective,
               isRepeatableByGroupModifier,
-              groupSingleChoice
+              groupSingleChoice,
+              isMandatoryUnmet: capability.isMandatoryUnmet === true
             });
             const descText = getOptionDescription(res);
 
@@ -225,7 +227,14 @@ export default function OptionGroupComponent({
 
             // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
             const isUnavailable = count === 0 && isSelectDisabled;
-            const isClickable = !isMandatory && !isUnavailable;
+            // Nur eine EINGELÖSTE Pflicht ist genommen und gesperrt; eine offene
+            // Pflicht (`isMandatoryUnmet`) ist ein gewöhnliches Angebot (Issue 0145).
+            const isObligationHeld = isMandatory && isMandatoryMet;
+            const isClickable = !isObligationHeld && !isUnavailable;
+            // Eine Regel auf allen drei Render-Pfaden: Was das effektive Minimum
+            // verlangt, kann nicht zurückgegeben werden — und eine bereits
+            // eingelöste Pflicht ist genau dieser Fall.
+            const canRemove = count > minLimit && !isObligationHeld;
 
             const decreaseSelectedSiblings = () => {
               rows.forEach(other => {
@@ -243,19 +252,15 @@ export default function OptionGroupComponent({
               }
               if (isClickable) {
                 if (isBinary) {
-                  if (isRadio) {
-                    if (count > 0) {
+                  if (count > 0) {
+                    if (canRemove) {
                       subSelectionOperations.decreaseCount(editTargetId, option);
-                    } else {
+                    }
+                  } else if (!isSelectDisabled) {
+                    if (isRadio) {
                       decreaseSelectedSiblings();
-                      subSelectionOperations.increaseCount(editTargetId, option);
                     }
-                  } else {
-                    if (count > 0) {
-                      subSelectionOperations.decreaseCount(editTargetId, option);
-                    } else {
-                      subSelectionOperations.increaseCount(editTargetId, option);
-                    }
+                    subSelectionOperations.increaseCount(editTargetId, option);
                   }
                 } else if (!isSelectDisabled) {
                   subSelectionOperations.increaseCount(editTargetId, option);
@@ -294,20 +299,21 @@ export default function OptionGroupComponent({
                       <input
                         type="radio"
                         name={`${selection.id}-${group.name}`}
-                        // Eine Pflichtzeile ist genommen und nicht abwählbar — genau wie
-                        // im Checkbox-Zweig darunter und auf dem gruppenlosen Pfad des
-                        // Konfigurators. Dass die Gruppe eine Obergrenze trägt und die
-                        // Zeile deshalb als Radio rendert, ändert daran nichts
-                        // (Issue 0143, Kriterium 6).
-                        checked={count > 0 || isMandatory}
-                        disabled={isMandatory || (count === 0 && isSelectDisabled)}
+                        // Eine EINGELÖSTE Pflichtzeile ist genommen und nicht abwählbar —
+                        // genau wie im Checkbox-Zweig darunter und auf dem gruppenlosen
+                        // Pfad des Konfigurators. Eine noch offene Pflicht
+                        // (`isMandatoryUnmet`) ist dagegen ein gewöhnliches Angebot, das
+                        // beim Klick geschrieben wird (Issue 0145). Dass die Gruppe eine
+                        // Obergrenze trägt und die Zeile deshalb als Radio rendert, ändert
+                        // an beidem nichts (Issue 0143, Kriterium 6).
+                        checked={count > 0 || isObligationHeld}
+                        disabled={isObligationHeld || (count > 0 ? !canRemove : isSelectDisabled)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (isMandatory) {
-                            return;
-                          }
                           if (count > 0) {
-                            subSelectionOperations.decreaseCount(editTargetId, option);
+                            if (canRemove) {
+                              subSelectionOperations.decreaseCount(editTargetId, option);
+                            }
                           } else if (!isSelectDisabled) {
                             decreaseSelectedSiblings();
                             subSelectionOperations.increaseCount(editTargetId, option);
@@ -318,16 +324,16 @@ export default function OptionGroupComponent({
                     ) : (
                       <input
                         type="checkbox"
-                        checked={count > 0 || isMandatory}
-                        disabled={isMandatory || (count === 0 && isSelectDisabled)}
+                        checked={count > 0 || isObligationHeld}
+                        disabled={isObligationHeld || (count > 0 ? !canRemove : isSelectDisabled)}
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => {
-                          if (!isMandatory) {
-                            if (e.target.checked) {
+                          if (e.target.checked) {
+                            if (!isSelectDisabled) {
                               subSelectionOperations.increaseCount(editTargetId, option);
-                            } else {
-                              subSelectionOperations.decreaseCount(editTargetId, option);
                             }
+                          } else if (canRemove) {
+                            subSelectionOperations.decreaseCount(editTargetId, option);
                           }
                         }}
                       />
@@ -340,7 +346,9 @@ export default function OptionGroupComponent({
                           e.stopPropagation();
                           subSelectionOperations.decreaseCount(editTargetId, option);
                         }}
-                        disabled={count === 0}
+                        // Dieselbe Regel wie auf dem gruppenlosen Pfad: nie unter das
+                        // effektive Minimum, und nie eine eingelöste Pflicht zurück.
+                        disabled={!canRemove}
                       >
                         <Minus size={12} />
                       </button>

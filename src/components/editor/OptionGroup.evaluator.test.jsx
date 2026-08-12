@@ -8,8 +8,10 @@
  * - eine wählbare Option mit Restspielraum (`headroom > 0`) ist erhöhbar,
  * - eine Option am Maximum (`isBlocked` / `headroom 0`) ist nicht erhöhbar,
  * - eine versteckte Option (`isHidden`) erscheint nicht,
- * - eine offene Pflicht (`isMandatoryUnmet`, Pflicht-Phantom) ist sichtbar
- *   markiert (bestehende Pflicht-Observable: angehakte, gesperrte Checkbox),
+ * - eine offene Pflicht (`isMandatoryUnmet`, Pflicht-Phantom) rendert als
+ *   NICHT angehakte, NICHT gesperrte Checkbox, und ein Klick darauf oder auf
+ *   die Zeile schreibt die Option in den Roster (Issue 0145, Kriterium 3) —
+ *   ein Klick angehakt/gesperrt zu belassen war der Defekt, der behoben wird,
  * - eine Einzelwahl-Gruppe (Gruppen-Anker mit `effectiveMax 1`) wird als
  *   Einzelwahl (Radio) bedient — auch der Tausch bei belegter Gruppe,
  * - Options-Kosten kommen aus `capability.costs`.
@@ -328,18 +330,31 @@ describe('OptionGroup: Options-Zustand aus dem Fähigkeitsdatensatz (Issue 0121,
     expect(screen.queryByText('Cloak')).toBeNull();
   });
 
-  it('eine offene Pflicht (Helm, isMandatoryUnmet am Pflicht-Phantom) ist sichtbar als Pflicht markiert', () => {
+  it('eine offene Pflicht (Helm, isMandatoryUnmet am Pflicht-Phantom) rendert nicht angehakt und schreibt beim Klick (Issue 0145, Kriterium 3)', () => {
     const roster = appRoster(GEAR_SUBSELECTIONS);
-    const { capabilities } = renderGroup({ group: GEAR_GROUP, roster, operations: createSubSelectionOperationsMock() });
+    const operations = createSubSelectionOperationsMock();
+    const { capabilities, selection } = renderGroup({ group: GEAR_GROUP, roster, operations });
     expect(capabilityOf(capabilities, HELM_ID)).toMatchObject({ anchorKind: 'mandatoryPhantom', isMandatoryUnmet: true, effectiveMin: 1 });
 
     ensureExpanded('Gear', 'Helm');
-    // Bestehende Pflicht-Observable: angehakte, gesperrte Checkbox (min 1 / max 1).
     const helmRow = screen.getByText('Helm').closest('.sub-selection-row');
     const checkbox = helmRow.querySelector('input[type="checkbox"]');
     expect(checkbox, 'Pflicht-Option rendert als Checkbox').not.toBeNull();
-    expect(checkbox.checked).toBe(true);
-    expect(checkbox.disabled).toBe(true);
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.disabled).toBe(false);
+
+    fireEvent.click(checkbox);
+    expect(operations.increaseCount.mock.calls.some(
+      call => call[0] === selection.id && identifiesOption(call[1], HELM_ID),
+    )).toBe(true);
+    expect(operations.decreaseCount).not.toHaveBeenCalled();
+
+    operations.increaseCount.mockClear();
+    fireEvent.click(helmRow);
+    expect(operations.increaseCount.mock.calls.some(
+      call => call[0] === selection.id && identifiesOption(call[1], HELM_ID),
+    )).toBe(true);
+    expect(operations.decreaseCount).not.toHaveBeenCalled();
   });
 
   it('Options-Kosten kommen aus capability.costs (+7 für Sword)', () => {

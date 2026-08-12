@@ -400,7 +400,9 @@ export default function SelectionConfigurator({
     const points = capability.costs?.[costTypeId] ?? 0;
     const optionName = capability.name;
     const costBudgets = costBudgetTextsOf(capability, system);
-    const { isMandatory, isBinary } = classifyStandaloneOption({ minLimit, maxLimit });
+    const { isMandatory, isMandatoryMet, isBinary } = classifyStandaloneOption({
+      minLimit, maxLimit, isMandatoryUnmet: capability.isMandatoryUnmet === true
+    });
 
     // Auflösung nur noch als Beiwerk (Detail-/Regeltexte, Untereinheiten-Form) —
     // Zustand, Grenzen und Namen kommen aus dem Bericht.
@@ -419,7 +421,14 @@ export default function SelectionConfigurator({
 
     // Nicht wählbar, weil noch nicht ausgewählt und aktuell gesperrt.
     const isUnavailable = count === 0 && isSelectDisabled;
-    const isClickable = !isMandatory && !isUnavailable;
+    // Nur eine EINGELÖSTE Pflicht ist genommen und gesperrt; eine offene Pflicht
+    // (`isMandatoryUnmet`) ist ein gewöhnliches Angebot (Issue 0145).
+    const isObligationHeld = isMandatory && isMandatoryMet;
+    const isClickable = !isObligationHeld && !isUnavailable;
+    // Eine Regel auf allen drei Render-Pfaden: Was das effektive Minimum verlangt,
+    // kann nicht zurückgegeben werden — und eine bereits eingelöste Pflicht ist
+    // genau dieser Fall (Issue 0145).
+    const canRemove = count > minLimit && !isObligationHeld;
     const handleRowClick = (e) => {
       if (e.target.closest('button') || e.target.closest('input')) {
         return;
@@ -431,7 +440,7 @@ export default function SelectionConfigurator({
           }
         } else if (isBinary) {
           if (count > 0) {
-            if (count > minLimit) {
+            if (canRemove) {
               subSelectionOperations.decreaseCount(editTargetId, option);
             }
           } else if (!isSelectDisabled) {
@@ -491,16 +500,16 @@ export default function SelectionConfigurator({
           ) : isBinary ? (
             <input
               type="checkbox"
-              checked={count > 0 || isMandatory}
-              disabled={isMandatory || (count === 0 && isSelectDisabled) || (count > 0 && count <= minLimit)}
+              checked={count > 0 || isObligationHeld}
+              disabled={isObligationHeld || (count > 0 ? !canRemove : isSelectDisabled)}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
-                if (!isMandatory && !(count > 0 && count <= minLimit)) {
-                  if (e.target.checked) {
+                if (e.target.checked) {
+                  if (!isSelectDisabled) {
                     subSelectionOperations.increaseCount(editTargetId, option);
-                  } else {
-                    subSelectionOperations.decreaseCount(editTargetId, option);
                   }
+                } else if (canRemove) {
+                  subSelectionOperations.decreaseCount(editTargetId, option);
                 }
               }}
             />
@@ -512,7 +521,7 @@ export default function SelectionConfigurator({
                   e.stopPropagation();
                   subSelectionOperations.decreaseCount(editTargetId, option);
                 }}
-                disabled={count <= minLimit}
+                disabled={!canRemove}
               >
                 <Minus size={12} />
               </button>

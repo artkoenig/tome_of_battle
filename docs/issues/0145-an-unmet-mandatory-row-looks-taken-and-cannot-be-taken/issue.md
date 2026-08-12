@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/offene-aufgaben-pk52qh
 pr:
 ---
 
@@ -115,12 +115,26 @@ Acceptance criteria:
 
 ## Decisions
 
+- **No version bump for this change.** A patch bump to 1.9.4 was proposed
+  before the merge, as the routine for a user-visible fix demands. The
+  maintainer chose to leave the version at 1.9.3, so no tag follows this
+  merge. Source: maintainer's answer, 2026-08-12.
+
 - **Both defects are fixed, not one.** Four shapes were put to the maintainer:
   create-and-display, display only, create only, or reverting just the one row
   issue 0143 caused. They chose create-and-display. Source: maintainer's
   answer, this session.
 
 ## Log
+
+- 2026-08-12 — Taken up again on branch `claude/offene-aufgaben-pk52qh`. Issue
+  0143 has meanwhile landed in `main` (PR #199), so the log entry below about
+  the two going out as one change on one branch is history: this issue now
+  stands alone, and the five assertions in
+  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx` that pin
+  `Lore of Necromancy` as `checked` sit in `main`. Correcting them is part of
+  this change, exactly as the collision note at the end of this section
+  describes.
 
 - 2026-08-12 — Put back to backlog. The branch this file named is gone and
   nothing of the change is in `main`: `populateChildren`
