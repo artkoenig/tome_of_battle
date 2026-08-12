@@ -51,6 +51,8 @@ collector. Those are separate display paths and separate issues.
 - [ ] The same Vampire Count in a force without that bloodline still reports the unmodified base values.
 - [ ] A non-numeric characteristic value written by a gated `set` modifier, such as an armour save `5+`, reaches the display unchanged in form.
 - [ ] A gated modifier whose condition uses `scope="unit"` is evaluated against the unit, not silently dropped.
+- [ ] Every scope a condition on a characteristic modifier may name is evaluated against the node it names, and none is silently dropped; derive the closed list of scope values from `docs/battlescribe-data-format.md` and the Battlescribe XSD rather than from the existing code.
+- [ ] Each scope value in that closed list is either covered by a test or listed in this file with the reason it cannot be covered from the catalogue data present in the repository.
 - [ ] The regression is pinned by a test that exercises the path the user actually sees — the evaluator report and the component fed by it — and not only the legacy `profileCollector`.
 - [ ] `npm test` passes, and the evaluator E2E suite passes.
 
