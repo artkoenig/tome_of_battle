@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/offene-aufgaben-qfgmag
 pr:
 ---
 
@@ -50,6 +50,11 @@ Acceptance criteria:
 ## Decisions
 
 ## Log
+
+- 2026-08-12 — **Closed** on the maintainer's decision: the finding no longer
+  reproduces (measurement in the entry above). Nothing was changed in the code
+  for it, and no test pins the new behaviour — should an empty section for a
+  limitless group reappear, it needs a fresh issue with a fresh measurement.
 
 - 2026-08-12 (re-check, independent probe) — **Does NOT reproduce any more.**
   Synthetic case exactly as described: a `selectionEntryGroup` without

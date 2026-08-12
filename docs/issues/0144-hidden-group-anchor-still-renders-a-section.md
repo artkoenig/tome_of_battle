@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/offene-aufgaben-qfgmag
 pr:
 ---
 
@@ -68,6 +68,17 @@ Acceptance criteria:
 ## Decisions
 
 ## Log
+
+- 2026-08-12 — **Closed** on the maintainer's decision: the observable defect no
+  longer reproduces (sweep in the entry above — 1 card instead of 7, and that one
+  a name collision, with the identity-proven `Lores of Magic` case rendering no
+  section). Left unanswered, deliberately: criterion 1 — what the BattleScribe
+  data format reference says a hidden `selectionEntryGroup` hides, itself or its
+  members — was never established, and criteria 2 and 3 lost the premise they
+  were measured against. Whether `buildSections` reads a group anchor's
+  `isHidden` at all today is likewise unverified; the sections may have vanished
+  through issue 0143's barren-section rule instead. If the question returns, it
+  returns as a new issue.
 
 - 2026-08-12 (re-check, independent sweep) — **Largely stale: 1 card instead of
   7, and the identity-proven case is fixed.** The issue's own method rerun over
