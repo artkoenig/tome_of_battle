@@ -67,7 +67,10 @@ covers.
   children of one occurrence's closure resolve to the same shared target
   — they need be neither siblings nor declared on the link itself — assert
   the group and record its members instead of asserting either one
-  individually.
+  individually. Close such a check's books against a count taken before the
+  classification that fills them (and against a second traversal of the same
+  documents), never against the sum of the books themselves, which cannot
+  fail.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,

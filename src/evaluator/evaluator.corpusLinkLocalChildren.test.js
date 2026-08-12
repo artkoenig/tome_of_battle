@@ -345,6 +345,13 @@ function deriveCorpus(corpusName, dir) {
   ).length;
 
   const perFileCounts = {};
+  // A second, independent tally of the same population as perFileCounts,
+  // reached by a CSS selector over the raw document instead of the
+  // getElementsByTagNameNS + directLocalChildren walk below: an entryLink
+  // that owns at least one non-empty selectionEntries/selectionEntryGroups/
+  // entryLinks container, counted once per entryLink id. Shares no code path
+  // with hasOwnLocalChildren/directLocalChildren.
+  const perFileSelectorCounts = {};
   const occurrences = [];
   const occurrencesByFile = new Map();
   const recorded = [];
@@ -355,6 +362,13 @@ function deriveCorpus(corpusName, dir) {
     const { forceId, catalogueId } = resolveForce(document, gstForceEntries, firstAnyForceId);
     forceByFile.set(file, { forceId, catalogueId });
     occurrencesByFile.set(file, []);
+
+    const selectorCountedIds = new Set(
+      [...document.querySelectorAll('entryLink > selectionEntries, entryLink > selectionEntryGroups, entryLink > entryLinks')]
+        .filter(container => container.children.length > 0)
+        .map(container => container.parentElement.getAttribute('id')),
+    );
+    if (selectorCountedIds.size > 0) perFileSelectorCounts[file] = selectorCountedIds.size;
 
     const links = [...document.getElementsByTagNameNS('*', 'entryLink')];
     for (const link of links) {
@@ -420,6 +434,7 @@ function deriveCorpus(corpusName, dir) {
     gstXml,
     catTexts,
     perFileCounts,
+    perFileSelectorCounts,
     occurrences,
     occurrencesByFile,
     recorded,
@@ -433,21 +448,41 @@ const DERIVED = CORPORA.map(corpus => deriveCorpus(corpus.name, corpus.dir));
 
 const ALL_OCCURRENCES = DERIVED.flatMap(d => d.occurrences);
 const ALL_RECORDED = DERIVED.flatMap(d => d.recorded);
-const DERIVED_TOTAL = ALL_OCCURRENCES.length + ALL_RECORDED.length;
 
 // The list of children a link declares locally, one level below its own
 // count (issue Log, third point): most children sit alone in their target
-// identity group and are asserted individually; a handful sit in a group of
-// siblings that share a target (`groupByTargetIdentity`) and are asserted as
-// a group instead — those are recorded in ALL_SHADOWED rather than counted
+// identity group and are asserted individually; a handful share a target
+// identity with a child reached from a DIFFERENT group within the same
+// occurrence's closure — neither siblings nor both declared on the link
+// itself (see `groupByTargetIdentity`; the corpus case is three Forces of
+// Chaos occurrences sharing the "Magic Banners" closure) — and are asserted
+// as a group instead: those are recorded in ALL_SHADOWED rather than counted
 // individually, so this book closes too, separately from the occurrence book.
 const DERIVED_CHILD_TOTAL = ALL_OCCURRENCES.reduce((sum, occurrence) => sum + occurrence.expected.length, 0);
 const ALL_SHADOWED = DERIVED.flatMap(d => d.shadowed).sort(
   (a, b) => a.file.localeCompare(b.file) || a.linkId.localeCompare(b.linkId) || a.childId.localeCompare(b.childId),
 );
+// A child is counted here only when it is alone in its occurrence's target
+// identity group (`groupByTargetIdentity`); a member of a group of size > 1
+// is booked in ALL_SHADOWED instead (see above), never both.
+const INDIVIDUALLY_ASSERTED_CHILDREN = ALL_OCCURRENCES.reduce(
+  (sum, occurrence) => sum + occurrence.expectedGroups.filter(group => group.members.length === 1).length,
+  0,
+);
 
 const PER_FILE_COUNTS = {};
 for (const d of DERIVED) Object.assign(PER_FILE_COUNTS, d.perFileCounts);
+
+const PER_FILE_SELECTOR_COUNTS = {};
+for (const d of DERIVED) Object.assign(PER_FILE_SELECTOR_COUNTS, d.perFileSelectorCounts);
+
+// Taken BEFORE classification into checkable occurrence vs. recorded
+// (unaddressable) entry — deriveCorpus increments perFileCounts for every
+// entryLink with own local children, ahead of the frame/force/target checks
+// that sort it into one book or the other — so this total is pinned against
+// the pre-classification source, never against the sum of the two books
+// themselves, which would close by construction and prove nothing.
+const DERIVED_TOTAL = Object.values(PER_FILE_COUNTS).reduce((sum, count) => sum + count, 0);
 
 const CONTRIBUTING_FILES = Object.keys(PER_FILE_COUNTS);
 
@@ -540,6 +575,11 @@ describe('Beide Korpora: Verweise mit eigenen lokalen Kindern (Issue 0150, Krite
     expect(CONTRIBUTING_FILES).toHaveLength(15);
   });
 
+  it('KONTROLLE: eine zweite, unabhaengige Herleitung ueber CSS-Selektoren stimmt mit der Baum-Traversierung ueberein (ebenfalls 149)', () => {
+    expect(PER_FILE_SELECTOR_COUNTS).toEqual(PER_FILE_COUNTS);
+    expect(Object.values(PER_FILE_SELECTOR_COUNTS).reduce((sum, count) => sum + count, 0)).toBe(149);
+  });
+
   it('KONTROLLE: keine der beiden .gst-Dateien haelt einen Verweis mit eigenen lokalen Kindern', () => {
     for (const d of DERIVED) {
       expect(d.gstEntryLinksWithOwnChildren, `${d.corpus}: .gst-Datei traegt eigene lokale Kinder`).toBe(0);
@@ -548,7 +588,7 @@ describe('Beide Korpora: Verweise mit eigenen lokalen Kindern (Issue 0150, Krite
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// B — das Invariante, ein Fall je Vorkommen (Issue-Kriterien 1, 3 und 5).
+// B — the invariant, one case per occurrence (issue criteria 1, 3 and 5).
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Das Invariante: jedes Vorkommen bekommt einen Slot fuer jedes eigene lokal deklarierte Kind', () => {
@@ -556,8 +596,8 @@ describe('Das Invariante: jedes Vorkommen bekommt einen Slot fuer jedes eigene l
     const reduced = REDUCED_BY_KEY.get(`${occurrence.file}::${occurrence.id}`);
     expect(reduced, `Kein reduziertes Ergebnis fuer ${occurrence.file}::${occurrence.id}`).toBeDefined();
 
-    // Selbstcheck: die Pfad-Arithmetik hat tatsaechlich den Rahmen dieses
-    // Vorkommens getroffen — sonst waeren die folgenden Kind-Pruefungen wertlos.
+    // Self-check: the path arithmetic actually hit this occurrence's frame —
+    // otherwise the child checks below would be worthless.
     expect(
       reduced.frameDefId,
       `Rahmen ${occurrence.id} (${occurrence.name}) in ${occurrence.file} liegt nicht am erwarteten Pfad`,
@@ -578,8 +618,8 @@ describe('Das Invariante: jedes Vorkommen bekommt einen Slot fuer jedes eigene l
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// C — die beiden benannten Faelle aus Inkrement 1, gegen den definitiven
-// Empire-Katalog (issue Log, dritter Punkt).
+// C — the two named cases from increment 1, against the definitive Empire
+// catalogue (issue Log, third point).
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
@@ -632,13 +672,20 @@ describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// D — die Buecher (Issue-Kriterium 2 des Inkrements).
+// D — the books (issue criterion 2 of the increment).
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl', () => {
   it('erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 149', () => {
+    // DERIVED_TOTAL: the pre-classification tally (PER_FILE_COUNTS, itself
+    // corpus-derived, and cross-checked above against the independent
+    // selector-based tally). ALL_RECORDED.length + ALL_OCCURRENCES.length: the
+    // sum of the two books that classification produces from that tally.
+    // EXPECTED_PER_FILE_COUNTS: the frozen table from the issue, independent
+    // of both.
     expect(DERIVED_TOTAL).toBe(149);
     expect(ALL_RECORDED.length + ALL_OCCURRENCES.length).toBe(DERIVED_TOTAL);
+    expect(DERIVED_TOTAL).toBe(Object.values(EXPECTED_PER_FILE_COUNTS).reduce((sum, count) => sum + count, 0));
   });
 
   it('jeder erfasste (nicht pruefbare) Eintrag traegt einen nicht-leeren Grund, eine Datei und eine Id', () => {
@@ -649,23 +696,24 @@ describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl',
     }
   });
 
-  // Heute ist diese VORKOMMEN-Ebene leer: das ist der Zustand, den das
-  // gemeinsame Laden aller Kataloge einer Korpus-Abhaengigkeit erkauft (siehe
-  // Dateikopf), keine Behauptung, dass ein nicht pruefbares Vorkommen ein
-  // Fehlschlag waere — ein kuenftiger Eintrag wird hier mit seinem Grund
-  // vollstaendig ausgegeben. Das KIND-Buch — die verschatteten Kinder
-  // einzelner geprueft nicht pruefbarer Vorkommen — schliesst separat unten.
+  // Today this OCCURRENCE level is empty: that is the state loading every
+  // catalogue of a corpus together (see the file header) buys, not a claim
+  // that an unaddressable occurrence would be a failure — a future entry
+  // prints here in full, with its reason. The CHILD book — the shadowed
+  // children of individually addressable occurrences — closes separately
+  // below.
   it('KONTROLLE: die Liste der nicht pruefbaren Vorkommen (Ebene der Vorkommen selbst) ist heute leer', () => {
     expect(ALL_RECORDED).toEqual([]);
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// D2 — das Kind-Buch: die hergeleitete Kinderzahl schliesst separat von der
-// Vorkommen-Ebene oben, weil ein Vorkommen selbst pruefbar sein kann, waehrend
-// EINZELNE seiner Kinder — weil sie eine Zielidentitaet mit einem
-// Geschwisterkind teilen — nicht einzeln, sondern nur als Gruppe geprueft
-// werden (siehe `groupByTargetIdentity`).
+// D2 — the child book: the derived child count closes separately from the
+// occurrence level above, because an occurrence can itself be addressable
+// while INDIVIDUAL children of its closure — because they share a target
+// identity with a child reached from a different group of the same closure,
+// neither siblings nor both declared on the link itself — are not addressed
+// individually, only as a group (see `groupByTargetIdentity`).
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = hergeleitete Kinderzahl', () => {
@@ -674,10 +722,12 @@ describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = herge
   });
 
   it('die Kind-Buecher schliessen: einzeln geprueft plus verschattet ergibt die hergeleitete Kinderzahl', () => {
-    const individuallyAsserted = DERIVED_CHILD_TOTAL - ALL_SHADOWED.length;
-    expect(individuallyAsserted).toBe(754);
+    // INDIVIDUALLY_ASSERTED_CHILDREN is counted from the group structure
+    // itself (a size-1 target-identity group), not from a subtraction of the
+    // shadowed count against the derived total.
+    expect(INDIVIDUALLY_ASSERTED_CHILDREN).toBe(754);
     expect(ALL_SHADOWED).toHaveLength(6);
-    expect(individuallyAsserted + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
+    expect(INDIVIDUALLY_ASSERTED_CHILDREN + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
   });
 
   it('KONTROLLE: bei genau drei Vorkommen loesen zwei Kinder der Huelle auf dasselbe geteilte Ziel auf — die verschatteten Kinder sind namentlich erfasst', () => {
@@ -705,11 +755,11 @@ describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = herge
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// E — Wache: kein Zweig eines der 15 Rosters wurde durch eine unaufloesbare
-// Definition still aus dem Baum genommen (das wuerde die Pfade seiner
-// Geschwister verschieben). Andere Diagnose-Arten (z. B. danglingModifierTarget,
-// unresolvedBudgetLimit) sind im Korpus erwartet und haben mit diesem
-// Invariant nichts zu tun — sie werden hier nicht geprueft.
+// E — guard: no branch of any of the 15 rosters was silently dropped from the
+// tree by an unresolvable definition (that would shift its siblings' paths).
+// Other diagnostic kinds (e.g. danglingModifierTarget, unresolvedBudgetLimit)
+// are expected in the corpus and have nothing to do with this invariant —
+// they are not checked here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Wache: keine unaufloesbare Definition in einem der 15 Rosters', () => {
