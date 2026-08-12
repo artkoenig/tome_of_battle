@@ -228,6 +228,88 @@
             "summary": "Researched increment 2 of issue 0150: the corpus still yields exactly 149 link-local-children occurrences across the 15 catalogue files and none in the two game-system files, and a prototype of the widened check passes all 149 in 14.5 s by loading one prepared dataset per corpus (which resolves the Mercenaries library outright, so nothing is unaddressable) and matching a child slot by defId or targetDefId — matching by defId alone misses three Forces of Chaos cases where the catalogue itself declares two links onto the same War Banner entry."
           },
           "prompt": "Issue directory: docs/issues/0150-corpus-invariant-for-link-local-children\nThis increment is worked on its own branch: `claude/evaluator-kampagne-lucke-ajvfad--INC-2`, off `claude/evaluator-kampagne-lucke-ajvfad`.\nBefore anything else, on `claude/evaluator-kampagne-lucke-ajvfad`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 claude/evaluator-kampagne-lucke-ajvfad--INC-2`, commit that state change and push `claude/evaluator-kampagne-lucke-ajvfad`. Then create the branch with `git checkout -b claude/evaluator-kampagne-lucke-ajvfad--INC-2`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0150-corpus-invariant-for-link-local-children/issue.md one increment at a time, and increment 2 is yours:\n  All 149 occurrences across both corpora, with every unaddressable one accounted for — The check spans both corpora and all 15 catalogue files, and its books close: every occurrence it cannot assert is recorded with its reason, and recorded plus checked equals the count the corpus itself yields.\nWhat it has to satisfy:\n  - The check covers every occurrence in all 15 catalogue files of both corpora — src/evaluator/__fixtures__/whfb6-definitive/ and src/__fixtures__/whfb6/ — and the total is re-derived from the corpus rather than taken from the issue's table; where the re-derived total differs from 149, the check pins the derived number and the difference is reported (issue criterion 2).\n  - Every occurrence the check cannot assert — no roster can legally hold the link, its carrier is not reachable from a force, or its target resolves only through a catalogue the dataset does not load — is recorded with its reason instead of being silently skipped (issue criterion 2).\n  - The recorded count plus the checked count equals the derived total, asserted by the check itself rather than stated in prose (issue criterion 2).\n  - Cross-catalogue reachability is handled explicitly: INC-1 loaded one catalogue and left its Mercenaries catalogueLink unresolved, and this increment either loads the dependencies or records the occurrences that need them as unaddressable with that reason (issue criterion 2).\n  - The existence-only assertion and the facade-only access of INC-1 hold unchanged for every added occurrence (issue criteria 1 and 3).\n  - Each catalogue is prepared at most once per run, per the memoisation pattern src/evaluator/CLAUDE.md prescribes, and npx vitest run src/evaluator stays inside the suite's timeout with the wall time reported (issue criterion 5).\nDeliberately not yours, and not a gap — a later increment takes each of these: The campaign's books, its stated limit, and the issue's own record.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 research:INC-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 research:INC-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:INC-2.0",
+          "at": "2026-08-12T08:00:29.437Z",
+          "return": {
+            "cases": [
+              {
+                "case": "A1 KONTROLLE: the derived per-file count map deep-equals the frozen table from the issue.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "KONTROLLE: die pro Datei hergeleitete Anzahl entspricht der eingefrorenen Tabelle aus Issue 0150 (149 insgesamt, aus dem Korpus selbst hergeleitet)",
+                "demands": "PER_FILE_COUNTS, computed by scanning both corpora's raw entryLink elements at module top level, deep-equals the 15-entry table from the issue's intent section (EXPECTED_PER_FILE_COUNTS in the file), with a message stating the numbers are re-derived rather than assumed.",
+                "got": "Passes: no production code in this increment (behaviour already shipped by PR #214), so the case pins a fact rather than pending one. `npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js` exit 0."
+              },
+              {
+                "case": "A2 KONTROLLE: the derived total is 149, and the count of .cat files that contributed is 15.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "KONTROLLE: die hergeleitete Gesamtzahl ist 149, aus 15 beitragenden Dateien",
+                "demands": "DERIVED_TOTAL (checked + recorded) equals 149, and CONTRIBUTING_FILES has length 15.",
+                "got": "Passes: same reason as A1 — the derivation matched the researcher's own throwaway-script measurement (149, 15 files) before this file was written."
+              },
+              {
+                "case": "A3 KONTROLLE: both .gst files hold 0 entryLinks with own local children.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "KONTROLLE: keine der beiden .gst-Dateien haelt einen Verweis mit eigenen lokalen Kindern",
+                "demands": "For each of the two corpora's .gst documents, the count of entryLink elements with own local children is 0.",
+                "got": "Passes: verified independently (67 and 48 total entryLinks in the two .gst files, 0 with own children in either)."
+              },
+              {
+                "case": "B one case per occurrence: the frame self-check, then every expected child has a matching slot (existence only, by defId or targetDefId).",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "'$corpus :: $file :: Verweis $id ($name) bekommt einen Slot fuer jedes eigene lokal deklarierte Kind' (it.each over all 149 derived occurrences)",
+                "demands": "For every one of the 149 occurrences: the report's capability at the computed frame path carries the occurrence's frameId (else the case fails with the computed path in the message); then for every expected child, some slot exactly one level under that path matches by defId or by targetDefId. Nothing else (isHidden, effectiveMin/Max, order, anchorKind) is asserted. Covers all the edges the plan names by construction: root-level links, 3-deep links, the two Mercenaries occurrences rooted on a sharedSelectionEntry, the 18 occurrences whose closure resolves only through the Mercenaries library, and the 1-child vs 16-child cases.",
+                "got": "Passes for all 149: cross-checked against a throwaway node script run outside the suite before writing the file (0 frame mismatches, 0 missing-child slots, 0 UNRESOLVED_DEFINITION diagnostics, across both corpora, wall time ~14 s for the engine passes alone). `npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js` reports all 149 generated cases green."
+              },
+              {
+                "case": "C1 named case: Captain -> Empire Warhorse -> Barding, exact branch and expected id, slot exists.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "Captain -> Empire Warhorse -> Barding: der Verweis auf das geteilte Ross traegt seine eigene Barding-Option",
+                "demands": "branch === ['6686-1f55-dee3-1bcf','f817-432b-7c1a-a8ca'], expected ids === ['0535-f68e-b9bc-749b'], and the Barding slot exists under the Warhorse frame.",
+                "got": "Passes: verified against the Empire (definitive) fixture directly."
+              },
+              {
+                "case": "C2 named case: Captain -> Battle Standard Bearer -> Magic banners, 16 children (not INC-1's 12) with the four Relics-of-Lustria banners included, every one has a slot.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "Captain -> Battle Standard Bearer -> Magic Banners: der Verweis traegt alle 16 lokal deklarierten Banner (nicht 12 — Mercenaries ist jetzt geladen)",
+                "demands": "branch === ['6686-1f55-dee3-1bcf','c9fc-265e-8fa8-b814'], expected has length 16 and contains at least Imperial Banner, War Banner, Banner of Middenheim and the four Relics-of-Lustria banners, and every one of the 16 has a slot.",
+                "got": "Passes: closure length is exactly 16 once Mercenaries is loaded in the same prepareDataset call as the Empire catalogue, which is what this increment changes from INC-1's single-catalogue dataset."
+              },
+              {
+                "case": "D1 the books close: recorded.length + checked.length === derivedTotal, and derivedTotal === 149, both asserted by the check itself.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 149",
+                "demands": "DERIVED_TOTAL === 149 and ALL_RECORDED.length + ALL_OCCURRENCES.length === DERIVED_TOTAL, both as explicit expect() calls in the same case.",
+                "got": "Passes: 0 + 149 === 149 === 149."
+              },
+              {
+                "case": "D2 every recorded entry carries a non-empty reason and a file and an id.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "jeder erfasste (nicht pruefbare) Eintrag traegt einen nicht-leeren Grund, eine Datei und eine Id",
+                "demands": "For every entry in the RECORDED list, file, id and reason are all truthy.",
+                "got": "Passes vacuously today (list is empty) but the detector logic runs unconditionally over all three unaddressable-reason branches for every one of the 149 occurrences, so a future recorded entry is caught."
+              },
+              {
+                "case": "D3 KONTROLLE: the recorded list is empty today, deep-equal against [].",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "KONTROLLE: die Liste der nicht pruefbaren Vorkommen ist heute leer",
+                "demands": "ALL_RECORDED deep-equals []. Comment notes this is the state bought by loading all catalogues of a corpus together, not a claim that a recorded entry would be a failure.",
+                "got": "Passes: confirmed empty, matching the researcher's own pre-check that all three detector reasons are empty on today's corpus."
+              },
+              {
+                "case": "E1 KONTROLLE: no file's report carries an UNRESOLVED_DEFINITION diagnostic, over all 15 files, asserted as a deep-equal against an all-zero map.",
+                "file": "src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "testName": "KONTROLLE: kein Bericht traegt eine UNRESOLVED_DEFINITION-Diagnose",
+                "demands": "A per-file map of UNRESOLVED_DEFINITION diagnostic counts, one entry per of the 15 .cat files, deep-equals an all-zero map of the same 15 keys. Other diagnostic kinds (danglingModifierTarget, unresolvedBudgetLimit) are not asserted.",
+                "got": "Passes: all 15 counts are 0."
+              }
+            ],
+            "openQuestions": [],
+            "questions": [],
+            "summary": "Rewrote src/evaluator/evaluator.corpusLinkLocalChildren.test.js from INC-1's single-catalogue check (35 cases) into the corpus-wide invariant the plan specifies: 158 cases spanning both corpora and all 15 catalogue files, one prepareDataset per corpus so cross-catalogue targets (Mercenaries) resolve, plain-data derivation with three unaddressable-reason detectors (all empty today), and the books-close identity asserted in the file itself. This increment carries no production code, so all 158 cases pass rather than fail: PR #214's fix already covers every derived occurrence. `npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js` -- 158 tests, exit 0, ~7.5s test time (~15.5s wall incl. transform/collect). `npx vitest run src/evaluator` (the judged command) -- 1683 tests, exit 0, 68.0s wall, within the suite's timeout. Also corrected src/evaluator/CLAUDE.md's corpus-invariant-check paragraph: the module-top derivation is no longer 'cheap' at 17 documents (~6s measured), elements must be dropped once the derivation returns rather than retained (1.6GB peak measured otherwise), and a corpus-wide check loads one dataset per corpus rather than per catalogue."
+          },
+          "prompt": "Turn the researcher's test plan into failing tests. You have never seen an\nimplementation, so your tests encode what was asked for and cannot inherit an\nimplementer's misreading.\n\nIssue directory: docs/issues/0150-corpus-invariant-for-link-local-children\nThis increment is worked on branch `claude/evaluator-kampagne-lucke-ajvfad--INC-2`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-kampagne-lucke-ajvfad--INC-2` and check it out; if the remote does not have it, create it from `claude/evaluator-kampagne-lucke-ajvfad` and push it with `-u`.\nThis run works docs/issues/0150-corpus-invariant-for-link-local-children/issue.md one increment at a time, and increment 2 is yours:\n  All 149 occurrences across both corpora, with every unaddressable one accounted for — The check spans both corpora and all 15 catalogue files, and its books close: every occurrence it cannot assert is recorded with its reason, and recorded plus checked equals the count the corpus itself yields.\nWhat it has to satisfy:\n  - The check covers every occurrence in all 15 catalogue files of both corpora — src/evaluator/__fixtures__/whfb6-definitive/ and src/__fixtures__/whfb6/ — and the total is re-derived from the corpus rather than taken from the issue's table; where the re-derived total differs from 149, the check pins the derived number and the difference is reported (issue criterion 2).\n  - Every occurrence the check cannot assert — no roster can legally hold the link, its carrier is not reachable from a force, or its target resolves only through a catalogue the dataset does not load — is recorded with its reason instead of being silently skipped (issue criterion 2).\n  - The recorded count plus the checked count equals the derived total, asserted by the check itself rather than stated in prose (issue criterion 2).\n  - Cross-catalogue reachability is handled explicitly: INC-1 loaded one catalogue and left its Mercenaries catalogueLink unresolved, and this increment either loads the dependencies or records the occurrences that need them as unaddressable with that reason (issue criterion 2).\n  - The existence-only assertion and the facade-only access of INC-1 hold unchanged for every added occurrence (issue criteria 1 and 3).\n  - Each catalogue is prepared at most once per run, per the memoisation pattern src/evaluator/CLAUDE.md prescribes, and npx vitest run src/evaluator stays inside the suite's timeout with the wall time reported (issue criterion 5).\nDeliberately not yours, and not a gap — a later increment takes each of these: The campaign's books, its stated limit, and the issue's own record.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 research:INC-2.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 tests:INC-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-2 tests:INC-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []

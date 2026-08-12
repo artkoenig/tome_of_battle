@@ -44,10 +44,24 @@ covers.
   `prepareDataset`) builds what is asserted against. See
   `evaluator.corpusLinkLocalChildren.test.js` (Issue 0150) for the pattern:
   index every element with an `id` from the fixture documents, derive the
-  occurrences from that index at module top level (cheap — only the engine's
-  own `prepareDataset` needs the `beforeAll` memoisation), and read the
-  report through the same `capabilities` path-schema every other real-fixture
-  file uses (`evaluate`'s JSDoc, `evaluator.js`).
+  occurrences from that index at module top level, and read the report
+  through the same `capabilities` path-schema every other real-fixture file
+  uses (`evaluate`'s JSDoc, `evaluator.js`). Module-top derivation is cheap
+  for a handful of documents but not for a whole corpus — 17 documents across
+  two fixture directories measured ~6 s of parsing alone before the engine
+  even runs; only the engine's own `prepareDataset` + `evaluate` calls need
+  the `beforeAll` memoisation, but a corpus-scale derivation is not free
+  either. Build the id index and derive from it inside the same function and
+  let both go out of scope once it returns — only plain data (strings,
+  arrays, plain objects) may survive into the module-level constants a case
+  reads, never a DOM element: retaining elements pins every parsed document
+  in memory for the life of the file (1.6 GB peak measured for the two whfb6
+  corpora together). A corpus-wide check loads one dataset PER CORPUS — one
+  `prepareDataset({ gameSystem, catalogues: [...all of that corpus's .cat
+  texts] })` — rather than one per catalogue, so a link whose own children
+  resolve only through another catalogue of the same corpus (a
+  `catalogueLink`, e.g. a library such as Mercenaries) is addressable; a
+  single-catalogue dataset leaves such a target unresolved.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,
