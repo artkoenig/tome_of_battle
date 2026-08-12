@@ -10,16 +10,21 @@
  * Domaenenregel „Kategorie-Ziel armeeweit, Eintrags-Ziel pro Kontingent"
  * (BSData §7.7) sitzt an genau dieser Stelle. Seit Issue 086 zaehlt auch
  * `scope="unit"` dazu: der Rahmen ist die umschliessende Einheit — der naechste
- * Vorfahre (den Knoten eingeschlossen) mit rohem `type="unit"`.
+ * Vorfahre (den Knoten eingeschlossen) mit rohem `type="unit"`; seit Issue 081
+ * ebenso `scope="model-or-unit"`, derselbe Rahmen eine Typstufe weiter gefasst
+ * ({@link nearestAncestorOfRawTypes}).
  *
- * Drei Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
+ * Vier Rahmen sind **keine Zaehlrahmen** und werden deshalb vor jeder Rahmen- und
  * Indexarbeit beantwortet: das Feld `limit::<costTypeId>` liest die eingestellte
  * Kostengrenze aus dem Budget und beantwortet `scope="roster"` wie
  * `scope="force"` mit derselben Zahl ({@link resolveLimitValue}, Issue 0147),
  * `scope="primary-catalogue"` prueft die Identitaet des Armeebuchs, aus dem das
  * umschliessende Kontingent stammt ({@link resolvePrimaryCatalogue}, Issue 077),
- * und `scope="ancestor"` prueft die Mitgliedschaft eines Ziels in der strikten
- * Vorfahrenkette der tragenden Auswahl ({@link resolveAncestor}, Issue 086).
+ * `scope="ancestor"` prueft die Mitgliedschaft eines Ziels in der strikten
+ * Vorfahrenkette der tragenden Auswahl ({@link resolveAncestor}, Issue 086), und
+ * `scope="primary-category"` prueft die Identitaet der **primaeren** Kategorie
+ * des naechsten Vorfahren, der ueberhaupt eine traegt
+ * ({@link resolvePrimaryCategory}, Issue 081).
  */
 
 import {
@@ -45,9 +50,13 @@ const EMPTY_PRIMARY_CATALOGUE_INDEX = new Map();
  * Der leere Effektiv-Zustand — geteilt, weil nur gelesen. Ohne mitgegebene
  * Effektiv-Werte traegt kein Knoten Kategorien; die Vorfahrenpruefung des
  * Bezugsrahmens `ancestor` trifft dann nur noch ueber Definitions-Id,
- * Link-Ziel-Id und rohen Typ.
+ * Link-Ziel-Id und rohen Typ, und der Bezugsrahmen `primary-category` bleibt
+ * fail-closed unaufgeloest (kein Knoten traegt eine primaere Kategorie).
  */
-const EMPTY_EFFECTIVE = Object.freeze({ categoryIdsOf: () => [] });
+const EMPTY_EFFECTIVE = Object.freeze({
+  categoryIdsOf: () => [],
+  primaryCategoryIdOf: () => null,
+});
 
 /**
  * Der rohe Eintragstyp, an dem eine Auswahl als **Einheit** erkennbar ist
@@ -55,6 +64,28 @@ const EMPTY_EFFECTIVE = Object.freeze({ categoryIdsOf: () => [] });
  * Zaehlindex Eintraege zaehlbar fuehrt ({@link targetsOf}).
  */
 const UNIT_TYPE = 'unit';
+
+/**
+ * Der rohe Eintragstyp einer **Modell**-Auswahl (`type="model"`, BSData §7.1) —
+ * das zweite Typ-Schluesselwort, das `scope="model-or-unit"` als Rahmen gelten
+ * laesst.
+ */
+const MODEL_TYPE = 'model';
+
+/** Die Typen, die `scope="unit"` als Rahmen gelten laesst. */
+const UNIT_TYPES = Object.freeze([UNIT_TYPE]);
+
+/** Die Typen, die `scope="model-or-unit"` als Rahmen gelten laesst (Issue 081). */
+const MODEL_OR_UNIT_TYPES = Object.freeze([MODEL_TYPE, UNIT_TYPE]);
+
+/**
+ * Die Scopes, deren fehlender Rahmen an einem **synthetischen** Knoten keine
+ * Diagnose wert ist ({@link query}, Issue 086/081): beides Typ-Rahmen, die an
+ * einem engine-erfundenen Anker naturgemaess ins Leere greifen.
+ */
+const SYNTHETIC_EXEMPT_SCOPES = /** @type {ReadonlySet<string>} */ (Object.freeze(
+  new Set([ScopeKeyword.UNIT, ScopeKeyword.MODEL_OR_UNIT]),
+));
 
 /**
  * Buendelt den Auswertungs-Kontext einer Query
@@ -110,25 +141,41 @@ function nearestAncestorWithDefId(node, id) {
 }
 
 /**
- * True, wenn die Definition eines Knotens rohen `type="unit"` traegt. Ein
- * `entryLink` traegt selbst kein solches Attribut — bei ihm zaehlt der rohe Typ
- * seines transitiv aufgeloesten Ziels, dieselbe Erb-Regel, mit der der
- * Zaehlindex Typ-Schluesselwoerter fuehrt ({@link targetsOf}, Issue 078/086).
+ * True, wenn die Definition eines Knotens einen der rohen Typen aus `types`
+ * traegt. Ein `entryLink` traegt selbst kein solches Attribut — bei ihm zaehlt
+ * der rohe Typ seines transitiv aufgeloesten Ziels, dieselbe Erb-Regel, mit der
+ * der Zaehlindex Typ-Schluesselwoerter fuehrt ({@link targetsOf}, Issue
+ * 078/086). `scope="unit"` und `scope="model-or-unit"` teilen sich diese eine
+ * Umsetzung und damit diese eine Erb-Regel; sie unterscheiden sich nur in der
+ * Typmenge.
+ *
+ * @param {object} def
+ * @param {readonly string[]} types
+ * @returns {boolean}
  */
-function isUnitDefinition(def) {
-  if (def?.type === UNIT_TYPE) return true;
-  return def?.kind === DefinitionKind.ENTRY_LINK && def.resolved?.type === UNIT_TYPE;
+function hasRawType(def, types) {
+  if (def?.type !== undefined && def?.type !== null && types.includes(def.type)) return true;
+  return def?.kind === DefinitionKind.ENTRY_LINK
+    && def.resolved?.type !== undefined
+    && def.resolved?.type !== null
+    && types.includes(def.resolved.type);
 }
 
 /**
- * Die **umschliessende Einheit** (`scope="unit"`, Issue 086): der naechste
- * Vorfahre — den Knoten selbst eingeschlossen — mit rohem `type="unit"`.
- * `null`, wenn keiner der Vorfahren eine Einheit ist; die Query bleibt dann
- * fail-closed unaufgeloest statt still zu raten.
+ * Der naechste Vorfahre — den Knoten selbst eingeschlossen — mit einem der rohen
+ * Typen aus `types`: die **umschliessende Einheit** fuer `scope="unit"`
+ * ({@link UNIT_TYPES}, Issue 086), das **naechste Modell oder die naechste
+ * Einheit** fuer `scope="model-or-unit"` ({@link MODEL_OR_UNIT_TYPES}, Issue
+ * 081). `null`, wenn kein Vorfahre passt; die Query bleibt dann fail-closed
+ * unaufgeloest statt still zu raten.
+ *
+ * @param {object} node
+ * @param {readonly string[]} types
+ * @returns {object|null}
  */
-function nearestUnitAncestor(node) {
+function nearestAncestorOfRawTypes(node, types) {
   for (let current = node; current !== null && !current.isRoot; current = current.parent) {
-    if (isUnitDefinition(current.def)) return current;
+    if (hasRawType(current.def, types)) return current;
   }
   return null;
 }
@@ -175,7 +222,9 @@ function resolveSharedFrame(ctx, scope) {
     case ScopeKeyword.SELF:
       return ctx.node;
     case ScopeKeyword.UNIT:
-      return nearestUnitAncestor(ctx.node);
+      return nearestAncestorOfRawTypes(ctx.node, UNIT_TYPES);
+    case ScopeKeyword.MODEL_OR_UNIT:
+      return nearestAncestorOfRawTypes(ctx.node, MODEL_OR_UNIT_TYPES);
     default:
       // Beide ID-Faelle benennen einen **Vorfahren**: eine Eintrags-ID den
       // naechsten mit dieser Definitions-ID, eine Kategorie-ID den naechsten,
@@ -339,6 +388,55 @@ function resolvePrimaryCatalogue(ctx, field, targetId) {
 }
 
 /**
+ * Beantwortet den Bezugsrahmen `primary-category`: **ist die primaere Kategorie
+ * der tragenden Auswahl diese hier?** (Issue 081 — aus den Katalogdaten belegt:
+ * alle 4 Fixture-Vorkommen sind `instanceOf`-Conditions auf einem geteilten
+ * Reittier-Eintrag, `Forces of Chaos (6th definitive edition).cat`, und jede
+ * `childId` benennt eine Kategorie-Id, die die verlinkenden Traeger als
+ * `primary="true"` fuehren oder eben nicht.)
+ *
+ * Er ist — wie `primary-catalogue` — **kein Zaehlrahmen**, sondern eine
+ * Identitaetspruefung, und steht deshalb vor jeder Rahmen- und Indexarbeit und
+ * **unabhaengig von den Flags**: eine primaere Kategorie wird durch eine Instanz
+ * nicht enger. Gesucht ist die primaere Kategorie des naechsten Vorfahren — den
+ * Knoten selbst eingeschlossen, die definitionslose Wurzel ausgenommen —, der
+ * ueberhaupt eine traegt: der Traeger selbst ist oft ein geteiltes Reittier oder
+ * eine Ausruestung ohne eigene primaere Kategorie, die Regel meint dann die der
+ * umschliessenden Auswahl.
+ *
+ * `targetId === null` (Prozent-Nenner „alles im Rahmen", oder `childId="any"`)
+ * trifft immer: der Rahmen hat genau eine primaere Kategorie. Traegt kein Knoten
+ * der Kette eine, bleibt die Query fail-closed unaufgeloest — es gibt nichts zu
+ * vergleichen. Nur `field="selections"` ist gueltig; anderes Feld →
+ * `unsupportedField` (wie `primary-catalogue`).
+ *
+ * @returns {number} 0 oder 1.
+ */
+function resolvePrimaryCategory(ctx, field, targetId) {
+  if (field.kind !== CountedFieldKind.SELECTION_COUNT) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_FIELD, { field }));
+    return 0;
+  }
+  let primaryCategoryId = null;
+  for (let current = ctx.node; current !== null && !current.isRoot; current = current.parent) {
+    const candidate = ctx.effective.primaryCategoryIdOf(current);
+    if (candidate !== null && candidate !== undefined) {
+      primaryCategoryId = candidate;
+      break;
+    }
+  }
+  if (primaryCategoryId === null) {
+    ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, {
+      scope: ScopeKeyword.PRIMARY_CATEGORY,
+      targetId,
+    }));
+    return 0;
+  }
+  if (targetId === null || targetId === undefined) return 1;
+  return targetId === primaryCategoryId ? 1 : 0;
+}
+
+/**
  * Beantwortet den Bezugsrahmen `ancestor`: **loest ein Vorfahre der tragenden
  * Auswahl auf `targetId` auf?** (Issue 086, Kriterium 2 — aus den Katalogdaten
  * belegt: alle 10 Fixture-Vorkommen sind `instanceOf`-Conditions, und jede
@@ -424,12 +522,20 @@ export function query(ctx, field, scope, targetId, flags) {
     return resolveAncestor(ctx, field, targetId);
   }
 
+  // Und die primaere Kategorie ist wieder eine Identitaetspruefung — vor jeder
+  // Rahmen-/Index-Arbeit und unabhaengig von den Flags
+  // ({@link resolvePrimaryCategory}, Issue 081).
+  if (scope === ScopeKeyword.PRIMARY_CATEGORY) {
+    return resolvePrimaryCategory(ctx, field, targetId);
+  }
+
   const effectiveFlags = normalizeFlags(flags);
   const frame = resolveFrame(ctx, scope, targetId, effectiveFlags);
   if (frame === null || frame === undefined) {
     // Fail-closed: Zaehlwert 0, sichtbar gemacht per Diagnose. Eine Ausnahme
-    // fuer den `unit`-Rahmen an **synthetischen** Knoten (Phantome und Anker,
-    // Issue 086): ein Angebots-Anker ist eine engine-erfundene Bewertungs-
+    // fuer die Typ-Rahmen `unit`/`model-or-unit` an **synthetischen** Knoten
+    // (Phantome und Anker, {@link SYNTHETIC_EXEMPT_SCOPES}, Issue 086/081): ein
+    // Angebots-Anker ist eine engine-erfundene Bewertungs-
     // position (ADR-0035, materialisiert auch Verstecktes) — fehlt IHM die
     // umschliessende Einheit, ist das kein Datenproblem, sondern ein Artefakt
     // der Verankerung. Reale Kataloge legen solche Eintraege versteckt auf
@@ -437,7 +543,7 @@ export function query(ctx, field, scope, targetId, flags) {
     // Einheiten; die Diagnose bliebe reines Rauschen (Kriterium 3). An einer
     // **realen** Auswahl ausserhalb jeder Einheit bleibt sie bestehen. Der
     // Zaehlwert ist in beiden Faellen 0 — kein Modifikator feuert.
-    if (scope !== ScopeKeyword.UNIT || ctx.node.isPhantom !== true) {
+    if (!SYNTHETIC_EXEMPT_SCOPES.has(scope) || ctx.node.isPhantom !== true) {
       ctx.diagnostics.push(diagnostic(DiagnosticKind.UNRESOLVED_SCOPE, { scope, targetId }));
     }
     return 0;
