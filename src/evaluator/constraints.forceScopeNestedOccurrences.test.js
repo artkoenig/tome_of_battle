@@ -171,7 +171,7 @@ describe('Fall 4: shared="false" bleibt je Instanz gebunden', () => {
   });
 });
 
-// ── Fixture 3 (Fall 5): geklommene Kindkosten bleiben von der eigenen Flagge gesperrt ──
+// ── Fixture 3 (Fall 5): geklommene Kindkosten zaehlen im Rahmen des Traegers ──
 
 const BANNER_LINK_ID = 'link-banner';
 const SHARED_BANNER_ID = 'shared-banner';
@@ -184,7 +184,8 @@ const BANNER_FORCE_MAX_ID = 'max-zehn-banner-je-kontingent';
 // Ein geteilter Eintrag "Banner" traegt eigene Kosten von 10 und eine
 // force-Grenze auf genau diese Kostenart (max 10, geteilt,
 // includeChildSelections="false"). Im Roster traegt seine Instanz ein
-// verschachteltes Kind mit eigenen Kosten von 5 in derselben Kostenart.
+// verschachteltes Kind mit eigenen Kosten von 5 in derselben Kostenart — ein
+// direktes Kind des Traegers, das die Flagge nicht sperrt (§7.6/§9.4).
 const SHARED_BANNER_FORCE_SCOPE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="cat-shared-banner-force-scope" name="Shared Banner Force Scope Catalogue">
     <forceEntries>
@@ -216,8 +217,8 @@ const SHARED_BANNER_FORCE_SCOPE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </sharedSelectionEntries>
   </catalogue>`;
 
-describe('Fall 5: geklommene Kindkosten bleiben von der geschriebenen Flagge gesperrt', () => {
-  it('feuert die force-Grenze NICHT, wenn nur die eigenen Kosten des Banners (10) zaehlen, nicht die Kosten seines Kindes (5) dazu', () => {
+describe('Fall 5: die Kosten des direkten Kindes zaehlen in den Rahmen des Traegers', () => {
+  it('feuert die force-Grenze mit Ist 15 (Banner 10 plus sein direktes Kind 5) gegen 10', () => {
     const report = evaluate(SHARED_BANNER_FORCE_SCOPE_XML, {
       forces: [{
         defId: FORCE_ID,
@@ -234,6 +235,10 @@ describe('Fall 5: geklommene Kindkosten bleiben von der geschriebenen Flagge ges
       }],
     });
 
-    expect(violationsOf(report, BANNER_FORCE_MAX_ID), 'Ist muss 10 (nur die eigenen Kosten des Banners) sein, nicht 15').toHaveLength(0);
+    // §7.6/§9.4: gezaehlt werden die Auswahlen unterhalb des Traegers;
+    // `includeChildSelections="false"` liest eingeschraenkt, nicht leer, und sperrt
+    // erst die Ebene unter dem direkten Kind.
+    expect(violationsOf(report, BANNER_FORCE_MAX_ID)[0], 'Ist muss 15 sein: 10 am Banner plus 5 an seinem Kind')
+      .toMatchObject({ actual: BANNER_OWN_COST + BANNER_CHILD_COST, bound: BANNER_OWN_COST });
   });
 });

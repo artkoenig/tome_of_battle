@@ -69,10 +69,19 @@ function bucketFor(crossedSelection, crossedForce) {
 
 /**
  * Ein leerer Zaehler: Anzahl und **eigene** Kostensummen je Kostenart, dazu die
- * getrennt gefuehrten **aufgestiegenen** Nachfahren-Kosten (Issue 0113).
+ * getrennt gefuehrten **aufgestiegenen** Nachfahren-Kosten (Issue 0113) — und
+ * zwar nach Abstand zum Traeger getrennt: `climbedCostSums` traegt die Kosten
+ * seiner **direkten** Kinder, `nestedClimbedCostSums` die aus tieferen Ebenen.
+ * Nur die tieferen haengen an `includeChildSelections` ({@link combineBuckets}).
  */
 function emptyTally() {
-  return { selectionCount: 0, forceCount: 0, costSums: new Map(), climbedCostSums: new Map() };
+  return {
+    selectionCount: 0,
+    forceCount: 0,
+    costSums: new Map(),
+    climbedCostSums: new Map(),
+    nestedClimbedCostSums: new Map(),
+  };
 }
 
 /** Ein leerer Schluessel-Eintrag: ein Zaehler je Beitrags-Eimer. */
@@ -176,14 +185,24 @@ function carrierTargetsOf(node, effective) {
 
 /**
  * Der reine **Kostenanteil** eines Beitrags — das, was unter der Ziel-ID eines
- * Vorfahren aufsteigt, verbucht im getrennten `climbedCostSums`-Fach (Issue
- * 0113). Die Selektions- und Kontingentanzahl bleibt zurueck: unter der
- * Traeger-ID steht der Traeger selbst, nicht zusaetzlich jeder seiner
- * Nachfahren. (Wie viele Auswahlen unterhalb eines Traegers stehen, ist eine eigene
- * Frage — Issue 083 — und wird hier nicht mit beantwortet.)
+ * Vorfahren aufsteigt, verbucht im getrennten Aufstiegs-Fach (Issue 0113). Die
+ * Selektions- und Kontingentanzahl bleibt zurueck: unter der Traeger-ID steht der
+ * Traeger selbst, nicht zusaetzlich jeder seiner Nachfahren. (Wie viele Auswahlen
+ * unterhalb eines Traegers stehen, ist eine eigene Frage — Issue 083 — und wird
+ * hier nicht mit beantwortet.)
+ *
+ * `nested` sagt, ob der Beitragende ein **tiefer** liegender Nachfahre des
+ * Traegers ist statt eines seiner direkten Kinder; nur dann haengt sein Anteil an
+ * `includeChildSelections`.
  */
-function costsOnly(contribution) {
-  return { selectionCount: 0, forceCount: 0, costSums: new Map(), climbedCostSums: contribution.costSums };
+function costsOnly(contribution, { nested }) {
+  return {
+    selectionCount: 0,
+    forceCount: 0,
+    costSums: new Map(),
+    climbedCostSums: nested ? new Map() : contribution.costSums,
+    nestedClimbedCostSums: nested ? contribution.costSums : new Map(),
+  };
 }
 
 /** Addiert einen Beitrag auf einen Zaehler. */
@@ -195,6 +214,9 @@ function addTally(tally, contribution) {
   }
   for (const [costTypeId, value] of contribution.climbedCostSums ?? []) {
     tally.climbedCostSums.set(costTypeId, (tally.climbedCostSums.get(costTypeId) ?? 0) + value);
+  }
+  for (const [costTypeId, value] of contribution.nestedClimbedCostSums ?? []) {
+    tally.nestedClimbedCostSums.set(costTypeId, (tally.nestedClimbedCostSums.get(costTypeId) ?? 0) + value);
   }
 }
 
@@ -232,15 +254,22 @@ function indexNodeContribution(tallies, node, effective) {
   const contribution = contributionOf(node, effective);
   const targets = targetsOf(node, effective);
   const ownTargets = new Set(targets);
-  // Die Ziele der bereits durchlaufenen Vorfahren; sie waechst mit jedem Aufstieg.
-  const carrierTargets = new Set();
-  const climbingCosts = costsOnly(contribution);
+  // Die Ziele der bereits durchlaufenen Vorfahren; sie waechst mit jedem Aufstieg —
+  // getrennt nach dem Abstand zum Beitragenden. Der **erste** durchlaufene Vorfahre
+  // ist sein Elternteil: unter dessen Zielen ist er ein direktes Kind. Jeder weitere
+  // steht hoeher, dort ist er ein tiefer liegender Nachfahre.
+  const directCarrierTargets = new Set();
+  const nestedCarrierTargets = new Set();
+  const directClimbingCosts = costsOnly(contribution, { nested: false });
+  const nestedClimbingCosts = costsOnly(contribution, { nested: true });
   const carriesCosts = contribution.costSums.size > 0;
   let crossedSelection = false;
   let crossedForce = false;
   let frame = node;
   let isImmediate = true; // der Knoten selbst: keine Grenze dazwischen
+  let framesAboveNode = -1; // 0 = der Knoten selbst, 1 = sein Elternteil, …
   while (frame !== null) {
+    framesAboveNode += 1;
     const forceCrossedForFrame = frame.isRoot ? false : crossedForce;
     const bucket = bucketFor(crossedSelection, forceCrossedForFrame);
     const frameKey = frameKeyOf(frame);
@@ -249,8 +278,23 @@ function indexNodeContribution(tallies, node, effective) {
     // Definition. Ein Ziel, unter dem der Knoten schon selbst zaehlt, bleibt
     // draussen: seine Kosten stuenden sonst doppelt in derselben Summe.
     if (carriesCosts && !isImmediate && !frame.isRoot) {
+      // Beim ersten Vorfahren (dem Elternteil) sind es direkte Kinder-Kosten,
+      // darueber tiefer liegende. Ein Ziel, das schon als direkt gebucht ist —
+      // dieselbe Id an zwei Vorfahren derselben Kette —, bleibt direkt: die
+      // naeher liegende Lesart ist die weitere.
+      const isParentFrame = framesAboveNode === 1;
+      // Die Gruppen-Ids des Elternteils sind **keine** Traeger auf Kind-Abstand:
+      // gegenueber der Gruppe steht der Beitragende eine Ebene tiefer, denn er
+      // haengt an ihrem Member, nicht an ihr. Der Member selbst zaehlt dort ueber
+      // den gewoehnlichen Weg ({@link targetsOf} fuehrt seine `memberGroupIds`).
+      const parentGroupIds = new Set(frame.memberGroupIds ?? []);
       for (const carrierTargetId of carrierTargetsOf(frame, effective)) {
-        if (!ownTargets.has(carrierTargetId)) carrierTargets.add(carrierTargetId);
+        if (ownTargets.has(carrierTargetId)) continue;
+        if (isParentFrame && !parentGroupIds.has(carrierTargetId)) {
+          directCarrierTargets.add(carrierTargetId);
+        } else if (!directCarrierTargets.has(carrierTargetId)) {
+          nestedCarrierTargets.add(carrierTargetId);
+        }
       }
     }
     for (const targetId of targets) {
@@ -299,8 +343,11 @@ function indexNodeContribution(tallies, node, effective) {
     // getrennten `climbedCostSums`-Fach, dessen Lese-Gate `includeClimbedCosts`
     // ist (Vorgabe: `includeChildSelections` — Issue 091, Runde 1; Issue 0113).
     const climbBucket = bucketFor(true, forceCrossedForFrame);
-    for (const carrierTargetId of carrierTargets) {
-      addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, climbingCosts);
+    for (const carrierTargetId of directCarrierTargets) {
+      addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, directClimbingCosts);
+    }
+    for (const carrierTargetId of nestedCarrierTargets) {
+      addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, nestedClimbingCosts);
     }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
@@ -335,11 +382,19 @@ function combineBuckets(buckets, includeChildSelections, includeChildForces, inc
   if (includeChildSelections) addTally(result, buckets[Bucket.SELECTION]);
   if (includeChildForces) addTally(result, buckets[Bucket.FORCE]);
   if (includeChildSelections && includeChildForces) addTally(result, buckets[Bucket.BOTH]);
-  if (includeClimbedCosts) {
-    const climbedSources = [buckets[Bucket.SELECTION]];
-    if (includeChildForces) climbedSources.push(buckets[Bucket.BOTH]);
-    for (const source of climbedSources) {
-      for (const [costTypeId, value] of source.climbedCostSums) {
+  const climbedSources = [buckets[Bucket.SELECTION]];
+  if (includeChildForces) climbedSources.push(buckets[Bucket.BOTH]);
+  for (const source of climbedSources) {
+    // Die Kosten der **direkten** Kinder des Traegers gehoeren unbedingt in seine
+    // Summe: „gezaehlt werden die Auswahlen unterhalb des Traegers"
+    // (`docs/battlescribe-data-format.md` §7.6/§9.4), und `includeChildSelections`
+    // entscheidet allein ueber die *verschachtelten* — „false" liest eingeschraenkt,
+    // nicht leer. Ohne das meldete das Punkte-Budget eines Magiegegenstands-Blocks
+    // 0 von 50, waehrend Gegenstaende darin haengen.
+    const sums = [source.climbedCostSums];
+    if (includeClimbedCosts) sums.push(source.nestedClimbedCostSums);
+    for (const costSums of sums) {
+      for (const [costTypeId, value] of costSums) {
         result.costSums.set(costTypeId, (result.costSums.get(costTypeId) ?? 0) + value);
       }
     }
