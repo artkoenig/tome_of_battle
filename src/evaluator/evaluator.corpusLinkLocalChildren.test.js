@@ -255,9 +255,10 @@ function childSlotsAt(report, framePath) {
  * Whether one of `slots` carries one of `ids` as its OWN `defId` — never by
  * `targetDefId`, which is shared across every link that resolves to the same
  * target and would let a slot belonging to a different link satisfy the
- * claim. `ids` holds more than one id only for a group of sibling children
- * that share a target identity (see `groupByTargetIdentity`); for a normal,
- * ungrouped child it is a single-element array.
+ * claim. `ids` holds more than one id only for a group of children of one
+ * occurrence's closure that resolve to the same shared target (see
+ * `groupByTargetIdentity`); for a normal, ungrouped child it is a
+ * single-element array.
  */
 function hasSlotForOneOf(slots, ids) {
   return slots.some(slot => ids.includes(slot.defId));
@@ -265,13 +266,15 @@ function hasSlotForOneOf(slots, ids) {
 
 /**
  * Groups an occurrence's `expected` children by target identity: children
- * that share a non-null `targetId` land in the same group (two `entryLink
- * type="selectionEntry"` siblings resolving to the same shared entry — the
- * corpus has exactly this for three Forces of Chaos occurrences); a child
+ * that share a non-null `targetId` land in the same group. Such children need
+ * not be siblings and need not be declared on the link itself: the corpus has
+ * exactly this for three Forces of Chaos occurrences, where two children
+ * reached through the shared 'Magic Banners' group a979-ec7a-7a45-f11b — from
+ * two different groups within its closure — resolve to the same target. A child
  * with no `targetId` (a plain `selectionEntry`) is always alone in its own
  * group, keyed by its own id. A group of size 1 is asserted by its single id;
  * a group of size > 1 is asserted as "one of these ids has a slot" (the
- * engine gives such a pair a single report slot, and which sibling's id it
+ * engine gives such a pair a single report slot, and which member's id it
  * carries is its own internal choice, not this check's to pin) and every one
  * of its members is recorded as shadowed instead of individually asserted.
  */
@@ -392,7 +395,7 @@ function deriveCorpus(corpusName, dir) {
             linkId: id,
             childId: member.id,
             target: group.sharedTargetId,
-            reason: 'shares its target with a sibling child declared on the same link — only the group as a whole is asserted, not this id individually',
+            reason: 'two children in this occurrence\'s closure resolve to the same shared target — only the group as a whole is asserted, not this id individually',
           });
         }
       }
@@ -677,7 +680,7 @@ describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = herge
     expect(individuallyAsserted + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
   });
 
-  it('KONTROLLE: genau drei Vorkommen deklarieren zwei Kinder auf demselben Ziel — die verschatteten Kinder sind namentlich erfasst', () => {
+  it('KONTROLLE: bei genau drei Vorkommen loesen zwei Kinder der Huelle auf dasselbe geteilte Ziel auf — die verschatteten Kinder sind namentlich erfasst', () => {
     const FILE = 'Forces of Chaos (6th definitive edition).cat';
     const TARGET = 'f327-567f-ef99-0403';
     expect(ALL_SHADOWED).toEqual([
