@@ -541,7 +541,7 @@
       "depth": "full",
       "status": "todo",
       "note": "Unchanged in shape since the last re-cut and still the run's only open increment: which key a covered-cells entry carries when what it attests is not a cell at all is still an open decision, the issue leaves the placement of the documented limit open with 'and/or', and this is the only increment that runs the full npm test / lint / typecheck gate. Three items grew on it out of INC-2: the entry now has concrete figures to record (149 / 760 / 754 + 6), and the two observations the INC-2 reviews raised without making them findings — the tautological books-close identity and the German block comments — are closed here rather than left in the pull request. Both are wording- and assertion-level touches to a file that is already green, so they do not make this a second increment.",
-      "branch": "",
+      "branch": "claude/evaluator-kampagne-lucke-ajvfad--INC-3",
       "steps": [],
       "attempts": []
     }
