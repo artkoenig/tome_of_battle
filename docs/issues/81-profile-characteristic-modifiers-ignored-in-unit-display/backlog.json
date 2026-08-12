@@ -168,7 +168,7 @@
       "depth": "full",
       "status": "todo",
       "note": "Now the whole of what is left, and the increment that decides whether this issue ships a production fix at all: increment 1 proved the entry-id scope path correct, so a scope value that is silently dropped is the only remaining place the reporter's symptom can live inside this issue's boundary. Carries the run-wide green gate (AC 9), claimed exactly once. Two boundaries the run has already established: authoring scenarios under docs/testing/ is the black-box e2e-testcase-author's track (ADR 0033) and no criterion here needs one - read docs/testing/modifier-characteristic-value/README.md to see which shapes its scenarios claim to leave uncovered, and record any correction in issue.md rather than rewriting that tree; and a version bump in package.json is only warranted if this increment lands a user-visible fix, which is not known before the sweep.",
-      "branch": "",
+      "branch": "claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2",
       "steps": [],
       "attempts": []
     }
