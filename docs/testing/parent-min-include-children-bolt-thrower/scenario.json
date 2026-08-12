@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "name": "parent-min-include-children-bolt-thrower",
+  "description": "Eine constraint type=min field=selections scope=parent mit shared=true, includeChildSelections=true und includeChildForces=false am Pflicht-Modell selbst. Traeger ist der selectionEntry 'Reaper Bolt Thrower team' (8d99-db74-0051-4a45, type=model) innerhalb der Rare-Einheit 'Reaper Bolt Thrower' (a757-462a-11d5-9636) des Dark-Elves-Katalogs; die gepinnte Grenze ist 41ec-bee5-0865-0448 (min 1), unmittelbar daneben steht die Nachbar-Obergrenze ccf9-fefc-71c8-bd73 (max 2) mit denselben Flags. Der Bezugsrahmen ist die Eltern-Auswahl, also die einzelne Einheiten-Instanz: gezaehlt werden die Instanzen des Traegers in diesem Rahmen. Fuenf Roster im Kontingent 'Standard (DE-AB)' (26bc-729f-a188-f285) klammern das Paar von beiden Seiten ein (0 feuert unten, 1 und 2 schweigen, 3 feuert oben) und trennen den Rahmen von der Armee: ein Team in einer ANDEREN Reaper-Bolt-Thrower-Einheit desselben Kontingents erfuellt die Pflicht der leeren Einheit nicht. Alle Zahlen sind aus der Katalog-XML abgeleitet; kein modifier im gesamten Fixture-Satz adressiert eine der beteiligten Grenzen-Ids, sie behalten also ihre geschriebenen Werte. includeChildSelections=true ist an dieser Fundstelle nur in seiner belegbaren Haelfte pruefbar (tiefe Unterstruktur im Rahmen aendert das Ist nicht) - eine tiefer geschachtelte Kopie des Traegers ist katalog-seitig nicht baubar, siehe README.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-unit-without-team-min-fires.ros",
+      "description": "Eine Reaper-Bolt-Thrower-Einheit (a757-462a-11d5-9636) ohne jede Unterauswahl. Im Eltern-Rahmen dieser Einheit steht die Zaehlung des Pflicht-Modells 8d99-db74-0051-4a45 auf 0: die Untergrenze 41ec-bee5-0865-0448 feuert genau einmal mit Ist 0 / Grenze 1. Die Nachbar-Obergrenze ccf9-fefc-71c8-bd73 (max 2) ist mit 0 eingehalten und bleibt still. Die Einheit ist im Kontingent 'Standard (DE-AB)' sichtbar (der hidden-Modifikator ist auf ff5e-f712-03ce-bb85 gated), ihre Min-Grenzen sind also zu pruefen.",
+      "expect": {
+        "firing": [
+          { "limitId": "41ec-bee5-0865-0448", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": ["ccf9-fefc-71c8-bd73"],
+        "capabilities": [
+          {
+            "defId": "8d99-db74-0051-4a45",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "a757-462a-11d5-9636",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 2,
+            "headroom": 2,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-one-team-min-satisfied.ros",
+      "description": "Dieselbe Einheit mit GENAU EINEM Team, dessen Pflicht-Teilbaum vollstaendig ausgebaut ist (2 x Crew mit je Hand Weapon + Light Armour, 1 x Reaper). Ist 1 = Grenze 1: 41ec schweigt, ccf9 (max 2) ebenfalls. Der Rahmen enthaelt acht Auswahlen bis Tiefe 3 - gezaehlt werden trotz includeChildSelections=true nur die Instanzen des Traegers, sonst wuerde ccf9 feuern. Auch die Pflichtgrenzen des Teilbaums sind erfuellt: Crew min 2 / max 2 (aa66 / d242) mit Ist 2 je Team, Reaper min 1 / max 1 (56a0 / bf18) mit Ist 1, Gruppe 'Weapons and Armour' min 2 / max 2 (d779 / f7bb) mit Ist 2 je Crew, Hand Weapon min 1 / max 1 (bdc0 / 07a8) und Light Armour (Verweis-min 6652, Ziel-max 6f1a) mit Ist 1 je Crew.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "41ec-bee5-0865-0448",
+          "ccf9-fefc-71c8-bd73",
+          "aa66-b894-062c-6c9e",
+          "d242-c938-19d7-0dde",
+          "56a0-90c8-64dc-0303",
+          "bf18-8f9f-a473-9acd",
+          "d779-0b84-3daf-34b5",
+          "f7bb-1fdb-d454-9d4d",
+          "bdc0-54df-68c2-418b",
+          "07a8-2fa1-c38a-77b8",
+          "6652-8c5e-4cf7-9a58",
+          "6f1a-1be1-6660-d9a6"
+        ],
+        "capabilities": [
+          {
+            "defId": "8d99-db74-0051-4a45",
+            "anchorKind": "occupied",
+            "frameDefId": "a757-462a-11d5-9636",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 2,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-two-teams-max-satisfied.ros",
+      "description": "Dieselbe Einheit mit ZWEI Teams (zwei Geschwister-Selektionen, je number=1, je mit vollstaendigem Pflicht-Teilbaum). Ist 2 im Rahmen: 41ec (min 1) ist uebererfuellt und still, ccf9 (max 2) exakt ausgeschoepft und ebenfalls still - die obere Randlage der Nachbargrenze. Die Pflichtgrenzen der Teilbaeume sind in beiden Teams erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "41ec-bee5-0865-0448",
+          "ccf9-fefc-71c8-bd73",
+          "aa66-b894-062c-6c9e",
+          "d242-c938-19d7-0dde",
+          "56a0-90c8-64dc-0303",
+          "bf18-8f9f-a473-9acd",
+          "d779-0b84-3daf-34b5",
+          "f7bb-1fdb-d454-9d4d",
+          "bdc0-54df-68c2-418b",
+          "07a8-2fa1-c38a-77b8",
+          "6652-8c5e-4cf7-9a58",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-three-teams-max-fires.ros",
+      "description": "Dieselbe Einheit mit DREI Teams. Ist 3 im Rahmen: 41ec (min 1) bleibt erfuellt und still, die Nachbar-Obergrenze ccf9 feuert genau einmal mit Ist 3 / Grenze 2. Der Ist-Wert 3 belegt zugleich, dass nur Traeger-Instanzen zaehlen - alle Auswahlen des Rahmens waeren 24. Die Pflichtgrenzen der drei Teilbaeume sind erfuellt.",
+      "expect": {
+        "firing": [
+          { "limitId": "ccf9-fefc-71c8-bd73", "actual": 3, "bound": 2, "count": 1 }
+        ],
+        "absent": [
+          "41ec-bee5-0865-0448",
+          "aa66-b894-062c-6c9e",
+          "d242-c938-19d7-0dde",
+          "56a0-90c8-64dc-0303",
+          "bf18-8f9f-a473-9acd",
+          "d779-0b84-3daf-34b5",
+          "f7bb-1fdb-d454-9d4d",
+          "bdc0-54df-68c2-418b",
+          "07a8-2fa1-c38a-77b8",
+          "6652-8c5e-4cf7-9a58",
+          "6f1a-1be1-6660-d9a6"
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-team-in-other-unit-min-still-fires.ros",
+      "description": "DER UNTERSCHEIDENDE FALL: zwei Reaper-Bolt-Thrower-Einheiten im selben Kontingent. Einheit A traegt ein vollstaendiges Team, Einheit B ist leer. scope=parent macht jede Einheiten-Instanz zu ihrem eigenen Rahmen: 41ec feuert GENAU EINMAL mit Ist 0 / Grenze 1 (Rahmen B), waehrend Rahmen A mit Ist 1 erfuellt ist. Eine roster- oder force-weite Lesart von shared=true saehe ein Team im Kontingent und bliebe still; eine zusammengefasste Lesart ergaebe eine Meldung mit Ist 1. ccf9 (max 2) bleibt in beiden Rahmen still (Ist 1 bzw. 0). Die beiden Slots des Traegers werden ueber ihre Herkunft getrennt: belegt in Rahmen A, Pflicht-Anker in Rahmen B.",
+      "expect": {
+        "firing": [
+          { "limitId": "41ec-bee5-0865-0448", "actual": 0, "bound": 1, "count": 1 }
+        ],
+        "absent": ["ccf9-fefc-71c8-bd73"],
+        "capabilities": [
+          {
+            "defId": "8d99-db74-0051-4a45",
+            "anchorKind": "occupied",
+            "frameDefId": "a757-462a-11d5-9636",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 2,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "8d99-db74-0051-4a45",
+            "anchorKind": "mandatoryPhantom",
+            "frameDefId": "a757-462a-11d5-9636",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 2,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    }
+  ]
+}

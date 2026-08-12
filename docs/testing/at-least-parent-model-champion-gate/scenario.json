@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "name": "at-least-parent-model-champion-gate",
+  "description": "Eine condition type=\"atLeast\" value=\"1\" field=\"selections\" scope=\"parent\" childId=\"model\" zaehlt die Selektionen vom rohen type=\"model\", die der ELTERN-RAHMEN ihres Traegers haelt - die umschliessende Einheiten-Auswahl, nicht die Optionsgruppe und nicht das Kontingent -, und zwar (mangels geschriebenem includeChildSelections, XSD-Vorgabe false) nur dessen direkte Selektionen. Konkret im Dwarfs-Katalog: das Upgrade 'Champion' (21f9-b4f6-b59e-8892, Giant Slayer, in der Gruppe 'Command Group' 1b9c-8ae4-e9cf-c9b0 der Einheit 'Slayers' b454-4868-7ec4-39e8) traegt seine eigene Grenze c120-7f3a-9c4d-6d32 (type=max value=0 field=selections scope=parent shared=true includeChildSelections=false) und genau einen Modifier darauf: increment 1, gegatet durch diese eine Bedingung. Eine Slayers-Einheit mit mindestens einer 'Slayer'-Modellauswahl (5869-aa55-953f-ca41, type=model) hat den Champion-Deckel also bei 1, eine Slayers-Einheit ohne jede Modellauswahl bei 0. Vier Roster pinnen das Paar (Modelle da / nicht da), den angehobenen Deckel (zwei Champions reissen ihn) und die Rahmentrennung (eine zweite Slayers-Einheit mit Modellen hebt den Deckel der modelllosen Einheit NICHT).",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-models-present-cap-raised-to-one.ros",
+      "description": "Force 'Standard (DW2-AB)' (8bd9-db54-8bdc-cdfa) mit einer Slayers-Einheit: 5 Slayer-Modelle, 1 Champion, die Pflichtwaffen Hand Weapon und Slayer Axes. Der Eltern-Rahmen der Bedingung zaehlt 5 Selektionen vom rohen type=model, atLeast 1 haelt, der increment-1 hebt c120-7f3a-9c4d-6d32 von 0 auf 1. Der eine Champion (Ist 1) haelt den Deckel exakt ein: keine Verletzung, effectiveMax=1, Spielraum 0. Die Modellstaerke 5 erfuellt die Untergrenze a619-c7e4-50f4-156d (min 5) und bleibt unter 8306-da59-2f34-318b (max 30); die Pflichtwaffen erfuellen 05cf-7952-768d-2983, f7c1-43d3-45ac-6b4c und bdef-ba9b-d6ce-5b14 (je min 1) und reissen keine ihrer max-1-Grenzen; Standard Bearer und Musician sind nicht gewaehlt.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "c120-7f3a-9c4d-6d32",
+          "a619-c7e4-50f4-156d",
+          "8306-da59-2f34-318b",
+          "45ad-0c89-924b-b331",
+          "0e60-51c2-4346-d540",
+          "05cf-7952-768d-2983",
+          "d522-c96e-aaca-21b5",
+          "f7c1-43d3-45ac-6b4c",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "318a-87b8-ecbd-6dff"
+        ],
+        "capabilities": [
+          {
+            "defId": "21f9-b4f6-b59e-8892",
+            "anchorKind": "occupied",
+            "frameDefId": "b454-4868-7ec4-39e8",
+            "name": "Champion",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-no-models-cap-stays-zero.ros",
+      "description": "Identischer Aufbau wie Roster 01, aber OHNE die Slayer-Modellauswahl - das einzige Delta. Der Eltern-Rahmen zaehlt 0 Selektionen vom rohen type=model (Hand Weapon und Slayer Axes sind type=upgrade), atLeast 1 haelt nicht, der increment-1 bleibt aus: c120-7f3a-9c4d-6d32 behaelt seinen geschriebenen Basiswert max 0 und feuert mit Ist 1 gegen Grenze 0; der Champion-Platz meldet effectiveMax=0. Zugleich fordert die Modell-Untergrenze a619-c7e4-50f4-156d (min 5, scope=parent) in dieser Einheit 5 Slayer und findet 0 - sie feuert mit Ist 0 gegen Grenze 5. Die Obergrenze 8306-da59-2f34-318b (max 30) bleibt bei Ist 0 still, die Pflichtwaffen sind gewaehlt.",
+      "expect": {
+        "firing": [
+          { "limitId": "c120-7f3a-9c4d-6d32", "actual": 1, "bound": 0 },
+          { "limitId": "a619-c7e4-50f4-156d", "actual": 0, "bound": 5 }
+        ],
+        "absent": [
+          "8306-da59-2f34-318b",
+          "45ad-0c89-924b-b331",
+          "0e60-51c2-4346-d540",
+          "05cf-7952-768d-2983",
+          "d522-c96e-aaca-21b5",
+          "f7c1-43d3-45ac-6b4c",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "318a-87b8-ecbd-6dff"
+        ],
+        "capabilities": [
+          {
+            "defId": "21f9-b4f6-b59e-8892",
+            "anchorKind": "occupied",
+            "frameDefId": "b454-4868-7ec4-39e8",
+            "name": "Champion",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-models-two-champions-raised-cap-exceeded.ros",
+      "description": "Wie Roster 01, aber die Champion-Selektion traegt number=2. Die Bedingung haelt weiterhin (5 Modelle im Eltern-Rahmen), der increment-1 hebt c120-7f3a-9c4d-6d32 von 0 auf 1 - und nur auf 1: zwei Champions im selben Rahmen reissen die Grenze mit Ist 2 gegen Grenze 1. Damit ist gepinnt, dass der Modifier den Deckel um genau eins anhebt und ihn nicht aufhebt; der Platz meldet effectiveMax=1 bei Ist 2. Alle uebrigen Grenzen der Einheit bleiben wie in Roster 01 still.",
+      "expect": {
+        "firing": [
+          { "limitId": "c120-7f3a-9c4d-6d32", "actual": 2, "bound": 1 }
+        ],
+        "absent": [
+          "a619-c7e4-50f4-156d",
+          "8306-da59-2f34-318b",
+          "45ad-0c89-924b-b331",
+          "0e60-51c2-4346-d540",
+          "05cf-7952-768d-2983",
+          "d522-c96e-aaca-21b5",
+          "f7c1-43d3-45ac-6b4c",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "318a-87b8-ecbd-6dff"
+        ],
+        "capabilities": [
+          {
+            "defId": "21f9-b4f6-b59e-8892",
+            "anchorKind": "occupied",
+            "frameDefId": "b454-4868-7ec4-39e8",
+            "name": "Champion",
+            "current": 2,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-models-in-other-unit-frame-separated.ros",
+      "description": "Zwei Slayers-Einheiten im selben Kontingent: Einheit A traegt den Champion, aber kein Modell; Einheit B traegt 5 Modelle, aber keinen Champion. Kontingent- und rosterweit stehen also 5 Modelle und 1 Champion - waere der Zaehlrahmen der Bedingung das Kontingent oder das Roster, laege der Deckel der Einheit A bei 1 und die Grenze bliebe still. Da der Rahmen die tragende Elternauswahl ist, zaehlt Einheit A ihre eigenen 0 Modelle: c120-7f3a-9c4d-6d32 feuert GENAU EINMAL mit Ist 1 gegen Grenze 0, waehrend der Champion-Platz der Einheit B (ungewaehlt, Angebot) effectiveMax=1 meldet - dieselbe Definition, zwei Rahmen, zwei Deckel. Die Modell-Untergrenze a619-c7e4-50f4-156d ist in Einheit A unerfuellt (Ist 0 gegen Grenze 5) und in Einheit B erfuellt.",
+      "expect": {
+        "firing": [
+          { "limitId": "c120-7f3a-9c4d-6d32", "actual": 1, "bound": 0, "count": 1 },
+          { "limitId": "a619-c7e4-50f4-156d", "actual": 0, "bound": 5 }
+        ],
+        "absent": [
+          "8306-da59-2f34-318b",
+          "45ad-0c89-924b-b331",
+          "0e60-51c2-4346-d540",
+          "05cf-7952-768d-2983",
+          "d522-c96e-aaca-21b5",
+          "f7c1-43d3-45ac-6b4c",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "318a-87b8-ecbd-6dff"
+        ],
+        "capabilities": [
+          {
+            "defId": "21f9-b4f6-b59e-8892",
+            "anchorKind": "occupied",
+            "frameDefId": "b454-4868-7ec4-39e8",
+            "name": "Champion",
+            "current": 1,
+            "effectiveMin": null,
+            "effectiveMax": 0,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          },
+          {
+            "defId": "21f9-b4f6-b59e-8892",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "b454-4868-7ec4-39e8",
+            "name": "Champion",
+            "current": 0,
+            "effectiveMin": null,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

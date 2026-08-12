@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="apmcg-04" name="APMCG 04 - Champion-Einheit ohne Modelle neben Modell-Einheit ohne Champion: der Rahmen trennt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored at-least-parent-model-champion-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costs>
+    <cost name="Points" typeId="ecfa-8486-4f6c-c249" value="0.0"/>
+  </costs>
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (DW2-AB)" entryId="8bd9-db54-8bdc-cdfa" catalogueId="a505-6b65-703b-4976" catalogueRevision="1" catalogueName="Dwarfs (2006)">
+      <selections>
+        <!-- Einheit A: traegt den Champion, aber KEIN Modell. Ihr eigener
+             Eltern-Rahmen zaehlt 0 Modelle - der increment bleibt aus, der
+             Deckel bleibt 0, die Grenze c120-7f3a-9c4d-6d32 feuert (Ist 1). -->
+        <selection id="unit-slayers-a" name="Slayers" entryId="b454-4868-7ec4-39e8" number="1" type="unit">
+          <selections>
+            <selection id="slayer-champion-a" name="Champion" entryId="21f9-b4f6-b59e-8892" number="1" type="upgrade"/>
+            <selection id="slayer-handweapon-a" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" number="1" type="upgrade"/>
+            <selection id="slayer-axes-a" name="Slayer Axes" entryId="5c36-8e8c-6838-df6b" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+        <!-- Einheit B: traegt 5 Modelle, aber KEINEN Champion. Waere der
+             Zaehlrahmen der Bedingung das Kontingent oder das Roster statt der
+             tragenden Elternauswahl, wuerden diese 5 Modelle den Deckel der
+             Einheit A auf 1 heben und die Grenze bliebe still. Der eigene
+             Champion-Platz der Einheit B steht dagegen auf Deckel 1. -->
+        <selection id="unit-slayers-b" name="Slayers" entryId="b454-4868-7ec4-39e8" number="1" type="unit">
+          <selections>
+            <selection id="slayer-models-b" name="Slayer" entryId="5869-aa55-953f-ca41" number="5" type="model"/>
+            <selection id="slayer-handweapon-b" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" number="1" type="upgrade"/>
+            <selection id="slayer-axes-b" name="Slayer Axes" entryId="5c36-8e8c-6838-df6b" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

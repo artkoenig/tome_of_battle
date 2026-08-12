@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="asaeh-02" name="ASAEH 02 - dieselbe Einheit ohne Gruppenmitglied: Warnung schweigt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored atLeast-self-any E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+  </costLimits>
+  <forces>
+    <!-- Bis auf die fehlende Gruppenauswahl Zeichen fuer Zeichen der Aufbau von
+         Roster 01: gleiches Kontingent, gleiche Einheit, gleiches Pflicht-Kind,
+         gleiches Punktelimit, weiterhin keine Auswahl "Allow experimental
+         rules?". Der einzige Unterschied ist der Stand der Zaehlung im Rahmen
+         der Gruppe 7f4e-4b7b-fbc4-a138: 0 statt 1. -->
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-hydra-unit" name="War Hydra" entryId="424f-9a77-2a02-4cec" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-hydra-upgrade" name="War Hydra" entryId="3bfb-7e21-80b0-3b13" entryLinkId="" number="1" type="upgrade" collective="false">
+              <categories>
+                <category id="cat-experimental" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+              </categories>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

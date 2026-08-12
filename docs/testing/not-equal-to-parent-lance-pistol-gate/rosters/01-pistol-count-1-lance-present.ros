@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="neqp-01" name="NEQP 01 - Signature Weapon = GENAU EIN Pistol: Lance bleibt Pflicht (min 1 / max 1) und ist gewaehlt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-equal-to-parent-lance-pistol-gate E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="Points" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Kontingent "Standard (EM-AB)" e821-88b8-2071-6b6a: weder 9d76-… (Emperor's Guard,
+         Bedingung des set -1 auf 2943-…) noch d2eb-… / 6b0d-… / d1ca-… , die die Lance-Pflicht
+         oder die Order-Kette anfassen wuerden. Der Schalter "Allow experimental rules?" traegt
+         den Unterpunkt cc03-…, der die roh verborgene Order 0bd1-… aufdeckt. -->
+    <force id="force-1" name="Standard (EM-AB)" entryId="e821-88b8-2071-6b6a" catalogueId="3938-8369-a300-4a03" catalogueRevision="1" catalogueName="The Empire">
+      <selections>
+        <selection id="sel-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="2961-128d-196e-c6c6" number="1" type="upgrade">
+          <selections>
+            <selection id="sel-experimental-wd" name="Allow experimental rules from White-Dwarf and Citadel Journal issues" entryId="cc03-e8fe-c143-6863" entryLinkId="" number="1" type="upgrade"/>
+          </selections>
+        </selection>
+        <selection id="sel-knights" name="Knights of the Knightly Orders" entryId="1d77-9e6e-a6ab-573f" entryLinkId="" number="1" type="unit">
+          <selections>
+            <selection id="sel-knight-models" name="Knight" entryId="7b8d-8405-0e74-9f46" entryLinkId="" number="5" type="model"/>
+            <selection id="sel-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="9ccc-ad24-583e-41e0" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-lance" name="Lance" entryId="8649-8ac8-5a6f-fd8d" entryLinkId="e082-13b2-e746-34e0" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="d2a3-c146-1dbb-118f" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-plate" name="Full Plate Armour" entryId="199f-b4b9-aaca-490f" entryLinkId="8757-aa59-69fa-1060" entryGroupId="f1bb-0dde-c39a-d0e1" number="1" type="upgrade"/>
+            <selection id="sel-warhorse" name="Empire Warhorse" entryId="a1e3-7f97-5fc6-abaa" entryLinkId="aaf2-8dbc-b925-fac5" number="1" type="upgrade"/>
+            <selection id="sel-order" name="Custom Knightly Order (WD#310(UK)" entryId="0bd1-8b50-44e0-6fc7" entryLinkId="e628-04ab-0a07-b37c" entryGroupId="06b5-8412-53d1-49ac" number="1" type="upgrade">
+              <selections>
+                <selection id="sel-advantages" name="Knightly advantages" entryId="e82b-32bf-6032-2d30" entryLinkId="" number="1" type="upgrade">
+                  <selections>
+                    <!-- GENAU EIN Pistol in der Gruppe "Signature Weapon" 7195-9f86-b364-0a4f:
+                         im Rahmen der Einheit zaehlt 44f9-f44d-d693-84f8 = 1, die Bedingung
+                         notEqualTo 1 haelt damit NICHT; equalTo 1 haelt und setzt beide
+                         Lance-Grenzen auf ihren geschriebenen Wert 1 zurueck. -->
+                    <selection id="sel-pistol" name="Pistol" entryId="44f9-f44d-d693-84f8" entryLinkId="fdd1-053d-3b57-76ca" entryGroupId="7195-9f86-b364-0a4f" number="1" type="upgrade"/>
+                  </selections>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

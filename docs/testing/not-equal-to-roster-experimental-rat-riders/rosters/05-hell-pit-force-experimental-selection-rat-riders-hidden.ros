@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="nertr-05" name="NERTR 05 - Hell Pit (WD-311) mit derselben Auswahl: die zweite Haelfte der and-Gruppe faellt, Rat Riders bleibt verborgen" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-equal-to-roster-experimental-rat-riders E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Selbe Auswahl wie Roster 02, aber im Kontingent "Hell Pit (WD-311)"
+         (9f0b-5346-a3bc-b5fe) - genau dem, das die notInstanceOf-Bedingung
+         derselben and-Gruppe benennt. Der notEqualTo-Zaehler steht auf NICHT
+         NULL (die Bedingung haelt), die and-Gruppe faellt trotzdem, weil ihr
+         zweites Mitglied faellt: der set hidden=false bleibt aus, der
+         Basiswert hidden="true" bleibt stehen. Gegenprobe dazu, dass die
+         Aufdeckung in Roster 02 BEIDE Mitglieder braucht. -->
+    <force id="force-1" name="Hell Pit (WD-311)" entryId="9f0b-5346-a3bc-b5fe" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven">
+      <selections>
+        <selection id="sel-allow-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="c042-1d75-40ca-c654" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-allow-experimental-slr" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+            <category id="cat-allow-experimental-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+          </categories>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>
