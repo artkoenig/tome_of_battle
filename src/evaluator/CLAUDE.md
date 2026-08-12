@@ -35,6 +35,19 @@ covers.
   `vampireCountsDataset` pattern in `offer.hiddenGate.test.js` and
   `effectiveState.baseHiddenInheritance.test.js` — the fixture parse dominates
   runtime and a shared suite run can hit the 5 s test timeout without it).
+- A corpus-invariant check parses a fixture's raw XML itself, with `new
+  DOMParser().parseFromString(xml, 'text/xml')` at the top of the file, to
+  derive its own expectation from the catalogue data — never from an engine
+  module other than the facade. This is a different use of `DOMParser` than
+  the module-top `globalThis.DOMParser` install: the file's own parse builds
+  the check's expectation, the facade's internal parse (through
+  `prepareDataset`) builds what is asserted against. See
+  `evaluator.corpusLinkLocalChildren.test.js` (Issue 0150) for the pattern:
+  index every element with an `id` from the fixture documents, derive the
+  occurrences from that index at module top level (cheap — only the engine's
+  own `prepareDataset` needs the `beforeAll` memoisation), and read the
+  report through the same `capabilities` path-schema every other real-fixture
+  file uses (`evaluate`'s JSDoc, `evaluator.js`).
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,
