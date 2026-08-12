@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/offene-aufgaben-pk52qh
 pr:
 ---
 
@@ -121,6 +121,15 @@ Acceptance criteria:
   answer, this session.
 
 ## Log
+
+- 2026-08-12 — Taken up again on branch `claude/offene-aufgaben-pk52qh`. Issue
+  0143 has meanwhile landed in `main` (PR #199), so the log entry below about
+  the two going out as one change on one branch is history: this issue now
+  stands alone, and the five assertions in
+  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx` that pin
+  `Lore of Necromancy` as `checked` sit in `main`. Correcting them is part of
+  this change, exactly as the collision note at the end of this section
+  describes.
 
 - 2026-08-12 — Put back to backlog. The branch this file named is gone and
   nothing of the change is in `main`: `populateChildren`
