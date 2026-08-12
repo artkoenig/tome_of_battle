@@ -892,6 +892,7 @@ function attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly = false) 
     ownLimitsOnly,
   };
   owner.children.push(node);
+  return node;
 }
 
 /**
@@ -906,6 +907,37 @@ function annotateGroupMembers(owner, groupId, memberIds) {
     if (node === owner || node.isPhantom || node.isRoot || node.instance === null) continue;
     if (memberIds.has(node.instance.defId)) {
       (node.memberGroupIds ??= new Set()).add(groupId);
+    }
+  }
+}
+
+/**
+ * Annotiert die Member einer Gruppe mit **ihrem Gruppen-Anker** (`groupFrames`):
+ * dem Knoten, der als **Zaehlrahmen der Gruppe** einsteht.
+ *
+ * Eine Gruppe ist im Roster kein eigener Knoten — ihre Member haengen unter dem
+ * Eigentuemer, der Anker daneben. Eine Query, die **am Anker selbst** gestellt
+ * wird (`scope="self"`, ebenso jedes `shared="false"`), fragt damit nach dem
+ * Bestand eines Rahmens, in dem im Baum nichts steht: die Gruppe zaehlt aber
+ * „ihre Mitglieder, nicht die Gruppe" (`docs/battlescribe-data-format.md` §7.6).
+ * Diese Annotation macht genau das zur Index-Aussage — die Index-Schicht traegt
+ * einen Member (und alles unter ihm) zusaetzlich im **Rahmen des Ankers** bei
+ * ({@link import('./countIndex.js').buildIndex}), sodass die Zaehlung am
+ * Gruppen-Rahmen dieselbe Menge sieht wie die gruppen-skopierte Grenze im
+ * Eigentuemer-Rahmen.
+ *
+ * Member ist — anders als bei {@link annotateGroupMembers}, das die Zaehlbarkeit
+ * unter der **Gruppen-Id** im ganzen Teilbaum annotiert — nur ein **direktes
+ * Kind** des Eigentuemers: die Gruppe bietet ihre Optionen an genau dieser Stelle
+ * an, tiefer geschachtelte Vorkommen derselben Definition stehen in einem anderen
+ * Rahmen. Sie zaehlen im Gruppen-Rahmen trotzdem mit, sobald eine Query
+ * `includeChildSelections` setzt — dann naemlich als Nachfahren ihres Members.
+ */
+function annotateGroupFrameMembers(owner, anchor, memberIds) {
+  for (const node of owner.children) {
+    if (node.isPhantom || node.instance === null) continue;
+    if (memberIds.has(node.instance.defId)) {
+      (node.groupFrames ??= new Set()).add(anchor);
     }
   }
 }
@@ -928,13 +960,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
     }
 
     for (const { def: groupDef, ownLimitsOnly, hasLimits } of groupDefinitionsWithLimits(ownerDef)) {
-      attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
-      // Ein Anker fuer ein rein deskriptives sortIndex (kein `hasLimits`,
-      // Issue 0133) zaehlt seine Member nie mit: sonst machte ein
-      // Anzeige-Attribut eine bislang grenzenlose Gruppe zaehlbar und
-      // veraenderte damit Bedingungen/Modifier andernorts, die per `childId`
-      // auf ihre Id verweisen.
-      if (!hasLimits) continue;
+      const anchor = attachGroupAnchor(owner, groupDef, nextFrameId, ownLimitsOnly);
       // Bei einer verlinkten Gruppe ist der Anker der **Link** (nur an ihm
       // gelten seine eigenen Grenzen); gezaehlt wird aber unter der Id, die
       // die Constraint-Schicht am Link abfragt (`targetId`), und die Member
@@ -942,7 +968,20 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
       const isLink = groupDef.kind === DefinitionKind.ENTRY_LINK;
       const countedId = isLink ? groupDef.targetId : groupDef.id;
       const memberIds = memberIndex.get(isLink ? groupDef.resolved.id : groupDef.id);
-      if (memberIds !== undefined) annotateGroupMembers(owner, countedId, memberIds);
+      if (memberIds === undefined) continue;
+      // Der **Rahmen des Ankers** traegt seine Member immer: er ist ein
+      // engine-eigener Schluessel, den allein eine Query am Anker selbst liest
+      // ({@link annotateGroupFrameMembers}) — er macht keine Gruppe unter ihrer
+      // **Id** zaehlbar und kann deshalb kein Urteil andernorts verschieben.
+      annotateGroupFrameMembers(owner, anchor, memberIds);
+      // Die Zaehlbarkeit unter der **Gruppen-Id** dagegen bleibt den
+      // Grenzen-tragenden Gruppen vorbehalten: ein Anker fuer ein rein
+      // deskriptives sortIndex (kein `hasLimits`, Issue 0133) zaehlt seine
+      // Member nie mit — sonst machte ein Anzeige-Attribut eine bislang
+      // grenzenlose Gruppe zaehlbar und veraenderte damit Bedingungen/Modifier
+      // andernorts, die per `childId` auf ihre Id verweisen.
+      if (!hasLimits) continue;
+      annotateGroupMembers(owner, countedId, memberIds);
     }
   }
 }
