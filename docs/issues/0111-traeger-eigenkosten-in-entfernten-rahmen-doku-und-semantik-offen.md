@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -53,6 +53,10 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 without a decision.** The semantics stay undocumented on
+  purpose: no real catalogue declares a cost-type limit outside `scope="parent"`,
+  so nothing rides on the answer. File a fresh issue if one ever appears.
+
 - **Herkunft:** Befund der Review-Runden 2/3 von Issue 0091 (2026-07-29);
   dort außerhalb der Absicht (Regel: geht an den Menschen bzw. ins Backlog),
   deshalb nicht mitbehoben. Repro-Skript der Runde 2:
@@ -60,6 +64,17 @@ Acceptance criteria:
   wiedergegeben).
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: the premise occurs in no real
+  catalogue.** Across both complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads, **all 580 cost-type constraints carry
+  `scope="parent"`** — there is no cost-type limit in a distant frame at all,
+  so neither the `includeChildSelections="false"` question of criterion 1 nor
+  the dedup question of criterion 3 can be observed from data. Criterion 1's
+  premise had already fallen at the re-check below; with the scope census the
+  rest follows.
 
 - 2026-08-12 (re-check, independent probe) — Confirms the entry above: criterion
   1's premise is gone, criterion 3 stands. Two nested ancestors sharing one

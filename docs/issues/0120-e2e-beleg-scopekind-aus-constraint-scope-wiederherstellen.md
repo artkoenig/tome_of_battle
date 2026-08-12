@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -40,10 +40,32 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 as low value, not as impossible.** The E2E proof is
+  buildable from real data (candidate anchors in the Log). It duplicates an
+  existing unit-level pin and closes no user-visible gap.
+
 - **Herkunft:** Review-Befund aus dem Lauf zu Issue 0088 (2026-07-29):
   Beweiskraft-Verlust an VCC-R10 war nur im README notiert, nicht gefiled.
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Buildable after all, and closed as low
+  value.** The scenario this file asks for is no longer impossible: across
+  both complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads,
+  **11 anchors carry two `min` limits with different `scope` values**, among
+  them `<entryLink>` "General" (`2b37-955c-579e-8b40`, High Elves definitive),
+  `<selectionEntry>` "Paymaster" (`bb61-113e-cd28-26f7`, Dogs of War
+  definitive), "Errantry War" (`b460-3ebf-cb3a-b3da`, Bretonnia), and two in the
+  definitive `.gst` itself ("Allow experimental rules?"
+  `8b76-92c4-23f9-54b1`, "Allow special characters?" `8923-5946-7b10-8957`) —
+  all `force`+`parent` pairs. What the file asks for is nevertheless a **second**
+  proof of a statement the unit level already pins
+  (`src/evaluator/phantom.test.js`), and it buys no user-visible safety. Closed
+  with the candidates recorded, so it can be revived in one sitting if the
+  scopeKind projection is ever touched.
 
 - 2026-08-12 (re-check, independent scan) — **Still missing.** Of 123 scenarios
   under `docs/testing/`, exactly two manifests mention `scopeKind` at all

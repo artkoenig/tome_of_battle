@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/fillup-50-punkte-022y0r
 pr:
 ---
@@ -56,3 +56,7 @@ Tests:
 - `RosterEditor.autofill.test.jsx` — the same three criteria on app level, at
   the new edges: 290 → gap 50 → panel; 291 → gap 51 → none; 540 → gap 300 →
   none (the reported case); 240 → gap 0 → none.
+
+## Log
+
+- 2026-08-12 — Status corrected: the work landed on `main` with 8233414 (PR #225), which is also the last commit touching this file. Only the status line was stale.

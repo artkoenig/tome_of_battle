@@ -1,4 +1,4 @@
-Status: active
+Status: done
 Type: fix
 Branch: claude/profilwert-modifikatoren-bloodlines-zlw2p9
 Blocked by: None
@@ -62,3 +62,7 @@ collector. Those are separate display paths and separate issues.
 - Related, already resolved against the *old* solver and not a substitute for this fix: `docs/issues/24-charakteristik-modifier-z-b-st-rke-je-vampir-blutlinie-werden-nicht-angewendet/issue.md`.
 - Relevant ADRs: 0030 (stand-alone Reinraum evaluator), 0034 (the report is the sole source for the UI), 0029, 0032, 0033 (E2E manifest runner and black-box authorship).
 - Increment 1 established that the reported bloodline case is gated by a scope naming the unit's own selectionEntry id; that path is correct today and is now pinned by a test on the path the user sees, so the reported symptom is either already resolved or lives on one of the scope shapes increment 2 covers.
+
+## Log
+
+- 2026-08-12 — Status corrected: the work landed on `main` with 86f2db1 (PR #221), which is also the last commit touching this file. Only the status line was stale.

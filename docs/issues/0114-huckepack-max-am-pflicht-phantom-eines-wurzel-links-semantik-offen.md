@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -40,7 +40,21 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 without a decision.** The reported behaviour reproduces
+  synthetically and is recorded, but no real root `entryLink` carries a `min`
+  and a `max` at once, so no roster can reach the new reporting path.
+
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: no real root link carries both
+  limits.** Across both complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads: **785 root `entryLink`s, 13 of
+  them carrying own
+  constraints, 0 carrying a `min` and a `max` together.** The piggyback MAX this
+  file asks about needs exactly that combination, so the question has no data
+  behind it.
 
 - 2026-08-12 (re-check, independent probe) — **Reproduces unchanged.** Root
   `entryLink` with its own `min 1` and `max 2` (`scope="roster"`, shared,

@@ -49,6 +49,19 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data measurement) — **Reproduces, and the real book sets are
+  an order of magnitude worse than the fixture.** `prepareDataset` over the
+  complete upstream corpora, measured in jsdom:
+  - definitive, **18 books: 6,306 ms**, the following `evaluate` 15 ms;
+  - ergofang, **16 books: 2,562 ms**, the following `evaluate` 4 ms.
+  The frozen fixture measured earlier in this file (278 ms for one book, 455 ms
+  for three, 474 ms through `evaluateAppRoster`) is the small case, not the
+  typical one. A user who has imported a whole army system freezes the window for
+  **six seconds** on the first roster open, with no loading state anywhere. Both
+  call sites are unchanged: `useRoster` -> `useEvaluation` (`useRoster.js:76`)
+  and `NewRosterModal` -> `describeSystem` in the component body
+  (`NewRosterModal.jsx:85`).
+
 - 2026-08-12 (re-check, independent measurement) — **Reproduces; the magnitudes
   hold.** Measured in jsdom against `src/__fixtures__/whfb6/`:
   `prepareDataset` **278 ms** for one catalogue and **455 ms** for three, while

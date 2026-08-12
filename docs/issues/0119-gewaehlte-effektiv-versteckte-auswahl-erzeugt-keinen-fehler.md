@@ -43,6 +43,16 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data E2E) — **Reproduces end to end on real data.** Whole
+  definitive corpus (18 books) prepared in one dataset, force "Standard (VC-AB)"
+  (`e989-15b8-7eb6-9668`), unit **"Dire Wolves"** holding its own option
+  **"Scouts"** (`ff2c-a7c6-4cab-b0fd`), which the catalogue declares
+  `hidden="true"`. Report through the facade: slot `0/0/0` reads
+  `anchorKind=occupied, isHidden=true, current=1` — the report knows the
+  selection is there and knows it should not be offered — and **not one of the 5
+  violations names it**. The shape is everywhere in the data: 545 elements carry
+  `hidden="true"` and 1,456 modifiers write `field="hidden"` across both corpora.
+
 - 2026-08-12 (re-check, independent probe) — **Reproduces unchanged.** A unit
   holds an option declared `hidden="true"`. Its slot reads
   `{anchorKind: "occupied", isHidden: true, current: 1}` at path `0/0` — the

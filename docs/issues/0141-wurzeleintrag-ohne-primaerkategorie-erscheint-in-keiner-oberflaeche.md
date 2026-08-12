@@ -63,6 +63,19 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data E2E) — **Confirmed against the upstream data this
+  repository does not carry.** The cited entry **is** real: `a4dc-9040-d98e-7bc1`
+  "Who Is the general? Nobody knows, roll the dice to see what it shows." in
+  `High Elf.cat` of `artkoenig/Warhammer-Fantasy-6th-edition`, its only
+  `categoryLink` is "General" with `primary="false"`, and it carries **`min 1`
+  and `max 1`, both `scope="roster"`**. Evaluated over the whole ergofang corpus
+  (16 books) with an empty contingent, the report raises exactly **one error**
+  naming it (`3130-9fac-fd29-f213`, actual 0, bound 1) — a blocking message the
+  user has no way to satisfy, because the entry appears in no category section.
+  Corpus-wide the pattern occurs **3** times: this entry, "Dogs of War Army"
+  (`2641-7ec9-2243-7715`, `Dogs of War.cat`) and "SELECT FOR USING AS DOGS OF WAR
+  ?" (`aa6a-68b4-a6ae-4abc`, `Ogre Kingdoms.cat`).
+
 - 2026-08-12 (re-check, independent probe) — **The mechanism reproduces, and the
   fixtures carry the pattern**, though not the entry this file cites.
   - Synthetic control: two root entries, both linking the category "General",
