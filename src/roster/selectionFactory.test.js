@@ -123,3 +123,197 @@ describe('createSelectionFromDef — Pflichtgruppen-Bevölkerung', () => {
     expect(childNumbers(selection)).toEqual([{ name: 'Crew', number: 3 }]);
   });
 });
+
+// ── Issue 0145, Kriterium 2 — die Option, die eine verschachtelte Pflichtgruppe beisteuert ──
+
+/**
+ * `Duelist` / `Loadout`: eine wähle-eine-Pflichtgruppe `Sidearm` (min=2/max=2),
+ * eine Ebene tief verschachtelt in einer Gruppe `Loadout`, die selbst kein
+ * eigenes `min` trägt — wie `Wizard Level` innerhalb `Magic` bei
+ * `Zacharias the Everliving`.
+ */
+function nestedChoiceUnit({ defaultSelectionEntryId }) {
+  return {
+    id: 'unit', name: 'Duelist',
+    selectionEntries: [], entryLinks: [],
+    selectionEntryGroups: [{
+      id: 'outer-loadout', name: 'Loadout',
+      constraints: [],
+      selectionEntries: [], entryLinks: [],
+      selectionEntryGroups: [{
+        id: 'inner-sidearm', name: 'Sidearm',
+        constraints: [min(2), max(2)],
+        defaultSelectionEntryId,
+        selectionEntries: [
+          { id: 'e-dagger', name: 'Dagger', constraints: [] },
+          { id: 'e-rapier', name: 'Rapier', constraints: [] }
+        ],
+        entryLinks: []
+      }]
+    }]
+  };
+}
+
+describe('createSelectionFromDef — die Option, die eine verschachtelte Pflichtgruppe beisteuert (Issue 0145 AC2)', () => {
+  it('eine wähle-eine-Gruppe, verschachtelt in einer Gruppe ohne eigenes min, mit passender defaultSelectionEntryId: die benannte Option wird angelegt, mit dem min der verschachtelten Gruppe als Anzahl', () => {
+    const entriesById = { unit: nestedChoiceUnit({ defaultSelectionEntryId: 'e-rapier' }) };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Rapier', number: 2 }]);
+  });
+
+  it('dieselbe verschachtelte Gruppe mit einer defaultSelectionEntryId, die zu nichts passt: die erste Option wird angelegt — unverändert gegenüber der Tiefe-0-Rückfallregel', () => {
+    const entriesById = { unit: nestedChoiceUnit({ defaultSelectionEntryId: 'nirgendwo-passend' }) };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Dagger', number: 2 }]);
+  });
+
+  it('dieselbe verschachtelte Gruppe ohne gesetztes Attribut: die erste Option wird angelegt', () => {
+    const entriesById = { unit: nestedChoiceUnit({ defaultSelectionEntryId: undefined }) };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Dagger', number: 2 }]);
+  });
+
+  it("Wizard Levels reale Form als generische Fixture: eine verschachtelte Gruppe mit einer ins Leere zeigenden Vorgabe UND einem Mitglied mit eigenem min — das Mitglied wird angelegt, die verwaiste Vorgabe bleibt unbeachtet", () => {
+    // Nachgebildet nach `Wizard Level` (`af1f-355f-236b-a64f`) innerhalb `Magic`
+    // (`fe61-20a7-8126-d5b9`) bei Zacharias the Everliving: `Magic` trägt kein
+    // eigenes min, `Wizard Level` hat min=1/max=1 und `defaultSelectionEntryId`
+    // `42d9-cebe-18d5-cdbd` — eine Id, die im Katalog nirgends existiert — und
+    // sein einziges Mitglied `Magic Level 4` trägt selbst min=1.
+    const entriesById = {
+      'magic-level-4': { id: 'magic-level-4', name: 'Magic Level 4' },
+      unit: {
+        id: 'unit', name: 'Zacharias the Everliving',
+        selectionEntries: [], entryLinks: [],
+        selectionEntryGroups: [{
+          id: 'outer-magic', name: 'Magic',
+          constraints: [],
+          selectionEntries: [], entryLinks: [],
+          selectionEntryGroups: [{
+            id: 'inner-wizard-level', name: 'Wizard Level',
+            constraints: [min(1), max(1)],
+            defaultSelectionEntryId: 'verwaiste-vorgabe-existiert-nicht',
+            selectionEntries: [],
+            entryLinks: [
+              { id: 'l-magic-level-4', targetId: 'magic-level-4', name: 'Magic Level 4', constraints: [min(1)] }
+            ]
+          }]
+        }]
+      }
+    };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Magic Level 4', number: 1 }]);
+  });
+});
+
+// ── Issue 0145, Kriterium 1 — "an jeder Tiefe" und was liegen bleiben muss ──
+
+describe('createSelectionFromDef — Pflichtgruppen an jeder Tiefe (Issue 0145 AC1)', () => {
+  it('eine Pflichtgruppe drei Ebenen tief (Gruppe ohne min → Gruppe ohne min → Gruppe mit min 1) wird bevölkert', () => {
+    const entriesById = {
+      torch: { id: 'torch', name: 'Torch' },
+      unit: {
+        id: 'unit', name: 'Deep Nesting Unit',
+        selectionEntries: [], entryLinks: [],
+        selectionEntryGroups: [{
+          id: 'level-1', name: 'Level 1',
+          constraints: [],
+          selectionEntries: [], entryLinks: [],
+          selectionEntryGroups: [{
+            id: 'level-2', name: 'Level 2',
+            constraints: [],
+            selectionEntries: [], entryLinks: [],
+            selectionEntryGroups: [{
+              id: 'level-3', name: 'Level 3',
+              constraints: [min(1), max(1)],
+              defaultSelectionEntryId: null,
+              selectionEntries: [{ id: 'e-torch', name: 'Torch', constraints: [] }],
+              entryLinks: []
+            }]
+          }]
+        }]
+      }
+    };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Torch', number: 1 }]);
+  });
+
+  it('eine verschachtelte Gruppe, deren eigenes min 0 ist, deren Mitglieder aber min 1 tragen, bleibt unbevölkert — die Regel, die die 83 unerfüllten Pflichten unerfüllt lässt', () => {
+    // Nachgebildet nach `Lores of Magic` (`3240-32da-ecd5-ee0f`) bei Zacharias:
+    // die Gruppe trägt nur ein max, kein min; ihr Mitglied `Lore of Necromancy`
+    // trägt selbst min=1 und bleibt dennoch unbevölkert.
+    const entriesById = {
+      necromancy: { id: 'necromancy', name: 'Lore of Necromancy' },
+      unit: {
+        id: 'unit', name: 'Unmet Obligation Unit',
+        selectionEntries: [], entryLinks: [],
+        selectionEntryGroups: [{
+          id: 'outer', name: 'Outer',
+          constraints: [],
+          selectionEntries: [], entryLinks: [],
+          selectionEntryGroups: [{
+            id: 'inner-no-min', name: 'Lores of Magic',
+            constraints: [max(1)],
+            selectionEntries: [],
+            entryLinks: [
+              { id: 'l-necromancy', targetId: 'necromancy', name: 'Lore of Necromancy', constraints: [min(1)] }
+            ]
+          }]
+        }]
+      }
+    };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([]);
+  });
+
+  it('eine Pflichtgruppe ohne eigene direkte Mitglieder, aber mit einer Pflichtgruppe darin, steuert nur das Mitglied der inneren Gruppe bei', () => {
+    const entriesById = {
+      fire: { id: 'fire', name: 'Fire' },
+      unit: {
+        id: 'unit', name: 'Adept',
+        selectionEntries: [], entryLinks: [],
+        selectionEntryGroups: [{
+          id: 'outer-mandatory', name: 'Discipline',
+          constraints: [min(1), max(1)],
+          selectionEntries: [], entryLinks: [],
+          selectionEntryGroups: [{
+            id: 'inner-mandatory', name: 'Element',
+            constraints: [min(1), max(1)],
+            defaultSelectionEntryId: null,
+            selectionEntries: [{ id: 'e-fire', name: 'Fire', constraints: [] }],
+            entryLinks: []
+          }]
+        }]
+      }
+    };
+
+    const selection = createSelectionFromDef({
+      system: {}, resolveEntry: makeResolver(entriesById), entry: { id: 'unit' }
+    });
+
+    expect(childNumbers(selection)).toEqual([{ name: 'Fire', number: 1 }]);
+  });
+});

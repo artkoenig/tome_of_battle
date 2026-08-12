@@ -39,6 +39,137 @@
             "summary": "Increment 1 is a depth fix in one shared derivation: `mandatoryChildrenOf` in `src/roster/selectionMembers.js` walks a definition's mandatory children through selection-entry groups at any depth, and both the recruiting factory and the pre-recruit price estimate call it instead of each mirroring the rule one level deep. A scan of the six fixture catalogues shows exactly two of the 208 unit cards gain a member — `Zacharias the Everliving` gains `Magic Level 4`, `0-1 Hill Goblins` gains `Hand Weapon` — and the unmet obligations the next increment must render stay unmet."
           },
           "prompt": "Issue directory: docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken\nThis increment is worked on its own branch: `claude/offene-aufgaben-pk52qh--inc-1`, off `claude/offene-aufgaben-pk52qh`.\nBefore anything else, on `claude/offene-aufgaben-pk52qh`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 claude/offene-aufgaben-pk52qh--inc-1`, commit that state change and push `claude/offene-aufgaben-pk52qh`. Then create the branch with `git checkout -b claude/offene-aufgaben-pk52qh--inc-1`, push it with `-u`, and work on it from there.\nThis run works docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/issue.md one increment at a time, and increment 1 is yours:\n  Mandatory members are created at any group depth — Recruiting a unit materialises every member the catalogue makes mandatory, however deeply the mandatory group is nested, and the option a mandatory group contributes is the one the catalogue names. What units receive today does not change beyond the members that were missing.\nWhat it has to satisfy:\n  - Issue criterion 1: adding `Zacharias the Everliving` to a fresh roster creates `Magic Level 4` (`799b-f6a5-b38c-b0c2`), held in group `Wizard Level` nested inside group `Magic`; `Zombie Dragon` and the six Bloodline powers on the same card still appear exactly once each.\n  - Issue criterion 2: where a group names a `defaultSelectionEntryId` that matches one of its own options, that option is the one created; where the attribute is absent or points at nothing (as `Wizard Level`'s `42d9-cebe-18d5-cdbd` does), what is created is unchanged from today.\n  - Issue criterion 7: the section tree, the section titles and the per-card row multiset are unchanged across the fixture catalogues' unit cards, except where a member that was missing is now created.\n  - The price a card shows before a unit is recruited still matches what recruiting it actually costs.\n  - The change is measured through the production recruitment path, not only through a test seam.\nDeliberately not yours, and not a gap — a later increment takes each of these: An unmet obligation renders as outstanding on every render path.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 research:inc-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 research:inc-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:inc-1.0",
+          "at": "2026-08-12T15:52:52.680Z",
+          "return": {
+            "cases": [
+              {
+                "case": "Vampire Counts definitive, Zacharias the Everliving (1c05-5813-2f0c-f878): Magic Level 4 appears exactly once — created from Wizard Level inside Magic.",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — Zacharias the Everliving gains \"Magic Level 4\" from \"Wizard Level\" nested inside \"Magic\" > creates \"Magic Level 4\" exactly once",
+                "demands": "recruiting Zacharias through the production seam (processImportedData + buildRoster + useRoster.addUnit, isFreshRoster omitted) puts exactly one child named 'Magic Level 4' in the unit's selections.",
+                "got": "AssertionError: expected [] to have a length of 1 but got +0 — no 'Magic Level 4' is created today because populateChildren walks selectionEntryGroups one level deep and Wizard Level sits inside Magic, which has no min of its own."
+              },
+              {
+                "case": "Same recruit: Zombie Dragon exactly once, and each of the six Bloodline powers exactly once (Dark Acolyte, Forbidden Lore, Master of the Black Arts, The Awakening, Unholy Cynosure, Nehekhara's Noble Blood).",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — Zacharias the Everliving gains \"Magic Level 4\" from \"Wizard Level\" nested inside \"Magic\" > still creates \"Zombie Dragon\" and each of the six Bloodline powers exactly once",
+                "demands": "the seven top-level-mandatory children already created today (Zombie Dragon plus the six Bloodline powers, all min>0 members of top-level groups) still each appear exactly once after the depth fix.",
+                "got": "Passes on the current, unfixed tree — it pins existing behaviour that must not move; not a failing case, listed here per the plan's instruction to cover it."
+              },
+              {
+                "case": "Same recruit, the boundary that keeps the later increment's work intact: Lore of Necromancy is not created (its group Lores of Magic has a max but no min).",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — Zacharias the Everliving gains \"Magic Level 4\" from \"Wizard Level\" nested inside \"Magic\" > does not create \"Lore of Necromancy\" — its group (\"Lores of Magic\") has a max but no min",
+                "demands": "Lore of Necromancy (a member with its own min inside a group whose own min is 0/absent) stays uncreated.",
+                "got": "Passes on the current, unfixed tree — pins the boundary the depth fix must not cross."
+              },
+              {
+                "case": "Same recruit: neither are the five Equipment members created (their group carries no constraints at all).",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — Zacharias the Everliving gains \"Magic Level 4\" from \"Wizard Level\" nested inside \"Magic\" > does not create any of the five Equipment members — their group carries no constraints at all",
+                "demands": "Handweapon, Circlet of Rathek (Talisman), Book of Nagash (Arcane Item), Scrolls of Semhtep (Arcane Item), Staff of Kaphamon (Enchanted Item) — none of the five — stay uncreated.",
+                "got": "Passes on the current, unfixed tree — pins the boundary the depth fix must not cross."
+              },
+              {
+                "case": "Same recruit: no child name occurs twice, asserted over the whole child list rather than name by name, so a double population anywhere fails here.",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — Zacharias the Everliving gains \"Magic Level 4\" from \"Wizard Level\" nested inside \"Magic\" > creates no child name twice, over the whole child list — a double population anywhere fails here",
+                "demands": "the recruited unit's child-name list has no duplicate.",
+                "got": "Passes on the current, unfixed tree — a real regression guard for the depth fix, not a case that pins missing behaviour."
+              },
+              {
+                "case": "Orcs and goblins definitive, 0-1 Hill Goblins (f23f-1816-93a7-3059): gains Hand Weapon exactly once — the second, independently reached site, where the itemised branch of a nested group decides.",
+                "file": "src/hooks/useRoster.nestedMandatoryGroups.test.js",
+                "testName": "Issue 0145 AC1 — a second, independently reached nested site > \"0-1 Hill Goblins\" gains \"Hand Weapon\" exactly once, from the itemised branch of a nested group",
+                "demands": "recruiting 0-1 Hill Goblins creates exactly one 'Hand Weapon' child, from the itemised 'Weapons' group nested inside 'Weapons and Armour' (which has no min of its own).",
+                "got": "AssertionError: expected [] to have a length of 1 but got +0 — the nested itemised group is never walked today."
+              },
+              {
+                "case": "A choose-one group nested inside a group without a min, carrying a defaultSelectionEntryId that matches its second member: that member is created, once, with the nested group's min as the count.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — die Option, die eine verschachtelte Pflichtgruppe beisteuert (Issue 0145 AC2) > eine wähle-eine-Gruppe, verschachtelt in einer Gruppe ohne eigenes min, mit passender defaultSelectionEntryId: die benannte Option wird angelegt, mit dem min der verschachtelten Gruppe als Anzahl",
+                "demands": "a synthetic 'Loadout' (no min) containing nested 'Sidearm' (min 2/max 2, defaultSelectionEntryId -> Rapier) yields exactly one child, 'Rapier', with number 2.",
+                "got": "AssertionError: expected [] to deeply equal [ { name: 'Rapier', number: 2 } ] — the nested group is never reached."
+              },
+              {
+                "case": "The same nested group with a defaultSelectionEntryId that matches nothing: the first member is created — unchanged from the depth-0 fallback.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — die Option, die eine verschachtelte Pflichtgruppe beisteuert (Issue 0145 AC2) > dieselbe verschachtelte Gruppe mit einer defaultSelectionEntryId, die zu nichts passt: die erste Option wird angelegt — unverändert gegenüber der Tiefe-0-Rückfallregel",
+                "demands": "same nested group, dangling defaultSelectionEntryId, yields the first member 'Dagger' with number 2.",
+                "got": "AssertionError: expected [] to deeply equal [ { name: 'Dagger', number: 2 } ]."
+              },
+              {
+                "case": "The same nested group with the attribute absent: the first member is created.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — die Option, die eine verschachtelte Pflichtgruppe beisteuert (Issue 0145 AC2) > dieselbe verschachtelte Gruppe ohne gesetztes Attribut: die erste Option wird angelegt",
+                "demands": "same nested group, defaultSelectionEntryId undefined, yields the first member 'Dagger' with number 2.",
+                "got": "AssertionError: expected [] to deeply equal [ { name: 'Dagger', number: 2 } ]."
+              },
+              {
+                "case": "Wizard Level's real shape, as a generic fixture: a nested group with a dangling default AND a member carrying its own min — the member is created and the dangling default is never consulted.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — die Option, die eine verschachtelte Pflichtgruppe beisteuert (Issue 0145 AC2) > Wizard Levels reale Form als generische Fixture: eine verschachtelte Gruppe mit einer ins Leere zeigenden Vorgabe UND einem Mitglied mit eigenem min — das Mitglied wird angelegt, die verwaiste Vorgabe bleibt unbeachtet",
+                "demands": "a group 'Magic' (no min) containing nested 'Wizard Level' (min 1/max 1, dangling defaultSelectionEntryId) whose only member 'Magic Level 4' carries its own min 1 yields exactly that member, once.",
+                "got": "AssertionError: expected [] to deeply equal [ [ { name: 'Magic Level 4', number: 1 } ] ] — no member of the nested group is reached today."
+              },
+              {
+                "case": "A mandatory group three levels deep (group without min -> group without min -> group with min 1) is populated.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — Pflichtgruppen an jeder Tiefe (Issue 0145 AC1) > eine Pflichtgruppe drei Ebenen tief (Gruppe ohne min → Gruppe ohne min → Gruppe mit min 1) wird bevölkert",
+                "demands": "a three-level nested group chain (no min -> no min -> min 1, choose-one with no default) yields the first member 'Torch' with number 1.",
+                "got": "AssertionError: expected [] to deeply equal [ { name: 'Torch', number: 1 } ] — only one group level is walked today."
+              },
+              {
+                "case": "A nested group whose own min is 0 but whose members carry min 1 stays unpopulated — the rule that keeps the 83 unmet obligations unmet.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — Pflichtgruppen an jeder Tiefe (Issue 0145 AC1) > eine verschachtelte Gruppe, deren eigenes min 0 ist, deren Mitglieder aber min 1 tragen, bleibt unbevölkert — die Regel, die die 83 unerfüllten Pflichten unerfüllt lässt",
+                "demands": "a nested group modelled on 'Lores of Magic' (max but no min) whose member carries its own min 1 stays unpopulated even after the depth fix.",
+                "got": "Passes on the current, unfixed tree — pins the boundary the depth fix must not cross; must still pass once populateChildren recurses into nested groups."
+              },
+              {
+                "case": "A mandatory nested group with no direct members of its own but with a mandatory group inside it contributes only the inner group's member.",
+                "file": "src/roster/selectionFactory.test.js",
+                "testName": "createSelectionFromDef — Pflichtgruppen an jeder Tiefe (Issue 0145 AC1) > eine Pflichtgruppe ohne eigene direkte Mitglieder, aber mit einer Pflichtgruppe darin, steuert nur das Mitglied der inneren Gruppe bei",
+                "demands": "an outer mandatory group (min 1) with no direct entries/links, containing an inner mandatory group (min 1, choose-one, member 'Fire') yields exactly one child, 'Fire', with number 1 — nothing from the outer group's own (empty) default resolution.",
+                "got": "AssertionError: expected [] to deeply equal [ { name: 'Fire', number: 1 } ] — the outer group's default-member fallback resolves to null (no members) and nothing recurses into its nested group today."
+              },
+              {
+                "case": "KONTROLLE: the file's four existing cases are unchanged and still pass.",
+                "file": "",
+                "testName": "",
+                "demands": "the four pre-existing cases in src/roster/selectionFactory.test.js keep passing after the depth fix lands.",
+                "got": "Not a case I wrote — the four pre-existing cases already exist and already pass on the current tree (verified by running the file: 5 passed among the 11 cases in the file before my additions, all 4 originals among them). Nothing to add; the implementer must not touch them."
+              },
+              {
+                "case": "A nested mandatory choose-one group with a defaultSelectionEntryId pointing at the dearer of two options: getOptionDisplayCost counts the named option, and equals getSelectionTotalCost of what createSelectionFromDef actually builds.",
+                "file": "src/roster/rosterCounter.mandatoryGroupDefault.test.js",
+                "testName": "getOptionDisplayCost — eine verschachtelte Pflichtgruppe mit Katalog-Vorgabe (Issue 0145) > rechnet die im Katalog benannte Option ein, auch eine Ebene tief verschachtelt; and > stimmt mit dem nach dem Ausheben tatsächlich anfallenden Preis überein",
+                "demands": "for a unit with a group 'Loadout' (no min) nesting a choose-one group 'Weapon' (min 1, default -> Heavy Weapon, the dearer option), getOptionDisplayCost returns unit cost + heavy weapon cost, and equals getSelectionTotalCost of the actually recruited selection (which must hold exactly 'Heavy Weapon').",
+                "got": "First test: AssertionError: expected 20 to be 29 — nested groups are never walked by getOptionDisplayCost's point 4 today. Second test: AssertionError: expected [] to deeply equal [ 'Heavy Weapon' ] — nothing is recruited into the nested group today either, so the two happen to (wrongly) agree at 20 without the depth fix."
+              },
+              {
+                "case": "An itemised group (group min 2, two members each min 1, different prices): estimate equals recruited cost. This is the case the current tree gets wrong and the shared walk fixes; write it so it reads as the contract, not as a fix.",
+                "file": "src/roster/rosterCounter.mandatoryGroupDefault.test.js",
+                "testName": "getOptionDisplayCost — eine itemisierte Pflichtgruppe (Issue 0145) > summiert jedes Mitglied mit eigenem min, nicht Default-Option × Gruppen-min; and > stimmt mit dem nach dem Ausheben tatsächlich anfallenden Preis überein — der Vertrag, nicht ein Sonderfall",
+                "demands": "for a unit with a group 'Tools' (min 2, two members 'Pick' and 'Shovel', each with its own min 1, different prices), getOptionDisplayCost returns unit cost + Pick cost + Shovel cost, and equals getSelectionTotalCost of the actually recruited selection (which already holds both members today — the factory's itemised handling is correct, only the estimate is not).",
+                "got": "First test: AssertionError: expected 26 to be 30 — getOptionDisplayCost's point 4 prices the default option (Pick) times the group's own min (2) instead of summing each member's own cost. Second test: same 26-vs-30 mismatch, because the recruited cost (30, correct today) disagrees with the wrong estimate."
+              },
+              {
+                "case": "Criterion 7 — the section tree, the titles and the row multiset: no new case. src/components/editor/SelectionConfigurator.groupMembership.fixtureSweep.test.jsx already renders all 208 unit cards through the production seam and asserts the invariants that hold before and after; it must stay green, unchanged.",
+                "file": "",
+                "testName": "",
+                "demands": "the plan explicitly asks for no new case here — the existing sweep test already covers it.",
+                "got": "Not a case I wrote, by the plan's own instruction; left untouched."
+              }
+            ],
+            "openQuestions": [],
+            "questions": [],
+            "summary": "Wrote 13 new failing test cases across three files (a new src/hooks/useRoster.nestedMandatoryGroups.test.js against real fixture catalogues, and additions to src/roster/selectionFactory.test.js and src/roster/rosterCounter.mandatoryGroupDefault.test.js) covering every case the test plan named for increment 1, wrote CLAUDE.md suite docs for src/roster and src/hooks (neither existed), and confirmed each new case fails for the missing behaviour (npx vitest run on each file, quoted per-case in `cases`) while every pre-existing and boundary-pinning case still passes."
+          },
+          "prompt": "Issue directory: docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken\nThis increment is worked on branch claude/offene-aufgaben-pk52qh--inc-1. Before anything else make sure you are on it: git fetch origin claude/offene-aufgaben-pk52qh--inc-1 and check it out; if the remote does not have it, create it from claude/offene-aufgaben-pk52qh and push it with -u.\nThis run works docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/issue.md one increment at a time, and increment 1 is yours:\n  Mandatory members are created at any group depth — Recruiting a unit materialises every member the catalogue makes mandatory, however deeply the mandatory group is nested, and the option a mandatory group contributes is the one the catalogue names. What units receive today does not change beyond the members that were missing.\nWhat it has to satisfy:\n  - Issue criterion 1: adding Zacharias the Everliving to a fresh roster creates Magic Level 4 (799b-f6a5-b38c-b0c2), held in group Wizard Level nested inside group Magic; Zombie Dragon and the six Bloodline powers on the same card still appear exactly once each.\n  - Issue criterion 2: where a group names a defaultSelectionEntryId that matches one of its own options, that option is the one created; where the attribute is absent or points at nothing (as Wizard Level's 42d9-cebe-18d5-cdbd does), what is created is unchanged from today.\n  - Issue criterion 7: the section tree, the section titles and the per-card row multiset are unchanged across the fixture catalogues' unit cards, except where a member that was missing is now created.\n  - The price a card shows before a unit is recruited still matches what recruiting it actually costs.\n  - The change is measured through the production recruitment path, not only through a test seam.\nDeliberately not yours, and not a gap — a later increment takes each of these: An unmet obligation renders as outstanding on every render path.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the steps subcommand of the backlog helper your shared brief names:\n  - steps docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 research:inc-1.0 --fields testPlan — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - start docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 tests:inc-1.0 <the prompt file> — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - record docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json inc-1 tests:inc-1.0 <the return file> <the prompt file> — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - cases\n  - openQuestions\n  - questions\n  - summary\n"
         }
       ],
       "attempts": []
