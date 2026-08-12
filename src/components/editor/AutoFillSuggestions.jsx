@@ -8,12 +8,16 @@ import { useTranslation } from '../../i18n/useTranslation';
  * (Issue 0135; ADR-0034/0035).
  *
  * Das Panel beantwortet genau eine Frage: **was passt noch in die
- * Restpunkte?** Es erscheint erst, wenn die Liste eine Punktgrenze hat und
- * mindestens {@link MIN_REMAINING_POINTS} Punkte zu ihr fehlen — darunter
- * lohnt kein Vorschlag —, und es nennt die verbleibende Summe. Sichtbar ist
- * es dann **immer**, auch wenn gerade nichts hineinpasst (dann steht statt
- * der Liste ein Hinweis): verschwände es still, wäre „nichts passt mehr" von
- * „alle Punkte verplant" nicht zu unterscheiden.
+ * Restpunkte?** Es ist damit ein Werkzeug für den Schluss der Listenbauerei —
+ * es erscheint erst auf den **letzten {@link FILL_UP_WINDOW_POINTS} Punkten**:
+ * die Liste hat eine Punktgrenze, und es fehlt noch etwas zu ihr, aber
+ * höchstens diese Spanne (Issue 0151). Bei einer größeren Lücke schweigt es —
+ * dort ist die Frage nicht „was passt noch hinein", sondern „welche Einheiten
+ * will ich überhaupt", und die beantwortet der Aushebe-Dialog. Innerhalb der
+ * Spanne nennt es die verbleibende Summe und ist **immer** sichtbar, auch wenn
+ * gerade nichts hineinpasst (dann steht statt der Liste ein Hinweis):
+ * verschwände es still, wäre „nichts passt mehr" von „alle Punkte verplant"
+ * nicht zu unterscheiden.
  *
  * Vorgeschlagen wird allein, was der Bericht als **wählbar** führt: ein
  * Angebots-Anker (`offerAnchor`) oder ein belegter Slot mit verbleibendem
@@ -48,8 +52,11 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Vorschlag ohne Aktionsknopf.
  */
 
-/** Ab dieser Lücke zum eingestellten Punktwert lohnt ein Vorschlag. */
-const MIN_REMAINING_POINTS = 50;
+/**
+ * Die letzten Punkte einer Liste: nur bis zu dieser Lücke zum eingestellten
+ * Punktwert wird aufgefüllt (Issue 0151).
+ */
+const FILL_UP_WINDOW_POINTS = 50;
 
 /** So viele Vorschläge stehen ohne Aufklappen da. */
 const VISIBLE_SUGGESTION_COUNT = 8;
@@ -87,10 +94,11 @@ export default function AutoFillSuggestions({
 
   const suggestions = useMemo(() => {
     const collected = [];
-    // Ohne Punktgrenze gibt es keine Differenz zu füllen; unter der Schwelle
-    // ist die Liste nah genug am Ziel.
+    // Ohne Punktgrenze gibt es keine Differenz zu füllen; über der Spanne ist
+    // die Liste noch nicht am Auffüllen, darunter (0 oder Überschreitung) ist
+    // nichts mehr zu füllen.
     if (!capabilities || costLimitTypeId === null || remainingPoints === null) return collected;
-    if (remainingPoints < MIN_REMAINING_POINTS) return collected;
+    if (remainingPoints <= 0 || remainingPoints > FILL_UP_WINDOW_POINTS) return collected;
 
     for (const [path, capability] of capabilities) {
       if (!isSelectableSlot(capability)) continue;
@@ -143,9 +151,9 @@ export default function AutoFillSuggestions({
     return capabilities.get(framePath)?.name ?? null;
   };
 
-  // Sichtbar an der Lücke: fehlen genug Punkte, steht das Panel da — auch
-  // wenn gerade nichts hineinpasst. Ein stilles Verschwinden wäre von „alles
-  // erledigt" nicht zu unterscheiden.
+  // Sichtbar an der Lücke: steht die Liste auf ihren letzten Punkten, steht
+  // das Panel da — auch wenn gerade nichts hineinpasst. Ein stilles
+  // Verschwinden wäre von „alles erledigt" nicht zu unterscheiden.
   //
   // Ohne `forcePath` führt der Bericht für dieses Kontingent überhaupt keine
   // Slots (seine Definition kennt der Katalog nicht mehr). Dann schweigt das
@@ -154,7 +162,8 @@ export default function AutoFillSuggestions({
   const isOpen = forcePath !== null
     && costLimitTypeId !== null
     && remainingPoints !== null
-    && remainingPoints >= MIN_REMAINING_POINTS;
+    && remainingPoints > 0
+    && remainingPoints <= FILL_UP_WINDOW_POINTS;
   if (!isOpen) return null;
 
   const hasMore = suggestions.length > VISIBLE_SUGGESTION_COUNT;
