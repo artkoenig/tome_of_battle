@@ -3,6 +3,11 @@
  * „was macht das Panel mit einer hereingereichten Zahl", sondern „entsteht die
  * Lücke aus der echten Rechnung und kommt sie am Panel an".
  *
+ * Issue 0151 hat die Spanne umgedreht: das Panel gehört an den Schluss der
+ * Listenbauerei und erscheint deshalb nur auf den **letzten 50 Punkten**
+ * (Lücke 1…50). Die Fälle unten sind dieselben drei Kriterien an den neuen
+ * Kanten.
+ *
  * Die Lücke ist `roster.costLimit` minus der Summe der Limit-Kostenart aus dem
  * **Bericht** (`costTotals[roster.costLimitType]`), und sie ist `null`, wenn
  * keine Limit-Kostenart gesetzt ist oder der Punktwert 0 ist. Gerechnet wird
@@ -138,28 +143,42 @@ const renderEditor = (roster) => render(
 /** Der Titel des Auffüll-Panels — im Editor sonst nirgends. */
 const PANEL_TITLE = 'Auffüllen';
 
-describe('Editor: die Auffüll-Lücke entsteht aus der echten Rechnung und kommt am Panel an (Issue 0135)', () => {
-  it('Kriterium 3: Punktwert 540 bei 240 verplanten Punkten → Panel mit der Lücke 300 und den Kandidaten, die hineinpassen', () => {
-    const { container } = renderEditor(appRoster(540));
-
-    expect(container.textContent).toContain(PANEL_TITLE);
-    // Die Lücke ist gerechnet, nicht hereingereicht: 540 − 240 (Bericht).
-    expect(container.textContent).toContain('300');
-    expect(container.textContent).toContain('Ritter');
-    expect(container.textContent).toContain('Spaeher');
-  });
-
-  it('Kriterium 3 an der Schwelle: Punktwert 290 → Lücke genau 50 → Panel mit dem Kandidaten, der noch hineinpasst', () => {
+describe('Editor: die Auffüll-Lücke entsteht aus der echten Rechnung und kommt am Panel an (Issue 0135, Spanne aus Issue 0151)', () => {
+  it('Kriterium 3 an der oberen Kante: Punktwert 290 bei 240 verplanten Punkten → Lücke genau 50 → Panel mit dem Kandidaten, der hineinpasst', () => {
     const { container } = renderEditor(appRoster(290));
 
     expect(container.textContent).toContain(PANEL_TITLE);
+    // Die Lücke ist gerechnet, nicht hereingereicht: 290 − 240 (Bericht).
+    expect(container.textContent).toContain('50');
     expect(container.textContent).toContain('Spaeher');
     // 100 Pkt passen nicht mehr in 50 Restpunkte.
     expect(container.textContent).not.toContain('Ritter');
   });
 
-  it('Kriterium 2 an der Schwelle: Punktwert 289 → Lücke 49 → kein Panel im Editor', () => {
-    const { container } = renderEditor(appRoster(289));
+  it('Kriterium 3 an der unteren Kante: Punktwert 285 → Lücke 45 → Panel mit dem Kandidaten, der genau hineinpasst', () => {
+    const { container } = renderEditor(appRoster(285));
+
+    expect(container.textContent).toContain(PANEL_TITLE);
+    expect(container.textContent).toContain('Spaeher');
+    expect(container.textContent).not.toContain('Ritter');
+  });
+
+  it('Kriterium 2 an der Schwelle: Punktwert 291 → Lücke 51 → kein Panel im Editor', () => {
+    const { container } = renderEditor(appRoster(291));
+
+    expect(container.textContent).not.toContain(PANEL_TITLE);
+    expect(container.textContent).not.toContain('Spaeher');
+  });
+
+  it('Kriterium 2: Punktwert 540 → Lücke 300 → die Liste ist weit vom Ziel, kein Panel im Editor', () => {
+    const { container } = renderEditor(appRoster(540));
+
+    expect(container.textContent).not.toContain(PANEL_TITLE);
+    expect(container.textContent).not.toContain('Spaeher');
+  });
+
+  it('Kriterium 2: Punktwert 240 → Lücke 0 → kein Panel im Editor', () => {
+    const { container } = renderEditor(appRoster(240));
 
     expect(container.textContent).not.toContain(PANEL_TITLE);
     expect(container.textContent).not.toContain('Spaeher');

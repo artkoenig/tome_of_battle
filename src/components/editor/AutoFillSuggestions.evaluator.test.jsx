@@ -3,11 +3,20 @@
  * statt offene Pflichten (und Kategorien!) aufzuzählen.
  * Test-first: die neue Implementierung existiert noch nicht.
  *
+ * ── Issue 0151: die Spanne ist umgedreht ────────────────────────────────────
+ * Das Panel ist das Werkzeug für den **Schluss** der Listenbauerei und
+ * erscheint nur noch auf den **letzten 50 Punkten** (Lücke 1…50); bei größerer
+ * Lücke schweigt es. Die Kriterien 2 und 3 stehen unten in dieser Fassung.
+ * Für die Kriterien 4 bis 10 ändert sich nichts an der Zusage — nur der
+ * Datensatz ist auf diese Spanne herunterskaliert (die Restsumme der Fälle ist
+ * jetzt 50 statt 300, die Preise entsprechend), damit dieselben Fälle im
+ * Sichtfenster des Panels liegen.
+ *
  * Intention (Akzeptanzkriterien der Issue, wörtlich):
  * 1. Ohne Punktgrenze (keine Limit-Kostenart oder Punktwert 0) erscheint das
  *    Panel nicht.
- * 2. Lücke < 50 Punkte — auch 0 und Überschreitung — kein Panel.
- * 3. Lücke ≥ 50 Punkte: Panel erscheint und nennt die verbleibende Summe in
+ * 2. Lücke > 50 Punkte — und ebenso 0 und Überschreitung — kein Panel.
+ * 3. Lücke 1…50 Punkte: Panel erscheint und nennt die verbleibende Summe in
  *    der Limit-Kostenart.
  * 4. Vorgeschlagen wird nur, was der Bericht als wählbar führt: eine Einheit
  *    unmittelbar unter dem Kontingent oder eine Option an einer bestehenden
@@ -93,19 +102,19 @@ const CAT_GENERAL = 'cat-general';
 const FORCE_PATH = '0';
 
 const CHARIOT_ID = 'entry-chariot';   // belegt, max 1 → ausgeschöpft
-const BLADES_ID = 'entry-blades';     // Option am belegten Streitwagen, 25
-const KNIGHT_ID = 'entry-knight';     // 100
-const ARCHER_ID = 'entry-archer';     // 50
-const MERC_ID = 'entry-merc';         // 300 — genau die Restsumme
-const DRAGON_ID = 'entry-dragon';     // 301 — ein Punkt zu teuer
+const BLADES_ID = 'entry-blades';     // Option am belegten Streitwagen, 10
+const KNIGHT_ID = 'entry-knight';     // 45
+const ARCHER_ID = 'entry-archer';     // 30
+const MERC_ID = 'entry-merc';         // 50 — genau die Restsumme
+const DRAGON_ID = 'entry-dragon';     // 51 — ein Punkt zu teuer
 const BANNER_ID = 'entry-banner';     // 0 Punkte
 const GHOST_ID = 'entry-ghost';       // hidden
 const LOCKED_ID = 'entry-locked';     // max 0 → isBlocked
 const DUTY_ID = 'entry-duty';         // min 1, 0 Punkte → Pflicht-Phantom
 const WAND_ID = 'entry-wand';         // 0 Pkt, aber 30 in einer anderen Kostenart
-const SMITH_ID = 'entry-smith';       // 60 Pkt (und 400 in einer anderen Kostenart)
-const SPEAR_ID = 'entry-spear';       // max 3, belegt 1 → Restspielraum 2, 40 Pkt
-const DUTY_KNIGHT_ID = 'entry-duty-knight'; // min 1, 70 Pkt → Pflicht-Phantom mit Kosten
+const SMITH_ID = 'entry-smith';       // 40 Pkt (und 400 in einer anderen Kostenart)
+const SPEAR_ID = 'entry-spear';       // max 3, belegt 1 → Restspielraum 2, 20 Pkt
+const DUTY_KNIGHT_ID = 'entry-duty-knight'; // min 1, 25 Pkt → Pflicht-Phantom mit Kosten
 
 const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 <gameSystem id="${GAME_SYSTEM_ID}" name="Test System">
@@ -150,20 +159,20 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
         <costs><cost name="Pkt" typeId="${PTS}" value="200"/></costs>
         <selectionEntries>
           <selectionEntry id="${BLADES_ID}" name="Sichelklingen" type="upgrade">
-            <costs><cost name="Pkt" typeId="${PTS}" value="25"/></costs>
+            <costs><cost name="Pkt" typeId="${PTS}" value="10"/></costs>
           </selectionEntry>
         </selectionEntries>
       </selectionEntry>
-    ${unitXml(KNIGHT_ID, 'Ritter', 100)}
-    ${unitXml(ARCHER_ID, 'Bogenschuetze', 50)}
-    ${unitXml(MERC_ID, 'Soeldner', 300)}
-    ${unitXml(DRAGON_ID, 'Drache', 301)}
+    ${unitXml(KNIGHT_ID, 'Ritter', 45)}
+    ${unitXml(ARCHER_ID, 'Bogenschuetze', 30)}
+    ${unitXml(MERC_ID, 'Soeldner', 50)}
+    ${unitXml(DRAGON_ID, 'Drache', 51)}
     ${unitXml(BANNER_ID, 'Freie Standarte', 0)}
-    ${unitXml(GHOST_ID, 'Geist', 40, '', 'hidden="true"')}
-    ${unitXml(LOCKED_ID, 'Verbannter', 40, maxConstraint('limit-locked-max', 0))}
+    ${unitXml(GHOST_ID, 'Geist', 20, '', 'hidden="true"')}
+    ${unitXml(LOCKED_ID, 'Verbannter', 20, maxConstraint('limit-locked-max', 0))}
     ${unitXml(DUTY_ID, 'Pflichtwache', 0, minConstraint('limit-duty-min', 1))}
-    ${unitXml(DUTY_KNIGHT_ID, 'Pflichtritter', 70, minConstraint('limit-duty-knight-min', 1))}
-    ${unitXml(SPEAR_ID, 'Speertraeger', 40, maxConstraint('limit-spear-max', 3))}
+    ${unitXml(DUTY_KNIGHT_ID, 'Pflichtritter', 25, minConstraint('limit-duty-knight-min', 1))}
+    ${unitXml(SPEAR_ID, 'Speertraeger', 20, maxConstraint('limit-spear-max', 3))}
       <selectionEntry id="${WAND_ID}" name="Zauberstab" type="unit">
         <categoryLinks><categoryLink id="cl-wand" name="Truppen" targetId="${CAT_TROOPS}" primary="true"/></categoryLinks>
         <costs>
@@ -174,17 +183,17 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
       <selectionEntry id="${SMITH_ID}" name="Runenschmied" type="unit">
         <categoryLinks><categoryLink id="cl-smith" name="Truppen" targetId="${CAT_TROOPS}" primary="true"/></categoryLinks>
         <costs>
-          <cost name="Pkt" typeId="${PTS}" value="60"/>
+          <cost name="Pkt" typeId="${PTS}" value="40"/>
           <cost name="Magie" typeId="${MAGIC}" value="400"/>
         </costs>
       </selectionEntry>
   </selectionEntries>
 </catalogue>`;
 
-/** Neun gleichartige Kandidaten (90, 80, … 10 Punkte) für den Deckel-Fall. */
+/** Neun gleichartige Kandidaten (50, 45, … 10 Punkte) für den Deckel-Fall. */
 const NINE = [
-  ['Alpha', 90], ['Beta', 80], ['Gamma', 70], ['Delta', 60], ['Epsilon', 50],
-  ['Zeta', 40], ['Eta', 30], ['Theta', 20], ['Iota', 10],
+  ['Alpha', 50], ['Beta', 45], ['Gamma', 40], ['Delta', 35], ['Epsilon', 30],
+  ['Zeta', 25], ['Eta', 20], ['Theta', 15], ['Iota', 10],
 ];
 const NINE_FORCE_DEF_ID = 'force-nine';
 const NINE_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -199,8 +208,8 @@ const NINE_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   </selectionEntries>
 </catalogue>`;
 
-// ── Eigener Datensatz: Lücke ≥ 50, aber nichts passt hinein ─────────────────
-// Ein Kontingent, dessen einzige wählbare Einheit 500 Pkt kostet. Bei 300
+// ── Eigener Datensatz: Lücke in der Spanne, aber nichts passt hinein ────────
+// Ein Kontingent, dessen einzige wählbare Einheit 500 Pkt kostet. Bei 50
 // Restpunkten bleibt kein Vorschlag übrig — das Panel erscheint trotzdem.
 
 const COSTLY_FORCE_DEF_ID = 'force-costly';
@@ -215,14 +224,14 @@ const COSTLY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <selectionEntries>${unitXml('entry-giant', 'Kriegsriese', 500)}</selectionEntries>
 </catalogue>`;
 
-/** App-Roster des „nichts passt"-Datensatzes: leeres Kontingent, 300 Punkte. */
+/** App-Roster des „nichts passt"-Datensatzes: leeres Kontingent, 50 Punkte. */
 function costlyRoster() {
   return {
     id: 'roster-costly',
     name: 'Costly Roster',
     systemId: 'system-uuid',
     catalogueId: 'cat-costly',
-    costLimit: 300,
+    costLimit: 50,
     costLimitType: PTS,
     forces: [{ id: 'force-uuid-costly', forceEntryId: COSTLY_FORCE_DEF_ID, catalogueId: 'cat-costly', selections: [] }],
   };
@@ -259,12 +268,12 @@ const ORIGIN_GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 <catalogue id="${OWN_CATALOGUE_ID}" name="Ogre Kingdoms" gameSystemId="${ORIGIN_GS_ID}">
-  <selectionEntries>${originUnitXml('entry-own', 'Schlachtmeister', 100)}</selectionEntries>
+  <selectionEntries>${originUnitXml('entry-own', 'Schlachtmeister', 50)}</selectionEntries>
 </catalogue>`;
 
 const FOREIGN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 <catalogue id="${FOREIGN_CATALOGUE_ID}" name="Vampire Counts" gameSystemId="${ORIGIN_GS_ID}">
-  <selectionEntries>${originUnitXml('entry-foreign', 'Vampirfuerst', 100)}</selectionEntries>
+  <selectionEntries>${originUnitXml('entry-foreign', 'Vampirfuerst', 50)}</selectionEntries>
 </catalogue>`;
 
 const LIBRARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -305,14 +314,14 @@ function originSystem() {
   };
 }
 
-/** App-Roster des Herkunfts-Datensatzes: ein leeres Kontingent, 300 Punkte. */
+/** App-Roster des Herkunfts-Datensatzes: ein leeres Kontingent, 50 Punkte. */
 function originRoster() {
   return {
     id: 'roster-origin',
     name: 'Origin Roster',
     systemId: ORIGIN_GS_ID,
     catalogueId: OWN_CATALOGUE_ID,
-    costLimit: 300,
+    costLimit: 50,
     costLimitType: PTS,
     forces: [{ id: 'force-uuid-origin', forceEntryId: ORIGIN_FORCE_DEF_ID, catalogueId: OWN_CATALOGUE_ID, selections: [] }],
   };
@@ -332,7 +341,7 @@ function appSystem(catalogueXml = CATALOGUE_XML) {
 
 /**
  * App-Roster: Streitwagen ×1 (200 Pkt, max 1 → ausgeschöpft) und Speertraeger
- * ×1 (40 Pkt, max 3 → Restspielraum 2) bei 540 Pkt Grenze → 300 Restpunkte.
+ * ×1 (20 Pkt, max 3 → Restspielraum 2) bei 270 Pkt Grenze → 50 Restpunkte.
  */
 function appRoster() {
   return {
@@ -340,7 +349,7 @@ function appRoster() {
     name: 'Test Roster',
     systemId: 'system-uuid',
     catalogueId: 'cat-main',
-    costLimit: 540,
+    costLimit: 270,
     costLimitType: PTS,
     forces: [
       {
@@ -363,7 +372,7 @@ function nineRoster() {
     name: 'Nine Roster',
     systemId: 'system-uuid',
     catalogueId: 'cat-nine',
-    costLimit: 300,
+    costLimit: 50,
     costLimitType: PTS,
     forces: [{ id: 'force-uuid-9', forceEntryId: NINE_FORCE_DEF_ID, catalogueId: 'cat-nine', selections: [] }],
   };
@@ -378,7 +387,7 @@ function evaluationOf(catalogueXml, roster) {
 }
 
 let mainEvaluationCache = null;
-/** Der Hauptdatensatz (Streitwagen belegt, 300 Restpunkte). */
+/** Der Hauptdatensatz (Streitwagen belegt, 50 Restpunkte). */
 function mainEvaluation() {
   mainEvaluationCache ??= evaluationOf(CATALOGUE_XML, appRoster());
   return mainEvaluationCache;
@@ -492,7 +501,7 @@ function addEffects(addUnit, operations) {
 
 const MAIN_PROPS = {
   forcePath: FORCE_PATH,
-  remainingPoints: 300,
+  remainingPoints: 50,
   costLimitTypeId: PTS,
   costTypeLabel: 'Pkt',
   activeCatalogue: { id: 'cat-main' },
@@ -550,7 +559,7 @@ function renderOriginPanel({ forceCatalogueId, activeCatalogueId = OWN_CATALOGUE
     capabilities,
     pathBySelectionId,
     forcePath: FORCE_PATH,
-    remainingPoints: 300,
+    remainingPoints: 50,
     costLimitTypeId: PTS,
     costTypeLabel: 'Pkt',
     system: originSystem(),
@@ -566,7 +575,7 @@ function renderOriginPanel({ forceCatalogueId, activeCatalogueId = OWN_CATALOGUE
 /** Alle Namen des Herkunfts-Datensatzes, teuerste zuerst. */
 const ORIGIN_NAMES = ['Schlachtmeister', 'Vampirfuerst', 'Soeldnerhauptmann', 'Grosses Banner', 'Namenlose Wache'];
 
-/** Die im Hauptdatensatz bei 300 Restpunkten erwarteten Vorschläge. */
+/** Die im Hauptdatensatz bei 50 Restpunkten erwarteten Vorschläge. */
 const MAIN_SUGGESTIONS = ['Soeldner', 'Ritter', 'Runenschmied', 'Bogenschuetze', 'Speertraeger', 'Sichelklingen'];
 const others = (name) => MAIN_SUGGESTIONS.filter(other => other !== name);
 
@@ -587,9 +596,17 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
     });
   });
 
-  describe('Kriterium 2: Lücke unter 50 Punkten → kein Panel', () => {
-    it('Lücke 49 (ein Punkt unter der Schwelle): kein Panel', () => {
-      const { container } = renderPanel({ remainingPoints: 49 });
+  describe('Kriterium 2: Lücke über 50 Punkten (und 0 oder Überschreitung) → kein Panel', () => {
+    it('Lücke 51 (ein Punkt über der Spanne): kein Panel', () => {
+      const { container } = renderPanel({ remainingPoints: 51 });
+
+      expect(container.textContent).toBe('');
+    });
+
+    it('Lücke 300 (die Liste ist weit vom Ziel): kein Panel', () => {
+      // Der gemeldete Fall (Issue 0151): das Panel drängte sich schon auf,
+      // wenn die Liste noch gar nicht am Auffüllen war.
+      const { container } = renderPanel({ remainingPoints: 300 });
 
       expect(container.textContent).toBe('');
     });
@@ -607,25 +624,36 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
     });
   });
 
-  describe('Kriterium 3: ab 50 Punkten Lücke erscheint das Panel', () => {
-    it('Lücke genau 50: das Panel erscheint mit einem Vorschlag im Budget', () => {
+  describe('Kriterium 3: auf den letzten 50 Punkten erscheint das Panel', () => {
+    it('Lücke genau 50 (die obere Kante): das Panel erscheint mit einem Vorschlag im Budget', () => {
       const { capabilities } = mainEvaluation();
-      expect(capabilityOf(capabilities, ARCHER_ID)).toMatchObject({ anchorKind: 'offerAnchor', costs: { [PTS]: 50 } });
+      expect(capabilityOf(capabilities, MERC_ID)).toMatchObject({ anchorKind: 'offerAnchor', costs: { [PTS]: 50 } });
 
       const { container } = renderPanel({ remainingPoints: 50 });
 
-      expect(isShown(container, 'Bogenschuetze')).toBe(true);
+      expect(isShown(container, 'Soeldner')).toBe(true);
       // … und nichts, was nicht mehr hineinpasst.
-      expect(isShown(container, 'Ritter')).toBe(false);
+      expect(isShown(container, 'Drache')).toBe(false);
+    });
+
+    it('Lücke 1 (die untere Kante): das Panel erscheint — mit dem Hinweis, dass nichts mehr hineinpasst', () => {
+      const { capabilities } = mainEvaluation();
+      // Der billigste Kandidat des Datensatzes kostet 10 Pkt.
+      expect(capabilityOf(capabilities, BLADES_ID)).toMatchObject({ costs: { [PTS]: 10 } });
+
+      const { container } = renderPanel({ remainingPoints: 1 });
+
+      expect(container.textContent).toMatch(/Nichts passt/);
+      expect(isShown(container, 'Sichelklingen')).toBe(false);
     });
 
     it('das Panel nennt die verbleibende Summe in der Limit-Kostenart', () => {
-      const { container } = renderPanel({ remainingPoints: 137 });
+      const { container } = renderPanel({ remainingPoints: 37 });
 
-      expect(container.textContent).toMatch(/137[^\d]{0,6}Pkt|Pkt[^\d]{0,6}137/);
+      expect(container.textContent).toMatch(/37[^\d]{0,6}Pkt|Pkt[^\d]{0,6}37/);
     });
 
-    it('Lücke ≥ 50, aber nichts passt hinein: das Panel erscheint trotzdem — mit Restsumme und Hinweis statt Vorschlägen', () => {
+    it('Lücke in der Spanne, aber nichts passt hinein: das Panel erscheint trotzdem — mit Restsumme und Hinweis statt Vorschlägen', () => {
       const { capabilities } = costlyEvaluation();
       // Vorbedingung: die einzige wählbare Einheit ist zu teuer; die offene
       // Pflicht („General") ist nach Kriterium 4 ohnehin kein Vorschlag.
@@ -639,7 +667,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
           capabilities={capabilities}
           pathBySelectionId={new Map()}
           forcePath={FORCE_PATH}
-          remainingPoints={300}
+          remainingPoints={50}
           costLimitTypeId={PTS}
           costTypeLabel="Pkt"
           system={appSystem(COSTLY_CATALOGUE_XML)}
@@ -652,7 +680,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
 
       // Das Panel steht da und nennt die Restsumme …
       expect(container.textContent).not.toBe('');
-      expect(container.textContent).toMatch(/300[^\d]{0,6}Pkt|Pkt[^\d]{0,6}300/);
+      expect(container.textContent).toMatch(/50[^\d]{0,6}Pkt|Pkt[^\d]{0,6}50/);
       // … mit einem Hinweis statt einer Liste (`editor.autofill.nothingFits`).
       expect(container.textContent).toMatch(/Nichts passt/);
       // … und ohne jeden Vorschlag und ohne „+"-Knopf.
@@ -668,21 +696,21 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       // nicht mehr kennt: `ForceEditorSection` reicht dann eine leere Slot-Map
       // und `forcePath: null` herein. „Nichts passt" wäre hier eine Behauptung
       // über etwas, worüber der Bericht nichts weiß.
-      const empty = renderPanel({ forcePath: null, capabilities: new Map(), remainingPoints: 300 });
+      const empty = renderPanel({ forcePath: null, capabilities: new Map(), remainingPoints: 50 });
       expect(empty.container.textContent).toBe('');
       empty.unmount();
 
-      const none = renderPanel({ forcePath: null, capabilities: null, remainingPoints: 300 });
+      const none = renderPanel({ forcePath: null, capabilities: null, remainingPoints: 50 });
       expect(none.container.textContent).toBe('');
     });
 
     it('ohne Pfad bleibt das Panel auch dann aus, wenn die Slot-Map Kandidaten enthielte', () => {
       // Positiver Gegenbeweis: mit Pfad zeigt derselbe Bericht Vorschläge.
-      const withPath = renderPanel({ remainingPoints: 300 });
+      const withPath = renderPanel({ remainingPoints: 50 });
       expect(isShown(withPath.container, 'Ritter')).toBe(true);
       withPath.unmount();
 
-      const { container } = renderPanel({ forcePath: null, remainingPoints: 300 });
+      const { container } = renderPanel({ forcePath: null, remainingPoints: 50 });
 
       expect(container.textContent).toBe('');
     });
@@ -708,7 +736,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       const { capabilities } = mainEvaluation();
       expect(capabilityOf(capabilities, SPEAR_ID)).toMatchObject({
         anchorKind: 'occupied', effectiveMax: 3, current: 1, headroom: 2,
-        isBlocked: false, isHidden: false, costs: { [PTS]: 40 },
+        isBlocked: false, isHidden: false, costs: { [PTS]: 20 },
         frame: { path: FORCE_PATH, defId: FORCE_DEF_ID },
       });
 
@@ -716,7 +744,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
 
       expect(isShown(container, 'Speertraeger')).toBe(true);
       const spearRow = rowOf(container, 'Speertraeger', others('Speertraeger'));
-      expect(spearRow.textContent).toMatch(/40/);
+      expect(spearRow.textContent).toMatch(/20/);
       expect(spearRow.textContent).toContain('Pkt');
     });
 
@@ -740,15 +768,15 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
   describe('Kriterium 5: nichts Verstecktes, nichts Ausgeschöpftes', () => {
     it('ein versteckter (Geist) und ein ausgeschöpfter Kandidat (Verbannter) erscheinen nicht — ein gleich teurer sichtbarer schon', () => {
       const { capabilities } = mainEvaluation();
-      expect(capabilityOf(capabilities, GHOST_ID)).toMatchObject({ isHidden: true, costs: { [PTS]: 40 } });
-      expect(capabilityOf(capabilities, LOCKED_ID)).toMatchObject({ isBlocked: true, isHidden: false, costs: { [PTS]: 40 } });
+      expect(capabilityOf(capabilities, GHOST_ID)).toMatchObject({ isHidden: true, costs: { [PTS]: 20 } });
+      expect(capabilityOf(capabilities, LOCKED_ID)).toMatchObject({ isBlocked: true, isHidden: false, costs: { [PTS]: 20 } });
 
       const { container } = renderPanel();
 
       expect(isShown(container, 'Geist')).toBe(false);
       expect(isShown(container, 'Verbannter')).toBe(false);
       // Beweis, dass die Abwesenheit nicht am Preis liegt: der gleich teure
-      // Speertraeger (40 Pkt) steht sehr wohl da.
+      // Speertraeger (20 Pkt) steht sehr wohl da.
       expect(isShown(container, 'Speertraeger')).toBe(true);
       expect(isShown(container, 'Runenschmied')).toBe(true);
       // Der ausgeschöpfte belegte Slot „Streitwagen" wird hier NICHT über seinen
@@ -758,14 +786,14 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
   });
 
   describe('Kriterium 6: Kosten > 0, höchstens die Restsumme, ablesbar', () => {
-    it('genau die Restsumme (300) ja, ein Punkt darüber (301) nein, 0 Punkte nein — auch nicht mit Kosten in einer anderen Kostenart', () => {
+    it('genau die Restsumme (50) ja, ein Punkt darüber (51) nein, 0 Punkte nein — auch nicht mit Kosten in einer anderen Kostenart', () => {
       const { capabilities } = mainEvaluation();
-      expect(capabilityOf(capabilities, MERC_ID).costs).toEqual({ [PTS]: 300 });
-      expect(capabilityOf(capabilities, DRAGON_ID).costs).toEqual({ [PTS]: 301 });
+      expect(capabilityOf(capabilities, MERC_ID).costs).toEqual({ [PTS]: 50 });
+      expect(capabilityOf(capabilities, DRAGON_ID).costs).toEqual({ [PTS]: 51 });
       expect(capabilityOf(capabilities, BANNER_ID).costs).toEqual({ [PTS]: 0 });
       expect(capabilityOf(capabilities, WAND_ID).costs).toEqual({ [PTS]: 0, [MAGIC]: 30 });
 
-      const { container } = renderPanel({ remainingPoints: 300 });
+      const { container } = renderPanel({ remainingPoints: 50 });
 
       expect(isShown(container, 'Soeldner')).toBe(true);
       expect(isShown(container, 'Drache')).toBe(false);
@@ -777,11 +805,11 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       const { container } = renderPanel();
 
       const knightRow = rowOf(container, 'Ritter', others('Ritter'));
-      expect(knightRow.textContent).toMatch(/100/);
+      expect(knightRow.textContent).toMatch(/45/);
       expect(knightRow.textContent).toContain('Pkt');
 
       const smithRow = rowOf(container, 'Runenschmied', others('Runenschmied'));
-      expect(smithRow.textContent).toMatch(/60/);
+      expect(smithRow.textContent).toMatch(/40/);
     });
 
     it('ein Vorschlag an einer bestehenden Einheit nennt die Einheit, zu der er gehört', () => {
@@ -789,7 +817,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
 
       const bladesRow = rowOf(container, 'Sichelklingen', others('Sichelklingen'));
       expect(bladesRow.textContent).toContain('Streitwagen');
-      expect(bladesRow.textContent).toMatch(/25/);
+      expect(bladesRow.textContent).toMatch(/10/);
     });
   });
 
@@ -805,16 +833,16 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       expect(isShown(container, 'Pflichtwache')).toBe(false);
     });
 
-    it('auch ein Pflicht-Phantom MIT Kosten im Budget (Pflichtritter, 70 Pkt) erscheint nicht', () => {
+    it('auch ein Pflicht-Phantom MIT Kosten im Budget (Pflichtritter, 25 Pkt) erscheint nicht', () => {
       const { capabilities } = mainEvaluation();
       expect(capabilityOf(capabilities, DUTY_KNIGHT_ID)).toMatchObject({
         anchorKind: 'mandatoryPhantom', isMandatoryUnmet: true,
-        isBlocked: false, isHidden: false, costs: { [PTS]: 70 },
+        isBlocked: false, isHidden: false, costs: { [PTS]: 25 },
       });
 
-      const { container } = renderPanel({ remainingPoints: 300 });
+      const { container } = renderPanel({ remainingPoints: 50 });
 
-      // 70 Pkt passen bequem in die Restsumme — die Ankerart schließt ihn aus,
+      // 25 Pkt passen bequem in die Restsumme — die Ankerart schließt ihn aus,
       // nicht der Preis. Beweis dafür: ein billigerer Vorschlag steht da.
       expect(isShown(container, 'Pflichtritter')).toBe(false);
       expect(isShown(container, 'Runenschmied')).toBe(true);
@@ -899,8 +927,8 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
     });
 
     it('genau acht Kandidaten: alle acht stehen da, ohne Aufklappen', () => {
-      // Restpunkte 85 → Alpha (90) fällt über Kriterium 6 heraus, es bleiben acht.
-      const { container } = renderNinePanel(85);
+      // Restpunkte 45 → Alpha (50) fällt über Kriterium 6 heraus, es bleiben acht.
+      const { container } = renderNinePanel(45);
 
       const names = NINE.map(([name]) => name);
       expect(shownInOrder(container, names)).toEqual(
@@ -914,7 +942,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
         expect(capabilityOf(capabilities, `entry-${name.toLowerCase()}`)).toMatchObject({ anchorKind: 'offerAnchor' });
       }
 
-      const { container } = renderNinePanel(300);
+      const { container } = renderNinePanel(50);
       const names = NINE.map(([name]) => name);
 
       expect(shownInOrder(container, names)).toEqual(
@@ -949,7 +977,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       expect(capabilityOf(capabilities, 'entry-foreign')).toBeUndefined();
       expect(capabilityOf(capabilities, 'entry-own')).toMatchObject({
         name: 'Schlachtmeister', anchorKind: 'offerAnchor', sourceId: OWN_CATALOGUE_ID,
-        costs: { [PTS]: 100 },
+        costs: { [PTS]: 50 },
       });
 
       const { container } = renderOriginPanel({ forceCatalogueId: OWN_CATALOGUE_ID });
