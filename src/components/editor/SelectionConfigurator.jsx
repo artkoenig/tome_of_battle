@@ -8,6 +8,7 @@ import {
   UPGRADE_DETAILS_KEYWORDS
 } from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
+import { costBudgetTextsOf } from './costBudgets';
 import OptionGroupComponent from './OptionGroup';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
@@ -398,6 +399,7 @@ export default function SelectionConfigurator({
     const maxLimit = capability.effectiveMax ?? Infinity;
     const points = capability.costs?.[costTypeId] ?? 0;
     const optionName = capability.name;
+    const costBudgets = costBudgetTextsOf(capability, system);
     const { isMandatory, isBinary } = classifyStandaloneOption({ minLimit, maxLimit });
 
     // Auflösung nur noch als Beiwerk (Detail-/Regeltexte, Untereinheiten-Form) —
@@ -467,6 +469,12 @@ export default function SelectionConfigurator({
         </div>
         <div className="sub-selection-controls">
           {points > 0 && <span className="text-gold text-label sub-selection-cost">+{points} {costTypeLabel}</span>}
+          {/* Das Kosten-Budget der Zeile: eine Option, die selbst ein Punktekontingent
+              deckelt (der Magiegegenstands-Block), fuehrt es neben ihrem Schalter —
+              ihre Unter-Auswahlen rendern eingerueckt darunter und zahlen darauf ein. */}
+          {costBudgets.map(budget => (
+            <span key={budget} className="text-micro sub-selection-cost-budget">({budget})</span>
+          ))}
           {isSubUnitWithOwnOptions ? (
             <button
               type="button"

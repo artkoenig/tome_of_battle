@@ -173,7 +173,7 @@ describe('Kriterium 7 — gemischte Gruppe: eigene Optionen UND verlinkte Gruppe
     const unitPath = pathBySelectionId.get(selection.id);
     expect(unitPath).toBe('0/0');
     expect(capabilityUnder(capabilities, unitPath, MIXED_GROUP_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 50 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 50 })] });
     expect(capabilityUnder(capabilities, unitPath, ARMOUR_OF_BONE_LINK_ID))
       .toMatchObject({ isHidden: false });
     LINKED_GROUPS.forEach(group => {
@@ -359,11 +359,11 @@ describe('Kriterium 7, Kante — mehrere eigene Optionen, und eine verlinkte Gru
 
     expect(pathBySelectionId.get('sel-hero')).toBe(HERO_PATH);
     expect(capabilityUnder(capabilities, HERO_PATH, MIXED_BAG_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 40 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 40 })] });
     expect(capabilityUnder(capabilities, HERO_PATH, GEMS_LINK_ID))
       .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 1 });
     expect(capabilityUnder(capabilities, HERO_PATH, RELICS_LINK_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 25 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 25 })] });
 
     expandAll(container);
 

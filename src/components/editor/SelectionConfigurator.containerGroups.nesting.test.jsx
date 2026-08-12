@@ -233,9 +233,9 @@ describe('Kriterium 6 — ein Container im Container behaelt die Tiefe des Katal
     // Vorbedingung am echten Bericht: alle drei Gruppen haben einen Anker.
     expect(pathBySelectionId.get('sel-hero')).toBe(HERO_PATH);
     expect(capabilityUnder(capabilities, HERO_PATH, OUTER_GROUP_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 60 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 60 })] });
     expect(capabilityUnder(capabilities, HERO_PATH, INNER_LINK_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 30 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 30 })] });
     expect(capabilityUnder(capabilities, HERO_PATH, LEAF_LINK_ID))
       .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 1 });
 
@@ -285,7 +285,7 @@ describe('Kriterium 4 — nichts Leeres bleibt auf der Karte zurueck', () => {
     // Vorbedingung: der Container selbst ist im Bericht angeboten (sichtbarer
     // Gruppen-Anker mit Budget 20) — sein Mitglied „Ghost" dagegen nicht.
     expect(capabilityUnder(capabilities, HERO_PATH, VANISH_GROUP_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 20, isHidden: false });
+      .toMatchObject({ anchorKind: 'groupAnchor', isHidden: false, costLimits: [expect.objectContaining({ bound: 20 })] });
 
     expandAll(container);
 
@@ -298,7 +298,7 @@ describe('Kriterium 4 — nichts Leeres bleibt auf der Karte zurueck', () => {
     const { container, capabilities } = renderCard();
 
     expect(capabilityUnder(capabilities, HERO_PATH, BARREN_GROUP_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 20, isHidden: false });
+      .toMatchObject({ anchorKind: 'groupAnchor', isHidden: false, costLimits: [expect.objectContaining({ bound: 20 })] });
 
     expandAll(container);
 
