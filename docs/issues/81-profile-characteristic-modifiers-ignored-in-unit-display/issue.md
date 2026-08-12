@@ -1,5 +1,6 @@
-Status: backlog
+Status: active
 Type: fix
+Branch: claude/profilwert-modifikatoren-bloodlines-zlw2p9
 Blocked by: None
 
 ## Description
