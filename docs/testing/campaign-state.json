@@ -157,7 +157,7 @@
     "campaignIssue": "docs/issues/0149-evaluator-coverage-gaps",
     "runs": 21,
     "lastRunAt": "2026-08-11T23:05:00Z",
-    "lastRunOutcome": "stopped-by-human",
+    "lastRunOutcome": "phase-b-done-not-rearmed",
     "reArmedFor": null,
     "gaps": {
       "docs/testing/at-least-force-toggle-gate": {
@@ -231,8 +231,26 @@
         "question": null,
         "questionStatus": null,
         "answer": null
+      },
+      "docs/testing/at-least-self-any-experimental-hydra-warning": {
+        "cellKey": "condition|atLeast|self|selectionCount|child=any",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-11",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
+      },
+      "docs/testing/parent-min-include-children-bolt-thrower": {
+        "cellKey": "constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false",
+        "attempts": 1,
+        "status": "closed",
+        "lastRoundAt": "2026-08-11",
+        "question": null,
+        "questionStatus": null,
+        "answer": null
       }
     },
-    "reArmNote": "Run 21, the first run after the maintainer restarted the campaign. Six explorer invocations spent the full cell cap and emptied the worklist: the coverage inventory now exits 0 with 130 of 130 cells covered. Four cells came out green (at-least-parent-model-champion-gate, not-equal-to-parent-lance-pistol-gate, not-equal-to-roster-limit-paladin-bsb, not-equal-to-roster-experimental-rat-riders), two red and pinned (at-least-self-any-experimental-hydra-warning: an author message carried by a selectionEntryGroup never reaches the report at that group anchor; parent-min-include-children-bolt-thrower: a shared parent-scoped maximum reports one violation per counted selection instead of one per frame). The campaign issue docs/issues/0149-evaluator-coverage-gaps was opened for phase B, but the maintainer interrupted the agile-loop workflow before it started, so NO phase-B round ran in this run and the issue file still lists only the first of the two gaps. The campaign is NOT closed - the termination check fails on the red suite and on two open pinned gaps - and no next run is scheduled: only a human starts it. Carried forward from run 20 and still true: the container starts without node_modules, so npm ci comes before the inventory. New this run: the E2E test catalogue docs/testkatalog-evaluator-e2e.md had drifted - thirteen committed scenarios were missing from its index table and its roster sum was 447 instead of 510 - which is now reconciled; that index has no generator and no CI gate, so it must be updated by hand with every scenario."
+    "reArmNote": "Run 21, the first run after the maintainer restarted the campaign. Six explorer invocations spent the full cell cap and emptied the worklist: the coverage inventory now exits 0 with 130 of 130 cells covered. Four cells came out green (at-least-parent-model-champion-gate, not-equal-to-parent-lance-pistol-gate, not-equal-to-roster-limit-paladin-bsb, not-equal-to-roster-experimental-rat-riders), two red and pinned (at-least-self-any-experimental-hydra-warning: an author message carried by a selectionEntryGroup never reaches the report at that group anchor; parent-min-include-children-bolt-thrower: a shared parent-scoped maximum reports one violation per counted selection instead of one per frame). Phase B ran after all and closed BOTH gaps in one round, so the evaluator suite is fully green again (1513 tests). It did NOT run through uroboros:agile-loop: in this session every tool call of a workflow-spawned agent is rejected before execution by a broken permission handler (updatedInput fails the tool own input schema), which killed the planner at the first structured return; agents started directly through the Agent tool are unaffected, so the round was worked by a directly spawned subagent instead and verified, committed and pushed by the driver. If a later run needs the workflow, that session-level handler has to be fixed first. The termination check now holds on all three counts - inventory exit 0, suite green, nothing open - so the next run terminates the campaign unless new cells appear. No next run is scheduled: the maintainer asked explicitly not to re-arm, so only a human starts it. Carried forward from run 20 and still true: the container starts without node_modules, so npm ci comes before the inventory. New this run: the E2E test catalogue docs/testkatalog-evaluator-e2e.md had drifted - thirteen committed scenarios were missing from its index table and its roster sum was 447 instead of 510 - which is now reconciled; that index has no generator and no CI gate, so it must be updated by hand with every scenario."
   }
 }
