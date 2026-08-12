@@ -684,7 +684,7 @@ function synthesizeUnlinkedCategoryAnchors(root, definitions, nextFrameId, catal
  * Ein Verweis darf **selbst** Kinder deklarieren (`Catalogue.xsd`: `EntryLink`
  * erweitert `SelectionEntryBase` und fuehrt damit
  * `selectionEntries`/`selectionEntryGroups`/`entryLinks`;
- * `docs/battlescribe-data-format.md` §4.4). Diese am Verweis deklarierten
+ * `docs/battlescribe-data-format.md` §7.2). Diese am Verweis deklarierten
  * Kinder stehen an genau **dieser** Verwendungsstelle neben denen des Ziels —
  * sie gehoeren also ebenso zur tragenden Definition. Real z. B. der Empire-
  * Captain: die Gruppe „Mounts" verlinkt „Empire Warhorse", und die Option

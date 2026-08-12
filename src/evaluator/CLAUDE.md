@@ -35,6 +35,31 @@ covers.
   `vampireCountsDataset` pattern in `offer.hiddenGate.test.js` and
   `effectiveState.baseHiddenInheritance.test.js` — the fixture parse dominates
   runtime and a shared suite run can hit the 5 s test timeout without it).
+- A corpus-invariant check derives its expectation from the raw fixture XML
+  itself (`new DOMParser().parseFromString(xml, 'text/xml')`), never from an
+  engine module other than the facade — the file's own parse builds what is
+  expected, the facade's internal parse builds what is asserted against.
+  `evaluator.corpusLinkLocalChildren.test.js` (issue 0150) is the pattern:
+  - Index every element carrying an `id`, derive the occurrences from that
+    index, and read the report through the same `capabilities` path schema
+    every other real-fixture file uses (`evaluate`'s JSDoc in `evaluator.js`).
+  - Build the index and derive from it inside one function, and let both go
+    out of scope when it returns. Only plain data may survive into module
+    level, never a DOM element — a retained element pins every parsed document
+    for the life of the file (1.6 GB peak measured over both whfb6 corpora).
+    The derivation itself is not free either: ~6 s of parsing for the 17
+    documents, before the engine runs at all.
+  - Load one dataset **per corpus**, not per catalogue, so a link whose
+    children resolve only through a `catalogueLink` into a library of the same
+    corpus (e.g. Mercenaries) is reachable at all.
+  - Match a report slot by its own `defId`, never by a shared `targetDefId` —
+    that would let another link's slot satisfy the claim. Where two children of
+    one occurrence's closure resolve to the same shared target (they need be
+    neither siblings nor declared on the link), assert the group and record its
+    members instead of either one alone.
+  - Close the books against a count taken before the classification that fills
+    them, and against a second traversal of the same documents — never against
+    the sum of the books, which cannot fail.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,

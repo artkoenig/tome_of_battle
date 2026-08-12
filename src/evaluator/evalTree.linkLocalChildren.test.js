@@ -4,7 +4,7 @@
  *
  * Ein `entryLink` darf **selbst** Kinder deklarieren (`Catalogue.xsd`:
  * `EntryLink` erweitert `SelectionEntryBase`;
- * `docs/battlescribe-data-format.md` §4.4). Sie stehen an dieser
+ * `docs/battlescribe-data-format.md` §7.2). Sie stehen an dieser
  * Verwendungsstelle neben den Kindern des Ziels. `ownerDefinitionOf` lieferte
  * bislang **nur** das aufgeloeste Ziel — die am Verweis deklarierten Kinder
  * fielen damit aus jeder Traversierung heraus, die ueber diese eine Funktion

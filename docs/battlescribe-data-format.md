@@ -508,6 +508,14 @@ Ein `entryLink` kann eigene `constraints`, `modifiers` und `costs` mitbringen. S
 Waffe an verschiedenen Einheiten unterschiedlich viel — die **Kosten liegen am Link, nicht an der
 Definition**.
 
+Ein `entryLink` kann darüber hinaus **eigene Kinder deklarieren**: laut `Catalogue.xsd` erweitert
+`EntryLink` den Typ `SelectionEntryBase` und führt damit selbst
+`selectionEntries`/`selectionEntryGroups`/`entryLinks`. Diese am Link deklarierten Kinder stehen an
+**genau dieser Verwendungsstelle** neben denen des Ziels — das geteilte Ziel selbst bleibt
+unberührt. Die realen Kataloge nutzen das: im Empire-Katalog (6th definitive edition) tragen 31 der
+720 `entryLink`s eigene Kinder, etwa der Verweis auf „Empire Warhorse", an dem die Option „Barding"
+hängt, statt am geteilten Ross-Eintrag.
+
 Das Ziel muss aus den **shared**-Listen *desselben* Katalogs stammen; per Grundregelwerk-Import
 zählen die geteilten Einträge der `.gst` mit dazu (dort schreibgeschützt). Ein Roster, das einen
 Verweis aus Katalog X benennt, ist gegen einen Datensatz ohne X folglich nicht auswertbar — auch

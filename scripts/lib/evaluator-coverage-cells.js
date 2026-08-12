@@ -670,7 +670,11 @@ function datasetFiles(dataset) {
  * Reads the manual covered-cells record (`docs/testing/covered-cells.json`),
  * the second source of coverage next to the manifest-derived one, for cells
  * no manifest id can attest and for waived cells.
- * @param {{ cells?: Array<{ key?: string }> }|null|undefined} record
+ *
+ * An entry may carry `key: null` instead of a cell key: it records a
+ * structural axis the cell space has none for (issue 0150) and credits no
+ * cell, so only entries with a non-empty string key are returned.
+ * @param {{ cells?: Array<{ key?: string|null }> }|null|undefined} record
  * @returns {string[]}
  */
 export function keysFromCoveredRecord(record) {
