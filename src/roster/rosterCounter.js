@@ -6,7 +6,7 @@ import {
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
 import { buildModifierEvalContext } from './modifierContext.js';
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { resolveGroupDefaultMember } from './selectionMembers.js';
+import { mandatoryChildrenOf } from './selectionMembers.js';
 
 /**
  * The multiplier applied to a top-level (subject) selection when its cost is
@@ -111,31 +111,12 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
     return value > 0 ? value : 0;
   };
 
-  // 2. Direct costs of mandatory child selection entries
-  resolved.selectionEntries?.forEach(child => {
-    const minCon = effectiveMin(child);
-    if (minCon > 0) {
-      total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
-    }
-  });
-
-  // 3. Direct costs of mandatory child entry links
-  resolved.entryLinks?.forEach(child => {
-    const minCon = effectiveMin(child);
-    if (minCon > 0) {
-      total += getOptionDisplayCost(system, child, costLimitType, ctx) * minCon;
-    }
-  });
-
-  // 4. Direct costs of mandatory groups. Which option a group contributes is
-  // decided by the shared derivation the selection factory uses, so the price
-  // shown here is the price the actual recruitment will incur.
-  resolved.selectionEntryGroups?.forEach(group => {
-    const minCon = effectiveMin(group);
-    if (minCon <= 0) return;
-    const defaultOption = resolveGroupDefaultMember(group);
-    if (!defaultOption) return;
-    total += getOptionDisplayCost(system, defaultOption, costLimitType, ctx) * minCon;
+  // 2. Costs of the mandatory children — direct entries and links, plus what every
+  // selection-entry group below the entry contributes, at any depth. Which children
+  // those are is decided by the shared derivation the selection factory populates
+  // from, so the price shown here is the price the actual recruitment will incur.
+  mandatoryChildrenOf(resolved, effectiveMin).forEach(({ def: child, count }) => {
+    total += getOptionDisplayCost(system, child, costLimitType, ctx) * count;
   });
 
   return total;

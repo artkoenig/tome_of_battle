@@ -1,5 +1,5 @@
 import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { memberDefsOf, resolveGroupDefaultMember } from './selectionMembers.js';
+import { mandatoryChildrenOf } from './selectionMembers.js';
 import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
 import '../types.js';
 
@@ -38,47 +38,19 @@ function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection,
 }
 
 /**
- * Bevölkert jedes Mitglied, das ein eigenes `min > 0` trägt, mit genau seinem `min`.
- * Gibt die Anzahl so bevölkerter Mitglieder zurück (0, falls keines pflichtig ist).
- */
-function populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members, evaluationContext }) {
-  let populatedCount = 0;
-  members.forEach(member => {
-    const minValue = getMinConstraintValue(member, evaluationContext);
-    if (minValue > 0) {
-      addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: member, count: minValue, evaluationContext });
-      populatedCount += 1;
-    }
-  });
-  return populatedCount;
-}
-
-/**
  * Bevölkert die Pflicht-Kinder (`min > 0`) einer aufgelösten Definition rekursiv.
- * Direkte Pflicht-Einträge/-Links werden je mit ihrem eigenen `min` angelegt.
+ * Welche Kinder das sind, entscheidet die geteilte Ermittlung `mandatoryChildrenOf`
+ * — dieselbe, aus der die Kostenschätzung ihren Preis rechnet.
  *
- * Für eine Pflichtgruppe (`min > 0`) gibt es zwei Muster:
- * - **Itemisiert („nimm all diese")**: die Mitglieder tragen eigene `min`-Constraints;
- *   dann wird jedes solche Mitglied mit seinem eigenen `min` bevölkert — das Gruppen-`min`
- *   ergibt sich aus ihrer Summe, nicht aus dem Vervielfachen einer einzelnen Option.
- * - **Wähle-eine („aus einem Topf")**: kein Mitglied ist selbst pflichtig; dann wird das
- *   Gruppen-`min` aus der Default- bzw. Erst-Option gefüllt.
+ * Selection-entry groups are walked at any depth: a group's own `min` gates only
+ * what that group itself contributes, never whether the walk descends into it.
  *
  * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
  */
 function populateChildren({ system, resolveEntry, catalogueId, def, parentSelection, evaluationContext }) {
-  populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members: memberDefsOf(def), evaluationContext });
-
-  def.selectionEntryGroups?.forEach(group => {
-    const minValue = getMinConstraintValue(group, evaluationContext);
-    const members = memberDefsOf(group);
-    if (minValue <= 0 || members.length === 0) return;
-
-    const itemizedCount = populateMandatoryMembers({ system, resolveEntry, catalogueId, parentSelection, members, evaluationContext });
-    if (itemizedCount > 0) return;
-
-    const chosenOption = resolveGroupDefaultMember(group);
-    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef: chosenOption, count: minValue, evaluationContext });
+  const mandatoryChildren = mandatoryChildrenOf(def, member => getMinConstraintValue(member, evaluationContext));
+  mandatoryChildren.forEach(({ def: childDef, count }) => {
+    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count, evaluationContext });
   });
 }
 

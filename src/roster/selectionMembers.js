@@ -37,3 +37,73 @@ export function resolveGroupDefaultMember(group) {
     : null;
   return configuredDefault || members[0] || null;
 }
+
+/**
+ * What a single selection-entry group contributes, plus the contributions of the
+ * groups nested inside it. Descent into nested groups is unconditional — a group
+ * without a `min` of its own contributes nothing itself but may still contain a
+ * mandatory group (the real shape of `Wizard Level` inside `Magic`).
+ *
+ * @param {object} group the (unresolved) selection-entry group.
+ * @param {(defOrGroup: object) => number} minOf the caller's reading of a min constraint.
+ * @returns {Array<{ def: object, count: number }>} in creation order.
+ */
+function mandatoryChildrenOfGroup(group, minOf) {
+  const children = [];
+  const members = memberDefsOf(group);
+  const groupMin = minOf(group);
+
+  if (groupMin > 0 && members.length > 0) {
+    const itemized = members
+      .map(member => ({ def: member, count: minOf(member) }))
+      .filter(member => member.count > 0);
+    if (itemized.length > 0) {
+      children.push(...itemized);
+    } else {
+      const chosenOption = resolveGroupDefaultMember(group);
+      if (chosenOption) children.push({ def: chosenOption, count: groupMin });
+    }
+  }
+
+  group?.selectionEntryGroups?.forEach(nested => {
+    children.push(...mandatoryChildrenOfGroup(nested, minOf));
+  });
+  return children;
+}
+
+/**
+ * Die Pflicht-Kinder, die eine aufgelöste Definition beim Ausheben beisteuert:
+ * direkte Mitglieder mit eigenem `min`, dazu der Beitrag jeder Auswahlgruppe
+ * darunter — in **jeder** Tiefe.
+ *
+ * Für eine Pflichtgruppe (`min > 0`) gibt es zwei Muster:
+ * - **Itemisiert („nimm all diese")**: die Mitglieder tragen eigene `min`-Constraints;
+ *   dann steuert jedes solche Mitglied genau sein eigenes `min` bei.
+ * - **Wähle-eine („aus einem Topf")**: kein Mitglied ist selbst pflichtig; dann füllt
+ *   die Default- bzw. Erst-Option (`resolveGroupDefaultMember`) das Gruppen-`min`.
+ *
+ * Das eigene `min` einer Gruppe entscheidet nur darüber, was diese Gruppe selbst
+ * beisteuert — nie darüber, ob in sie hinabgestiegen wird. Eine Gruppe steuert
+ * ausschließlich ihre direkten Mitglieder bei; die Mitglieder einer verschachtelten
+ * Gruppe sind deren Sache.
+ *
+ * @param {object} def die aufgelöste Definition (oder Gruppe), die begangen wird.
+ * @param {(defOrGroup: object) => number} minOf die Lesart des `min`-Constraints des
+ *   Aufrufers (roh oder effektiv); 0, wenn kein `min` vorliegt.
+ * @returns {Array<{ def: object, count: number }>} in Anlege-Reihenfolge: erst die
+ *   direkten Mitglieder, dann die Gruppen in Dokumentreihenfolge, jede Gruppe vor
+ *   den in ihr verschachtelten Gruppen.
+ */
+export function mandatoryChildrenOf(def, minOf) {
+  const children = [];
+
+  memberDefsOf(def).forEach(member => {
+    const count = minOf(member);
+    if (count > 0) children.push({ def: member, count });
+  });
+
+  def?.selectionEntryGroups?.forEach(group => {
+    children.push(...mandatoryChildrenOfGroup(group, minOf));
+  });
+  return children;
+}
