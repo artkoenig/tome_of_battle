@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/evaluator-ergofang-daten-ni8js9
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/211
 ---
 
 # Extend the fixture corpus to every rule construct the upstream catalogues hold
@@ -99,3 +99,10 @@ bookkeeping; closing the cells is the campaign's work and out of scope here.
 - The check commands for this issue are `npm test` and
   `node scripts/evaluator-coverage-inventory.js`.
 - No version bump. Test fixtures change nothing a user can see.
+
+## Log
+
+- 2026-08-12 — Closed: merged as PR #211 (`d7a313b`). The corpus now holds the
+  seven definitive-edition books and `Dogs of War.cat`, and the campaign that
+  measured against it closed at 130 of 130 cells. Bookkeeping only; the status
+  line was never flipped.

@@ -43,6 +43,14 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree. A unit holds an option declared
+  `hidden="true"` in the roster. The report gives that slot
+  `{anchorKind: "occupied", isHidden: true, current: 1}` — it knows the
+  selection is there and knows it should not be offered — and reports **no**
+  violation and **no** diagnostic. `isHidden` is read in exactly one direction
+  today: `constraints.js:202` suppresses MIN violations at hidden carriers
+  (issue 0088). The counter-direction this file asks for does not exist.
+
 ## Checkpoints
 
 ### Before implementation

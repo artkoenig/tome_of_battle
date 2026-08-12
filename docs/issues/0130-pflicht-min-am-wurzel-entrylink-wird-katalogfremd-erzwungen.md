@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/army-bulls-non-oger-list-h79w6u
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/185
 ---
 
 # Pflicht-`min` am Wurzel-`entryLink` wird katalogfremd erzwungen (z. B. Ogerbullen in Nicht-Oger-Liste)
@@ -133,6 +133,14 @@ Acceptance criteria:
   `scripts/release.js` wird für dieses Issue nicht ausgeführt.
 
 ## Log
+
+- 2026-08-12 — Closed: the fix and its scenario are in `main` (PR #185). The
+  unconditional `ENTRY_LINK` bypass is gone from `synthesizeMandatoryPhantoms`
+  (`src/evaluator/evalTree.js:510-536`), `docs/testing/root-entrylink-mandatory-catalogue-scope`
+  exists with its four rosters, and `src/evaluator/evaluator.ergofangForeignMandates.test.js`
+  additionally pins the reported case on real data: an empty Vampire Counts
+  contingent reports only the game system's two mandates, never Ogre Kingdoms'
+  "needs a Bulls". The status line was simply never flipped.
 
 - **Szenario-Autorenschaft:** `e2e-testcase-author` (black-box, nur
   Katalog-XML) angesetzt für `root-entrylink-mandatory-catalogue-scope`. Der

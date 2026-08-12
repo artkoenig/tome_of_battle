@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/plugin-update-metis-nzhs4f
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/199
 ---
 
 # The unit card loses group membership: nameless sections and homeless option rows
@@ -131,6 +131,14 @@ Acceptance criteria:
   chosen freely.
 
 ## Log
+
+- 2026-08-12 — Closed: merged as PR #199 (`9666803`). All seven criteria are
+  pinned by green tests — 1, 3, 5, 6 and 7 in
+  `src/components/editor/SelectionConfigurator.groupMembership.test.jsx`, 2, 4
+  and the breadth check for 7 in the fixture sweep beside it, and the capped
+  mandatory row of criterion 6 in
+  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx`. Verified on
+  2026-08-12: those three files → 31 tests, exit 0.
 
 - **Correction, found by the `implementer` and verified independently before
   it was accepted.** This issue's own reproduction named the wrong group.

@@ -45,6 +45,15 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Still missing. Scanned every `docs/testing/*/scenario.json`
+  (127 scenarios) for expectations that name an anchor and a `scopeKind`
+  together: only two manifests mention `scopeKind` at all
+  (`violation-classification`, `set-cost-value-force-gate`), and no anchor in
+  any scenario carries two different `scopeKind` values, let alone two MIN
+  limits with different scopes. The unit-level pin is intact
+  (`src/evaluator/phantom.test.js:41-59`, `phantomMinViolation(scopeKind, path)`),
+  so the gap is exactly the one the file names: the proof from catalogue data.
+
 ## Checkpoints
 
 ### Before implementation

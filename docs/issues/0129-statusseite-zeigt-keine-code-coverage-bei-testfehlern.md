@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/statusseite-code-coverage-4wt1a0
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/184
 ---
 
 # Statusseite zeigt keine Code Coverage mehr, sobald ein Test rot ist
@@ -96,6 +96,9 @@ für diese Änderung, analog zu invariant 2 des Metis-Regelbuchs.
   unanswered — dokumentiert statt stillschweigend übersprungen.)*
 
 ## Log
+
+- 2026-08-12 — Closed: merged as PR #184 (`1c5a9eb`). Bookkeeping only; the
+  status line was never flipped.
 
 - 2026-07-30: Diagnose abgeschlossen (Live-Seite, GitHub-Actions-Rohlog,
   lokale Reproduktion). Ursache bestätigt: Vitests

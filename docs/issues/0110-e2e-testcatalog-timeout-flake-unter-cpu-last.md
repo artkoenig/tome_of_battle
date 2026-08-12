@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -39,6 +39,12 @@ Acceptance criteria:
   dort außerhalb der Absicht und deshalb nur gemeldet, nicht behoben.
 
 ## Log
+
+- 2026-08-12 — Closed as a duplicate. Issue 0137 states the same defect (the
+  evaluator E2E cases run against vitest's implicit 5 s default) with a sharper
+  criterion set, including "the applicable limit is written down". The work
+  continues there; nothing about this file is stale except its separate
+  existence.
 
 ## Checkpoints
 

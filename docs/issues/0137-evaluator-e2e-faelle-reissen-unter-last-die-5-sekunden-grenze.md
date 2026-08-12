@@ -42,6 +42,18 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree, on 4 cores with 16 CPU burners.
+  `npx vitest run src/evaluator/e2e.testcatalog.test.js` → **4 failed | 534
+  passed**, every failure `Test timed out in 5000ms`, in
+  `ancestor-scope-instance-of/01`, `modifier-effective-name/01`,
+  `numeric-conditions/equal-to-true.ros` (the case named in this file) and
+  `primary-catalogue-scope/01`. Unloaded, the same file is green and those are
+  the four slowest cases: 2031, 1928, 1569 and 1429 ms.
+  Criterion 2 is met on this machine — 2031 of 5000 ms is under half — but
+  criterion 3 is not: `vitest.config.js` still sets no `testTimeout`, so the
+  limit these cases are judged against is vitest's implicit default and nothing
+  in the repository states it.
+
 - 2026-07-31: Von der Prüfung zu Issue 0135 gefunden, samt Messwerten aus
   einem ruhigen Lauf. Betrifft keine Datei jenes Diffs und wandert deshalb
   hierher.

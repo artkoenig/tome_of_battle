@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/vampire-list-error-message-ym9w2p
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/194
 ---
 
 # Eine Autor-Meldung am Pflicht-Phantom meldet eine gar nicht gewählte Einheit
@@ -93,6 +93,9 @@ eine andere Meldungsherkunft beantwortet.
   anhebt (genau Kemmlers Fall unter „Army of the Lichemaster").
 
 ## Log
+
+- 2026-08-12 — Closed: merged as PR #194 (`ead1c10`). Bookkeeping only; the
+  status line was never flipped.
 
 - Gemeldet vom Maintainer: „eine leere Armeeliste der Vampire zeigt mir die
   Fehlermeldung 'Please enable "Allow special characters?"' — das ist

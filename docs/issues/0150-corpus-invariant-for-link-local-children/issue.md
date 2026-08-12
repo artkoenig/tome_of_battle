@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/evaluator-kampagne-lucke-ajvfad
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/219
 ---
 
 # A corpus invariant for children declared on an entryLink
@@ -197,6 +197,10 @@ branch each.
   either.
 
 ## Log
+
+- 2026-08-12 — Closed: merged as PR #217 and #219 (`35c14a2`, `6dc6b78`). The
+  invariant lives in `src/evaluator/evaluator.corpusLinkLocalChildren.test.js`.
+  Bookkeeping only; the status line was never flipped.
 
 - Filed out of PR #214. The maintainer asked how the closure campaign could
   have missed the missing `Barding` option; the two reasons above are the
