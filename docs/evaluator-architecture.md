@@ -376,14 +376,23 @@ record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: d
                           categoryIds: Id[],            // die EFFEKTIVEN Kategorie-IDs des Slots
                           primaryCategoryId: Id?,       // die effektive Primärkategorie darunter
                                                         // (nach set-primary/unset-primary); null = keine
-                          effectiveMin: number?, effectiveMax: number?,
-                          current: number, headroom: number?,
+                          effectiveMin: number?, effectiveMax: number?,   // STUECKZAHLEN: allein
+                          current: number, headroom: number?,            // aus den zaehlenden Grenzen
+                          costLimits: CostLimit[],      // die kostenbezogenen Grenzen des Slots, je
+                                                        // Grenze eine — keine verdraengt eine andere
                           isMandatoryUnmet: bool, isBlocked: bool, isHidden: bool,
                           isValueUnstable: bool,        // lag in der instabilen Knotenmenge
                           authorMessages: { severity, text }[],
                           infoElements: InfoEntry[] }   // die Info-Projektion: eigene UND aus den
                                                         // belegten Unter-Auswahlen geerbte Profile
                                                         // und Regeltexte, Verstecktes ausgenommen
+
+record CostLimit        { limitId: Id, costTypeId: Id?,  // welche Kostenart die Grenze misst
+                          measure: LimitMeasure,        // COST_SUM (verplante Summe) oder
+                                                        // BUDGET_LIMIT (eingestellte Kostengrenze)
+                          kind: ConstraintKind, bound: number, current: number,
+                          headroom: number?,            // nur am MAX; am MIN null
+                          satisfied: bool }
 
 record Report { violations: Message[], capabilities: Map<NodePath, SlotCapability>,
                 diagnostics: Diagnostic[] }
@@ -517,7 +526,7 @@ function scopeKeysOf(node, effective): ScopeKey[]
 
 Direkte vs. tiefe Zählung: beim Eintragen wird die Beitragskette entlang der Vorfahren geführt — der unmittelbare Elternrahmen erhält den Beitrag in `direct` und `deep`, weiter entfernte Rahmen nur in `deep`.
 
-Kostensummen tragen dabei **einen Schlüssel mehr** als Anzahlen: eine Kostenart-Grenze begrenzt die Summe unterhalb ihres **Trägers** (BSData §7.6/§9.4) und wird als ziel-gefilterte Query `(Rahmen, Träger-Id)` gelesen. Der Kostenanteil eines Beitrags wird deshalb zusätzlich unter jeder Ziel-Id der Vorfahren verbucht, die im jeweiligen Rahmen liegen — Gruppen-Ids eingeschlossen, sodass das Magic-Items-Muster dieselbe eine Regel nutzt. Die Selektionsanzahl steigt **nicht** mit auf. Aufgestiegene Kostenanteile gelten dabei **immer** als über die Selektionsschachtelung gekreuzt — auch im Rahmen des Trägers selbst (`scope="self"`, `shared="false"`), wo der Beitrag sonst als direkt gälte —, denn sie stammen stets von echten Nachfahren des Trägers. Verbucht werden sie **getrennt** von den Eigen-Beiträgen (`climbedCostSums` neben `costSums`, Issue 0113), denn zwei verschiedene Fragen teilen sich sonst ein Flag: ob ein Träger-**Vorkommen** selbst zählt, ist Schachtelung im Rahmen (`includeChildSelections`, für geteilte eintrags-verankerte roster-Grenzen von der Constraint-Schicht angehoben — Issue 083); ob seine **Nachfahren-Kosten** mitzählen, gatet das eigene dritte `get`-Flag `includeClimbedCosts`, das ohne Angabe auf `includeChildSelections` zurückfällt und das die Constraint-Schicht bei der Anhebung auf dem **hingeschriebenen** Flag festhält (§7.6 „just scope's field", Issue 091). So liest eine Kostenart-Grenze mit `includeChildSelections="false"` die Eigen-Kosten jedes Träger-Vorkommens — egal wie tief es steckt —, aber keine Nachfahren-Kosten.
+Kostensummen tragen dabei **einen Schlüssel mehr** als Anzahlen: eine Kostenart-Grenze begrenzt die Summe unterhalb ihres **Trägers** (BSData §7.6/§9.4) und wird als ziel-gefilterte Query `(Rahmen, Träger-Id)` gelesen. Der Kostenanteil eines Beitrags wird deshalb zusätzlich unter jeder Ziel-Id der Vorfahren verbucht, die im jeweiligen Rahmen liegen — Gruppen-Ids eingeschlossen, sodass das Magic-Items-Muster dieselbe eine Regel nutzt. Die Selektionsanzahl steigt **nicht** mit auf. Aufgestiegene Kostenanteile gelten dabei **immer** als über die Selektionsschachtelung gekreuzt — auch im Rahmen des Trägers selbst (`scope="self"`, `shared="false"`), wo der Beitrag sonst als direkt gälte —, denn sie stammen stets von echten Nachfahren des Trägers. Verbucht werden sie **getrennt** von den Eigen-Beiträgen (`climbedCostSums` neben `costSums`, Issue 0113), denn zwei verschiedene Fragen teilen sich sonst ein Flag: ob ein Träger-**Vorkommen** selbst zählt, ist Schachtelung im Rahmen (`includeChildSelections`, für geteilte eintrags-verankerte roster-Grenzen von der Constraint-Schicht angehoben — Issue 083); ob seine **Nachfahren-Kosten** mitzählen, gatet das eigene dritte `get`-Flag `includeClimbedCosts`, das ohne Angabe auf `includeChildSelections` zurückfällt und das die Constraint-Schicht bei der Anhebung auf dem **hingeschriebenen** Flag festhält (§7.6 „just scope's field", Issue 091). Dieses Gate greift jedoch erst **unterhalb der Kind-Ebene**: aufgestiegene Anteile werden nach ihrem Abstand zum Träger getrennt geführt (`climbedCostSums` für dessen direkte Kinder, `nestedClimbedCostSums` für alles Tiefere), und nur die tieferen hängen am Flag. Denn „gezählt werden die Auswahlen *unterhalb* des Trägers" (BSData §7.6/§9.4), und `false` liest dort *„just `scope`'s `field`"* — **eingeschränkt, nicht leer**; das Flag entscheidet allein über die verschachtelten („mit `true` zählt auch der Gegenstand mit, der an einem magischen Gegenstand hängt"). Eine Kostenart-Grenze mit `includeChildSelections="false"` liest also die Eigen-Kosten jedes Träger-Vorkommens — egal wie tief es steckt — **plus** die Kosten seiner direkten Kinder, aber nichts darunter. Die Gruppen-Ids eines Beitragenden zählen dabei als eine Ebene weiter außen: gegenüber der Gruppe steht er unter deren Member, nicht unter ihr.
 
 ### 4.5 Das Query-Primitiv
 
@@ -715,6 +724,10 @@ function resolveBound(ctx, limit, effective): number | SUSPENDED
 function buildReport(tree, effective, results, diagnostics, unstableNodes): Report
   capabilities = {}
   for node in selectableSlotsOf(tree):                   // JEDER Knoten: belegt wie Anker
+    // findResult nimmt NUR die zaehlenden Grenzen (selectionCount/forceCount): ein
+    // Slot kann eine zaehlende und eine kostenmessende Grenze derselben Art tragen
+    // ("hoechstens 1 davon, und darin hoechstens 50 Punkte"), und eine Punktsumme in
+    // einem Stueckzahl-Feld laese die Oberflaeche als Anzahl.
     minResult = findResult(results, node, MIN)
     maxResult = findResult(results, node, MAX)
     capabilities[pathOf(node)] = SlotCapability(
@@ -727,8 +740,9 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       effectiveMax  = maxResult?.bound,
       current       = maxResult?.actual ?? minResult?.actual ?? 0,
       headroom      = maxResult != null ? max(0, maxResult.bound - maxResult.actual) : null,
-      isMandatoryUnmet = minResult != null and not minResult.satisfied,
-      isBlocked     = maxResult != null and maxResult.actual >= maxResult.bound,
+      costLimits    = costLimitsOf(results, node),     // je kostenbezogener Grenze eine
+      isMandatoryUnmet = any(results[node][MIN], r -> not r.satisfied),   // JEDE Grenze,
+      isBlocked     = any(results[node][MAX], r -> r.actual >= r.bound),  // auch die kostenbezogene
       isHidden      = effective.isHidden(node),
       isValueUnstable = node in unstableNodes,         // kam in der Schleife nicht zur Ruhe
       defId         = node.def.id,

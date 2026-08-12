@@ -27,7 +27,7 @@ export { canGroupMaxBeRaisedAboveSingleChoice, getEffectiveModifiers } from './m
 export { buildModifierEvalContext } from './modifierContext.js';
 export {
   aggregateRosterCategoryCounts, computeRosterCounts,
-  resolveCostLimitLabel, resolveCostLimitTypeId
+  resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
 } from './rosterCounter.js';
 export {
   classifyGroupItem, classifyStandaloneOption, isGroupSingleChoice, isItemRepeatableWithinGroup

@@ -100,9 +100,19 @@ function heroViolation(report) {
   return report.violations.find(violation => violation.limitId === HERO_LIMIT_ID);
 }
 
-/** Der Faehigkeitsdatensatz des Helden — er traegt den Ist-Wert auch ohne Verstoss. */
+/** Der Faehigkeitsdatensatz des Helden. */
 function heroCapability(report) {
   return [...report.capabilities.values()].find(capability => capability.defId === HERO_ID);
+}
+
+/**
+ * Die Punktsumme, die die Kostenart-Grenze des Helden misst — abgelesen an seinen
+ * `costLimits`, wo jede kostenbezogene Grenze ihren eigenen Datensatz hat. Sie
+ * steht dort auch ohne Verstoss; die Stueckzahl-Felder des Slots (`current` &c.)
+ * tragen dagegen nie eine Punktsumme (`report.js`).
+ */
+function heroCostSum(report) {
+  return heroCapability(report)?.costLimits.find(limit => limit.limitId === HERO_LIMIT_ID)?.current;
 }
 
 describe('Kostenart-Grenze am Eintrag: includeChildSelections="true" summiert die Nachfahren mit', () => {
@@ -129,17 +139,30 @@ describe('Kostenart-Grenze am Eintrag: includeChildSelections="true" summiert di
     const report = evaluate(heroCatalogue(true), rosterWithItems(0));
 
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 });
 
-describe('Kostenart-Grenze am Eintrag: includeChildSelections="false" bleibt bei der engeren Lesart', () => {
-  it('liest nur die Kosten des Traegers und feuert deshalb nicht', () => {
+describe('Kostenart-Grenze am Eintrag: includeChildSelections="false" zaehlt die direkten Kinder weiter mit', () => {
+  it('summiert Traeger und direktes Kind und feuert deshalb ebenfalls (110 gegen 100)', () => {
     const report = evaluate(heroCatalogue(false), rosterWithItems(1));
 
-    // „just `scope`'s `field`" (§7.6): die verschachtelte Auswahl bleibt aussen vor.
+    // „just `scope`'s `field`" (§7.6) liest **eingeschraenkt, nicht leer**: gezaehlt
+    // werden die Auswahlen unterhalb des Traegers, und die Flagge entscheidet allein
+    // ueber die *verschachtelten* (§9.4). Auf dieser Tiefe unterscheidet sie deshalb
+    // nichts — der Gegenstand haengt direkt am Helden.
+    expect(heroViolation(report)).toMatchObject({
+      limitId: HERO_LIMIT_ID,
+      actual: HERO_POINTS + ITEM_POINTS,
+      bound: HERO_BOUND,
+    });
+  });
+
+  it('bleibt ohne Gegenstand bei den Eigen-Kosten des Traegers', () => {
+    const report = evaluate(heroCatalogue(false), rosterWithItems(0));
+
     expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    expect(heroCostSum(report)).toBe(HERO_POINTS);
   });
 });
 
@@ -159,10 +182,12 @@ describe('Zaehlschicht: unter der Ziel-Id eines Vorfahren steigen nur die Kosten
     expect(index.get(HERO_KEY, true, false).costSums.get(POINTS_ID)).toBe(HERO_POINTS + ITEM_POINTS);
   });
 
-  it('laesst den Nachfahren aussen vor, wenn Kindauswahlen nicht zaehlen', () => {
+  it('zaehlt das direkte Kind auch dann mit, wenn Kindauswahlen nicht zaehlen', () => {
     const index = buildIndexForRoster(rosterWithItems(1));
 
-    expect(index.get(HERO_KEY, false, false).costSums.get(POINTS_ID)).toBe(HERO_POINTS);
+    // Die Flagge sperrt erst die Ebene darunter (§7.6/§9.4) — der Gegenstand haengt
+    // direkt am Traeger und gehoert unbedingt in dessen Summe.
+    expect(index.get(HERO_KEY, false, false).costSums.get(POINTS_ID)).toBe(HERO_POINTS + ITEM_POINTS);
   });
 
   it('zaehlt den Nachfahren NICHT als Auswahl unter der Traeger-Id', () => {
@@ -240,15 +265,19 @@ function nestedRosterWithItem() {
   };
 }
 
-describe('Verschachtelter Traeger (Issue 0113): die roster-Grenze liest seine Eigen-Kosten, nicht die des Nachfahren', () => {
-  it('liest die Eigen-Kosten des verschachtelten Traegers (weder 0 noch die Nachfahren-Summe)', () => {
+describe('Verschachtelter Traeger (Issue 0113): die roster-Grenze liest seine Eigen-Kosten mit', () => {
+  it('bringt das verschachtelte Traeger-Vorkommen selbst in die Summe ein (nicht 0)', () => {
     const report = evaluate(nestedHeroCatalogue(), nestedRosterWithItem());
 
-    // 0 hiesse: das verschachtelte Vorkommen zaehlt gar nicht (Verstoss gegen
-    // §9.4/Issue 083); 110 hiesse: der Nachfahre zaehlt mit (Verstoss gegen
-    // §7.6/Issue 091). Richtig ist genau der Traeger selbst: 50.
-    expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report).current).toBe(HERO_POINTS);
+    // Der Punkt dieses Falles ist die untere Kante: 0 hiesse, das verschachtelte
+    // Vorkommen zaehle gar nicht (Verstoss gegen §9.4/Issue 083). Der Traeger bringt
+    // seine 50 ein, sein direktes Kind seine 60 dazu (§7.6: eingeschraenkt, nicht
+    // leer) — zusammen 110 gegen 100.
+    expect(heroViolation(report)).toMatchObject({
+      limitId: HERO_LIMIT_ID,
+      actual: HERO_POINTS + ITEM_POINTS,
+      bound: HERO_BOUND,
+    });
   });
 });
 

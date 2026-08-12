@@ -6,6 +6,7 @@ import {
   resolveCostLimitTypeId, resolveCostLimitLabel
 } from '../../roster';
 import { findChildSlot } from '../../evaluation/slotLookups';
+import { costBudgetTextsOf, hasExceededCostBudget } from './costBudgets';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { resolveRowSelectionId } from './optionNesting';
@@ -112,14 +113,21 @@ export default function OptionGroupComponent({
     .map(row => (row.count > 1 ? `${row.count}x ${row.capability.name}` : row.capability.name))
     .join(', ');
 
-  // Gruppen-Fehler direkt aus dem Anker abgelesen: unerfüllte Pflicht oder
-  // überschrittenes Höchstmaß.
+  // Gruppen-Fehler direkt aus dem Anker abgelesen: unerfüllte Pflicht,
+  // überschrittene Stückzahl oder gerissenes Kosten-Budget.
   const hasGroupError = groupCapability !== undefined
     && (groupCapability.isMandatoryUnmet
-      || (groupCapability.effectiveMax !== null && groupCapability.current > groupCapability.effectiveMax));
+      || (groupCapability.effectiveMax !== null && groupCapability.current > groupCapability.effectiveMax)
+      || hasExceededCostBudget(groupCapability));
 
+  // Die Kosten-Budgets der Gruppe kommen aus dem Bericht (`costLimits`) — „12 / 50
+  // pts" statt der blossen Summe. Traegt der Anker keine Kostengrenze, bleibt es
+  // bei den verplanten Punkten der eigenen Zeilen.
+  const costBudgets = costBudgetTextsOf(groupCapability, system);
   const limitParts = [];
-  if (currentPoints > 0) {
+  if (costBudgets.length > 0) {
+    limitParts.push(...costBudgets);
+  } else if (currentPoints > 0) {
     limitParts.push(`${currentPoints} ${costTypeLabel}`);
   }
   if (effectiveGroupMax !== Infinity && effectiveGroupMax !== null) {

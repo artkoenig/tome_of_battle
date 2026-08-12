@@ -112,21 +112,35 @@ function heroViolation(report) {
   return report.violations.find(violation => violation.limitId === HERO_LIMIT_ID);
 }
 
-/** Der Faehigkeitsdatensatz des Helden — er traegt den Ist-Wert auch ohne Verstoss. */
+/** Der Faehigkeitsdatensatz des Helden. */
 function heroCapability(report) {
   return [...report.capabilities.values()].find(capability => capability.defId === HERO_ID);
 }
 
+/**
+ * Die Punktsumme, die die Kostenart-Grenze des Helden misst — abgelesen an seinen
+ * `costLimits`, wo jede kostenbezogene Grenze ihren eigenen Datensatz hat. Sie
+ * steht dort auch ohne Verstoss; die Stueckzahl-Felder des Slots (`current` &c.)
+ * tragen dagegen nie eine Punktsumme (`report.js`).
+ */
+function heroCostSum(report) {
+  return heroCapability(report)?.costLimits.find(limit => limit.limitId === HERO_LIMIT_ID)?.current;
+}
+
 describe('Kostenart-Grenze im scope="self"-Rahmen', () => {
-  it('liest mit includeChildSelections="false" nur die eigenen Kosten des Traegers (50, kein Verstoss)', () => {
+  it('summiert mit includeChildSelections="false" den Traeger und sein direktes Kind (110 gegen 100)', () => {
     const report = evaluate(
       heroCatalogue({ scope: 'self', shared: 'true', includeChildSelections: 'false' }),
       rosterWithItem(),
     );
 
-    // „just scope's field": der Gegenstand (60) bleibt aussen vor — 50 <= 100.
-    expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    // „just scope's field" liest eingeschraenkt, **nicht leer**: der Gegenstand haengt
+    // direkt am Traeger und zaehlt, die Flagge sperrt erst die Ebene darunter.
+    expect(heroViolation(report)).toMatchObject({
+      limitId: HERO_LIMIT_ID,
+      actual: HERO_POINTS + ITEM_POINTS,
+      bound: HERO_BOUND,
+    });
   });
 
   it('summiert mit includeChildSelections="true" den Nachfahren mit (110 gegen 100)', () => {
@@ -144,14 +158,17 @@ describe('Kostenart-Grenze im scope="self"-Rahmen', () => {
 });
 
 describe('Kostenart-Grenze mit shared="false" (wertet im eigenen Rahmen des Traegers)', () => {
-  it('liest mit includeChildSelections="false" nur die eigenen Kosten des Traegers (50, kein Verstoss)', () => {
+  it('summiert mit includeChildSelections="false" den Traeger und sein direktes Kind (110 gegen 100)', () => {
     const report = evaluate(
       heroCatalogue({ scope: 'roster', shared: 'false', includeChildSelections: 'false' }),
       rosterWithItem(),
     );
 
-    expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    expect(heroViolation(report)).toMatchObject({
+      limitId: HERO_LIMIT_ID,
+      actual: HERO_POINTS + ITEM_POINTS,
+      bound: HERO_BOUND,
+    });
   });
 
   it('summiert mit includeChildSelections="true" den Nachfahren mit (110 gegen 100)', () => {
@@ -168,16 +185,16 @@ describe('Kostenart-Grenze mit shared="false" (wertet im eigenen Rahmen des Trae
   });
 });
 
-describe('Verschachtelungstiefe 2: das Flag schaltet den ganzen Teilbaum einheitlich', () => {
-  it('liest mit includeChildSelections="false" weiterhin NUR den Traeger (50, kein Verstoss)', () => {
+describe('Verschachtelungstiefe 2: hier — und erst hier — schaltet das Flag', () => {
+  it('haelt mit includeChildSelections="false" das Enkelkind heraus (110, nicht 150)', () => {
     const report = evaluate(
       heroCatalogue({ scope: 'self', shared: 'true', includeChildSelections: 'false', withGrandchild: true }),
       rosterWithItem({ withGrandchild: true }),
     );
 
-    // Kein Hybrid: weder Kind (60) noch Enkelkind (40) duerfen hereinzaehlen.
-    expect(heroViolation(report)).toBeUndefined();
-    expect(heroCapability(report)?.current).toBe(HERO_POINTS);
+    // Die Trennlinie der Flagge (§9.4): das Kind (60) zaehlt, das Enkelkind (40) —
+    // „der Gegenstand, der an einem magischen Gegenstand haengt" — nicht.
+    expect(heroViolation(report)?.actual).toBe(HERO_POINTS + ITEM_POINTS);
   });
 
   it('summiert mit includeChildSelections="true" ALLE Nachfahren (150 gegen 100)', () => {

@@ -212,7 +212,7 @@ describe('Kriterium 1 — die Container-Gruppe haelt ihre Mitglieder (Ogre Bruis
     const unitPath = pathBySelectionId.get(selection.id);
     expect(unitPath).toBe('0/0');
     expect(capabilityUnder(capabilities, unitPath, BRUISER_CONTAINER_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 50 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 50 })] });
     BRUISER_MEMBERS.forEach(member => {
       expect(capabilityUnder(capabilities, unitPath, member.id), `Anker fuer ${member.name}`)
         .toMatchObject({ anchorKind: 'groupAnchor' });
@@ -265,7 +265,7 @@ describe('Kriterium 1 — die Container-Gruppe haelt ihre Mitglieder (Ogre Bruis
 
     const unitPath = pathBySelectionId.get(selection.id);
     expect(capabilityUnder(capabilities, unitPath, TYRANT_CONTAINER_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 100 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 100 })] });
 
     expandAll(container);
 
@@ -289,7 +289,7 @@ describe('Kriterium 2 — das Budget des Containers bleibt auf der Karte lesbar 
 
     const unitPath = pathBySelectionId.get(selection.id);
     expect(capabilityUnder(capabilities, unitPath, TYRANT_CONTAINER_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 100, current: 0 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 100, current: 0 })] });
 
     expandAll(container);
 
@@ -310,7 +310,7 @@ describe('Kriterium 2 — das Budget des Containers bleibt auf der Karte lesbar 
 
     const unitPath = pathBySelectionId.get(selection.id);
     expect(capabilityUnder(capabilities, unitPath, TYRANT_CONTAINER_ID))
-      .toMatchObject({ anchorKind: 'groupAnchor', effectiveMax: 100, current: 105 });
+      .toMatchObject({ anchorKind: 'groupAnchor', costLimits: [expect.objectContaining({ bound: 100, current: 105 })] });
 
     expandAll(container);
 

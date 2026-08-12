@@ -72,6 +72,14 @@
   margin-right: 4px;
 }
 
+/* Das Kosten-Budget einer Zeile ("0 / 50 pts") steht zurückhaltend neben ihrem
+   Schalter — es ist eine Grenze, kein Preis, und darf die Kostenangabe daneben
+   nicht überstrahlen. */
+.sub-selection-cost-budget {
+  margin-right: 4px;
+  color: var(--text-dim);
+}
+
 .sub-selection-add-btn {
   padding: 4px 8px;
   height: auto;
