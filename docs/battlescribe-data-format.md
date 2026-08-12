@@ -661,7 +661,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 |----------|-------|-----------|
 | `type` | `min` \| `max` | Untere oder obere Grenze. |
 | `field` | `selections` \| `forces` \| *`<costTypeId>`* | Was gezählt/summiert wird: Anzahl Auswahlen, Anzahl Forces oder die Summe einer Kostenart. |
-| `scope` | `parent` \| `roster` \| `force` \| `category` \| `self` \| `unit` \| `primary-catalogue` | Bezugsrahmen der Zählung (`unit` = die umschließende Einheit, siehe den [Kasten in §7.7](#scope-unit-ancestor); `primary-catalogue` ist kein Zählrahmen, siehe den Kasten unten). |
+| `scope` | `parent` \| `roster` \| `force` \| `self` \| `unit` \| `primary-catalogue` \| *eine Vorfahren-Id* | Bezugsrahmen der Zählung (`unit` = die umschließende Einheit, siehe den [Kasten in §7.7](#scope-unit-ancestor); `primary-catalogue` ist kein Zählrahmen, siehe den Kasten unten). Jeder Wert, der keines dieser Schlüsselwörter ist, ist eine **Vorfahren-Id**: die eines Eintrags, einer Gruppe, eines `forceEntry` oder einer Kategorie. Ein Literal `scope="category"` gibt es **nicht** — die Wiki-Formulierung *„any Category"* meint eine Kategorie-**Id**. Die Schlüsselwörter `model-or-unit` und `primary-category` kommen nur an Conditions vor, siehe den [Kasten in §7.7](#scope-primary-category-model-or-unit). |
 | `value` | Zahl | Der Grenzwert (`-1.0` = unbegrenzt, siehe den Sentinel-Kasten unten). |
 | `percentValue` | `true`/`false` | Ob `value` als Prozentsatz zu interpretieren ist. |
 | `shared` | `true`/`false` | Ob der gezählte Wert über alle Link-Instanzen geteilt wird oder pro Instanz gilt. `true`: die Summe umfasst **alle** Auswahlen dieses shared entry im Roster; `false`: sie wird **je Verweis-Instanz** gerechnet ([BSData-Wiki, *Data structure overview*](https://github.com/BSData/catalogue-development/wiki/Data-structure-overview)). |
@@ -808,7 +808,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 |----------------------|-----------|
 | `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
-| `scope` | Bezugsrahmen (`roster`, `force`, `parent`, …) — dazu `unit` (die umschließende Einheit) und `ancestor` (die Vorfahrenkette, nur mit `instanceOf`/`notInstanceOf`), siehe den [Kasten unten](#scope-unit-ancestor), sowie `primary-catalogue`, das Armeebuch des umschließenden Kontingents ([Kasten in §7.6](#scope-primary-catalogue)). |
+| `scope` | Bezugsrahmen. Die **geschlossene** Liste der Schlüsselwörter: `roster`, `force`, `parent`, `self`, `unit` (die umschließende Einheit) und `model-or-unit` (das nächste Modell **oder** die nächste Einheit) als Zählrahmen; `ancestor` (die Vorfahrenkette, nur mit `instanceOf`/`notInstanceOf`), `primary-catalogue` (das Armeebuch des umschließenden Kontingents, [Kasten in §7.6](#scope-primary-catalogue)) und `primary-category` (die primäre Kategorie der tragenden Auswahl) als Prüfungen. Siehe die Kästen zu [`unit`/`ancestor`](#scope-unit-ancestor) und zu [`primary-category`/`model-or-unit`](#scope-primary-category-model-or-unit). Jeder andere Wert ist eine **Vorfahren-Id** (Eintrag, Gruppe, `forceEntry`, Kategorie). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
 | `value` | Vergleichswert. |
 | `percentValue` | `true`/`false` — ob `value` als **Prozentsatz** des im Rahmen gezählten Nenners zu lesen ist (die XSD trägt das Attribut an der gemeinsamen `QueryBase`, es gilt also für Constraint, Condition und Repeat gleichermaßen; gleiche Nenner- und Rundungskonvention wie bei Prozent-Grenzen, [§7.6](#76-constraint)). Bei `instanceOf`/`notInstanceOf` ohne Wirkung (Wiki: *„has no effect"*). |
@@ -867,6 +867,45 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 >   Prüfung braucht also die effektiven Kategorien, nicht nur Definitions-Ids. Die Zähl-Flags
 >   (`shared`, `includeChild…`) sind ohne Wirkung: eine Vorfahrenkette wird durch eine Instanz
 >   nicht enger.
+
+<a id="scope-primary-category-model-or-unit"></a>
+
+> **`scope="primary-category"` und `scope="model-or-unit"` — die primäre Kategorie und der
+> weitere Typ-Rahmen.**
+> Das Wiki nennt *„primary category"* in seiner Scope-Aufzählung, ohne ihm eine Semantik zu
+> geben; `model-or-unit` kennt es gar nicht. Die XSD hilft nicht: sie typisiert `scope` an der
+> gemeinsamen `QueryBase` als bloßes `xs:string` (`Catalogue.xsd:426`) und schränkt nichts ein.
+> Reale Kataloge nutzen beide, wenn auch selten (Fixture-Kataloge der Definitive Edition:
+> `scope="primary-category"` 4×, `scope="model-or-unit"` 2×). Aus den Daten belegt und in
+> Issue 081 entschieden:
+>
+> - **`primary-category` ist kein Zählrahmen**, sondern — wie `primary-catalogue` — eine
+>   **Identitätsprüfung:** hält genau dann, wenn die `childId` die **primäre** Kategorie des
+>   nächsten Vorfahren benennt, der überhaupt eine trägt (den Träger der Query eingeschlossen,
+>   die Roster-Wurzel ausgenommen). Trägt eine Auswahl die Kategorie nur mit `primary="false"`,
+>   hält die Prüfung **nicht**. Belegt in `Forces of Chaos (6th definitive edition).cat`
+>   (Zeilen 12679, 13024, 13062, 13093): alle vier sind `instanceOf field="selections"`
+>   mit `childId="e94b-6a54-8779-cd60"` (die `.gst`-Kategorie *Rare*) und hängen am geteilten
+>   Reittier-Eintrag *Juggernaut of Khorne* (`ba34-87a0-8cd2-c77d`), der selbst nur
+>   `categoryLink Khorne primary="false"` trägt — die Auflösung muss also **steigen**. Die fünf
+>   verlinkenden Träger unterscheiden genau richtig: der *Daemonic Chariot of Khorne* führt
+>   *Rare* als `primary="true"` (die Prüfung hält, und die vier `set`-Modifier blenden T, Ld, BS
+>   und W des Zugtiers auf `-` aus), *BloodCrushers* führen *Special*, der *Lord of Chaos*
+>   *Lord*, der *Daemonic Herald* *Heroes* (die Prüfung hält nicht). Die Zähl-Flags sind ohne
+>   Wirkung: eine primäre Kategorie wird durch eine Instanz nicht enger. `childId="any"` (bzw.
+>   kein Ziel) trifft immer — der Rahmen hat genau eine primäre Kategorie. Trägt kein Knoten der
+>   Kette eine, wertet die Engine fail-closed (`unresolvedScope`).
+> - **`model-or-unit` ist ein regulärer Zählrahmen**, die exakte Verallgemeinerung von `unit`:
+>   der nächste Vorfahre — den Träger der Query **eingeschlossen** — mit rohem `type="model"`
+>   **oder** `type="unit"`; für einen `entryLink` zählt wieder der rohe Typ seines transitiv
+>   aufgelösten Ziels (dieselbe Erb-Regel wie bei `unit`). Belegt in
+>   `Lizardmen (6th definitive edition).cat` (Zeilen 4939, 4967): beide sind
+>   `instanceOf field="selections" childId="7b73-1714-155f-8f67"` (die Kategorie *Red Crested
+>   Skink*) mit `includeChildSelections="true"` und schalten die versteckten Aufwertungen
+>   *Skavenpelt* und *Sign of Sotek* per `set hidden="false"` frei; die Kategorie hängt sowohl an
+>   der Einheit *Red Crested Skinks* als auch an der Aufwertung *Red Crests*. Ohne Modell und
+>   ohne Einheit über sich wertet die Engine fail-closed (`unresolvedScope`) — außer an einem
+>   engine-eigenen Anker, genau wie bei `unit`.
 
 #### `conditionGroup` — Verknüpfung mehrerer Bedingungen
 
@@ -1446,7 +1485,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `infoLink` | `type` | `profile`, `rule`, `infoGroup` |
 | `constraint` | `type` | `min`, `max` |
 | `constraint` | `field` | `selections`, `forces`, *`<costTypeId>`* |
-| `constraint`/`condition`/`repeat` | `scope` | `parent`, `roster`, `force`, `category`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)), `primary-category` (4× in den Fixture-Katalogen belegt, `Forces of Chaos`, upstream nicht dokumentiert), `model-or-unit` (2× in den Fixture-Katalogen belegt, `Lizardmen`, upstream nicht dokumentiert) |
+| `constraint`/`condition`/`repeat` | `scope` | Neun Schlüsselwörter — `parent`, `roster`, `force`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)), `primary-category` (4× in den Fixture-Katalogen belegt, `Forces of Chaos`) und `model-or-unit` (2× belegt, `Lizardmen`; beide upstream nicht dokumentiert, [§7.7](#scope-primary-category-model-or-unit)) — **oder** eine Vorfahren-Id (Eintrag, Gruppe, `forceEntry`, Kategorie). Ein Literal `category` gibt es nicht: die Wiki-Formulierung *„any Category"* meint eine Kategorie-**Id**, und keiner der beiden eingefrorenen Korpora schreibt `scope="category"`. |
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
 | `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
@@ -1515,6 +1554,7 @@ Lücken, die uns bisher konkret getroffen haben:
 | **`scope="primary-catalogue"`** | Die Aufzählung kennt `parent\|roster\|force\|primary category` und Vorfahren-Ids — `primary-catalogue` kommt nicht vor, obwohl reale Kataloge es verwenden. | [Der Kasten in §7.6](#scope-primary-catalogue) beschreibt die in Issue 077 aus den Daten belegte Semantik: das Armeebuch des umschließenden Kontingents, als Identitätsprüfung statt als Zählrahmen. |
 | **`type` am `entryLink`** | Dass ein `selectionEntry` ein `type` (`unit\|model\|upgrade`) trägt, ist dokumentiert. Ob ein Verweis den Typ seines Ziels erbt, nicht. | Issue 078 |
 | **`scope="unit"` / Semantik von `ancestor`** | `unit` fehlt in der Scope-Aufzählung des Wikis völlig; `ancestor` ist zwar aufgezählt (nur mit `instanceOf`/`notInstanceOf` gültig), seine Semantik aber nicht beschrieben. Reale Kataloge nutzen beide (337× bzw. 33× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-unit-ancestor) beschreibt die in Issue 086 aus den Daten belegte Semantik: `unit` = die umschließende Einheit als Zählrahmen, `ancestor` = Mitgliedschaftsprüfung über die Vorfahrenkette. |
+| **`scope="primary-category"` / `scope="model-or-unit"`** | Das Wiki nennt *„primary category"* in der Aufzählung, ohne ihm eine Semantik zu geben; `model-or-unit` kennt es gar nicht. Die XSD typisiert `scope` als bloßes `xs:string` (`Catalogue.xsd:426`) und schränkt nichts ein. Reale Kataloge nutzen beide (4× bzw. 2× in den Fixture-Katalogen). | [Der Kasten in §7.7](#scope-primary-category-model-or-unit) beschreibt die in Issue 081 aus den Daten belegte Semantik: `primary-category` = Identitätsprüfung gegen die primäre Kategorie des nächsten Vorfahren, der eine trägt; `model-or-unit` = derselbe Zählrahmen wie `unit`, nur auch an einem `type="model"` bindend. |
 | **`value="-1"` als „unbegrenzt"** | Der Sentinel ist nicht dokumentiert — weder seine Bedeutung noch, an welchen Stellen er gilt. | [§7.6](#76-constraint) dieses Dokuments beschreibt die in Issue 079 aus den Daten belegte Semantik: `-1` = unbegrenzt nur als **hingeschriebener** Wert (Constraint-`value`, `set`-Modifierwert auf eine Grenze, `defaultCostLimit`, eingestelltes Roster-`costLimit` — Issue 0096); errechnete negative Werte sind kein Sentinel. |
 | **Modifier-Typen `add`/`remove`** | Das Wiki kennt nur `Increment\|Decrement\|Set\|Append`. Reale Kataloge verwenden `add`/`remove` für Kategoriezugehörigkeit und `multiply`, `prepend`, `set-primary`/`unset-primary`. | §7.7 dieses Dokuments beschreibt sie aus den Daten, nicht aus der Quelle |
 | **`conditionGroup type="not"`** | Weder Wiki noch eine bekannte `BSData/schemas`-Version kennt den Gruppentyp; die Definitive Edition nutzt ihn (4× in drei Armeebüchern — `Vampire Counts` 2×, `Lizardmen` 1×, `Skaven` 1× —, jeweils an Pflichteinheiten eines Sonderheeres, u. a. „Army of the Lichemaster"). | [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen) beschreibt die in Issue 0115 getroffene Entscheidung: die Gruppe hält, wenn **keines** ihrer Mitglieder hält (De-Morgan-Duale zu `or`). Die vendorte `Catalogue.xsd` wurde um den Wert erweitert (ADR 0016). |
