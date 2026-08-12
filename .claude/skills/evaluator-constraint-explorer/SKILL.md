@@ -10,6 +10,8 @@ user-invocable: true
 
 This skill closes evaluator coverage cell by cell, data-first. The catalog corpus says which rule constructs exist, the coverage inventory says which of them no scenario pins yet, and this loop pins the next one with a black-box E2E scenario. The search starts from the data and never from a hypothesis about the engine code. That inversion is what ADR 0033 asks for: scenarios are authored from the catalog data alone, so they challenge the engine instead of mirroring it.
 
+**What a cell measures, and what it does not.** A cell classifies a rule construct — a constraint, condition, modifier or repeat — and never where in the definition tree its carrier sits, so a structural placement such as "the children an `entryLink` declares itself" can never appear in the worklist; that placement axis is covered instead by the corpus invariant `src/evaluator/evaluator.corpusLinkLocalChildren.test.js` (issue 0150), recorded keyless in `docs/testing/covered-cells.json`.
+
 ## 2. Preconditions
 
 - Read `docs/battlescribe-data-format.md` before the first cell. It is the canonical vocabulary of every axis in a cell key and takes precedence over the ADRs.

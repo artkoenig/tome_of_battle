@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "_comment": "Manual record of covered evaluator rule-construct cells, the second source of coverage next to the one derived automatically from every docs/testing/*/scenario.json on each run. Add an entry when a cell is exercised by something no manifest limitId can attest (a condition, modifier, repeat or group cell pinned by a scenario, or a module test), or when a cell is deliberately waived. Keys are the pipe-delimited cell keys of scripts/lib/evaluator-coverage-cells.js; docs/testing/worklist.json is regenerated from this file by scripts/evaluator-coverage-inventory.js.",
+  "_comment": "Manual record of covered evaluator rule-construct cells, the second source of coverage next to the one derived automatically from every docs/testing/*/scenario.json on each run. Add an entry when a cell is exercised by something no manifest limitId can attest (a condition, modifier, repeat or group cell pinned by a scenario, or a module test), or when a cell is deliberately waived. Keys are the pipe-delimited cell keys of scripts/lib/evaluator-coverage-cells.js; docs/testing/worklist.json is regenerated from this file by scripts/evaluator-coverage-inventory.js. An entry may also record a structural axis the cell space does not have (issue 0150): it carries `\"key\": null` and an `axis` instead of a cell key, so it credits no cell and moves no total, and it exists so the books show what a non-cell invariant attests.",
   "cells": [
     {
       "key": "condition|greaterThanOrEqualTo|parent|selectionCount|child=id",
@@ -751,6 +751,14 @@
         "docs/testing/not-equal-to-roster-experimental-rat-riders"
       ],
       "rationale": "Fuenf Roster ueber die versteckte Skaven-Einheit Rat Riders (d0aa-b183-877e-e731). Ihr set hidden=false haengt an einer and-Gruppe aus notInstanceOf des Kontingents 9f0b-5346-a3bc-b5fe und der Bedingung notEqualTo 0 auf die roster-weite Zahl der Auswahlen der Kategorie Experimental rules (4fed-b911-e6e0-927b). Roster 01 (kein Traeger) laesst sie versteckt, Roster 02 (ein Traeger) macht sie sichtbar, Roster 03 (Zaehlstand 2) zeigt, dass die Bedingung ungleich null und nicht gleich eins meint, Roster 04 traegt den Traeger in einem ZWEITEN Kontingent und belegt damit den armeeweiten Rahmen, Roster 05 laesst den notInstanceOf-Zweig im Hell-Pit-Kontingent fallen. Gepinnt ueber isHidden am Angebots- bzw. besetzten Slot. Szenario ist gruen."
+    },
+    {
+      "key": null,
+      "axis": "structural placement — the children an entryLink declares itself",
+      "evidence": [
+        "src/evaluator/evaluator.corpusLinkLocalChildren.test.js"
+      ],
+      "rationale": "Issue 0150. Deliberately keyless, because what this attests is not a cell: the inventory classifies rule constructs, and 'the carrier is a link that declares its own children' is a structural placement the cell key has no axis for. Only `key` is read by the tooling, so this entry credits no cell, moves no worklist total and raises no stale-covered-key warning. What it records: the corpus invariant derives from the raw XML of both corpora every entryLink that declares its own selectionEntries/selectionEntryGroups/entryLinks — 149 occurrences over the 15 catalogue files of src/evaluator/__fixtures__/whfb6-definitive/ and src/__fixtures__/whfb6/, neither .gst file holding one — and asserts through the facade (prepareDataset + evaluate) that a roster holding such a link gets a report slot for each of its locally declared children under the link's own slot. Those 149 links declare 760 children: 754 are asserted individually by their own report-slot defId, and 6 are recorded as shadowed — the two children of each of the three Forces-of-Chaos 'Battle Standard Bearer' links whose closure reaches the shared 'Magic Banners' target twice, for which the engine emits a single slot, so the pair is asserted as a group and both ids are booked instead. This is the class PR #214 fixed (ownerDefinitionOf dropped the children declared on the link) and that no cell in the inventory could see."
     }
   ]
 }
