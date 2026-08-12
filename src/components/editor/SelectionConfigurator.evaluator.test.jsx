@@ -9,8 +9,8 @@
  *   ihres Slot-Pfads: belegte Slots, Pflicht-Phantome, Gruppen-Anker und
  *   Angebots-Anker erscheinen; Slots FREMDER Selektionen erscheinen nicht,
  * - der Zustand der Slots wird durchgereicht: am Maximum → nicht erhöhbar,
- *   Restspielraum → erhöhbar, versteckt → unsichtbar, offene Pflicht →
- *   sichtbar markiert.
+ *   Restspielraum → erhöhbar, versteckt → unsichtbar, offene Pflicht → NICHT
+ *   angehakt und beschreibbar (Issue 0145, Kriterium 3).
  *
  * ── Prop-Vertragsentscheidung (so nah wie möglich am Bestehenden) ────────────
  * Bestehende Props behalten ihre Bedeutung (selection, subSelectionOperations,
@@ -303,14 +303,27 @@ describe('SelectionConfigurator: Optionsliste aus den Slots unter dem Selection-
     expect(shieldPlus.disabled).toBe(true);
   });
 
-  it('markiert die offene Pflicht (Helm, isMandatoryUnmet) sichtbar als Pflicht', () => {
-    renderConfigurator(createSubSelectionOperationsMock());
+  it('die offene Pflicht (Helm, isMandatoryUnmet) rendert nicht angehakt und schreibt beim Klick (Issue 0145, Kriterium 3)', () => {
+    const operations = createSubSelectionOperationsMock();
+    const { selection } = renderConfigurator(operations);
 
-    // Bestehende Pflicht-Observable: angehakte, gesperrte Checkbox (min 1 / max 1).
     const helmRow = screen.getByText('Helm').closest('.sub-selection-row');
     const checkbox = helmRow.querySelector('input[type="checkbox"]');
     expect(checkbox, 'Pflicht-Option rendert als Checkbox').not.toBeNull();
-    expect(checkbox.checked).toBe(true);
-    expect(checkbox.disabled).toBe(true);
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.disabled).toBe(false);
+
+    fireEvent.click(checkbox);
+    expect(operations.increaseCount.mock.calls.some(
+      call => call[0] === selection.id && identifiesOption(call[1], HELM_ID),
+    )).toBe(true);
+    expect(operations.decreaseCount).not.toHaveBeenCalled();
+
+    operations.increaseCount.mockClear();
+    fireEvent.click(helmRow);
+    expect(operations.increaseCount.mock.calls.some(
+      call => call[0] === selection.id && identifiesOption(call[1], HELM_ID),
+    )).toBe(true);
+    expect(operations.decreaseCount).not.toHaveBeenCalled();
   });
 });
