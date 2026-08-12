@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="netr-05" name="NETR 05 - Border Patrols, Budget 500 bei 50 verplanten Punkten: gelesen wird das Budget, nicht die Summe" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="500.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (BR-AB)" entryId="3a8b-8c11-beff-0534" catalogueId="a5c3-073c-b4e8-4284" catalogueRevision="1" catalogueName="Bretonnia">
+      <selections>
+        <selection id="sel-border-patrols" name="Border Patrols rules" entryId="4e15-0353-165f-5528" entryLinkId="" number="1" type="upgrade" collective="false"></selection>
+        <selection id="unit-men-at-arms" name="Men at Arms" entryId="fcdd-429a-3b79-7e8d" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="maa-models" name="Men-at-Arms" entryId="da0d-5502-7555-866c" entryLinkId="" number="10" type="model" collective="false"></selection>
+            <selection id="maa-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="22bb-d598-fe64-b69c" number="1" type="upgrade" collective="false"></selection>
+            <selection id="maa-light-armour" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="5dcb-bb36-3782-fb40" number="1" type="upgrade" collective="false"></selection>
+            <selection id="maa-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="e536-f8de-d029-404d" number="1" type="upgrade" collective="false"></selection>
+            <selection id="maa-halberds" name="Polearm (counts as Halberd)" entryId="b3f3-a133-2869-0be8" entryLinkId="a800-5a70-1027-80ac" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

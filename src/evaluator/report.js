@@ -303,6 +303,67 @@ function dedupeMandatoryEntryPhantomViolations(results) {
 const COUNTING_MEASURES = new Set([LimitMeasure.SELECTION_COUNT, LimitMeasure.FORCE_COUNT]);
 
 /**
+ * Entdoppelt eine **Grenze im Rahmen `parent`**, die in demselben Rahmen
+ * mehrfach verankert ist, in der Meldungsliste.
+ *
+ * `scope="parent"` ist der einzige Rahmen, der die **Eltern-Auswahl des Ankers
+ * selbst** benennt (`query.js`, `resolveFrame`: er geht sogar `shared` vor).
+ * Die Grenze ist damit eine Aussage **ueber diesen einen Rahmen** — „unter
+ * diesem Eltern-Knoten hoechstens/mindestens n" —, und die Zaehlung ist die des
+ * Rahmens, nicht die des einzelnen Ankers. Stehen mehrere Kopien des Traegers
+ * als Geschwister darunter, tragen sie alle **dieselbe** Grenze und lesen
+ * dieselbe Zahl: das Urteil ist an jedem dieser Anker identisch. Ohne
+ * Entdopplung meldete eine ueberschrittene Obergrenze so oft, wie der Traeger
+ * im Rahmen steht (drei „Reaper Bolt Thrower team" unter einer Einheit ⇒ drei
+ * Meldungen ueber dieselben Ist 3 gegen Grenze 2), statt einmal ueber den
+ * Rahmen.
+ *
+ * Die Regel gilt **nur** fuer `scope="parent"`. Ein armee- oder
+ * kontingentweiter Rahmen (`roster`/`force`) haengt nicht an der Position des
+ * Ankers: seine Grenze spricht ueber jedes Vorkommen des Eintrags in der Armee,
+ * und die Meldungsliste benennt jedes davon (belegte Instanz-Anker behalten
+ * ihre Multiplizitaet — `docs/evaluator-architecture.md` §4.8; zwei Tyrants
+ * gegen eine roster-weite `max 1` melden zweimal). Dieselbe Trennung zieht
+ * bereits {@link dedupeMandatoryEntryPhantomViolations}, dort von der anderen
+ * Seite: sie laesst `scope="parent"` unangetastet, weil eine Eltern-Pflicht je
+ * Eigentuemer gilt.
+ *
+ * Der Schluessel ist (Grenz-Id, Rahmen-Knoten, gezaehlte Ziel-Id, effektiver
+ * Grenzwert):
+ *
+ * - die **Grenz-Id** trennt zwei `<constraint>`-Elemente desselben Rahmens; nur
+ *   Kopien **einer** Grenze entdoppeln, nie zwei verschiedene Pflichten;
+ * - der **Rahmen-Knoten** (`anchor.parent`) trennt Eigentuemer: dieselbe Grenze
+ *   in einer zweiten Einheit ist ein zweites Urteil und meldet weiter (Roster 05
+ *   des Szenarios `parent-min-include-children-bolt-thrower`);
+ * - die **gezaehlte Ziel-Id** trennt zwei Verweise auf verschiedene Ziele, die
+ *   sich die Grenze eines gemeinsamen Ziels teilen;
+ * - der **effektive Grenzwert** trennt Anker, an denen ein Modifikator die
+ *   Grenze verschieden weit gehoben hat — dann ist das Urteil eben nicht
+ *   identisch, und beide Meldungen bleiben.
+ *
+ * Es ueberlebt der erste Anker in Dokumentreihenfolge. Wie die beiden
+ * Nachbarregeln entdoppelt sie **allein die Meldungsliste**: die Ergebnisse und
+ * damit die Faehigkeitsdatensaetze aller beteiligten Slots bleiben vollstaendig.
+ */
+function dedupeParentFrameViolations(results) {
+  const kept = [];
+  const seenKeys = new Set();
+  for (const result of results) {
+    const frame = result.limit.scope === ScopeKeyword.PARENT ? result.anchor.parent : null;
+    if (frame === null || frame === undefined) {
+      kept.push(result);
+      continue;
+    }
+    const key = `${result.limit.id}\u0000${frameKeyOf(frame)}\u0000${result.countedTargetId}\u0000${result.bound}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    kept.push(result);
+  }
+  return kept;
+}
+
+/**
  * Die Grenz-Ergebnisse je Knoten und Art (MIN/MAX), **einmal** je Bericht
  * aufgebaut. Ohne diesen Index kostete jeder Slot zwei lineare Suchen ueber alle
  * Ergebnisse — bei einem Baum aus mehreren hundert Slots ein quadratischer Aufwand
@@ -627,14 +688,16 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     // Ergebnis am Angebots-Anker faellt heraus (`constraints.js`, `isReportable`):
     // das Nichtgewaehlte speist Faehigkeitsdatensaetze, aber nie die Meldungsliste.
     // Armeeweite Kategorie-Grenzen melden dabei genau **einmal**
-    // ({@link dedupeArmyWideCategoryViolations}, §9.9), und die Eintrags-Pflicht
+    // ({@link dedupeArmyWideCategoryViolations}, §9.9), die Eintrags-Pflicht
     // in beiden Wurzelformen ebenso ({@link dedupeMandatoryEntryPhantomViolations},
-    // §9.9, Issue 85) — die Ergebnisse selbst bleiben vollstaendig, nur die
-    // Meldungsliste entdoppelt.
+    // §9.9, Issue 85), und eine Grenze im Rahmen `parent` meldet einmal je
+    // Rahmen statt je Kopie ihres Traegers darin
+    // ({@link dedupeParentFrameViolations}) — die Ergebnisse selbst bleiben
+    // vollstaendig, nur die Meldungsliste entdoppelt.
     violations: [
-      ...dedupeMandatoryEntryPhantomViolations(dedupeArmyWideCategoryViolations(
+      ...dedupeParentFrameViolations(dedupeMandatoryEntryPhantomViolations(dedupeArmyWideCategoryViolations(
         [...results, ...budgetViolations].filter(result => result.isReportable && !result.satisfied),
-      )).map(result => toDerivedViolation(result, classificationContext)),
+      ))).map(result => toDerivedViolation(result, classificationContext)),
       ...authorViolationsOf(slots, classificationContext),
     ],
     capabilities,

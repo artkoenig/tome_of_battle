@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="netr-06" name="NETR 06 - Budget exakt 500 OHNE Border Patrols, ein Paladin Battle Standard Bearer gewaehlt: gehobene Pflicht erfuellt" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (manifest E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="500.0"/>
+  </costLimits>
+  <forces>
+    <force id="force-1" name="Standard (BR-AB)" entryId="3a8b-8c11-beff-0534" catalogueId="a5c3-073c-b4e8-4284" catalogueRevision="1" catalogueName="Bretonnia">
+      <selections>
+        <selection id="unit-paladin-bsb" name="Paladin Battle Standard Bearer" entryId="2f57-db88-56b5-180f" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="pbsb-vow" name="Knights Vow" entryId="e432-4d78-0f50-1e35" entryLinkId="3b2b-03e2-f4a8-3341" number="1" type="upgrade" collective="false"></selection>
+            <selection id="pbsb-mount" name="Bretonnian Warhorse" entryId="adc2-53db-4a9e-b8ea" entryLinkId="1c57-1f3b-1548-9c09" number="1" type="upgrade" collective="false">
+              <selections>
+                <selection id="pbsb-barding" name="Barding" entryId="3211-d836-02f1-01d0" entryLinkId="324e-6dd8-2afa-e687" number="1" type="upgrade" collective="false"></selection>
+              </selections>
+            </selection>
+            <selection id="pbsb-handweapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="bf9f-df49-03bb-18b6" number="1" type="upgrade" collective="false"></selection>
+            <selection id="pbsb-heavy-armour" name="Heavy Armour" entryId="dde4-0ba8-7b3c-57b7" entryLinkId="a26f-1032-b1e9-31ba" number="1" type="upgrade" collective="false"></selection>
+            <selection id="pbsb-bsb" name="Battle Standard Bearer" entryId="e9ad-f1ce-aebf-6d23" entryLinkId="266c-d6c8-c9cf-4ec6" number="1" type="upgrade" collective="false"></selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

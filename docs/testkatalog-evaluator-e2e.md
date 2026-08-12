@@ -179,7 +179,25 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`repeat-list-two-repeats-regiment-of-renown`](testing/repeat-list-two-repeats-regiment-of-renown/) | Definitive Empire + Mercenaries | 6 |
 | [`greater-than-self-blessed-spawning-slots`](testing/greater-than-self-blessed-spawning-slots/) | Definitive Lizardmen + Mercenaries | 5 |
 | [`id-scope-repeat-powerhouses-per-pack`](testing/id-scope-repeat-powerhouses-per-pack/) | Definitive Skaven + Mercenaries | 7 |
-| **Summe** | | **447** |
+| [`decrement-group-max-battle-standard`](testing/decrement-group-max-battle-standard/) | Definitive VC + Mercenaries | 2 |
+| [`modifier-group-repeats-grave-markers`](testing/modifier-group-repeats-grave-markers/) | Definitive VC + Mercenaries | 6 |
+| [`not-instance-of-parent-ironskin-tribe`](testing/not-instance-of-parent-ironskin-tribe/) | Definitive Ogre + Mercenaries | 4 |
+| [`self-scope-max-house-rules`](testing/self-scope-max-house-rules/) | Definitive Ogre + Mercenaries | 6 |
+| [`parent-max-enchanted-items-per-bearer`](testing/parent-max-enchanted-items-per-bearer/) | ergofang VC (ohne Mercenaries) | 5 |
+| [`roster-min-general-armywide`](testing/roster-min-general-armywide/) | ergofang VC (ohne Mercenaries) | 5 |
+| [`equal-to-roster-royal-pegasus-gate`](testing/equal-to-roster-royal-pegasus-gate/) | Definitive Bretonnia + Mercenaries | 5 |
+| [`prepend-name-chosen-knights`](testing/prepend-name-chosen-knights/) | Definitive Dark Elves + Mercenaries | 2 |
+| [`less-than-id-scope-white-wolf-hammer`](testing/less-than-id-scope-white-wolf-hammer/) | Definitive Empire + Mercenaries | 5 |
+| [`unset-primary-category-rat-ogres`](testing/unset-primary-category-rat-ogres/) | Definitive Skaven + Mercenaries | 5 |
+| [`multiply-cost-traditional-army`](testing/multiply-cost-traditional-army/) | Definitive Dwarfs + Mercenaries | 8 |
+| [`parent-repeat-upgrade-maneater-weapons`](testing/parent-repeat-upgrade-maneater-weapons/) | ergofang DoW (ohne Mercenaries) | 6 |
+| [`at-least-parent-model-champion-gate`](testing/at-least-parent-model-champion-gate/) | Definitive Dwarfs + Mercenaries | 4 |
+| [`at-least-self-any-experimental-hydra-warning`](testing/at-least-self-any-experimental-hydra-warning/) | Definitive Dark Elves + Mercenaries | 5 |
+| [`not-equal-to-parent-lance-pistol-gate`](testing/not-equal-to-parent-lance-pistol-gate/) | Definitive Empire + Mercenaries | 7 |
+| [`not-equal-to-roster-limit-paladin-bsb`](testing/not-equal-to-roster-limit-paladin-bsb/) | Definitive Bretonnia + Mercenaries | 6 |
+| [`not-equal-to-roster-experimental-rat-riders`](testing/not-equal-to-roster-experimental-rat-riders/) | Definitive Skaven + Mercenaries | 5 |
+| [`parent-min-include-children-bolt-thrower`](testing/parent-min-include-children-bolt-thrower/) | Definitive Dark Elves + Mercenaries | 5 |
+| **Summe** | | **538** |
 
 Jedes Szenario führt in seiner eigenen `README.md` die abgeleiteten Regeln mit
 Katalogbeleg und den vollständigen Roster-Katalog. Die folgende Übersicht fasst je
@@ -2466,3 +2484,143 @@ Wiederholungs-Familie den **ergofang**-Datensatz.
 > **Offen erklärt:** `childId="upgrade"` gegen `any`, der Rahmen „Modell" gegen
 > „Gruppe" sowie `shared` und `includeChildForces` sind auf diesen Daten nicht
 > unterscheidbar; das Szenario sagt es, statt einen Roster zu erfinden.
+
+## `at-least-parent-model-champion-gate`
+
+Prüft eine `<condition type="atLeast" … scope="parent" childId="model">`: gezählt
+werden die Auswahlen vom rohen Typ *model*, die der **Eltern-Rahmen** des
+Bedingungsträgers hält — die umschließende Einheiten-Auswahl, nicht die
+Optionsgruppe und nicht das Kontingent. Beleg: das Upgrade „Champion"
+(`21f9-b4f6-b59e-8892`, der Giant Slayer der Dwarfs-Einheit „Slayers"
+`b454-4868-7ec4-39e8`) trägt seine eigene Grenze `c120-7f3a-9c4d-6d32`
+(`max 0`) und genau **einen** Modifikator darauf: `increment 1`, gegattert durch
+diese eine Bedingung. Der Champion ist also nur wählbar, solange die Einheit
+selbst Modelle führt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | 5 Slayer-Modelle, 1 Champion | Die Bedingung hält, der Deckel steht auf 1 — die Grenze schweigt |
+| 02 | Dieselbe Einheit **ohne** Modelle | Die Bedingung hält nicht, der Deckel bleibt 0 — die Grenze feuert mit Ist 1; zugleich feuert die Modell-Untergrenze der Einheit |
+| 03 | 5 Modelle, Champion `number="2"` | Der `increment` hebt den Deckel um **genau eins**: Ist 2 gegen Grenze 1 |
+| 04 | Einheit A ohne Modelle mit Champion, Einheit B mit 5 Modellen ohne Champion | Die Rahmentrennung: kontingentweit gäbe es Modelle, mit `scope="parent"` feuert A trotzdem — dieselbe Definition meldet in B einen Deckel von 1 |
+
+> **Offen erklärt:** `shared="true"` ist hier nicht beobachtbar — der Champion ist
+> ein Inline-Eintrag auf genau einem Pfad, und `childId="model"` ist ein
+> Typ-Schlüsselwort statt einer Ziel-Id.
+
+## `at-least-self-any-experimental-hydra-warning`
+
+Prüft eine `<condition type="atLeast" … scope="self" childId="any">` an einer
+**Auswahlgruppe**: Zählrahmen ist die Gruppe selbst — was sie an Mitgliedern
+hält —, nicht die umschließende Einheit, das Kontingent oder das Roster. Beleg:
+die Dark-Elves-Gruppe „War Hydras of Naggaroth" (`7f4e-4b7b-fbc4-a138`) trägt
+eine Autor-Warnung, die an einer `and`-Gruppe aus genau dieser Bedingung und
+`lessThan 1` des Schalters „Allow experimental rules?" (`e28d-f278-f209-63bd`)
+hängt.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Ein Gruppenmitglied, kein Schalter | Beide Konjunkte halten — die Warnung liegt genau einmal an der Gruppe an |
+| 02 | Dieselbe Einheit, Gruppe leer | Die Bedingung hält nicht — still |
+| 03 | Gruppe leer, dafür Rahmen und Einheit gefüllt | Die Rahmentrennung: einheits-, kontingent- und rosterweit gäbe es Auswahlen, mit `scope="self"` bleibt es still |
+| 04 | Gruppenmitglied **und** Schalter | Das zweite Konjunkt fällt — still; die erste Bedingung allein löst nichts aus |
+| 05 | Zwei Gruppenmitglieder | Ein Überlauf macht die Bedingung nicht falsch: die Gruppengrenze feuert (Ist 2 gegen 1), die Warnung liegt weiterhin genau einmal an |
+
+> **Status: rot.** Die drei stillen Roster stimmen; in 01 und 05 trägt der
+> Bericht am Gruppenanker gar keine Autor-Meldung. Der Befund ist als
+> Phase-B-Aufgabe in `docs/testing/campaign-state.json` (`pinnedGaps`)
+> festgehalten.
+
+> **Offen erklärt:** `self` gegen `parent` ist an dieser Fundstelle nicht
+> trennbar — die Gruppe ist der einzige Kind-Container ihres Elterneintrags;
+> getrennt wird `self` deshalb von `unit`, `force` und `roster`. `shared="true"`
+> ist unbeobachtbar, weil die Gruppe im ganzen Fixture-Satz genau einmal
+> vorkommt.
+
+## `not-equal-to-parent-lance-pistol-gate`
+
+Prüft eine `<condition type="notEqualTo" … scope="parent" childId="<Ziel-Id>">`:
+sie hält bei **jedem** Zählstand außer genau dem verglichenen — also bei 0
+**und** bei 2 —, ist also kein `lessThan`. Beleg: der Lance-Verweis
+(`e082-13b2-e746-34e0`) der Empire-Einheit „Knights of the Knightly Orders"
+(`1d77-9e6e-a6ab-573f`) trägt `min 1` und `max 1`; eine `modifierGroup` setzt
+**beide** auf 0, sobald die Einheit eine „Signature Weapon" führt und die Zahl
+der Pistolen im Einheiten-Rahmen ungleich 1 ist, eine zweite setzt sie bei genau
+einer Pistole zurück.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01/02 | Signature Weapon = genau **eine** Pistole, Lance da / fehlt | Die Bedingung hält nicht, die Grenzen stehen auf 1 — die Pflicht feuert genau dann, wenn die Lance fehlt |
+| 03 | Signature Weapon = Great Weapon, also **null** Pistolen | Die Bedingung hält, beide Grenzen fallen auf 0 — ohne Lance schweigt alles |
+| 04/05 | **Zwei** Pistolen, Lance fehlt / ist da | Das Herzstück: Zählstand 2 lässt die Bedingung **wieder** halten, die Grenzen fallen auf 0 — unter einem `lessThan` wäre es umgekehrt |
+| 06 | Null Pistolen, aber **keine** Signature Weapon | Die and-Klammer fällt: die geschriebenen Grenzen 1/1 bleiben stehen und die Pflicht feuert |
+| 07 | Wie 03, die Pistole steht in einer **anderen** Einheit | Rahmentrennung: der fremde Zählstand zählt nicht mit |
+
+> **Offen erklärt:** Die Reihenfolge der beiden `modifierGroup`s und der
+> Unterschied `shared="false"` (Mindestmaß) gegen `shared="true"` (Höchstmaß)
+> sind mit einer Einheit und einer Verweis-Instanz nicht beobachtbar.
+
+## `not-equal-to-roster-limit-paladin-bsb`
+
+Prüft eine `<condition type="notEqualTo" value="500" field="limit::…"
+scope="roster">`: sie liest das **eingestellte Punktebudget** — nicht die
+verplante Summe — und hält bei jedem Budget außer genau 500. Beleg: die
+Bretonnia-Einheit „Paladin Battle Standard Bearer" (`2f57-db88-56b5-180f`) trägt
+eine force-skopierte Pflichtgrenze (`49e3-c542-6bff-9805`), die „Border Patrols
+rules" auf 0 setzt und eine `or`-Gruppe wieder auf 1 hebt, deren erster Zweig
+genau diese Bedingung ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Border Patrols, Budget **exakt 500** | Beide `or`-Zweige fallen: die Pflicht bleibt bei 0 |
+| 02/03 | Dasselbe bei Budget 499 und 501 | Ein Punkt in jede Richtung genügt: die Pflicht steht wieder auf 1 — die Gleichheit ist von beiden Seiten geklammert |
+| 04 | Budget 500, **kein** Border Patrols | Der zweite `or`-Zweig hält: die Pflicht steht auf 1 und feuert mit Ist 0 |
+| 05 | Border Patrols, Budget 500, davon 50 verplant | Gelesen wird das Budget, nicht die Summe — die Pflicht bleibt bei 0 |
+| 06 | Kein Border Patrols, die Einheit ist gewählt | Positivprobe: die Pflicht ist erfüllt |
+
+> **Offen erklärt:** In den Rostern mit „Border Patrols rules" ist die Einheit
+> zugleich versteckt; die Mindestgrenze einer versteckten Entität wird nicht
+> validiert (Formatdoku §5.6/§8), deshalb wird die verschobene Grenze dort über
+> `effectiveMin` gepinnt statt über eine Verletzung.
+
+## `not-equal-to-roster-experimental-rat-riders`
+
+Prüft eine `<condition type="notEqualTo" value="0" … scope="roster">` auf ein
+**Kategorie-Ziel**: gezählt wird armeeweit, und die Bedingung hält bei jedem
+Zählstand außer null. Beleg: die versteckte Skaven-Einheit „Rat Riders"
+(`d0aa-b183-877e-e731`) wird sichtbar, sobald die Armee mindestens eine Auswahl
+der Kategorie „Experimental rules" (`4fed-b911-e6e0-927b`) führt und das
+Kontingent nicht das Hell-Pit-Sonderheer ist.
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Keine Auswahl dieser Kategorie | Zählstand 0 — die Einheit bleibt versteckt |
+| 02 | Genau eine solche Auswahl | Die Einheit wird sichtbar |
+| 03 | Zählstand 2 | „Ungleich null", nicht „gleich eins" — sie bleibt sichtbar |
+| 04 | Die Auswahl steht im **zweiten** Kontingent | Der Rahmen ist die ganze Armee: sie wird trotzdem sichtbar |
+| 05 | Dieselbe Auswahl im Hell-Pit-Kontingent | Der `notInstanceOf`-Zweig der and-Gruppe fällt — versteckt |
+
+## `parent-min-include-children-bolt-thrower`
+
+Prüft eine `min`-Grenze mit `scope="parent"` und
+`includeChildSelections="true"`: gezählt wird im Eltern-Rahmen, jede Einheit ist
+ihr eigener Rahmen. Beleg: das Modell „Reaper Bolt Thrower team"
+(`8d99-db74-0051-4a45`) der Dark-Elves-Einheit `a757-462a-11d5-9636` trägt
+`min 1` (`41ec-bee5-0865-0448`) direkt neben `max 2` (`ccf9-fefc-71c8-bd73`).
+
+| # | Geprüfter Roster-Zustand | Erwartetes Ergebnis (nicht-technisch) |
+| :--- | :--- | :--- |
+| 01 | Einheit ohne Team | Die Pflicht feuert mit Ist 0 gegen 1 |
+| 02/03 | Ein bzw. zwei Teams | Beide Grenzen schweigen — das Paar ist von beiden Seiten geklammert |
+| 04 | Drei Teams | Das Höchstmaß feuert **genau einmal** mit Ist 3 gegen 2 |
+| 05 | Einheit A mit Team, Einheit B ohne | Rahmentrennung: das fremde Team rettet B nicht — genau eine Verletzung |
+
+> **Status: rot.** Vier der fünf Roster stimmen; in Roster 04 meldet der Bericht
+> das Höchstmaß **dreimal** statt einmal — eine Verletzung je gezählter
+> Selektion statt einer je Rahmen. Der Befund ist als Phase-B-Aufgabe in
+> `docs/testing/campaign-state.json` (`pinnedGaps`) festgehalten.
+
+> **Offen erklärt:** `includeChildSelections="true"` ist an dieser Fundstelle
+> nicht gegen `false` trennbar — der gezählte Eintrag kommt im Fixture-Satz genau
+> einmal vor und kann unterhalb desselben Rahmens nicht tiefer verschachtelt
+> auftreten.

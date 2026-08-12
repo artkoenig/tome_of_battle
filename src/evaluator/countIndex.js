@@ -266,6 +266,7 @@ function indexNodeContribution(tallies, node, effective) {
   let crossedSelection = false;
   let crossedForce = false;
   let frame = node;
+  let childOnPath = null; // der zuletzt durchlaufene Knoten: das Kind des Rahmens auf diesem Pfad
   let isImmediate = true; // der Knoten selbst: keine Grenze dazwischen
   let framesAboveNode = -1; // 0 = der Knoten selbst, 1 = sein Elternteil, …
   while (frame !== null) {
@@ -349,6 +350,31 @@ function indexNodeContribution(tallies, node, effective) {
     for (const carrierTargetId of nestedCarrierTargets) {
       addContribution(tallies, scopeKey(frameKey, carrierTargetId), climbBucket, nestedClimbingCosts);
     }
+    // Der **Gruppen-Rahmen**: eine `selectionEntryGroup` ist im Roster kein
+    // eigener Knoten — ihre Member haengen unter dem Eigentuemer, ihr Anker
+    // daneben. Dieselbe Menge, die die gruppen-skopierte Grenze im
+    // Eigentuemer-Rahmen unter der Gruppen-Id zaehlt, steht deshalb hier
+    // zusaetzlich im Rahmen des Ankers (`groupFrames`, `evalTree.js`) — nur so
+    // sieht eine Query, die **am Anker selbst** gestellt wird (`scope="self"`,
+    // ebenso jedes `shared="false"`), den Bestand der Gruppe statt einen leeren
+    // Rahmen (`docs/battlescribe-data-format.md` §7.6: eine Grenze an einer
+    // Gruppe zaehlt ihre Mitglieder, nicht die Gruppe).
+    //
+    // Verbucht wird mit **demselben** Eimer wie im Eigentuemer-Rahmen: der
+    // Member ist dessen direktes Kind (BASE), alles unter ihm hat die
+    // Selektionsschachtelung gekreuzt (SELECTION) — `includeChildSelections`
+    // wirkt am Gruppen-Rahmen also wie am Eigentuemer-Rahmen. Der Eigenanteil
+    // des Rahmenknotens ({@link FRAME_OWN}) hat hier keinen Gegenpart: der
+    // Anker selbst ist synthetisch und steht in keiner Zaehlung.
+    if (childOnPath !== null && childOnPath.groupFrames !== undefined) {
+      for (const anchor of childOnPath.groupFrames) {
+        if (anchor.parent !== frame) continue;
+        const anchorKey = frameKeyOf(anchor);
+        for (const targetId of targets) {
+          addContribution(tallies, scopeKey(anchorKey, targetId), bucket, contribution);
+        }
+      }
+    }
     // Der aktuelle Rahmen wird fuer alle *hoeheren* Rahmen zu einem
     // dazwischenliegenden Knoten (der Beitragende selbst zaehlt nie als Grenze).
     if (!isImmediate) {
@@ -356,6 +382,7 @@ function indexNodeContribution(tallies, node, effective) {
       else crossedSelection = true;
     }
     isImmediate = false;
+    childOnPath = frame;
     frame = frame.parent;
   }
 }

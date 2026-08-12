@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="pmicb-03" name="PMICB 03 - Reaper Bolt Thrower mit zwei Teams: 41ec erfuellt, ccf9 exakt ausgeschoepft (Ist 2 / Grenze 2)" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored parent-min E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit typeId="ecfa-8486-4f6c-c249" name="pts" value="2000"/>
+  </costLimits>
+  <forces>
+    <!-- Kontingent "Standard (DE-AB)": Einheit sichtbar, Kategorie "Rare"
+         (siehe Kommentar in Roster 01). -->
+    <force id="force-1" name="Standard (DE-AB)" entryId="26bc-729f-a188-f285" catalogueId="d4c0-4f0c-4a89-40fc" catalogueRevision="1" catalogueName="Dark Elves">
+      <selections>
+        <selection id="sel-rbt-unit" name="Reaper Bolt Thrower" entryId="a757-462a-11d5-9636" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rare-1" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+          </categories>
+          <selections>
+            <!-- ZWEI Teams im selben Eltern-Rahmen, als zwei
+                 Geschwister-Selektionen mit je number="1" notiert. Die
+                 Zaehlung des Traegers im Rahmen steht auf 2: 41ec (min 1) ist
+                 uebererfuellt, ccf9 (max 2) exakt ausgeschoepft — beide
+                 schweigen. Jedes Team traegt seinen eigenen, vollstaendigen
+                 Pflicht-Teilbaum (2 Crew mit je Hand Weapon + Light Armour,
+                 1 Reaper). -->
+            <selection id="sel-team-1" name="Reaper Bolt Thrower team" entryId="8d99-db74-0051-4a45" entryLinkId="" number="1" type="model" collective="false">
+              <costs>
+                <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100"/>
+              </costs>
+              <selections>
+                <selection id="sel-team-1-crew-a" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-1-crew-a-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-1-crew-a-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-1-crew-b" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-1-crew-b-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-1-crew-b-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-1-reaper" name="Reaper" entryId="0137-be86-e4e7-d374" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+            <selection id="sel-team-2" name="Reaper Bolt Thrower team" entryId="8d99-db74-0051-4a45" entryLinkId="" number="1" type="model" collective="false">
+              <costs>
+                <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="100"/>
+              </costs>
+              <selections>
+                <selection id="sel-team-2-crew-a" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-2-crew-a-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-2-crew-a-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-2-crew-b" name="Crew" entryId="60b3-aed5-bac2-0bd4" entryLinkId="" number="1" type="upgrade" collective="false">
+                  <selections>
+                    <selection id="sel-team-2-crew-b-hw" name="Hand Weapon" entryId="ef5d-1234-9f7f-7f69" entryLinkId="" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                    <selection id="sel-team-2-crew-b-la" name="Light Armour" entryId="055f-8e4e-f170-35d2" entryLinkId="381e-0653-e9c9-dc6a" entryGroupId="f3eb-28b5-64be-28bd" number="1" type="upgrade" collective="false"/>
+                  </selections>
+                </selection>
+                <selection id="sel-team-2-reaper" name="Reaper" entryId="0137-be86-e4e7-d374" entryLinkId="" number="1" type="upgrade" collective="false"/>
+              </selections>
+            </selection>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

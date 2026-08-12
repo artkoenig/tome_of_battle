@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="nertr-03" name="NERTR 03 - Standard (SK-AB) mit ZWEI Auswahlen der Kategorie &quot;Experimental rules&quot;: Rat Riders gewaehlt und sichtbar" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored not-equal-to-roster-experimental-rat-riders E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <costLimits>
+    <costLimit name="pts" typeId="ecfa-8486-4f6c-c249" value="2000.0"/>
+  </costLimits>
+  <forces>
+    <!-- Wie Roster 02, zusaetzlich die Einheit "Rat Riders" selbst - sie traegt
+         den categoryLink 1cc0-f11f-286d-90ab auf dieselbe Kategorie
+         4fed-b911-e6e0-927b. Der roster-weite Zaehler steht damit auf ZWEI:
+         die Bedingung ist ein notEqualTo 0, kein equalTo 1 - sie haelt
+         unveraendert, die Einheit bleibt sichtbar (jetzt als BELEGTER Slot).
+         Die Einheit ist vollstaendig besetzt: 5 "Rat Rider" (Pflicht min 5),
+         Hand Weapon / Spear (Mounted) / Shield je einmal (Pflicht min 1). -->
+    <force id="force-1" name="Standard (SK-AB)" entryId="f143-b4f7-0151-8478" catalogueId="cac6-5f02-f95d-a403" catalogueRevision="1" catalogueName="Skaven">
+      <selections>
+        <selection id="sel-allow-experimental" name="Allow experimental rules?" entryId="8b76-92c4-23f9-54b1" entryLinkId="c042-1d75-40ca-c654" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-allow-experimental-slr" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+            <category id="cat-allow-experimental-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+          </categories>
+        </selection>
+        <selection id="sel-rat-riders" name="Rat Riders" entryId="d0aa-b183-877e-e731" entryLinkId="" number="1" type="unit" collective="false">
+          <categories>
+            <category id="cat-rat-riders-rare" name="Rare" entryId="e94b-6a54-8779-cd60" primary="true"/>
+            <category id="cat-rat-riders-nonskirm" name="Non-Skirmisher_nor_character (SoC)" entryId="7aa6-96b4-5b49-d7d9" primary="false"/>
+            <category id="cat-rat-riders-exp" name="Experimental rules" entryId="4fed-b911-e6e0-927b" primary="false"/>
+          </categories>
+          <selections>
+            <selection id="sel-rat-rider-models" name="Rat Rider" entryId="6b53-ce72-e621-b18b" entryLinkId="" number="5" type="model" collective="false"/>
+            <selection id="sel-rat-riders-hand-weapon" name="Hand Weapon" entryId="abdb-bbd0-41b2-5dff" entryLinkId="bd0f-1512-75a3-239c" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-rat-riders-spear" name="Spear (Mounted)" entryId="027b-31d2-b3e2-23a4" entryLinkId="df1a-1ff0-3d36-5578" number="1" type="upgrade" collective="false"/>
+            <selection id="sel-rat-riders-shield" name="Shield" entryId="50e2-1873-a856-03e7" entryLinkId="e653-6c3d-c3b7-ed6b" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

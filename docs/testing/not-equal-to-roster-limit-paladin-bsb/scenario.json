@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "name": "not-equal-to-roster-limit-paladin-bsb",
+  "description": "Condition-Zelle condition|notEqualTo|roster|limitValue|child=any: Eine Bedingung type=\"notEqualTo\" value=\"500\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"roster\" childId=\"any\" liest das KONFIGURIERTE Punktebudget der Roster (nicht die verplante Summe) und haelt bei JEDEM Budget ausser exakt 500. Traeger ist im Bretonnia-Armeebuch die Wurzel-Einheit 'Paladin Battle Standard Bearer' (2f57-db88-56b5-180f). Sie traegt genau eine eigene Grenze — constraint 49e3-c542-6bff-9805 (type=min, Rohwert 0, field=selections, scope=force, shared=true, includeChildSelections=false) — und genau drei Modifikatoren in dieser Dokumentreihenfolge: (1) set hidden=true, gegatet auf 'atLeast 1' Auswahl 4e15-0353-165f-5528 ('Border Patrols rules') im Kontingent; (2) set 0 auf 49e3, gegatet auf dieselbe Bedingung; (3) set 1 auf 49e3, gegatet auf eine conditionGroup type=\"or\" aus der notEqualTo-500-Bedingung UND 'lessThan 1' derselben Border-Patrols-Auswahl im Kontingent. Netto: das force-weite Mindestmass der Einheit steht in jeder Roster auf 1, ausser in einer Roster, die 'Border Patrols rules' bei einem eingestellten Budget von exakt 500 fuehrt — dort faellt es auf 0; ein Punkt Budget in jede Richtung (499 oder 501) hebt es zurueck auf 1, weil dann der spaetere set 1 den frueheren set 0 ueberschreibt. Die Roster spannen die Drei-Punkt-Klammer 500/499/501 bei sonst identischem Aufbau auf (01/02/03), zeigen den zweiten Zweig der or-Gruppe bei exakt 500 OHNE Border Patrols (04), belegen mit 50 verplanten Punkten bei Budget 500, dass die Bedingung das Budget und nicht die Summe liest (05), und pruefen als positive Kontrolle, dass die gehobene Pflicht durch eine gewaehlte Einheit erfuellbar ist (06). Weil derselbe Border-Patrols-Ausloeser die Einheit zugleich verbirgt, werden die Min-Grenzen in den Rostern 01/02/03/05 nach §5.6/§8 (Issue 0088) NICHT gemeldet; dort wird das verschobene Mindestmass ueber expect.capabilities (effectiveMin am Slot der Einheit) behauptet, waehrend Roster 04 die sichtbare Seite als feuernde Grenze pinnt.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-border-patrols-budget-500-min-stays-0.ros",
+      "description": "Kontingent 'Standard (BR-AB)' (3a8b-8c11-beff-0534), costLimit 500 pts, genau EINE Wurzel-Auswahl 'Border Patrols rules' (4e15-0353-165f-5528), sonst nichts. Die notEqualTo-Bedingung vergleicht das eingestellte Budget 500 mit 500 und haelt NICHT; die zweite Haelfte der or-Gruppe ('lessThan 1' Border Patrols im Kontingent) haelt bei einer Auswahl ebenfalls nicht — Modifikator (3) bleibt also aus, waehrend Modifikator (2) die Grenze 49e3-c542-6bff-9805 auf 0 setzt. Effektives Mindestmass 0 bei Ist 0: die Grenze darf nicht feuern. Modifikator (1) verbirgt die Einheit zugleich (isHidden true), was hier ohne Folge bleibt, weil das Mindestmass ohnehin erfuellt ist.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "49e3-c542-6bff-9805",
+          "fbfc-d43f-396d-09cc",
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-border-patrols-budget-499-min-raised-1.ros",
+      "description": "Bis auf den <costLimits>-Wert byte-gleich zu Roster 01: Budget 499 statt 500. 499 ist nicht gleich 500, die notEqualTo-Bedingung haelt, und der in Dokumentreihenfolge SPAETERE Modifikator (3) 'set 1' ueberschreibt den frueheren 'set 0' — effektives Mindestmass 1 bei Ist 0. Weil derselbe Border-Patrols-Ausloeser die Einheit ueber Modifikator (1) verbirgt, wird diese Min-Grenze nach §5.6/§8 (Issue 0088) NICHT gemeldet: 49e3-c542-6bff-9805 steht in absent, das verschobene Mindestmass wird am Slot behauptet (effectiveMin 1, isMandatoryUnmet true, isHidden true). Der einzige Unterschied zu Roster 01 ist ein Punkt Budget.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "49e3-c542-6bff-9805",
+          "fbfc-d43f-396d-09cc",
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-border-patrols-budget-501-min-raised-1.ros",
+      "description": "Die andere Seite der Klammer: bis auf den <costLimits>-Wert byte-gleich zu Roster 01, Budget 501. Auch 501 ist nicht gleich 500 — das Mindestmass steht wieder auf 1. Zusammen mit Roster 02 ist die Gleichheit beidseitig eingeklemmt: notEqualTo ist damit weder als 'lessThan 500' noch als 'greaterThan 500' lesbar, und der Abfall auf 0 in Roster 01 ist an den exakten Wert 500 gebunden.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "49e3-c542-6bff-9805",
+          "fbfc-d43f-396d-09cc",
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-no-border-patrols-budget-500-min-raised-1.ros",
+      "description": "Die or-Klammer: Budget exakt 500 wie in Roster 01, aber OHNE die Auswahl 'Border Patrols rules' — ein leeres Kontingent. Der erste Zweig der or-Gruppe (notEqualTo 500) haelt nicht, der zweite ('lessThan 1' Border Patrols im Kontingent, Ist 0) haelt: Modifikator (3) setzt das Mindestmass auf 1, waehrend Modifikator (2) mangels Border Patrols ausbleibt. Ohne Border Patrols bleibt die Einheit auch sichtbar (Modifikator (1) bleibt aus) — die Min-Grenze ist hier also validierbar und feuert mit Ist 0 gegen Grenze 1. Das ist die einzige Roster des Szenarios, in der 49e3-c542-6bff-9805 als Verletzung erscheinen darf; sie belegt zugleich, dass der Slot ueberhaupt bewertet wird.",
+      "expect": {
+        "firing": [
+          { "limitId": "49e3-c542-6bff-9805", "actual": 0, "bound": 1 }
+        ],
+        "absent": [
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": true
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-border-patrols-budget-500-spent-50-min-stays-0.ros",
+      "description": "Budget und Auswahl wie in Roster 01 (500 pts, 'Border Patrols rules'), zusaetzlich EINE Einheit 'Men at Arms' (fcdd-429a-3b79-7e8d) mit 10 Modellen (5 pts je Modell) und ihrer Pflichtausruestung Hand Weapon / Light Armour / Shield / Halberds (je 0 pts) — verplant sind damit exakt 50 pts. Das eingestellte Budget bleibt 500, die notEqualTo-Bedingung haelt weiterhin NICHT und das Mindestmass bleibt 0. Wuerde die Bedingung die verplante SUMME lesen, waere der Vergleich 50 gegen 500, die Bedingung hielte, und der Slot meldete effectiveMin 1 statt 0. Beiwerk: die Core-Pflicht 35c2-d478-392a-aeb1 ist unter Border Patrols auf min 1 gesenkt und von der (primaer Core einsortierten) Men-at-Arms-Einheit erfuellt, die Modell-Obergrenze 97c4-7637-0263-8fdf ist unter Border Patrols auf 25 gesetzt und mit 10 Modellen eingehalten.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "49e3-c542-6bff-9805",
+          "fbfc-d43f-396d-09cc",
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "35c2-d478-392a-aeb1",
+          "fa95-2d58-682d-de1f",
+          "97c4-7637-0263-8fdf",
+          "dff3-04be-9378-514f",
+          "d506-3b77-eefc-c796",
+          "fafd-83db-94b6-83fd",
+          "d325-e506-988f-3b09",
+          "bbc0-b8c3-fa39-621c",
+          "4acc-a260-103e-07b3",
+          "38bc-c48b-a7d8-445c",
+          "183d-963f-d395-3a34",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "6f1a-1be1-6660-d9a6",
+          "61e6-14a6-8422-d83a",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 0,
+            "effectiveMin": 0,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/06-no-border-patrols-budget-500-paladin-selected.ros",
+      "description": "Positive Kontrolle zu Roster 04: derselbe Aufbau (Budget 500, keine Border Patrols), aber MIT einem 'Paladin Battle Standard Bearer' samt seiner Pflichtbausteine — Knights Vow (Gruppe 'Vow', min 1/max 1), Bretonnian Warhorse mit Barding (Gruppe 'Mounts', min 1/max 1; Barding min 1/max 1 am Verweis), Hand Weapon (min 1), Heavy Armour (min 1) und dem Pflicht-Verweis 'Battle Standard Bearer' (min 1). Verplant sind 74 pts (60 Einheit + 14 Warhorse; alle uebrigen Verweise tragen am Link 0 pts). Das Mindestmass steht wie in Roster 04 auf 1, ist mit Ist 1 aber erfuellt: 49e3-c542-6bff-9805 feuert nicht. Damit liegt die Abwesenheit in den Rostern 01/05 an der gefallenen Grenze und nicht daran, dass die Grenze grundsaetzlich nie feuert. Ohne Border Patrols bleibt die Bannertraeger-Kategoriegrenze 2a1d-03a1-b48c-64ad bei max 1 und ist mit einem Bannertraeger eingehalten.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "49e3-c542-6bff-9805",
+          "0c47-2ef9-e407-8b7b",
+          "d8cf-9e06-e8c2-9424",
+          "95ad-0ada-c201-8d16",
+          "2cfb-d87d-9c5c-9bf1",
+          "8656-36c0-be51-1596",
+          "202d-b37d-1be0-c756",
+          "d3ae-da4f-41e3-76c1",
+          "7a16-fe05-5f2f-ca9a",
+          "e1ff-e836-5a85-1e4f",
+          "498b-b365-9935-5879",
+          "b8cd-247a-ff7f-b24e",
+          "a4c9-58d6-78d6-c00e",
+          "082b-067c-b983-c393",
+          "01a5-106d-f6e8-560b",
+          "2a1d-03a1-b48c-64ad",
+          "6935-5f06-39d4-5f45",
+          "bdef-ba9b-d6ce-5b14",
+          "e28e-dbb4-b8ad-d4ab",
+          "40c1-e17a-2dd8-fba6",
+          "d1fd-8f42-122a-e2b6",
+          "ffd4-6f1b-e014-6708",
+          "dde3-d464-c6d0-8ec8",
+          "d7e7-599d-12cf-1fd1",
+          "7fca-63fb-63d2-9dad",
+          "budget::ecfa-8486-4f6c-c249"
+        ],
+        "capabilities": [
+          {
+            "defId": "2f57-db88-56b5-180f",
+            "frameDefId": "3a8b-8c11-beff-0534",
+            "name": "Paladin Battle Standard Bearer",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": null,
+            "headroom": null,
+            "isHidden": false,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}
