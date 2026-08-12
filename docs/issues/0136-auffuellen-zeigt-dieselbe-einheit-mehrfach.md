@@ -42,6 +42,14 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces verbatim.** An entry
+  with `max 4 scope="force"`, 40 pts, standing twice with count 1: the report
+  carries the slots `0/0` and `0/1`, both `occupied`, both `headroom 2`,
+  `costs.pts 40`, and the rendered panel shows two indistinguishable rows
+  `["Speertraeger+40 Pkt", "Speertraeger+40 Pkt"]`. The cause is one line: the
+  collector pushes one suggestion per slot with no dedup by definition
+  (`AutoFillSuggestions.jsx:109`), while the adder dedups by `seenDefIds`.
+
 - 2026-07-31: Von der Prüfung zu Issue 0135 gefunden (Befund F3), mit
   Reproduktion. Verletzt kein Kriterium jener Issue und wandert deshalb
   hierher statt in ihren PR.

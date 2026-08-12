@@ -89,6 +89,18 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces, and the narrowing
+  holds: it is a cross-catalogue defect only.** Category `cat-banned` with
+  `max 0 scope="force"`, membership granted solely by
+  `modifier type="add" field="category"`:
+  - category in the same catalogue as the unit -> `banned-max` fires, error,
+    actual 1, bound 0;
+  - category declared in a second catalogue the roster does not name ->
+    **silent**, no diagnostic;
+  - control in the same run, same foreign catalogue, membership by a static
+    `categoryLink` -> fires, actual 1, bound 0.
+  Criterion 1 is to be read as "across a catalogue boundary".
+
 - 2026-08-12 — Round 4 reproduced, and **narrowed**: it is a cross-catalogue
   defect only. Category `cat-banned` carries `max 0 scope="force"`; a unit is
   granted that category solely by `modifier type="add" field="category"`.

@@ -80,6 +80,27 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Eight of the nine points verified
+  directly; none is silent-free.** Points 1-5 and 8 at the reader, 6, 7 and 9
+  through the facade.
+  1.-4. `publications`, `publicationId`, `page`, `defaultSelectionEntryId`,
+     `import` and `collective` appear nowhere in `catalogReader.js` (zero hits
+     each), so they are neither read nor diagnosed.
+  5. `categoryLink` children are read for `targetId` and `primary` only
+     (`catalogReader.js:363-384`); no `readInfos`, no constraints/modifiers —
+     info children are discarded without a diagnostic. (The facade control for
+     this point was inconclusive: a `<rule>` at the `categoryEntry` reaches no
+     unit slot either, so the reader evidence is what carries the point.)
+  6. `hidden="1"` -> `isHidden: false`, `hidden="true"` -> `true`
+     (`readBoolean`, `catalogReader.js:274-279`).
+  7. `<cost value="abc"/>` is dropped, `costTotals` reads 0 and
+     `report.diagnostics` is empty.
+  8. `catalogSet.js` mentions `costType`/`costTypes` **not once** — declared
+     cost types are absent from the merge.
+  9. `modifier type="add" field="category" scope="unit"` at an upgrade puts the
+     category on the carrier (`mark: ["cat-extra"]`), not on the unit
+     (`unit: ["cat-base"]`); no diagnostic.
+
 - 2026-08-12 — Reproduced on the current tree: **all nine points still hold.**
   One synthetic catalogue per point through the facade; points 1-4 measured
   against the prepared dataset, 5-9 against the report.

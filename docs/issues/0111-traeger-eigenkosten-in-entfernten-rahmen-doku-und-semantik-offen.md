@@ -61,6 +61,14 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — Confirms the entry above: criterion
+  1's premise is gone, criterion 3 stands. Two nested ancestors sharing one
+  target id (both in category `cat-any`, `max 10 field="pts" scope="cat-any"` at
+  the outer one, a 30 pts leaf below the inner one) report **actual 30, bound
+  10** — today's set-dedup, one contribution per frame. The alternative reading
+  (60, once per matching ancestor) is still neither chosen nor ruled out, and no
+  test pins the 30.
+
 - 2026-08-12 — Re-measured; **the premise of criterion 1 no longer holds, the
   rest of the issue does.** The round-2 repro rebuilt verbatim (Force -> Unit ->
   Hero 50 pts carrying `max 100 field="pts" scope="roster"`, Hero holds an Item

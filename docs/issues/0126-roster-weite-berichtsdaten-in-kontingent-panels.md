@@ -57,6 +57,28 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Point 1 reproduces; point 2 is
+  confirmed at the code, and a neighbouring engine question turned up.**
+  - Point 1: `RosterValidationPanel` takes no `forcePath` prop at all
+    (`RosterValidationPanel.jsx:22-31`) and `ForceEditorSection` hands it the
+    roster-wide `violations`/`unresolvedSelections` unfiltered
+    (`ForceEditorSection.jsx:173-178`). Rendered twice, the panel produces
+    character-identical output. One `ForceEditorSection` per force means the
+    same list N times.
+  - Point 2: `RosterCategorySection` filters violations by
+    `anchor.anchorKind === 'categoryAnchor'` and `anchor.defId`, never by the
+    anchor's force (`RosterCategorySection.jsx:98-101`) — although it holds
+    `forcePath` and uses it for the count anchor two lines below
+    (`:106-107`). In a two-force roster over a shared category limit the chip of
+    the **empty** force A rendered `1 / Max: 0` in `badge badge-danger`.
+  - Open next to it, not this file's claim: in that same run the report carried a
+    `special-max` violation at BOTH force anchors (`0/0` and `1/1`) with actual 1,
+    though only force B held the unit, and force A's category anchor read
+    `current 1`. That is a `shared="true"` category limit at a `forceEntry`'s
+    `categoryLink` — the shape the WHFB6 `.gst` really uses. Whether counting a
+    foreign force's selections there is intended is an engine question and needs
+    its own look; with `shared="false"` the same limit fired nowhere at all.
+
 - 2026-07-30: Von Prüfrunde 2 zu Issue 0121 als Beobachtung außerhalb
   der Kriterien gemeldet, strukturell nachvollzogen an
   `RosterEditor.jsx`, `ForceEditorSection.jsx` und

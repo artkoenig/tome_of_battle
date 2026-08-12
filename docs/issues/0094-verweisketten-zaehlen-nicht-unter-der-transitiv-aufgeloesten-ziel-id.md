@@ -47,6 +47,21 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces, both criteria, with a
+  control in the same run.** Synthetic catalogue `link-outer -> link-inner ->
+  shared-final`, facade only. The roster occurrence must name the LINK as its
+  definition (`defId: 'link-outer'`); naming the target id counts directly and
+  measures nothing.
+  - Criterion 1: probe entry with `max 0` lifted to 5 by a modifier gated on
+    `atLeast 1 selections scope="roster" childId="shared-final"`. Occurrence as
+    `shared-final` -> effectiveMax 5, as `link-inner` (one hop) -> 5, as
+    `link-outer` (two hops) -> **0**. No diagnostic in any of the three.
+  - Criterion 2: `min 1` + `max 1` at the link, target standing twice as the
+    plain entry. At the one-hop link (control): `chain-max` fires, actual 2
+    bound 1. At the chain link: `chain-max` **silent**, and `chain-min` fires
+    with **actual 0** although the target stands twice — the chain link counts
+    nothing at all under its resolved target.
+
 - 2026-08-12 — Reproduced on the current tree, both criteria, through the
   facade (`evaluate(prepareDataset({catalogues:[xml]}), roster)`) on a synthetic
   catalogue `link-outer -> link-inner -> shared-final`.
