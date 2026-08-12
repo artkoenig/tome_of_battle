@@ -61,7 +61,11 @@ covers.
   texts] })` — rather than one per catalogue, so a link whose own children
   resolve only through another catalogue of the same corpus (a
   `catalogueLink`, e.g. a library such as Mercenaries) is addressable; a
-  single-catalogue dataset leaves such a target unresolved.
+  single-catalogue dataset leaves such a target unresolved. Match a report
+  slot by its own `defId` only, never by a shared `targetDefId` — that would
+  let a slot belonging to a different link satisfy the claim — and where the
+  catalogue declares two children on the same target identity, assert the
+  group and record its members instead of asserting either one individually.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,

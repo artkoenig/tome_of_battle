@@ -251,11 +251,42 @@ function childSlotsAt(report, framePath) {
   return slots;
 }
 
-/** Whether one of `slots` matches the expected child, by `defId` or (if set) by `targetDefId`. */
-function hasMatchingSlot(slots, expectedChild) {
-  return slots.some(
-    slot => slot.defId === expectedChild.id || (expectedChild.targetId !== null && slot.targetDefId === expectedChild.targetId),
-  );
+/**
+ * Whether one of `slots` carries one of `ids` as its OWN `defId` — never by
+ * `targetDefId`, which is shared across every link that resolves to the same
+ * target and would let a slot belonging to a different link satisfy the
+ * claim. `ids` holds more than one id only for a group of sibling children
+ * that share a target identity (see `groupByTargetIdentity`); for a normal,
+ * ungrouped child it is a single-element array.
+ */
+function hasSlotForOneOf(slots, ids) {
+  return slots.some(slot => ids.includes(slot.defId));
+}
+
+/**
+ * Groups an occurrence's `expected` children by target identity: children
+ * that share a non-null `targetId` land in the same group (two `entryLink
+ * type="selectionEntry"` siblings resolving to the same shared entry — the
+ * corpus has exactly this for three Forces of Chaos occurrences); a child
+ * with no `targetId` (a plain `selectionEntry`) is always alone in its own
+ * group, keyed by its own id. A group of size 1 is asserted by its single id;
+ * a group of size > 1 is asserted as "one of these ids has a slot" (the
+ * engine gives such a pair a single report slot, and which sibling's id it
+ * carries is its own internal choice, not this check's to pin) and every one
+ * of its members is recorded as shadowed instead of individually asserted.
+ */
+function groupByTargetIdentity(expected) {
+  const groups = new Map();
+  for (const child of expected) {
+    const key = child.targetId !== null ? `target:${child.targetId}` : `id:${child.id}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(child);
+  }
+  return [...groups.values()].map(members => ({
+    ids: members.map(member => member.id),
+    members,
+    sharedTargetId: members[0].targetId,
+  }));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -314,6 +345,7 @@ function deriveCorpus(corpusName, dir) {
   const occurrences = [];
   const occurrencesByFile = new Map();
   const recorded = [];
+  const shadowed = [];
   const forceByFile = new Map();
 
   for (const { file, document } of catDocuments) {
@@ -351,6 +383,20 @@ function deriveCorpus(corpusName, dir) {
         continue;
       }
 
+      const expectedGroups = groupByTargetIdentity(expected);
+      for (const group of expectedGroups) {
+        if (group.members.length <= 1) continue;
+        for (const member of group.members) {
+          shadowed.push({
+            file,
+            linkId: id,
+            childId: member.id,
+            target: group.sharedTargetId,
+            reason: 'shares its target with a sibling child declared on the same link — only the group as a whole is asserted, not this id individually',
+          });
+        }
+      }
+
       const occurrence = {
         corpus: corpusName,
         file,
@@ -359,6 +405,7 @@ function deriveCorpus(corpusName, dir) {
         frameId: frame.getAttribute('id'),
         branch: rosterBranchOf(frame),
         expected,
+        expectedGroups,
       };
       occurrences.push(occurrence);
       occurrencesByFile.get(file).push(occurrence);
@@ -373,6 +420,7 @@ function deriveCorpus(corpusName, dir) {
     occurrences,
     occurrencesByFile,
     recorded,
+    shadowed,
     forceByFile,
     gstEntryLinksWithOwnChildren,
   };
@@ -383,6 +431,17 @@ const DERIVED = CORPORA.map(corpus => deriveCorpus(corpus.name, corpus.dir));
 const ALL_OCCURRENCES = DERIVED.flatMap(d => d.occurrences);
 const ALL_RECORDED = DERIVED.flatMap(d => d.recorded);
 const DERIVED_TOTAL = ALL_OCCURRENCES.length + ALL_RECORDED.length;
+
+// The list of children a link declares locally, one level below its own
+// count (issue Log, third point): most children sit alone in their target
+// identity group and are asserted individually; a handful sit in a group of
+// siblings that share a target (`groupByTargetIdentity`) and are asserted as
+// a group instead — those are recorded in ALL_SHADOWED rather than counted
+// individually, so this book closes too, separately from the occurrence book.
+const DERIVED_CHILD_TOTAL = ALL_OCCURRENCES.reduce((sum, occurrence) => sum + occurrence.expected.length, 0);
+const ALL_SHADOWED = DERIVED.flatMap(d => d.shadowed).sort(
+  (a, b) => a.file.localeCompare(b.file) || a.linkId.localeCompare(b.linkId) || a.childId.localeCompare(b.childId),
+);
 
 const PER_FILE_COUNTS = {};
 for (const d of DERIVED) Object.assign(PER_FILE_COUNTS, d.perFileCounts);
@@ -501,12 +560,17 @@ describe('Das Invariante: jedes Vorkommen bekommt einen Slot fuer jedes eigene l
       `Rahmen ${occurrence.id} (${occurrence.name}) in ${occurrence.file} liegt nicht am erwarteten Pfad`,
     ).toBe(occurrence.frameId);
 
-    for (const expectedChild of occurrence.expected) {
+    for (const group of occurrence.expectedGroups) {
       expect(
-        hasMatchingSlot(reduced.childSlots, expectedChild),
-        `Verweis ${occurrence.id} (${occurrence.name}) in ${occurrence.file}: kein Slot fuer eigenes Kind ${expectedChild.id}`,
+        hasSlotForOneOf(reduced.childSlots, group.ids),
+        `Verweis ${occurrence.id} (${occurrence.name}) in ${occurrence.file}: kein Slot fuer eines von [${group.ids.join(', ')}]`,
       ).toBe(true);
     }
+  });
+
+  it('KONTROLLE: ein Slot zaehlt nur ueber seine eigene defId, nicht ueber ein geteiltes Ziel', () => {
+    expect(hasSlotForOneOf([{ defId: 'x', targetDefId: 't' }], ['y'])).toBe(false);
+    expect(hasSlotForOneOf([{ defId: 'y', targetDefId: 't' }], ['y'])).toBe(true);
   });
 });
 
@@ -529,7 +593,7 @@ describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
 
     const reduced = REDUCED_BY_KEY.get(`${EMPIRE_FILE}::f817-432b-7c1a-a8ca`);
     expect(reduced.frameDefId).toBe('f817-432b-7c1a-a8ca');
-    expect(hasMatchingSlot(reduced.childSlots, occurrence.expected[0])).toBe(true);
+    expect(hasSlotForOneOf(reduced.childSlots, [occurrence.expected[0].id])).toBe(true);
   });
 
   it('Captain -> Battle Standard Bearer -> Magic Banners: der Verweis traegt alle 16 lokal deklarierten Banner (nicht 12 — Mercenaries ist jetzt geladen)', () => {
@@ -557,7 +621,7 @@ describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
     expect(reduced.frameDefId).toBe('c9fc-265e-8fa8-b814');
     for (const expectedChild of occurrence.expected) {
       expect(
-        hasMatchingSlot(reduced.childSlots, expectedChild),
+        hasSlotForOneOf(reduced.childSlots, [expectedChild.id]),
         `Battle Standard Bearer: kein Slot fuer eigenes Kind ${expectedChild.id}`,
       ).toBe(true);
     }
@@ -582,12 +646,58 @@ describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl',
     }
   });
 
-  // Heute ist diese Liste leer: das ist der Zustand, den das gemeinsame Laden
-  // aller Kataloge einer Korpus-Abhaengigkeit erkauft (siehe Dateikopf), keine
-  // Behauptung, dass ein nicht pruefbares Vorkommen ein Fehlschlag waere —
-  // ein kuenftiger Eintrag wird hier mit seinem Grund vollstaendig ausgegeben.
-  it('KONTROLLE: die Liste der nicht pruefbaren Vorkommen ist heute leer', () => {
+  // Heute ist diese VORKOMMEN-Ebene leer: das ist der Zustand, den das
+  // gemeinsame Laden aller Kataloge einer Korpus-Abhaengigkeit erkauft (siehe
+  // Dateikopf), keine Behauptung, dass ein nicht pruefbares Vorkommen ein
+  // Fehlschlag waere — ein kuenftiger Eintrag wird hier mit seinem Grund
+  // vollstaendig ausgegeben. Das KIND-Buch — die verschatteten Kinder
+  // einzelner geprueft nicht pruefbarer Vorkommen — schliesst separat unten.
+  it('KONTROLLE: die Liste der nicht pruefbaren Vorkommen (Ebene der Vorkommen selbst) ist heute leer', () => {
     expect(ALL_RECORDED).toEqual([]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// D2 — das Kind-Buch: die hergeleitete Kinderzahl schliesst separat von der
+// Vorkommen-Ebene oben, weil ein Vorkommen selbst pruefbar sein kann, waehrend
+// EINZELNE seiner Kinder — weil sie eine Zielidentitaet mit einem
+// Geschwisterkind teilen — nicht einzeln, sondern nur als Gruppe geprueft
+// werden (siehe `groupByTargetIdentity`).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = hergeleitete Kinderzahl', () => {
+  it('KONTROLLE: die hergeleitete Gesamtzahl der lokal deklarierten Kinder ist 760', () => {
+    expect(DERIVED_CHILD_TOTAL).toBe(760);
+  });
+
+  it('die Kind-Buecher schliessen: einzeln geprueft plus verschattet ergibt die hergeleitete Kinderzahl', () => {
+    const individuallyAsserted = DERIVED_CHILD_TOTAL - ALL_SHADOWED.length;
+    expect(individuallyAsserted).toBe(754);
+    expect(ALL_SHADOWED).toHaveLength(6);
+    expect(individuallyAsserted + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
+  });
+
+  it('KONTROLLE: genau drei Vorkommen deklarieren zwei Kinder auf demselben Ziel — die verschatteten Kinder sind namentlich erfasst', () => {
+    const FILE = 'Forces of Chaos (6th definitive edition).cat';
+    const TARGET = 'f327-567f-ef99-0403';
+    expect(ALL_SHADOWED).toEqual([
+      { file: FILE, linkId: '0c1c-b835-63a1-14fc', childId: '781f-9b7a-2f8a-b7c6', target: TARGET, reason: expect.any(String) },
+      { file: FILE, linkId: '0c1c-b835-63a1-14fc', childId: 'b510-4632-d172-0c50', target: TARGET, reason: expect.any(String) },
+      { file: FILE, linkId: '1d8b-61be-1c53-db8d', childId: '781f-9b7a-2f8a-b7c6', target: TARGET, reason: expect.any(String) },
+      { file: FILE, linkId: '1d8b-61be-1c53-db8d', childId: 'b510-4632-d172-0c50', target: TARGET, reason: expect.any(String) },
+      { file: FILE, linkId: '22c8-1475-0ffd-8768', childId: '781f-9b7a-2f8a-b7c6', target: TARGET, reason: expect.any(String) },
+      { file: FILE, linkId: '22c8-1475-0ffd-8768', childId: 'b510-4632-d172-0c50', target: TARGET, reason: expect.any(String) },
+    ]);
+  });
+
+  it('jeder verschattete Eintrag traegt Datei, Verweis-Id, Kind-Id, Ziel und einen nicht-leeren Grund', () => {
+    for (const entry of ALL_SHADOWED) {
+      expect(entry.file, 'verschatteter Eintrag ohne Datei').toBeTruthy();
+      expect(entry.linkId, 'verschatteter Eintrag ohne Verweis-Id').toBeTruthy();
+      expect(entry.childId, 'verschatteter Eintrag ohne Kind-Id').toBeTruthy();
+      expect(entry.target, 'verschatteter Eintrag ohne Ziel').toBeTruthy();
+      expect(entry.reason, `verschatteter Eintrag ${entry.linkId}/${entry.childId} ohne Grund`).toBeTruthy();
+    }
   });
 });
 
