@@ -61,3 +61,4 @@ collector. Those are separate display paths and separate issues.
 - Reported in German: "Profilwert-Modifikatoren z.B. bei Bloodlines werden ignoriert". The reporter confirmed the symptom is in the unit's profile display, not in rule validation, and named the "definitive edition" Vampire catalogue.
 - Related, already resolved against the *old* solver and not a substitute for this fix: `docs/issues/24-charakteristik-modifier-z-b-st-rke-je-vampir-blutlinie-werden-nicht-angewendet/issue.md`.
 - Relevant ADRs: 0030 (stand-alone Reinraum evaluator), 0034 (the report is the sole source for the UI), 0029, 0032, 0033 (E2E manifest runner and black-box authorship).
+- Increment 1 established that the reported bloodline case is gated by a scope naming the unit's own selectionEntry id; that path is correct today and is now pinned by a test on the path the user sees, so the reported symptom is either already resolved or lives on one of the scope shapes increment 2 covers.

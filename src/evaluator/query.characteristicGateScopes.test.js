@@ -9,8 +9,8 @@
  * - `Catalogue.xsd:426` typt `scope` als reinen `xs:string` — die XSD selbst
  *   zaehlt keine Werte auf.
  * - `docs/battlescribe-data-format.md` fuehrt die vollstaendige Aufzaehlung in
- *   der Tabellenzeile `constraint`/`condition`/`repeat` → `scope` (Zeile 1449):
- *   `parent`, `roster`, `force`, `category`, `self`, `unit`, `ancestor` (nur bei
+ *   der Tabellenzeile `constraint`/`condition`/`repeat` → `scope` (Zeile 1488):
+ *   `parent`, `roster`, `force`, `self`, `unit`, `ancestor` (nur bei
  *   `condition`, §7.7), `primary-catalogue` (§7.6), `primary-category` (4× belegt,
  *   `Forces of Chaos`, upstream undokumentiert), `model-or-unit` (2× belegt,
  *   `Lizardmen`, upstream undokumentiert).
@@ -25,9 +25,10 @@
  * Zwoelf Faelle decken die Liste vollstaendig ab: `roster`, `force`, `parent`,
  * `self`, `unit` (Kriterium 5), `model-or-unit` (neu), `ancestor`,
  * `primary-catalogue`, `primary-category` (neu), Eintrags-Id als `scope`,
- * Kategorie-Id als `scope`, und ein frei erfundenes Schluesselwort. Das
- * Schluesselwort `category` selbst ist NICHT durch einen eigenen Fall gedeckt:
- * kein Katalog dieses Repositories schreibt es, siehe `issue.md`, Kriterium 7.
+ * Kategorie-Id als `scope`, und ein frei erfundenes Schluesselwort. Ein Literal
+ * `scope="category"` gibt es nicht — die Wiki-Formulierung „any Category" meint
+ * eine Kategorie-**Id**, und die ist durch den Fall „Kategorie-Id als scope"
+ * gedeckt.
  *
  * Beobachtungsstelle wie im gemeldeten Fall: der Merkmalswert eines gegatterten
  * Profil-Modifikators, gelesen ueber die Fassade (`infoElements` des belegten
@@ -41,8 +42,6 @@
  * und liest den Merkmalswert wie `evaluator.bloodlineProfileFixture.test.js`.
  *
  * Absichtlich nicht getestet, mit Begruendung:
- * - Das Schluesselwort `category` selbst — kein Katalog dieses Repos schreibt es
- *   (`issue.md`, Kriterium 7).
  * - Die Phantom-/Angebots-Anker-Ausnahme fuer `model-or-unit` (keine Diagnose an
  *   einem synthetischen Anker ohne umschliessendes Modell/Einheit) — spiegelt eine
  *   bereits fuer `unit` entschiedene und gepinnte Regel (Issue 086); der Aufwand,
