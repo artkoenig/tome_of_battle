@@ -42,6 +42,18 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree, exactly as review repro E9
+  describes it. Synthetic catalogue: a root `entryLink` carrying its own
+  `min 1` **and** `max 2` (both `scope="roster"`, shared,
+  `includeChildSelections="true"`) on a target that stands three times in the
+  roster, every time through the plain entry and never through the link. The
+  report carries `link-max error actual=3 bound=2` — the MAX of a link nobody
+  chose fires, counted over the resolved target id — while `link-min` correctly
+  stays silent (3 >= 1). `ownLimitsOnly` (`src/evaluator/evalTree.js:243, 316`)
+  narrows the phantom to the limits declared **at the link**, but not to its MIN
+  limits, so the question of the file stands unchanged: should the limits of an
+  unchosen link be evaluated at all?
+
 ## Checkpoints
 
 ### Before implementation

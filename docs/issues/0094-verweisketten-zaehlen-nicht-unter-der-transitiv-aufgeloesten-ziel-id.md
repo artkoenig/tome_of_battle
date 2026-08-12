@@ -47,6 +47,23 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree, both criteria, through the
+  facade (`evaluate(prepareDataset({catalogues:[xml]}), roster)`) on a synthetic
+  catalogue `link-outer -> link-inner -> shared-final`.
+  - Criterion 1: a probe entry carries `max 0` lifted to 5 by a modifier gated
+    on `atLeast 1 selections scope="force" childId="shared-final"`. Choosing the
+    child directly gives effectiveMax 5, choosing it through `link-inner` (one
+    hop) gives 5, choosing it through `link-outer` (two hops) gives **0** — the
+    gate does not see the chain, and no diagnostic is raised.
+  - Criterion 2: a `max 1 scope="roster"` at `link-outer` against two
+    occurrences of the resolved target (one direct, one through `link-inner`)
+    reports **no** violation at all.
+  Cause unchanged since the file was written: `targetsOf`
+  (`src/evaluator/countIndex.js:159-170`) pushes `node.def.targetId` — the one
+  hop — and `resolved.type`, but never `resolved.id` nor the intermediate link
+  ids. `offer.js:97` and `resolver.js:215` do add `resolved.id`, so the counting
+  layer is the only one that stops at one hop.
+
 ## Checkpoints
 
 ### Before implementation

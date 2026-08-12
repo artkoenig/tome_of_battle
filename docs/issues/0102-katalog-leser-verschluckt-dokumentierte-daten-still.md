@@ -80,6 +80,28 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 — Reproduced on the current tree: **all nine points still hold.**
+  One synthetic catalogue per point through the facade; points 1-4 measured
+  against the prepared dataset, 5-9 against the report.
+  1. `<publications>`, `publicationId` and `page` appear nowhere in the prepared
+     dataset, no diagnostic.
+  2. `defaultSelectionEntryId` on a group appears nowhere.
+  3. `import` appears nowhere.
+  4. `collective` appears nowhere.
+  5. A `<rule>` at a `categoryLink` reaches no capability. Control in the same
+     run: the same rule at the `forceEntry` and at the `categoryEntry` does
+     reach the report, so the probe measures the gap and not an absent
+     projection.
+  6. `hidden="1"` yields `isHidden: false`, `hidden="true"` yields `true`
+     (`readBoolean`, `src/evaluator/catalogReader.js:274-279`).
+  7. `<cost value="abc"/>` is dropped and `report.diagnostics` stays empty.
+  8. A modifier on a declared but nowhere-priced `costType` is discarded with
+     `{"kind":"unsupportedModifierTarget","field":"unpriced"}` — so it is not
+     silent, but the declared cost type is still not a resolvable target.
+  9. `modifier type="add" field="category" scope="unit"` at an upgrade lands the
+     category on the **carrier** (`mark: ["cat-extra"]`) and not on the unit
+     (`unit: []`) — the `scope` attribute is ignored.
+
 - 2026-07-29 — Doku-Abgleich (Goal-Lauf „Behauptungen gegen bsdata prüfen"):
   Punkt 9 korrigiert — das eine reale `scope`-Vorkommen hängt am
   `selectionEntry` „Mark of Slaanesh (Hero) [DARK ELVES]" (`Vampire Counts
