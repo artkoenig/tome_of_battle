@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": "docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap — issue 0145 (an unmet mandatory row looks taken and cannot be taken)\n\nEvery file the issue has to change, path and why. Files and reasons only; what\nchanges inside a file is the researcher's call.\n\n## Defect (A) — the mandatory member is never created\n\n- `src/roster/selectionFactory.js` — populates a definition's mandatory children exactly one selection-entry-group level deep; a mandatory group nested inside another group is never visited. This is the defect.\n- `src/roster/selectionMembers.js` — the shared derivation of which member a mandatory group contributes (`defaultSelectionEntryId`, else first member); criterion 2 speaks about exactly this, and it is reached from whatever depth the factory ends up walking.\n- `src/roster/rosterCounter.js` — prices a unit before it is recruited by mirroring the factory's population rule (single source of truth, ADR-0022); if the factory creates more members, the pre-recruit price diverges unless this moves with it.\n- `src/hooks/useRoster.js` — the production caller of the factory (`addUnit`, `addSubSelection`) and the home of issue 0138's root-pool auto-add; members that are newly created by the factory must not be added a second time here.\n- `src/roster/selectionFactory.test.js`, `src/roster/selectionFactory.effectiveMin.test.js` — pin today's one-level-deep population.\n- `src/roster/rosterCounter.mandatoryGroupDefault.test.js` — pins which option of a mandatory group is priced.\n- `src/hooks/useRoster.mandatoryAutoAdd.test.js`, `src/hooks/useRoster.costedMandatoryAutoAdd.test.js` — pin the auto-add behaviour that borders on the new population.\n\n## Defect (B) — the card renders an outstanding obligation as taken\n\n- `src/roster/selectionBehavior.js` — `classifyGroupItem` and `classifyStandaloneOption` derive `isMandatory` from `min === max > 0` alone, without asking whether the obligation is met; all three render paths read their display state from here.\n- `src/components/editor/OptionGroup.jsx` — the group's checkbox branch and radio branch render `isMandatory` as checked-and-disabled and suppress the write; the group anchor already reads `isMandatoryUnmet` for the header's error styling, the row inside never does (the self-contradicting card of criterion 6).\n- `src/components/editor/SelectionConfigurator.jsx` — the standalone row: the third path, with a lock the group paths lack and a quantity stepper that never honoured `isMandatory` at all (criterion 5's disagreement).\n- `src/styles/09-editor-options.css` — the row-level vocabulary for state: `sub-selection-row--unavailable` exists, `.sub-selection-taken-hint` is dead style with no user in `src/`.\n- `src/components/editor/SelectionConfigurator.mandatoryInCappedGroup.test.jsx` — five assertions pin `Lore of Necromancy`, itself an unmet obligation, as `checked`; the issue records that correcting them is part of this change.\n- `src/roster/selectionBehavior.test.js` — pins the two classifiers.\n- `src/components/editor/OptionGroup.evaluator.test.jsx`, `src/components/editor/SelectionConfigurator.evaluator.test.jsx` — pin the rendered control state of the group and standalone paths against the real report.\n- `src/components/editor/OptionGroup.groupConstraints.regression.test.jsx` — pins group-level constraint rendering that the row change sits next to.\n\n## Spanning both\n\n- `src/components/editor/SelectionConfigurator.groupMembership.fixtureSweep.test.jsx` — the sweep over the fixture catalogues' unit cards that issue 0143 left behind; criteria 3, 6 and 7 are stated as measurements over exactly this population.\n- `docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/issue.md` — the tracker file: Plan, Tasks, Decisions, Log, Checkpoints and the frontmatter (`status`, `pr`) are the issue's own progress record.\n- `package.json` — a user-visible fix, so the project's rule asks for a proposed version bump on the issue branch before the PR.\n\n## Deliberately not in the map\n\n- `src/evaluator/**` — `isMandatoryUnmet` is already emitted per slot and the issue's own measurements treat it as correct; the fix reads the report, it does not change it.\n- `src/i18n/locales/*.json` — the issue records that the app already has a vocabulary for an open obligation and needs no new one.\n",
+  "increments": [
+    {
+      "id": "inc-1",
+      "title": "Mandatory members are created at any group depth",
+      "goal": "Recruiting a unit materialises every member the catalogue makes mandatory, however deeply the mandatory group is nested, and the option a mandatory group contributes is the one the catalogue names. What units receive today does not change beyond the members that were missing.",
+      "criteria": [
+        "Issue criterion 1: adding `Zacharias the Everliving` to a fresh roster creates `Magic Level 4` (`799b-f6a5-b38c-b0c2`), held in group `Wizard Level` nested inside group `Magic`; `Zombie Dragon` and the six Bloodline powers on the same card still appear exactly once each.",
+        "Issue criterion 2: where a group names a `defaultSelectionEntryId` that matches one of its own options, that option is the one created; where the attribute is absent or points at nothing (as `Wizard Level`'s `42d9-cebe-18d5-cdbd` does), what is created is unchanged from today.",
+        "Issue criterion 7: the section tree, the section titles and the per-card row multiset are unchanged across the fixture catalogues' unit cards, except where a member that was missing is now created.",
+        "The price a card shows before a unit is recruited still matches what recruiting it actually costs.",
+        "The change is measured through the production recruitment path, not only through a test seam."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "The load-bearing half: it changes what a roster holds, so it moves costs, the card's rows and whatever else reads the tree. Worked first so the run learns its reach early — and so the display half is measured against the trees users will really have.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    },
+    {
+      "id": "inc-2",
+      "title": "An unmet obligation renders as outstanding on every render path",
+      "goal": "A row whose slot reports an unmet obligation stops rendering as taken and can be written into the roster from the card; a met obligation still reads as taken and still cannot be removed; and the group checkbox branch, the group radio branch and the standalone row (quantity stepper included) agree with each other and with the section header above them.",
+      "criteria": [
+        "Issue criterion 3: a row whose slot carries `isMandatoryUnmet: true` renders unchecked and clicking it writes the option into the roster; measured across the fixture catalogues' unit cards, no row renders checked while its slot is `isMandatoryUnmet`.",
+        "Issue criterion 4: a mandatory the roster does hold still renders as taken and still cannot be removed from the card — `Zombie Dragon` on Zacharias, `Level 4 Shaman` on `Wurrzag Ud Ura Zahubu`, `Grom's Chariot` and `The Axe of Grom: Elf-Biter` on `Grom the Paunch`, `Level 2 Shaman` on `Azhag the Slaughterer`, `Bulak's Bloody Armour` on `Morglum Necksnapper`.",
+        "Issue criterion 5: the three render paths produce the same display state and the same write for the same slot state.",
+        "Issue criterion 6: wherever a group header carries the unmet-obligation error styling, no row inside that section renders as taken.",
+        "The five assertions in `SelectionConfigurator.mandatoryInCappedGroup.test.jsx` that pin `Lore of Necromancy` as checked are corrected rather than worked around, and the judgment they recorded is restated to match this issue's outcome."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "One behavioural change even though it lands at three call sites: splitting it by path would leave the repository in the state criterion 6 forbids — a card whose header and rows disagree. Worked second, so what it measures is the tree inc-1 leaves behind.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-12T15:30:53.001Z",
+        "return": {
+          "questions": [],
+          "summary": "Cut issue 0145 into two increments: create the mandatory members the catalogue demands at any group depth (criteria 1, 2, 7), then make an unmet obligation render as outstanding on all three render paths (criteria 3, 4, 5, 6). Both are full-depth, and the codemap in backlog.json names 22 files across the roster factory, the pre-recruit cost estimate, the three editor render paths and the tests that pin today's behaviour."
+        },
+        "prompt": "Issue directory: docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken\nOpen the run state for docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0145-an-unmet-mandatory-row-looks-taken-and-cannot-be-taken/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
