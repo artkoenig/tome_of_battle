@@ -39,6 +39,15 @@ import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
  * Je Abschnitt, dessen Kopfzeile `option-group-header--error` trägt, werden
  * zusätzlich die Kontroll-Elemente der unmittelbaren Zeilen erfasst
  * (Kriterium 6).
+ *
+ * Ein Name kann auf EINER Karte mehr als einen Slot bezeichnen (z. B. eine
+ * belegte und eine offene Zeile desselben Namens, oder ein Slot ohne eigene
+ * Zeile). Dort lässt sich keine Zeile ihrem Slot eindeutig zuordnen — kein
+ * DOM-Attribut trägt die defId eines Slots, und weder das Nachbauen von
+ * `buildSections` noch ein neues Produktiv-Attribut sind hier vorgesehen.
+ * Solche Namen bilden eine eigene, gezählte statt gepaarte Population
+ * (`ambiguous`); die eindeutige Population (`rows`) bleibt bei genau einem
+ * Slot je Name.
  */
 
 vi.mock('lucide-react', () => ({
@@ -154,12 +163,15 @@ function childSlots(capabilities, framePath) {
 }
 
 /**
- * Name → Capability über ALLE Rahmen der Karte (Einheit und ihre
- * Unter-Auswahlen), nicht versteckte Options-Anker, je Name der erste Treffer.
- * Dasselbe Auflösungsmuster wie `offeredUnder`/`offeredAnywhere` der
- * 0143-Sweep-Datei, hier Capability statt Name zurückgegeben.
+ * Name → Capability[] über ALLE Rahmen der Karte (Einheit und ihre
+ * Unter-Auswahlen), nicht versteckte Options-Anker, JEDER Treffer gesammelt
+ * (nicht nur der erste) — eine Karte kann zwei Zeilen desselben Namens auf
+ * zwei verschiedene Slots zeigen (z. B. eine belegte und eine offene
+ * "Handweapon"-Zeile). Dasselbe Auflösungsmuster wie `offeredUnder`/
+ * `offeredAnywhere` der 0143-Sweep-Datei, hier Capability-Listen statt Namen
+ * zurückgegeben.
  */
-function capabilityByNameAcrossFrames(capabilities, pathBySelectionId, selection) {
+function capabilitiesByNameAcrossFrames(capabilities, pathBySelectionId, selection) {
   const byName = new Map();
   for (const id of selectionIdsOf(selection)) {
     const framePath = pathBySelectionId.get(id);
@@ -168,10 +180,16 @@ function capabilityByNameAcrossFrames(capabilities, pathBySelectionId, selection
       if (capability.isHidden) continue;
       if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
       const name = (capability.name || '').trim();
-      if (!byName.has(name)) byName.set(name, capability);
+      if (!byName.has(name)) byName.set(name, []);
+      byName.get(name).push(capability);
     }
   }
   return byName;
+}
+
+/** Pflicht im engeren Sinn: min == max > 0. */
+function isMandatoryCapability(capability) {
+  return capability.effectiveMin === capability.effectiveMax && capability.effectiveMin > 0;
 }
 
 // ── Der Durchlauf ────────────────────────────────────────────────────────────
@@ -192,8 +210,18 @@ function loadCatalogue({ dir, gst, cat }) {
   };
 }
 
-/** Ein Zeilen-Befund je gerenderter Zeile, über die ganze Population. */
+/**
+ * Ein Zeilen-Befund je gerenderter Zeile, über die eindeutige Population —
+ * ein Name, der auf der Karte genau einen Slot bezeichnet.
+ */
 const rows = [];
+/**
+ * Ein Befund je mehrdeutigem Namen einer Karte — der Name bezeichnet dort
+ * MEHRERE Slots (z. B. eine belegte und eine offene "Handweapon"-Zeile), so
+ * dass keine einzelne Zeile ihrem Slot zugeordnet werden kann; hier zaehlen
+ * statt paaren.
+ */
+const ambiguous = [];
 /** Ein Befund je Abschnitt mit Fehler-Auszeichnung. */
 const errorSections = [];
 
@@ -236,51 +264,119 @@ beforeAll(() => {
       cardCount += 1;
       const where = `${spec.cat} / ${entry.name}`;
 
-      const byName = capabilityByNameAcrossFrames(capabilities, pathBySelectionId, selection);
+      const byName = capabilitiesByNameAcrossFrames(capabilities, pathBySelectionId, selection);
+      const cardRows = allRows(container);
+      const names = new Set(cardRows.map(nameOfRow).filter(n => byName.has(n)));
 
-      for (const row of allRows(container)) {
-        const name = nameOfRow(row);
-        const capability = byName.get(name);
-        if (!capability) continue; // keine Zeile ohne Angebot im Bericht (siehe 0143-Sweep)
-        const control = controlStateOf(row);
-        const isMandatory = capability.effectiveMin === capability.effectiveMax && capability.effectiveMin > 0;
+      for (const name of names) {
+        const caps = byName.get(name);
+        const domRowsForName = cardRows.filter(r => nameOfRow(r) === name);
 
-        let writes = null;
-        if (isMandatory) {
-          writes = { increaseOnControl: false, increaseOnRow: false, decreaseCalled: false };
+        if (caps.length === 1) {
+          // Eindeutig: der Name bezeichnet genau einen Slot der Karte —
+          // Zeile und Slot lassen sich direkt paaren (wie bisher).
+          const capability = caps[0];
+          const row = domRowsForName[0];
+          if (!row) continue; // keine Zeile ohne Angebot im Bericht (siehe 0143-Sweep)
+          const control = controlStateOf(row);
+          const isMandatory = isMandatoryCapability(capability);
+
+          let writes = null;
+          if (isMandatory) {
+            writes = { increaseOnControl: false, increaseOnRow: false, decreaseCalled: false };
+            const controlEl = control.kind === 'stepper' ? control.plusButton : control.el;
+            if (controlEl) {
+              operations.increaseCount.mockClear();
+              operations.decreaseCount.mockClear();
+              fireEvent.click(controlEl);
+              writes.increaseOnControl = operations.increaseCount.mock.calls.length > 0;
+              if (operations.decreaseCount.mock.calls.length > 0) writes.decreaseCalled = true;
+
+              operations.increaseCount.mockClear();
+              operations.decreaseCount.mockClear();
+              fireEvent.click(row);
+              writes.increaseOnRow = operations.increaseCount.mock.calls.length > 0;
+              if (operations.decreaseCount.mock.calls.length > 0) writes.decreaseCalled = true;
+            } else {
+              // Keine Kontroll-Zeile (z. B. *Add*-Button einer unabhaengigen
+              // Unter-Einheit) — nur die Nichtentfernbarkeit wird geprueft.
+              operations.decreaseCount.mockClear();
+              const button = row.querySelector('button');
+              fireEvent.click(button ?? row);
+              writes.decreaseCalled = operations.decreaseCount.mock.calls.length > 0;
+            }
+          }
+
+          rows.push({
+            where,
+            name,
+            control,
+            effectiveMin: capability.effectiveMin,
+            effectiveMax: capability.effectiveMax,
+            isMandatoryUnmet: capability.isMandatoryUnmet,
+            isBlocked: capability.isBlocked,
+            isMandatory,
+            writes,
+          });
+          continue;
+        }
+
+        // Mehrdeutig: der Name bezeichnet MEHRERE Slots der Karte (z. B. eine
+        // belegte und eine offene Zeile desselben Namens) — keine Zeile laesst
+        // sich einem bestimmten Slot zuordnen, also wird gezaehlt statt gepaart.
+        const controlsPreClick = domRowsForName.map(controlStateOf);
+        const slotCount = caps.length;
+        const unmetSlots = caps.filter(c => c.isMandatoryUnmet === true).length;
+        const metMandatorySlots = caps.filter(c => isMandatoryCapability(c) && c.isMandatoryUnmet === false).length;
+        const writableUnmetSlots = caps.filter(c => c.isMandatoryUnmet === true && c.isBlocked === false).length;
+        const allSlotsMandatory = caps.every(isMandatoryCapability);
+        // Ein Slot ist "missing", wenn er entweder gar keine eigene Zeile hat
+        // (mehr Capabilities als gerenderte Zeilen — z. B. ein Slot eines
+        // fremden, hier nicht aufgeklappten Rahmens) oder seine Zeile kein
+        // Kontroll-Element traegt (Add-Button einer unabhaengigen
+        // Unter-Einheit) — in beiden Faellen liest sich sein Zustand nicht aus
+        // dem DOM ab.
+        const missing = Math.max(0, slotCount - domRowsForName.length)
+          + controlsPreClick.filter(c => c.kind === 'none').length;
+
+        const rowWrites = domRowsForName.map((row, i) => {
+          const control = controlsPreClick[i];
           const controlEl = control.kind === 'stepper' ? control.plusButton : control.el;
+          let increaseOnControl = false;
+          let increaseOnRow = false;
+          let decreaseCalled = false;
           if (controlEl) {
             operations.increaseCount.mockClear();
             operations.decreaseCount.mockClear();
             fireEvent.click(controlEl);
-            writes.increaseOnControl = operations.increaseCount.mock.calls.length > 0;
-            if (operations.decreaseCount.mock.calls.length > 0) writes.decreaseCalled = true;
+            increaseOnControl = operations.increaseCount.mock.calls.length > 0;
+            if (operations.decreaseCount.mock.calls.length > 0) decreaseCalled = true;
 
             operations.increaseCount.mockClear();
             operations.decreaseCount.mockClear();
             fireEvent.click(row);
-            writes.increaseOnRow = operations.increaseCount.mock.calls.length > 0;
-            if (operations.decreaseCount.mock.calls.length > 0) writes.decreaseCalled = true;
+            increaseOnRow = operations.increaseCount.mock.calls.length > 0;
+            if (operations.decreaseCount.mock.calls.length > 0) decreaseCalled = true;
           } else {
-            // Keine Kontroll-Zeile (z. B. *Add*-Button einer unabhaengigen
-            // Unter-Einheit) — nur die Nichtentfernbarkeit wird geprueft.
             operations.decreaseCount.mockClear();
             const button = row.querySelector('button');
             fireEvent.click(button ?? row);
-            writes.decreaseCalled = operations.decreaseCount.mock.calls.length > 0;
+            decreaseCalled = operations.decreaseCount.mock.calls.length > 0;
           }
-        }
+          return { control, increaseOnControl, increaseOnRow, decreaseCalled };
+        });
 
-        rows.push({
+        ambiguous.push({
           where,
           name,
-          control,
-          effectiveMin: capability.effectiveMin,
-          effectiveMax: capability.effectiveMax,
-          isMandatoryUnmet: capability.isMandatoryUnmet,
-          isBlocked: capability.isBlocked,
-          isMandatory,
-          writes,
+          caps,
+          slotCount,
+          unmetSlots,
+          metMandatorySlots,
+          writableUnmetSlots,
+          allSlotsMandatory,
+          missing,
+          rowWrites,
         });
       }
 
@@ -336,11 +432,14 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
 
   test('Kriterium 4 (Anzeige): jede erfuellte Pflicht-Zeile rendert angehakt/gesperrt bzw. am Minimum mit gesperrtem "-"', () => {
     const met = rows.filter(r => r.isMandatory && r.isMandatoryUnmet === false);
-    // Gemessen: 281 Zeilen — 255 Checkbox, 7 Radio, 12 Mengensteller, 7 ohne
+    // Gemessen: 278 Zeilen — 252 Checkbox, 7 Radio, 12 Mengensteller, 7 ohne
     // Kontroll-Element (Add-Button unabhaengiger Unter-Einheiten). Die letzte
     // Gruppe wird hier an der Abwesenheit eines Kontroll-Elements erkannt und
     // von der Anzeige-Zusicherung ausgenommen — fuer sie zaehlt nur, dass
-    // kein Klick sie entfernt (naechster Test).
+    // kein Klick sie entfernt (naechster Test). Namen, die auf einer Karte
+    // MEHRERE Slots bezeichnen (z. B. "Handweapon" auf "Wight Lord"), stehen
+    // NICHT in dieser Population — sie gehoeren zur mehrdeutigen Population
+    // weiter unten.
     const withControl = met.filter(r => r.control.kind !== 'none');
     const offenders = withControl.filter(r => {
       if (r.control.kind === 'checkbox' || r.control.kind === 'radio') {
@@ -391,5 +490,97 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
       .filter(c => (c.kind === 'checkbox' || c.kind === 'radio') && c.checked)
       .map(c => `${c.where} / ${c.label}`);
     expect(offenders, 'angehakte Kontroll-Elemente in einem fehlerhaft ausgezeichneten Abschnitt').toEqual([]);
+  });
+
+  // ── Die mehrdeutige Population: ein Name, der auf einer Karte MEHRERE
+  // Slots bezeichnet, sodass keine Zeile sich einem bestimmten Slot zuordnen
+  // laesst — hier wird gezaehlt statt gepaart. ──────────────────────────────
+
+  test('Positivkontrolle (mehrdeutig): die mehrdeutige Population ist nicht leer', () => {
+    // Gemessen: 2 mehrdeutige Namen im ganzen Korpus — "Handweapon" auf
+    // "Wight Lord" (2 Slots, einer offen) und "Light Armour" auf "Grom the
+    // Paunch of Misty Mountain" (2 Slots, beide erfuellt, einer ohne eigene
+    // Zeile). Die Schwelle steht bewusst als Untergrenze.
+    expect(ambiguous.length, 'mehrdeutige Namen im Korpus').toBeGreaterThanOrEqual(1);
+    const offenderMessages = ambiguous.map(a => `${a.where} / ${a.name}`);
+    expect(offenderMessages.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('Kriterium 3 (Anzeige, mehrdeutig): je Name hoechstens so viele angehakte Zeilen wie nicht offene Slots', () => {
+    const offenders = ambiguous
+      .map(a => {
+        const checked = a.rowWrites.filter(w => (w.control.kind === 'checkbox' || w.control.kind === 'radio') && w.control.checked).length;
+        const notOpen = a.slotCount - a.unmetSlots;
+        return { a, checked, notOpen };
+      })
+      .filter(({ checked, notOpen }) => checked > notOpen)
+      .map(({ a, checked, notOpen }) => `${a.where} / ${a.name}: ${checked} angehakt, ${notOpen} nicht offene Slots`);
+    expect(offenders, 'mehr angehakte Zeilen als nicht offene Slots').toEqual([]);
+  });
+
+  test('Kriterium 4 (Anzeige, mehrdeutig): je Name mindestens so viele angehakt+gesperrte Zeilen wie erfuellte Pflicht-Slots (abzueglich nicht lesbarer Slots)', () => {
+    const offenders = ambiguous
+      .map(a => {
+        const checkedAndDisabled = a.rowWrites.filter(w => (w.control.kind === 'checkbox' || w.control.kind === 'radio') && w.control.checked && w.control.disabled).length;
+        const expected = a.metMandatorySlots - a.missing;
+        return { a, checkedAndDisabled, expected };
+      })
+      .filter(({ checkedAndDisabled, expected }) => checkedAndDisabled < expected)
+      .map(({ a, checkedAndDisabled, expected }) => `${a.where} / ${a.name}: ${checkedAndDisabled} angehakt+gesperrt, erwartet mindestens ${expected}`);
+    expect(offenders, 'zu wenige angehakt+gesperrte Zeilen fuer die erfuellten Pflicht-Slots').toEqual([]);
+  });
+
+  test('Kriterium 3 (Schreiben, mehrdeutig): je Name mindestens so viele schreibende Zeilen wie schreibbare offene Slots (abzueglich nicht lesbarer Slots)', () => {
+    const offenders = ambiguous
+      .map(a => {
+        const writing = a.rowWrites.filter(w => w.increaseOnControl && w.increaseOnRow).length;
+        const expected = a.writableUnmetSlots - a.missing;
+        return { a, writing, expected };
+      })
+      .filter(({ writing, expected }) => writing < expected)
+      .map(({ a, writing, expected }) => `${a.where} / ${a.name}: ${writing} schreibende Zeilen, erwartet mindestens ${expected}`);
+    expect(offenders, 'zu wenige schreibende Zeilen fuer die schreibbaren offenen Slots').toEqual([]);
+  });
+
+  test('Kriterium 4 (kein Entfernen, mehrdeutig): wo ALLE Slots eines Namens Pflicht sind, loest keine Zeile decreaseCount aus', () => {
+    // Namen mit mindestens einem nicht-verpflichtenden Slot sind ausgenommen
+    // — ein Klick auf DIESE Zeile darf legitim decreaseCount ausloesen.
+    // Gemessen: 0 Namen im Korpus ausgenommen (beide mehrdeutigen Namen sind
+    // vollstaendig Pflicht).
+    const excluded = ambiguous.filter(a => !a.allSlotsMandatory);
+    const candidates = ambiguous.filter(a => a.allSlotsMandatory);
+    const offenders = candidates
+      .filter(a => a.rowWrites.some(w => w.decreaseCalled))
+      .map(a => `${a.where} / ${a.name}`);
+    expect(offenders, 'eine Zeile eines vollstaendig verpflichtenden Namens loeste decreaseCount aus').toEqual([]);
+    expect(excluded.length, 'ausgenommene Namen (mindestens ein nicht-verpflichtender Slot)').toBe(0);
+  });
+
+  test('Kriterium 4, die vom Review benannte Zeile "Vampire Counts (6th definitive edition).cat / Wight Lord" auf "Handweapon"', () => {
+    const entry = ambiguous.find(a => a.where === 'Vampire Counts (6th definitive edition).cat / Wight Lord' && a.name === 'Handweapon');
+    expect(entry, 'der mehrdeutige Name "Handweapon" auf "Wight Lord" steht im Durchlauf').toBeTruthy();
+
+    expect(entry.caps.length, 'genau 2 Slots').toBe(2);
+    const met = entry.caps.filter(c => c.isMandatoryUnmet === false);
+    const unmet = entry.caps.filter(c => c.isMandatoryUnmet === true);
+    expect(met.length, 'genau ein erfuellter Slot').toBe(1);
+    expect(met[0].effectiveMin).toBe(1);
+    expect(met[0].effectiveMax).toBe(1);
+    expect(unmet.length, 'genau ein offener Slot').toBe(1);
+    expect(unmet[0].effectiveMin).toBe(1);
+    expect(unmet[0].effectiveMax).toBe(1);
+    expect(unmet[0].isBlocked).toBe(false);
+
+    expect(entry.rowWrites.length, 'genau 2 Zeilen').toBe(2);
+    const checkedDisabled = entry.rowWrites.filter(w => w.control.checked === true && w.control.disabled === true);
+    const uncheckedEnabled = entry.rowWrites.filter(w => w.control.checked === false && w.control.disabled === false);
+    expect(checkedDisabled.length, 'genau eine angehakte, gesperrte Zeile').toBe(1);
+    expect(uncheckedEnabled.length, 'genau eine nicht angehakte, nicht gesperrte Zeile').toBe(1);
+
+    const openRow = uncheckedEnabled[0];
+    expect(openRow.increaseOnControl, 'die offene Zeile schreibt increaseCount ueber den Schalter').toBe(true);
+    expect(openRow.increaseOnRow, 'die offene Zeile schreibt increaseCount ueber die Zeile').toBe(true);
+
+    expect(entry.rowWrites.every(w => !w.decreaseCalled), 'keine der beiden Zeilen loest decreaseCount aus').toBe(true);
   });
 });

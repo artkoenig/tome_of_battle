@@ -39,7 +39,11 @@ src/components/editor/<file>.test.jsx`.
   and `OptionGroup.evaluator.test.jsx`); a case that means to prove the list
   comes from real catalogue *group* membership leaves it unstubbed instead
   (`SelectionConfigurator.mandatoryObligation.test.jsx`,
-  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx`).
+  `SelectionConfigurator.mandatoryInCappedGroup.test.jsx`). Where a file with
+  an unstubbed `getUnitOptions` renders many cases from one inline synthetic
+  catalogue, `appSystem()` returns `processImportedData(...).system` memoised
+  in a module-level variable rather than reparsed per case (see
+  `SelectionConfigurator.mandatoryObligation.test.jsx`).
 - Write operations are observed through `createSubSelectionOperationsMock`
   (`src/test-utils/subSelectionOperationsMock`), never through roster state —
   a case reads `operations.increaseCount`/`decreaseCount.mock.calls`, not a
@@ -81,7 +85,13 @@ src/components/editor/<file>.test.jsx`.
   per-row finding, `/ Row Name`) rather than a bare count, and a floor
   (`toBeGreaterThanOrEqual`), never an exact corpus count, guards a positive
   control — an exact count is hostage to any evaluator change; the actually
-  measured figure is recorded in a comment instead.
+  measured figure is recorded in a comment instead. Where a sweep must pair a
+  rendered row with the report slot it renders (not just check that a name
+  appears somewhere, the way `SelectionConfigurator.groupMembership.
+  fixtureSweep.test.jsx` does), a name that denotes more than one slot on one
+  card cannot be paired 1:1 — no DOM attribute carries a slot's defId — so
+  that card's rows go into a separate, counted "ambiguous" population instead
+  (see `SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx`).
 - Naming: `<Component>.test.jsx` for a component's own tests;
   `<Component>.<topic>.test.jsx` for a case that isolates one topic (e.g.
   `OptionGroup.groupConstraints.regression.test.jsx`,

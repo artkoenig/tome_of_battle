@@ -8,12 +8,13 @@
  * — agree with each other and with the section header above them
  * (criteria 5 and 6).
  *
- * Fahren wird durch die Produktionsnaht (processImportedData wird hier NICHT
- * gebraucht: die Katalog-XML wird direkt über `prepareDataset`/`evaluate`
- * ausgewertet, wie in `SelectionConfigurator.evaluator.test.jsx`) und ein
- * **handgebautes** App-Roster, damit eine Pflicht gezielt offen bleiben kann.
- * `getUnitOptions` wird — anders als in der Evaluator-Schwesterdatei — NICHT
- * gestubbt, damit die Gruppen aus der echten Katalog-Struktur entstehen.
+ * Fahren wird durch die Produktionsnaht (`processImportedData` liefert das
+ * System-Objekt mit den geparsten `catalogues` — `getUnitOptions` liest
+ * `system.catalogues`, ohne sie legt jede Zeile standalone an und die
+ * Gruppen-Zweige blieben ungeprüft) und ein **handgebautes** App-Roster,
+ * damit eine Pflicht gezielt offen bleiben kann. `getUnitOptions` wird —
+ * anders als in der Evaluator-Schwesterdatei — NICHT gestubbt, damit die
+ * Gruppen aus der echten Katalog-Struktur entstehen.
  *
  * Sechs Ausprägungen unter einer Einheit (Held):
  * - `min 1`/`max 1` außerhalb jeder Gruppe, fehlt im Roster → Standalone,
@@ -37,6 +38,7 @@ import SelectionConfigurator from './SelectionConfigurator';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
+import { processImportedData } from '../../parser/xmlParser.js';
 
 vi.mock('lucide-react', () => ({
   ChevronDown: () => <span data-testid="icon-chevron-down" />,
@@ -191,16 +193,21 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** App-System-Objekt mit den rohen XMLs (Shape aus `src/db/systemImport.js`). */
+/**
+ * App-System-Objekt mit den geparsten `catalogues` (Shape aus
+ * `processImportedData`), memoisiert — `getUnitOptions` liest
+ * `system.catalogues`; ohne sie legt der Konfigurator jede Zeile standalone
+ * an und die Gruppen-Zweige (Checkbox/Radio) blieben ungeprüft.
+ */
+let cachedAppSystem;
 function appSystem() {
-  return {
-    id: 'system-uuid',
-    name: 'Test System',
-    rawXmls: {
-      gst: [{ name: 'test.gst', content: GAME_SYSTEM_XML }],
-      cat: [{ name: 'main.cat', content: CATALOGUE_XML }],
-    },
-  };
+  if (!cachedAppSystem) {
+    cachedAppSystem = processImportedData(
+      [{ name: 'test.gst', content: GAME_SYSTEM_XML }],
+      [{ name: 'main.cat', content: CATALOGUE_XML }],
+    ).system;
+  }
+  return cachedAppSystem;
 }
 
 /**
