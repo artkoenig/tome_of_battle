@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/offene-aufgaben-qfgmag
 pr:
 ---
 
@@ -68,6 +68,42 @@ Acceptance criteria:
 ## Decisions
 
 ## Log
+
+- 2026-08-12 — **Closed** on the maintainer's decision: the observable defect no
+  longer reproduces (sweep in the entry above — 1 card instead of 7, and that one
+  a name collision, with the identity-proven `Lores of Magic` case rendering no
+  section). Left unanswered, deliberately: criterion 1 — what the BattleScribe
+  data format reference says a hidden `selectionEntryGroup` hides, itself or its
+  members — was never established, and criteria 2 and 3 lost the premise they
+  were measured against. Whether `buildSections` reads a group anchor's
+  `isHidden` at all today is likewise unverified; the sections may have vanished
+  through issue 0143's barren-section rule instead. If the question returns, it
+  returns as a new issue.
+
+- 2026-08-12 (re-check, independent sweep) — **Largely stale: 1 card instead of
+  7, and the identity-proven case is fixed.** The issue's own method rerun over
+  the same corpus — all 208 `type="unit"` entries of the six fixture catalogues,
+  each card fully expanded, section titles intersected with the names of
+  `groupAnchor` capabilities carrying `isHidden: true`:
+  - **1** card hits, `Vampire Counts (6th definitive edition).cat /
+    Necromancer`, section `Magic Items` — the pre-0143 number, not the 7.
+  - `Lores of Magic` renders on **none** of the six cards the issue names. On
+    `Master Necromancer` the anchor is still there and still hidden
+    (`defId 3e50-5f62-a177-304d`, `isHidden true`, path `0/0/5`) and the card's
+    sections are `Mounts, Wizard Level, Magic Items, Arcane Items (VC),
+    Enchanted Items (VC), Magic Armour (VC), Magic Talismans (VC), Magic Weapons
+    (VC)` — no `Lores of Magic`. Same for `0-1 Vampire Lord`, `Vampire Count`,
+    `Zacharias the Everliving`, `Sethep, the Merciless`, and for `Zombies` /
+    `Weapons`.
+  - The one remaining hit is a **name collision, not evidence**: that card
+    carries two group anchors called `Magic Items` — `0/0/5` (defId
+    `4cbb-a1fc-d7c8-6d6f`, `isHidden false`) and `0/0/10` (defId
+    `b4e0-9f6b-30b0-346e`, `isHidden true`) — and exactly one `Magic Items`
+    section renders, which the visible anchor already accounts for.
+  Criterion 2's measurement ("7 cards today, 0 after") no longer describes the
+  tree. What is unverified either way is whether the code reads a group anchor's
+  `isHidden` at all now, or whether the sections vanished for another reason
+  (0143's barren-section rule) — that is what to establish before closing.
 
 - Filed out of issue 0143's first review round. That round's triage: the
   finding violates none of 0143's numbered criteria — criterion 5 speaks of

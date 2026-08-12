@@ -42,6 +42,18 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent measurement) — **Reproduces; criterion 1 is
+  demonstrably broken on this machine (4 cores).** Same file, same command,
+  `npx vitest run src/evaluator/e2e.testcatalog.test.js`:
+  - quiet: **538 passed**, exit code **0**, 1 test file passed;
+  - with 16 CPU burners running: **6 failed | 532 passed**, exit code non-zero
+    (plus an unhandled `Timeout calling "onTaskUpdate"` from the worker RPC),
+    duration 112 s.
+  Criterion 3 is unmet too: `vitest.config.js` still sets no `testTimeout`, so
+  the limit is vitest's implicit 5000 ms and stands written nowhere. Side note
+  from the same session: a throwaway probe of mine over the fixture catalogues
+  ran into exactly that implicit limit.
+
 - 2026-08-12 — Reproduced on the current tree, on 4 cores with 16 CPU burners.
   `npx vitest run src/evaluator/e2e.testcatalog.test.js` → **4 failed | 534
   passed**, every failure `Test timed out in 5000ms`, in

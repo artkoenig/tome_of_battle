@@ -69,6 +69,16 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces exactly**, all five
+  fixture catalogues of `src/__fixtures__/whfb6/` loaded, empty Vampire Counts
+  contingent, the Lord `categoryLink` `223a-0bf6-f992-7db0`:
+  1500 pts -> `effectiveMax 0`, `isBlocked true`; 2000 pts -> `effectiveMax
+  null`, `isBlocked false`; 3000 pts -> `null`. The Heroes link
+  `7697-ca4b-195e-cd8d` reads `null` at every budget and carries no
+  `<constraint>` in the fixture at all — confirmed by reading the `.gst`, where
+  the Lord link declares `max -1` plus the `set 0` below 2000 and the
+  `increment +1` per 1000 above 1999.
+
 - 2026-08-12 — Reproduced against the frozen fixture, and the measurement adds
   one fact the file did not have. Empty Vampire Counts contingent over
   `src/__fixtures__/whfb6/`, the Lord `categoryLink` `223a-0bf6-f992-7db0`:

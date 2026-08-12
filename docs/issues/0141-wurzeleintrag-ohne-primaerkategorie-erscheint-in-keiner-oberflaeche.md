@@ -63,6 +63,23 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **The mechanism reproduces, and the
+  fixtures carry the pattern**, though not the entry this file cites.
+  - Synthetic control: two root entries, both linking the category "General",
+    one `primary="true"` and one `primary="false"`.
+    `collectPrimaryCategoryEntries(system, catalogue, 'cat-general')` returns
+    **only** the primary one — the other is in no section, hence neither
+    addable nor checkable.
+  - Data: the cited High Elf entry `a4dc-9040-d98e-7bc1` is not in this
+    repository (no `High Elf.cat` among the 19 fixture catalogues). Two frozen
+    fixture root entries do show the pattern and are reachable from no category
+    section at all: **"Dogs of War Army"** (`2641-7ec9-2243-7715`,
+    `Dogs of War.cat`, type=upgrade) and **"SELECT FOR USING AS DOGS OF WAR ?"**
+    (`aa6a-68b4-a6ae-4abc`, `Ogre Kingdoms.cat`, type=upgrade). Measured by
+    enumerating every category id of system and catalogue and intersecting with
+    the root entries that carry `categoryLink`s but none with `primary="true"`.
+    The eleven definitive-edition catalogues carry no such root entry.
+
 - Aufgefallen bei der Ursachenanalyse zu Issue 0140: der dort behandelte
   Eintrag ist mangels Primärkategorie in keiner Ankreuzliste sichtbar. Der
   Mensch hat entschieden, Bestandsroster nicht nachzurüsten — womit dieser

@@ -71,6 +71,21 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent code probe) — **Reproduces; every site the
+  file names is still on the roster-wide value.** `RosterEditor` derives
+  `activeCatalogue` once from `roster.catalogueId` in an effect
+  (`RosterEditor.jsx:37, 109-115`) and hands the same object to every
+  `ForceEditorSection` (`:152`). The named consumers read it unchanged:
+  `CategoryUnitAdder.entryFor` -> `findEntryInSystem(system, capability.defId,
+  activeCatalogue.id)` (`CategoryUnitAdder.jsx:113`), `OptionGroup` ->
+  `resolveEntry(system, option, activeCatalogue?.id)` (`OptionGroup.jsx:207,
+  242`), `ListRuleChecklist` (`:90`). The skew is visible in the same file:
+  `ForceEditorSection` computes `forceCatalogueId = force.catalogueId ||
+  roster.catalogueId` (`:67`) and passes **both** values down. Why it rarely
+  bites is exactly as described: `findEntryInSystem` prefers the given catalogue
+  and only then searches the others (`catalogResolver.js:142-162`), so identical
+  ids in two books are the case that breaks.
+
 - 2026-07-30: Von Prüfrunde 3 zu Issue 0121 gefunden (Befund F3 und der
   Abschnitt „was außerhalb der Kriterien brechen kann"). Reproduziert
   ist der Aushebe-Dialog; die übrigen Stellen sind derselben Bauart und

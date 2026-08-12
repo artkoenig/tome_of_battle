@@ -65,6 +65,20 @@ Begründung):
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Point 1 is a decision, not a
+  defect any more; point 2 reproduces.**
+  - Point 1: measured at the rendered panel with a report from the real facade,
+    the panel appears at a gap of 420 and of exactly 50 points and is absent at
+    49 and at 10 (`MIN_REMAINING_POINTS = 50`,
+    `AutoFillSuggestions.jsx`). What is genuinely gone is the combination
+    search: the panel collects one flat list sorted by cost descending, with no
+    "perfect combinations" and no knapsack. So the open part of point 1 is only
+    whether the 50-point threshold and the flat list are enough — the human's
+    call, as this file says.
+  - Point 2: `GENERAL_EXACT_KEYWORDS`, `GENERAL_SUBSTRING_KEYWORDS` and
+    `isQuirkGeneralEntryId` appear nowhere under `src/` (the only hit in the
+    repository is a fixture README). Options render in catalogue order.
+
 - 2026-07-30: Von der Prüfung zu Issue 0121 gefunden (Befunde 3 und 4),
   je mit Reproduktion gegen den Stand vor dem Cutover.
 - 2026-07-31: Der Befund oben — „wer alle Pflichten erfüllt hat und noch 200

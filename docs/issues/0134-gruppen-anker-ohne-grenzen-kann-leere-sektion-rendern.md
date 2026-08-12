@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/offene-aufgaben-qfgmag
 pr:
 ---
 
@@ -50,6 +50,25 @@ Acceptance criteria:
 ## Decisions
 
 ## Log
+
+- 2026-08-12 — **Closed** on the maintainer's decision: the finding no longer
+  reproduces (measurement in the entry above). Nothing was changed in the code
+  for it, and no test pins the new behaviour — should an empty section for a
+  limitless group reappear, it needs a fresh issue with a fresh measurement.
+
+- 2026-08-12 (re-check, independent probe) — **Does NOT reproduce any more.**
+  Synthetic case exactly as described: a `selectionEntryGroup` without
+  `<constraints>` whose only member carries `hidden="true"`, rendered through the
+  production seam (`processImportedData` -> `createSelectionFromDef` ->
+  `toEvaluatorRoster` -> `prepareDataset`/`evaluate` -> `SelectionConfigurator`),
+  fully expanded, with and without `sortIndex="1"` on the group.
+  - without `sortIndex`: no group anchor, **0** `.option-group-header`, 0 rows;
+  - with `sortIndex="1"`: the group anchor IS created
+    (`groupAnchor:"Leere Gruppe"@0/0/0`, `isHidden false`) — and the card still
+    renders **0** `.option-group-header` and 0 rows.
+  So the anchor no longer drags an empty section along; the regression this file
+  describes is gone. Candidate for closing — the human decides whether to pin the
+  behaviour with a test first.
 
 - Gefunden während der Review von Issue 0133 (fresh-review-Subagent), als
   Nebenwirkung derselben `evalTree.js`-Änderung, die auch Befund 1 (Gültigkeits-

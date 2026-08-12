@@ -43,6 +43,12 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces unchanged.** A unit
+  holds an option declared `hidden="true"`. Its slot reads
+  `{anchorKind: "occupied", isHidden: true, current: 1}` at path `0/0` — the
+  report knows the selection is there and knows it should not be offered — and
+  the report carries **zero violations and zero diagnostics**.
+
 - 2026-08-12 — Reproduced on the current tree. A unit holds an option declared
   `hidden="true"` in the roster. The report gives that slot
   `{anchorKind: "occupied", isHidden: true, current: 1}` — it knows the

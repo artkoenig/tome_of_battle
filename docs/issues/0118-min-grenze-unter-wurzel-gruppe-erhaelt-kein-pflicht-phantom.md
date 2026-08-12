@@ -41,6 +41,13 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces, with the control in
+  the same run.** A `selectionEntry` carrying `min 1 scope="roster"` inside a
+  root `selectionEntryGroup` produces **no** violation for an empty roster; the
+  same entry directly under the catalogue root produces `duty-min`, actual 0,
+  bound 1. Both runs are diagnostic-free, so the difference is the traversal cut
+  at `GROUP`, not a broken fixture.
+
 - 2026-08-12 — Reproduced on the current tree with a control in the same run.
   A `selectionEntry` carrying `min 1 scope="roster"` inside a root
   `selectionEntryGroup` produces **no** violation for an empty force; the very

@@ -42,6 +42,14 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent probe) — **Reproduces unchanged.** Root
+  `entryLink` with its own `min 1` and `max 2` (`scope="roster"`, shared,
+  `includeChildSelections="true"`), target standing three times as the plain
+  entry and never through the link: the report carries `link-max` as an **error,
+  actual 3, bound 2**, while `link-min` stays silent. The MAX of a link nobody
+  chose fires over the resolved target id; the open question of this file is
+  untouched.
+
 - 2026-08-12 — Reproduced on the current tree, exactly as review repro E9
   describes it. Synthetic catalogue: a root `entryLink` carrying its own
   `min 1` **and** `max 2` (both `scope="roster"`, shared,

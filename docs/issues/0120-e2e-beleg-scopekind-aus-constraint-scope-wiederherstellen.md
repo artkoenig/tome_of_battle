@@ -45,6 +45,15 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent scan) — **Still missing.** Of 123 scenarios
+  under `docs/testing/`, exactly two manifests mention `scopeKind` at all
+  (`violation-classification`, `set-cost-value-force-gate`). Walking every
+  expectation of `violation-classification`: six messages, each with a single
+  `scopeKind` (`force`, `force`, `roster`, `parent`, `roster`, `roster`), each in
+  a different roster, and no anchor carrying two of them — let alone two MIN
+  limits with different scopes. The E2E proof this file asks for does not
+  exist.
+
 - 2026-08-12 — Still missing. Scanned every `docs/testing/*/scenario.json`
   (127 scenarios) for expectations that name an anchor and a `scopeKind`
   together: only two manifests mention `scopeKind` at all

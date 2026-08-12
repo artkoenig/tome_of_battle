@@ -49,6 +49,17 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (re-check, independent measurement) — **Reproduces; the magnitudes
+  hold.** Measured in jsdom against `src/__fixtures__/whfb6/`:
+  `prepareDataset` **278 ms** for one catalogue and **455 ms** for three, while
+  the following `evaluate` costs **12 ms** and **6 ms**. Through the app path:
+  `evaluateAppRoster` costs **474 ms** on the first call and **10 ms** on the
+  second — the per-dataset cache works, and the first hit is the freeze.
+  Both call sites are still synchronous in render: `useRoster` calls
+  `useEvaluation` (`useRoster.js:76`), and `NewRosterModal` calls
+  `describeSystem` in its component body (`NewRosterModal.jsx:85`), with no
+  loading state anywhere.
+
 - 2026-07-30: Von der Prüfung zu Issue 0121 gefunden (Befund 6), mit
   Messung gegen den Stand vor dem Cutover.
 
