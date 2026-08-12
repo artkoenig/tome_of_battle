@@ -63,11 +63,6 @@
   color: var(--text-dim);
 }
 
-.sub-selection-taken-hint {
-  margin-left: 6px;
-  font-weight: 600;
-}
-
 .sub-selection-cost {
   margin-right: 4px;
 }
