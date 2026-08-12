@@ -35,42 +35,31 @@ covers.
   `vampireCountsDataset` pattern in `offer.hiddenGate.test.js` and
   `effectiveState.baseHiddenInheritance.test.js` — the fixture parse dominates
   runtime and a shared suite run can hit the 5 s test timeout without it).
-- A corpus-invariant check parses a fixture's raw XML itself, with `new
-  DOMParser().parseFromString(xml, 'text/xml')` at the top of the file, to
-  derive its own expectation from the catalogue data — never from an engine
-  module other than the facade. This is a different use of `DOMParser` than
-  the module-top `globalThis.DOMParser` install: the file's own parse builds
-  the check's expectation, the facade's internal parse (through
-  `prepareDataset`) builds what is asserted against. See
-  `evaluator.corpusLinkLocalChildren.test.js` (Issue 0150) for the pattern:
-  index every element with an `id` from the fixture documents, derive the
-  occurrences from that index at module top level, and read the report
-  through the same `capabilities` path-schema every other real-fixture file
-  uses (`evaluate`'s JSDoc, `evaluator.js`). Module-top derivation is cheap
-  for a handful of documents but not for a whole corpus — 17 documents across
-  two fixture directories measured ~6 s of parsing alone before the engine
-  even runs; only the engine's own `prepareDataset` + `evaluate` calls need
-  the `beforeAll` memoisation, but a corpus-scale derivation is not free
-  either. Build the id index and derive from it inside the same function and
-  let both go out of scope once it returns — only plain data (strings,
-  arrays, plain objects) may survive into the module-level constants a case
-  reads, never a DOM element: retaining elements pins every parsed document
-  in memory for the life of the file (1.6 GB peak measured for the two whfb6
-  corpora together). A corpus-wide check loads one dataset PER CORPUS — one
-  `prepareDataset({ gameSystem, catalogues: [...all of that corpus's .cat
-  texts] })` — rather than one per catalogue, so a link whose own children
-  resolve only through another catalogue of the same corpus (a
-  `catalogueLink`, e.g. a library such as Mercenaries) is addressable; a
-  single-catalogue dataset leaves such a target unresolved. Match a report
-  slot by its own `defId` only, never by a shared `targetDefId` — that would
-  let a slot belonging to a different link satisfy the claim — and where two
-  children of one occurrence's closure resolve to the same shared target
-  — they need be neither siblings nor declared on the link itself — assert
-  the group and record its members instead of asserting either one
-  individually. Close such a check's books against a count taken before the
-  classification that fills them (and against a second traversal of the same
-  documents), never against the sum of the books themselves, which cannot
-  fail.
+- A corpus-invariant check derives its expectation from the raw fixture XML
+  itself (`new DOMParser().parseFromString(xml, 'text/xml')`), never from an
+  engine module other than the facade — the file's own parse builds what is
+  expected, the facade's internal parse builds what is asserted against.
+  `evaluator.corpusLinkLocalChildren.test.js` (issue 0150) is the pattern:
+  - Index every element carrying an `id`, derive the occurrences from that
+    index, and read the report through the same `capabilities` path schema
+    every other real-fixture file uses (`evaluate`'s JSDoc in `evaluator.js`).
+  - Build the index and derive from it inside one function, and let both go
+    out of scope when it returns. Only plain data may survive into module
+    level, never a DOM element — a retained element pins every parsed document
+    for the life of the file (1.6 GB peak measured over both whfb6 corpora).
+    The derivation itself is not free either: ~6 s of parsing for the 17
+    documents, before the engine runs at all.
+  - Load one dataset **per corpus**, not per catalogue, so a link whose
+    children resolve only through a `catalogueLink` into a library of the same
+    corpus (e.g. Mercenaries) is reachable at all.
+  - Match a report slot by its own `defId`, never by a shared `targetDefId` —
+    that would let another link's slot satisfy the claim. Where two children of
+    one occurrence's closure resolve to the same shared target (they need be
+    neither siblings nor declared on the link), assert the group and record its
+    members instead of either one alone.
+  - Close the books against a count taken before the classification that fills
+    them, and against a second traversal of the same documents — never against
+    the sum of the books, which cannot fail.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a layer test that isolates one topic through
   the module's public surface (e.g. `countIndex.costSumCarrierFrame.test.js`,

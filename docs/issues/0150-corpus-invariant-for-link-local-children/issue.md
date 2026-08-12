@@ -17,7 +17,7 @@ spot that let it through.
 
 Per `Catalogue.xsd` an `EntryLink` extends `SelectionEntryBase` and may carry
 its own `selectionEntries` / `selectionEntryGroups` / `entryLinks`
-(`docs/battlescribe-data-format.md` §4.4). Those children stand at that usage
+(`docs/battlescribe-data-format.md` §7.2). Those children stand at that usage
 site alongside the target's. **149 of the 6328 `entryLink`s in the corpus do
 exactly that**, spread across every one of its 15 catalogue files (and neither
 of its two game-system files):
