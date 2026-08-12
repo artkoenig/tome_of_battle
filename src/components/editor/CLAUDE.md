@@ -35,12 +35,15 @@ src/components/editor/<file>.test.jsx`.
   directly in the shape above instead of going through
   `createSelectionFromDef` — see
   `UnitSelectionCard.gatedProfileCharacteristics.test.jsx`.
-- Every case guard-asserts against the real report FIRST (`capability` at
-  `pathBySelectionId.get(<selection id>)`, e.g. `capability.totalCosts`,
-  `capability.infoElements`), before asserting on the rendered DOM — the
-  point of the guard is that a broken fixture or wrong path fails loudly at
-  the assumption, not inside a DOM query that could also fail for an
-  unrelated reason.
+- A case that asserts a value the evaluator *computed* guard-asserts against
+  the real report FIRST (`capability` at `pathBySelectionId.get(<selection
+  id>)`, e.g. `capability.totalCosts`, `capability.infoElements`), before
+  asserting on the rendered DOM — the point of the guard is that a broken
+  fixture or wrong path fails loudly at the assumption, not inside a DOM
+  query that could also fail for an unrelated reason. A control case that
+  pins an untouched base value, with no computed assumption to guard, may
+  assert on the DOM alone (see the `KONTROLLE:` case of
+  `UnitSelectionCard.gatedProfileCharacteristics.test.jsx`).
 - What is faked: `lucide-react` (icon components, always), `./BottomSheet`,
   and any child component that owns its own test file and isn't the
   component under test (`./SelectionConfigurator`, `./UnitChips` when

@@ -188,6 +188,112 @@
             "summary": "Researched the scope sweep for issue 81, increment 2: the closed condition-scope list derived from the XSD (which types `scope` as a bare string and so constrains nothing), the BSData wiki and docs/battlescribe-data-format.md, cross-checked against every `scope=` occurrence in both frozen corpora — nine keywords plus the id case. Two of them are dropped today, `primary-category` (4x Forces of Chaos, gating exactly this issue's shape: characteristic `set` modifiers on a profile infoLink) and `model-or-unit` (2x Lizardmen); the plan adds both to `query.js`/`model.js` with data-derived semantics, corrects the doc's phantom `category` keyword, and puts the per-scope coverage table into the issue file."
           },
           "prompt": "Issue directory: docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display\nThis increment is worked on its own branch: `claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2`, off `claude/profilwert-modifikatoren-bloodlines-zlw2p9`.\nBefore anything else, on `claude/profilwert-modifikatoren-bloodlines-zlw2p9`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2`, commit that state change and push `claude/profilwert-modifikatoren-bloodlines-zlw2p9`. Then create the branch with `git checkout -b claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2`, push it with `-u`, and work on it from there.\nThis run works docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md one increment at a time, and increment 2 is yours:\n  Every condition scope on a characteristic modifier is evaluated or recorded as uncoverable — The closed list of scope values a condition on a characteristic modifier may name is derived from the format documentation and the XSD, every value in it is evaluated against the node it names rather than silently dropped, and every value is either covered by a test or recorded in the issue file with the reason it cannot be covered from the catalogue data in the repository.\nWhat it has to satisfy:\n  - A gated modifier whose condition uses scope=\"unit\" is evaluated against the unit, not silently dropped (issue AC 5).\n  - Every scope a condition on a characteristic modifier may name is evaluated against the node it names, and none is silently dropped; the closed list of scope values is derived from docs/battlescribe-data-format.md and src/parser/schema/Catalogue.xsd rather than from the existing code, and the derivation is written down (issue AC 6).\n  - Each scope value in that closed list is either covered by a test or listed in docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md with the reason it cannot be covered from the catalogue data present in the repository (issue AC 7).\n  - The issue file also records what increment 1 established: the reported bloodline case is gated by a scope naming the unit's own selectionEntry id, that path is correct today and is now pinned, so the reported symptom is either already resolved or lives on a scope shape this increment covers.\n  - npm test passes and the evaluator E2E suite passes (issue AC 9).\n  - src/components/editor/CLAUDE.md describes the guard-assert convention as the test files in that directory actually follow it - the control case of UnitSelectionCard.gatedProfileCharacteristics.test.jsx asserts on the DOM alone, which the current wording does not admit.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 research:inc-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 research:inc-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:inc-2.0",
+          "at": "2026-08-12T15:10:38.638Z",
+          "return": {
+            "cases": [
+              {
+                "case": "scope=\"roster\" — hit: atLeast 1 selections scope=roster childId=<Trooper> -> '5'; miss: childId=<Charm> with no Charm in roster -> '3'.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"roster\": zaehlt armeeweit ueber alle Kontingente",
+                "demands": "The engine evaluates a scope=\"roster\" condition on a characteristic modifier's infoLink against the whole roster and reports the incremented WS ('5') when it holds, the base WS ('3') when it does not.",
+                "got": "Both cases pass already (KONTROLLE): 'KONTROLLE: haelt WS bei \"5\"...' and the miss case both green in the current tree — increment 1's condition-evaluation fix already carries this scope through."
+              },
+              {
+                "case": "scope=\"force\" — same hit/miss pair as roster, scoped to the own contingent.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"force\": zaehlt innerhalb des eigenen Kontingents",
+                "demands": "A scope=\"force\" condition is evaluated against the enclosing forceEntry's own selections, not the whole roster.",
+                "got": "Both cases pass already (KONTROLLE)."
+              },
+              {
+                "case": "scope=\"parent\" — hit: direct sibling under the same parent; miss: a grandchild under the carrier itself, includeChildSelections=\"false\".",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"parent\": zaehlt die direkten Kinder des uebergeordneten Knotens",
+                "demands": "A scope=\"parent\" condition counts only the direct children of the carrier's own parent.",
+                "got": "Both cases pass already (KONTROLLE)."
+              },
+              {
+                "case": "scope=\"self\" — hit: a child hanging directly under the carrier; miss: a node that is not the carrier's own child.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"self\": zaehlt die eigenen Kinder des Traegers",
+                "demands": "A scope=\"self\" condition counts only the carrier's own direct children.",
+                "got": "Both cases pass already (KONTROLLE)."
+              },
+              {
+                "case": "scope=\"unit\" (issue AC 5) — hit: instanceOf against a category the enclosing unit carries -> '5'; miss: a category nobody carries -> '3'; fail-closed edge: carrier with no enclosing unit -> '3' + unresolvedScope.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"unit\": zaehlt gegen die umschliessende Einheit (Kriterium 5 der Meldung)",
+                "demands": "A gated characteristic modifier whose condition uses scope=\"unit\" is evaluated against the enclosing unit, not silently dropped, and fails closed with a diagnostic when there is no enclosing unit.",
+                "got": "All three cases pass already (hit marked KONTROLLE; miss and the fail-closed edge pass too) — this is AC 5, already satisfied by increment 1's general condition-evaluation fix plus the pre-existing 'unit' scope resolution query.unitScope.test.js pins at the primitive."
+              },
+              {
+                "case": "scope=\"model-or-unit\" (new) — hit: nearest enclosing MODEL carries the category -> '5'; miss: only the unit above the model carries it -> '3'; control: same condition+carrier with scope=\"unit\" instead -> '5' (opposite of the model-or-unit miss); fail-closed edge: carrier with neither model nor unit above it -> '3' + unresolvedScope.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"model-or-unit\": zaehlt gegen das naechste Modell ODER die naechste Einheit (neu)",
+                "demands": "scope=\"model-or-unit\" resolves to the nearest model-or-unit-type ancestor (self included), distinct from scope=\"unit\"'s unit-only frame, and fails closed with a diagnostic when neither exists.",
+                "got": "Confirmed RED as planned: 'haelt WS bei \"5\", wenn das umschliessende MODELL die gesuchte Kategorie traegt' fails with `AssertionError: expected '3' to be '5'` (query.characteristicGateScopes.test.js:359) — the engine does not yet resolve this scope, so the condition never holds and the WS stays at base. The miss, the scope=\"unit\" control and the fail-closed edge already pass (they only exercise the existing 'unit' resolution)."
+              },
+              {
+                "case": "scope=\"ancestor\" — hit: any strict ancestor carries the category; miss: only a sibling carries it (not an ancestor).",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"ancestor\": prueft die Vorfahrenkette (Mitgliedschaft, kein Zaehlrahmen)",
+                "demands": "scope=\"ancestor\" is a membership check over the strict ancestor chain, not a counting frame.",
+                "got": "Both cases pass already (KONTROLLE)."
+              },
+              {
+                "case": "scope=\"primary-catalogue\" — hit: childId names the catalogue's own root id; miss: childId names a catalogue not loaded in the dataset -> plain non-hit, no diagnostic expected.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"primary-catalogue\": Identitaetspruefung gegen das Armeebuch des Kontingents",
+                "demands": "scope=\"primary-catalogue\" is an identity check against the enclosing force's catalogue root id; an unloaded catalogue id is a quiet non-hit, not a diagnosed data error.",
+                "got": "Both cases pass already (KONTROLLE); the miss case's absence-of-diagnostic assertion (`unresolvedScopeOf(report, 'primary-catalogue')` equals `[]`) holds."
+              },
+              {
+                "case": "scope=\"primary-category\" (new) — hit: childId names the enclosing unit's primary categoryLink -> '5'; miss: childId names a category the unit carries but not as primary -> '3'; fail-closed edge: no node in the chain carries any primary category -> '3' + unresolvedScope; extra edge: same hit condition with shared=\"false\" still '5'.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "scope=\"primary-category\": Identitaetspruefung gegen die PRIMAERE Kategorie der Einheit (neu)",
+                "demands": "scope=\"primary-category\" is an identity check against the nearest ancestor's primary categoryLink; carrying a category non-primarily must not count as a hit, and shared=\"false\" must not narrow a primary category.",
+                "got": "Confirmed RED as planned on the hit and the shared=\"false\" edge: both fail with `AssertionError: expected '3' to be '5'` (query.characteristicGateScopes.test.js:439 and :470) — the engine does not yet resolve this scope. The miss and the fail-closed edge already pass (both only need the existing unresolvedScope fallback, which already fires for an unrecognised scope keyword)."
+              },
+              {
+                "case": "Entry id as scope — hit: scope=<Regiment's own selectionEntry id> childId=\"any\" (the shape the reported bloodline bug uses) -> '5'; miss: scope=<a real entry id that is not an ancestor of the carrier> -> '3' + unresolvedScope.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "Eintrags-Id als scope: die \"selbst-gegatete\" Form, verallgemeinert auf selectionEntry-Ids",
+                "demands": "A scope naming a real selectionEntry id resolves as an ancestor-membership check (the generalised self-gated form); an id that is real but not an ancestor of the carrier fails closed with a diagnostic rather than silently returning false.",
+                "got": "Both cases pass already (KONTROLLE) — this pins the path increment 1 established for the reported bloodline case."
+              },
+              {
+                "case": "Category id as scope — hit: atLeast 1 selections scope=<ELITE id> childId=\"model\" -> '5' (nearest ancestor carrying ELITE becomes the frame, its 2 models satisfy atLeast 1); miss: scope=<SKIRMISHER id>, which no ancestor carries -> '3' + unresolvedScope.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "Kategorie-Id als scope",
+                "demands": "A scope naming a real categoryEntry id resolves to the nearest ancestor that carries it as the counting frame; failing to find such an ancestor fails closed with a diagnostic.",
+                "got": "Both cases pass already (KONTROLLE)."
+              },
+              {
+                "case": "Anything else — scope=\"flock-of-seagulls\" -> '3' + unresolvedScope; mirrors query.unitScope.test.js's Kriterium 4 at the primitive.",
+                "file": "src/evaluator/query.characteristicGateScopes.test.js",
+                "testName": "ein frei erfundenes Schluesselwort bleibt fail-closed diagnostiziert",
+                "demands": "An unrecognised scope keyword that resolves to no real id fails closed with an unresolvedScope diagnostic rather than being silently dropped.",
+                "got": "Passes already (KONTROLLE)."
+              },
+              {
+                "case": "scope=\"category\" (the literal keyword) — the closed list's remaining member; the test plan marks it deliberately untested because no catalogue in this repository writes it, and records it as a doc artefact rather than engine behaviour to be pinned in issue.md (AC 7).",
+                "file": "",
+                "testName": "",
+                "demands": "",
+                "got": "Not written, per the plan: 'no catalogue in this repository writes it, and the plan resolves it as a doc artefact rather than as engine behaviour. Recorded in issue.md instead (AC 7).' Recording it in issue.md is outside this step's boundary (test files and the suite doc only) — the implementer step should add this entry to issue.md to satisfy AC 7."
+              }
+            ],
+            "openQuestions": [
+              "AC 7 requires the untestable 'category' scope keyword to be recorded in issue.md with its reason; the tests role may not edit issue.md, and the researcher's plan does not name who does — the implementer step should add this entry (text is spelled out above and in the new test file's header comment) before the increment can be called complete against AC 7.",
+              "The issue file's required record of what increment 1 established (the bloodline case's gate is a scope naming the unit's own selectionEntry id, correct today and pinned) is outside this step's boundary too — the new KONTROLLE case 'Eintrags-Id als scope' pins that path, but writing the record into issue.md itself is implementer work."
+            ],
+            "questions": [],
+            "summary": "Added src/evaluator/query.characteristicGateScopes.test.js with 28 cases covering all 12 scope-value groups the test plan named (roster, force, parent, self, unit — AC 5 —, model-or-unit, ancestor, primary-catalogue, primary-category, entry-id-as-scope, category-id-as-scope, and the unresolved-keyword fallback), derived the closed scope list from docs/battlescribe-data-format.md line 1449 and Catalogue.xsd in the file's header comment, and reworded the guard-assert bullet in src/components/editor/CLAUDE.md to admit a DOM-only control case. 25 of 28 cases pass already (regression guards on scopes increment 1's fix already carries); the 3 that fail are exactly the two new scopes the plan called out as expected red (model-or-unit hit, primary-category hit and its shared=\"false\" edge), each failing with `AssertionError: expected '3' to be '5'` — a missing-behaviour failure, not an import or typo error. `npx vitest run src/evaluator/query.characteristicGateScopes.test.js`: 28 cases, 3 failed, exit 1. `npx vitest run src/evaluator`: 94 files/1722 tests, 3 failed (same 3), exit 1. `npm run typecheck`: clean, exit 0. `npm test`: 300 files/3784 tests, 3 failed (same 3), exit 1 — the puppeteer e2e/ui.test.js did not run because the npm script short-circuits (`vitest run && node e2e/ui.test.js`) on the vitest failure; that failure is the expected red this step exists to prove."
+          },
+          "prompt": "Issue directory: docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display\nThis increment is worked on branch `claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2`. Before anything else make sure you are on it: `git fetch origin claude/profilwert-modifikatoren-bloodlines-zlw2p9--inc-2` and check it out; if the remote does not have it, create it from `claude/profilwert-modifikatoren-bloodlines-zlw2p9` and push it with `-u`.\nThis run works docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md one increment at a time, and increment 2 is yours:\n  Every condition scope on a characteristic modifier is evaluated or recorded as uncoverable — The closed list of scope values a condition on a characteristic modifier may name is derived from the format documentation and the XSD, every value in it is evaluated against the node it names rather than silently dropped, and every value is either covered by a test or recorded in the issue file with the reason it cannot be covered from the catalogue data in the repository.\nWhat it has to satisfy:\n  - A gated modifier whose condition uses scope=\"unit\" is evaluated against the unit, not silently dropped (issue AC 5).\n  - Every scope a condition on a characteristic modifier may name is evaluated against the node it names, and none is silently dropped; the closed list of scope values is derived from docs/battlescribe-data-format.md and src/parser/schema/Catalogue.xsd rather than from the existing code, and the derivation is written down (issue AC 6).\n  - Each scope value in that closed list is either covered by a test or listed in docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/issue.md with the reason it cannot be covered from the catalogue data present in the repository (issue AC 7).\n  - The issue file also records what increment 1 established: the reported bloodline case is gated by a scope naming the unit's own selectionEntry id, that path is correct today and is now pinned, so the reported symptom is either already resolved or lives on a scope shape this increment covers.\n  - npm test passes and the evaluator E2E suite passes (issue AC 9).\n  - src/components/editor/CLAUDE.md describes the guard-assert convention as the test files in that directory actually follow it - the control case of UnitSelectionCard.gatedProfileCharacteristics.test.jsx asserts on the DOM alone, which the current wording does not admit.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 research:inc-2.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 tests:inc-2.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/81-profile-characteristic-modifiers-ignored-in-unit-display/backlog.json inc-2 tests:inc-2.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
