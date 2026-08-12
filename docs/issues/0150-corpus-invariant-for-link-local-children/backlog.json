@@ -83,6 +83,80 @@
             "summary": "Wrote src/evaluator/evaluator.corpusLinkLocalChildren.test.js (35 cases: 1 KONTROLLE on the derivation count, 31 generated per-occurrence cases, the Barding case, the Magic Banners case, and a diagnostics guard), deriving all expectations from the Empire .cat/.gst XML via a module-local DOMParser and reaching the engine only through prepareDataset/evaluate. Demonstrated criterion 4 by isolating the ownerDefinitionOf change of PR #214 (evalTree.js lines 700-710) back to its pre-#214 body, running `npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js` (32 failed | 3 passed, exit 1 — e.g. 'Verweis f817-432b-7c1a-a8ca (Empire Warhorse): kein Slot fuer eigenes Kind 0535-f68e-b9bc-749b unter 0/23/0: expected false to be true'), then restoring the file and re-running the same command green (35 passed, exit 0). `npx vitest run src/evaluator` afterwards: 92 files, 1560 tests, exit 0, 64.5s wall — inside the suite's timeout. Updated src/evaluator/CLAUDE.md with the new in-file-XML-derivation convention this file introduces."
           },
           "prompt": "Issue directory: docs/issues/0150-corpus-invariant-for-link-local-children\nThis increment is worked on branch `claude/evaluator-kampagne-lucke-ajvfad--INC-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-kampagne-lucke-ajvfad--INC-1` and check it out; if the remote does not have it, create it from `claude/evaluator-kampagne-lucke-ajvfad` and push it with `-u`.\nThis run works docs/issues/0150-corpus-invariant-for-link-local-children/issue.md one increment at a time, and increment 1 is yours:\n  The invariant, proven on the catalogue that shipped the defect — A check that derives from the corpus XML which entryLinks of one catalogue declare their own children, and asserts through the facade that a roster holding such a link gets a report slot for every locally declared child under the link's own slot — proven to go red on the pre-PR-#214 engine.\nWhat it has to satisfy:\n  - The check derives the entryLinks that declare their own selectionEntries, selectionEntryGroups or entryLinks from the catalogue XML alone, for at least the Empire (definitive) catalogue (31 occurrences), and asserts for each that a roster holding the link gets a report slot for each locally declared child under the link's own slot (issue criterion 1).\n  - It reads only catalogue files, docs/battlescribe-data-format.md and Catalogue.xsd for its expectation, never any src/evaluator/*.js other than the facade, and reaches the engine only through prepareDataset + evaluate (issue criterion 1, ADR 0030, ADR 0033).\n  - Existence is the assertion: the check asserts the slot is present and asserts nothing about isHidden (issue criterion 3).\n  - The Captain -> Warhorse -> Barding link and the Captain -> Battle Standard Bearer -> Magic banners group are both among the occurrences the check covers (issue Log, third bullet).\n  - The check is demonstrated red against an isolated revert of the ownerDefinitionOf change of PR #214 and green on the current tree, with the command, the revert used and both exit codes recorded (issue criterion 4).\n  - npx vitest run src/evaluator passes and stays inside the suite's timeout.\nDeliberately not yours, and not a gap — a later increment takes each of these: All 149 occurrences, with every unreachable one accounted for; The campaign's books and its stated limit.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 research:INC-1.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 tests:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 tests:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "implement:INC-1.0",
+          "at": "2026-08-12T07:21:53.961Z",
+          "return": {
+            "deviations": [
+              {
+                "planned": "Plan step 4 of the criterion-4 demonstration: write the command, the revert used, both exit codes and the per-case counts into docs/issues/0150-corpus-invariant-for-link-local-children/issue.md (Log and Decisions sections).",
+                "did": "Not done. The implementer role forbids reading issue.md, and filling Plan/Decisions/Log without reading the file would destroy its existing content. The complete red/green record the plan asked for is instead in this return's commands field and summary, which is the channel the shared brief names.",
+                "why": "Role boundary (implementer may not read issue.md) versus the plan's task. Reported rather than resolved by guesswork; whoever owns the issue file can transcribe the record below verbatim."
+              },
+              {
+                "planned": "Plan: add ONE sentence to docs/battlescribe-data-format.md §7.2.",
+                "did": "Added one paragraph of four sentences in the `entryLink` subsection of §7.2, directly after the constraints/modifiers/costs paragraph.",
+                "why": "A single sentence could not carry all three facts the plan required of it (the Catalogue.xsd derivation, the meaning 'stands at that usage site alongside the target's', and the real-catalogue evidence) without becoming unreadable. Content is exactly what the plan specified, nothing more."
+              }
+            ],
+            "commands": [
+              {
+                "command": "npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "when": "Before any change, on the current tree (PR #214 fix already merged).",
+                "exit": 0,
+                "note": "1 file, 35 tests passed (KONTROLLE count, 31 it.each occurrences, Barding case, Magic-Banners case, UNRESOLVED_DEFINITION guard). Green as the test-author reported; the red proof is the isolated revert below."
+              },
+              {
+                "command": "git show 0969e81 -- src/evaluator/evalTree.js | git apply -R",
+                "when": "Criterion-4 demonstration, step 1.",
+                "exit": 0,
+                "note": "Installed the pre-PR-#214 shape of ownerDefinitionOf. git diff confirmed the only source change was src/evaluator/evalTree.js and within it only ownerDefinitionOf: the union branch replaced by `return node.def.resolved;` plus its JSDoc paragraph. (The other file git diff showed was backlog.json, from the step announcement, untouched by the revert.)"
+              },
+              {
+                "command": "npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "when": "Criterion-4 demonstration, step 2, engine reverted.",
+                "exit": 1,
+                "note": "32 failed, 3 passed of 35. The three that stayed green: the KONTROLLE derivation count (31 links, computed from raw XML, independent of the engine), the UNRESOLVED_DEFINITION guard (no branch is dropped by the revert, only child slots vanish), and occurrence '29cc-7184-aa01-dc85' ('Knightly Orders (WD#310(UK))') — the one group-typed link, exactly as the plan predicted, because offer.js's group-link descent predates PR #214 and was not reverted. So 30 of the 31 per-occurrence cases went red, plus the Barding case C and the Magic-Banners case D. Representative failure: \"Battle Standard Bearer: kein Slot fuer eigenes Kind 14b9-9df2-f13c-f31b unter 0/7/0: expected false to be true\"."
+              },
+              {
+                "command": "npx vitest run src/evaluator/evalTree.linkLocalChildren.test.js",
+                "when": "Criterion-4 demonstration, engine still reverted; informational, not on the list that counts.",
+                "exit": 1,
+                "note": "4 failed, 2 passed of 6. Expected — the pre-existing unit test pins the same rule at the tree/offer layer on synthetic XML. This is not what criterion 4 asks about and is not a defect."
+              },
+              {
+                "command": "git checkout -- src/evaluator/evalTree.js",
+                "when": "Criterion-4 demonstration, step 3.",
+                "exit": 0,
+                "note": "Revert removed; git diff --stat over src/evaluator/ clean again."
+              },
+              {
+                "command": "npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "when": "Criterion-4 demonstration, step 3, engine restored.",
+                "exit": 0,
+                "note": "35 of 35 passed again. Red/green pair complete: exit 1 (32 failing) with the ownerDefinitionOf union removed, exit 0 with it in place."
+              },
+              {
+                "command": "npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+                "when": "Final, after the documentation edits (the list that counts, command 1).",
+                "exit": 0,
+                "note": "1 file, 35 tests passed, none skipped."
+              },
+              {
+                "command": "npx vitest run src/evaluator",
+                "when": "Final, after the documentation edits (the list that counts, command 2).",
+                "exit": 0,
+                "note": "92 files, 1560 tests passed, none skipped or excluded. Covers the evaluator unit and layer tests and the manifest-driven E2E runner over docs/testing/."
+              }
+            ],
+            "blockers": [
+              "The plan's step 'write the demonstration into issue.md' cannot be executed by this role: the implementer may not read issue.md, and writing its Plan/Decisions/Log sections without reading them would destroy existing content. The full record is in this return's commands field instead; someone who may read that file must transcribe it."
+            ],
+            "questions": [],
+            "summary": "The corpus invariant for link-local children is proven on the Empire catalogue: the new facade-level check passes 35/35 on the current tree and goes to exit 1 with 32 failures when the ownerDefinitionOf union from PR #214 is reverted, with only the group-typed occurrence staying green as predicted. Production behaviour is unchanged; the code touch is one corrected doc citation (§4.4 to §7.2) plus a new paragraph in §7.2 of the Battlescribe format document stating that an entryLink may declare its own children. The demonstration could not be written into issue.md because this role may not read that file — it is recorded here instead."
+          },
+          "prompt": "Issue directory: docs/issues/0150-corpus-invariant-for-link-local-children\nThis increment is worked on branch `claude/evaluator-kampagne-lucke-ajvfad--INC-1`. Before anything else make sure you are on it: `git fetch origin claude/evaluator-kampagne-lucke-ajvfad--INC-1` and check it out; if the remote does not have it, create it from `claude/evaluator-kampagne-lucke-ajvfad` and push it with `-u`.\nYour brief is the plan the researcher wrote and the tests that already exist. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 research:INC-1.0 --fields plan,moduleMap,environment` — what gets built and why, the files it touches, and the commands the plan asks anyone to run.\n  - `steps docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 tests:INC-1.0 --fields cases` — the cases the test-author wrote.\nThe commands that count for this increment:\n  - `npx vitest run src/evaluator/evaluator.corpusLinkLocalChildren.test.js`\n  - `npx vitest run src/evaluator`\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 implement:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/0150-corpus-invariant-for-link-local-children/backlog.json INC-1 implement:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `deviations`\n  - `commands`\n  - `blockers`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []
