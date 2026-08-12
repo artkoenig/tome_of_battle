@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/vampire-editor-unwanted-items-syfq8s
 pr: https://github.com/artkoenig/tome_of_battle/pull/190
 ---
@@ -116,6 +116,9 @@ Acceptance criteria:
   die Fassade `evaluate`.
 
 ## Log
+
+- 2026-08-12 — Closed: merged as PR #190 (`249d1ca`). Bookkeeping only; the
+  status line was never flipped.
 
 - 2026-07-31 Reproduktion an echten Daten: `evaluate` gegen gst + Vampire Counts
   (DE-Fixtures), Vampirdiener im Kontingent „Standard (VC-AB)" — „Bloody Nora",

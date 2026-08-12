@@ -1,6 +1,6 @@
 ---
-status: active
-branch: claude/plugin-update-metis-nzhs4f
+status: backlog
+branch:
 pr:
 ---
 
@@ -121,6 +121,11 @@ Acceptance criteria:
   answer, this session.
 
 ## Log
+
+- 2026-08-12 — Put back to backlog. The branch this file named is gone and
+  nothing of the change is in `main`: `populateChildren`
+  (`src/roster/selectionFactory.js:69-83`) still walks one group level deep, so
+  defect (A) stands as written, and no test names this issue.
 
 - Filed out of issue 0143's second review round, which measured the whole reach
   of that issue's fix by clicking every control on all 208 unit cards of the

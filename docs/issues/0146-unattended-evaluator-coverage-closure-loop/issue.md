@@ -1,5 +1,5 @@
 ---
-status: waiting
+status: done
 branch: claude/evaluator-katalog-rules-t6nim4
 pr: https://github.com/artkoenig/tome_of_battle/pull/202
 ---
@@ -104,3 +104,12 @@ itself is out of scope.
   evaluator E2E scenarios itself.
 - Green scenarios are never deleted; campaign progress is monotone.
 - No version bump: this is tooling, not user-facing.
+
+## Log
+
+- 2026-08-12 — Closed: merged as PR #202 (`30ebf27`). All three tools exist and
+  work — `scripts/evaluator-coverage-inventory.js`, the
+  `evaluator-constraint-explorer` skill and the `evaluator-closure-loop` driver
+  — and the campaign they were built for ran 22 times and terminated on
+  2026-08-11 with 130 of 130 cells covered. Re-run on 2026-08-12: the inventory
+  reports 0 uncovered cells and exits 0.
