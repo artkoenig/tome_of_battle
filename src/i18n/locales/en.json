@@ -7,6 +7,7 @@
   "settings.language.label": "Language",
   "validation.evaluator.causesTitle": "Causes:",
   "validation.evaluator.unresolvedEntry": "\"{selectionName}\" no longer exists in the catalogue.",
+  "validation.evaluator.hiddenSelection": "\"{name}\" is in the list but is not offered.",
   "validation.evaluator.selectionCount.min.local_one": "\"{name}\" must be taken at least once.",
   "validation.evaluator.selectionCount.min.local_other": "\"{name}\" must be taken at least {bound} times.",
   "validation.evaluator.selectionCount.min.force_one": "This force still needs a \"{name}\".",

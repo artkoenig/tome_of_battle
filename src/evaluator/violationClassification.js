@@ -43,6 +43,15 @@ import { pathOf } from './evalTree.js';
  */
 const DERIVED_MESSAGE_SEVERITY = MessageSeverity.ERROR;
 
+/**
+ * Der Schweregrad einer **versteckten Auswahl**. Das BSData-Wiki (*Props:
+ * Hidden*) sagt es woertlich: eine versteckte Entitaet ist dem Nutzer nicht
+ * sichtbar, „and any already selected entries will cause error showing up in
+ * error list". Der Schweregrad steht damit in der Quelle und ist keine
+ * Anzeige-Entscheidung dieser Schicht.
+ */
+const HIDDEN_SELECTION_SEVERITY = MessageSeverity.ERROR;
+
 /** Die Scope-Schluesselwoerter als Menge — ein Scope, der keines ist, ist eine ID. */
 const SCOPE_KEYWORDS = new Set(Object.values(ScopeKeyword));
 
@@ -156,5 +165,29 @@ export function classifyAuthorMessage(node, message, context) {
     severity: message.severity,
     anchor: classifyAnchor(node, context),
     text: message.text,
+  };
+}
+
+/**
+ * Ordnet eine **gewaehlte, aber effektiv versteckte Auswahl** ein: die
+ * Gegenrichtung zur Min-Unterdrueckung an versteckten Traegern (Issue 0088).
+ * Was der Nutzer gar nicht haette angeboten bekommen duerfen, aber in seiner
+ * Liste liegt, ist ein Fehler — typisch nach einem Wechsel der Armee-Variante,
+ * der die Altauswahl liegen laesst.
+ *
+ * Sie traegt **keines** der Grenzen-Felder und keinen Text: die Aussage steckt
+ * ganz im Anker, und der benennt die Auswahl ueber ihre Definitions- bzw.
+ * Link-Id und ihren stabilen Pfad — nicht ueber den Anzeigenamen, der nur zur
+ * Darstellung daneben steht.
+ *
+ * @param {object} node  der belegte Slot, dessen Definition versteckt ist.
+ * @param {{ effective: object, unstableNodes: Set<object> }} context
+ * @returns {object} die eingeordnete Meldung.
+ */
+export function classifyHiddenSelection(node, context) {
+  return {
+    origin: MessageOrigin.HIDDEN_SELECTION,
+    severity: HIDDEN_SELECTION_SEVERITY,
+    anchor: classifyAnchor(node, context),
   };
 }

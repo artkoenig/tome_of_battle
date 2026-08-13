@@ -27,6 +27,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset, prepareDataset } from './evaluator.js';
+import { MessageOrigin } from './model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.
@@ -434,8 +435,13 @@ describe('Rand: versteckter Traeger mit verletztem Min UND Max meldet nur den Ma
     const maxMessages = violationsOf(report, MAX_TROLL_LIMIT_ID);
     expect(maxMessages).toHaveLength(1);
     expect(maxMessages[0]).toMatchObject({ actual: 2, bound: 1 });
-    // Der Katalog kennt keine weitere Grenze: der ganze Bericht ist genau diese eine Meldung.
-    expect(report.violations).toHaveLength(1);
+    // Der Katalog kennt keine weitere Grenze: unter den aus Grenzen
+    // ABGELEITETEN Meldungen ist der Max-Verstoss die einzige. Daneben steht
+    // seit Issue 0119 die Gegenrichtung dieser Regel — der versteckte Troll
+    // liegt im Roster und wird als solcher gemeldet (`report.hiddenSelection.test.js`);
+    // sie traegt keine `limitId` und beruehrt die Aussage dieses Falls nicht.
+    expect(report.violations.filter(v => v.origin === MessageOrigin.DERIVED_LIMIT)).toHaveLength(1);
+    expect(report.violations.filter(v => v.origin === MessageOrigin.HIDDEN_SELECTION)).toHaveLength(1);
   });
 
   it('KONTROLLE: sichtbar ⇒ beide Verstoesse erscheinen (die Fixture traegt beide Grenzen)', () => {

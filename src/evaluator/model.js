@@ -360,6 +360,11 @@ export function isSlotAnchorKind(anchorKind) {
  * - `AUTHOR_MESSAGE` — eine **Meldung des Katalog-Autors** (`field="error"`/
  *   `"warning"`/`"info"`). Traegt den Katalogtext mit aufgeloesten Text-Tokens
  *   (ADR-0028) und keines der Grenzen-Felder.
+ * - `HIDDEN_SELECTION` — eine **gewaehlte, aber effektiv versteckte Auswahl**
+ *   (`docs/battlescribe-data-format.md` §8, BSData-Wiki *Props: Hidden*: „any
+ *   already selected entries will cause error showing up in error list").
+ *   Traegt allein den Anker und keines der Grenzen-Felder — es gibt keine
+ *   Grenze, keinen Ist-Wert und keine Herleitung.
  *
  * Zwei getrennte Listen waeren zwei Wege zur selben Frage („was stimmt an dieser
  * Liste nicht?") — genau das schliesst ADR-0034 aus.
@@ -367,6 +372,7 @@ export function isSlotAnchorKind(anchorKind) {
 export const MessageOrigin = Object.freeze({
   DERIVED_LIMIT: 'derivedLimit',
   AUTHOR_MESSAGE: 'authorMessage',
+  HIDDEN_SELECTION: 'hiddenSelection',
 });
 
 /**

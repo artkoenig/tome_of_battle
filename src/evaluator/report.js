@@ -9,7 +9,8 @@
  *   Herkunfts-Diskriminator: aus einer Grenze **abgeleitete** Meldungen (das volle
  *   Ergebnis-Tripel je angeschlagener, **berichtsfaehiger** Grenze, samt Art der
  *   Grenze, Bezugsrahmen, Herleitungskette und den daraus gelesenen **Ursachen**,
- *   `causes.js`) und die **Autor-Meldungen** des Katalogs (`authorMessages.js`),
+ *   `causes.js`), die **Autor-Meldungen** des Katalogs (`authorMessages.js`) und
+ *   die **versteckten, aber gewaehlten Auswahlen** ({@link hiddenSelectionViolationsOf}),
  * - je Slot einen **Faehigkeitsdatensatz** (`SlotCapability`) fuer die
  *   UI-Steuerung: Definitions-ID, **Ankerart**, Rahmen-Bezug, **Herkunft**
  *   (`sourceId` — das Dokument, das die Definition dieses Slots deklariert;
@@ -51,7 +52,7 @@ import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
 import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
-import { classifyDerivedViolation, classifyAuthorMessage } from './violationClassification.js';
+import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
@@ -109,6 +110,41 @@ function authorViolationsOf(slots, context) {
     for (const message of capability.authorMessages) {
       violations.push(classifyAuthorMessage(node, message, context));
     }
+  }
+  return violations;
+}
+
+/**
+ * Die **versteckten, aber gewaehlten Auswahlen** als Meldungen derselben Liste
+ * (BSData-Wiki, *Props: Hidden*: eine versteckte Entitaet ist dem Nutzer nicht
+ * sichtbar, „and any already selected entries will cause error showing up in
+ * error list"; `docs/battlescribe-data-format.md` §8). Sie ist die
+ * **Gegenrichtung** zur Min-Unterdrueckung an versteckten Traegern
+ * (`constraints.js`, Issue 0088): dort wird nicht eingefordert, was gar nicht
+ * angeboten wird — hier wird gemeldet, was trotzdem in der Liste liegt.
+ *
+ * Gemeldet wird allein der **belegte** Slot: nur er ist eine Auswahl, die im
+ * Roster steht. Jede synthetische Ankerart faellt heraus — das Pflicht-Phantom
+ * und der Angebots-Anker halten gar keine Instanz, der Gruppen- und der
+ * Kategorie-Anker sind keine Auswahl, sondern ein Rahmen. Gelesen wird das
+ * `isHidden` des bereits gebauten Faehigkeitsdatensatzes, also **derselbe**
+ * effektive Zustand, den auch der Slot zeigt: er verknuepft die eigene
+ * Sichtbarkeit des Slots mit der jeder Sichtbarkeits-Klammer darueber
+ * ({@link import('./effectiveState.js').EffectiveState#isHidden}) und wird
+ * dynamisch, sobald ein `field="hidden"`-Modifikator greift — deckt der Katalog
+ * die Definition wieder auf, verschwindet die Meldung.
+ *
+ * Ein versteckter **Vorfahr** meldet fuer sich, nicht fuer seine Kinder: die
+ * versteckte Einheit erzeugt eine Meldung, ihre sichtbare Option darunter
+ * keine. Dieselbe Trennung zieht schon die Grenzen-Schicht („massgeblich ist
+ * das eigene effektive hidden des Traegers").
+ */
+function hiddenSelectionViolationsOf(slots, context) {
+  const violations = [];
+  for (const { node, capability } of slots) {
+    if (node.anchorKind !== AnchorKind.OCCUPIED) continue;
+    if (!capability.isHidden) continue;
+    violations.push(classifyHiddenSelection(node, context));
   }
   return violations;
 }
@@ -699,6 +735,9 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
         [...results, ...budgetViolations].filter(result => result.isReportable && !result.satisfied),
       ))).map(result => toDerivedViolation(result, classificationContext)),
       ...authorViolationsOf(slots, classificationContext),
+      // Die Gegenrichtung zur Min-Unterdrueckung: was versteckt ist, aber
+      // trotzdem in der Liste liegt ({@link hiddenSelectionViolationsOf}).
+      ...hiddenSelectionViolationsOf(slots, classificationContext),
     ],
     capabilities,
     // Die roster-weite Kostensumme je Kostenart (Kostenprojektion): jede
