@@ -106,6 +106,9 @@ describe('Info-Projektion: die eigenen Profile und Regeln eines Slots', () => {
       kind: InfoElementKind.PROFILE,
       id: PROFILE_ID,
       name: 'Krieger',
+      // Ohne `publicationId` und ohne `page` traegt der Eintrag keine Buchquelle
+      // (Issue 0102).
+      source: null,
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: PROFILE_TYPE_NAME,
       characteristics: [
@@ -122,6 +125,7 @@ describe('Info-Projektion: die eigenen Profile und Regeln eines Slots', () => {
       kind: InfoElementKind.RULE,
       id: RULE_ID,
       name: 'Furcht',
+      source: null,
       text: RULE_TEXT,
     });
   });
@@ -325,6 +329,7 @@ describe('Info-Projektion: ein Info-Verweis erscheint an der Stelle des Verweise
       kind: InfoElementKind.PROFILE,
       id: PROFILE_LINK_ID,
       name: LINK_NAME,
+      source: null,
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: PROFILE_TYPE_NAME,
       characteristics: [{ typeId: MOVE_TYPE_ID, name: MOVE_TYPE_NAME, value: '6' }],
@@ -345,6 +350,7 @@ describe('Info-Projektion: ein Info-Verweis erscheint an der Stelle des Verweise
       kind: InfoElementKind.RULE,
       id: RULE_LINK_ID,
       name: 'Verwiesene Regel',
+      source: null,
       text: 'Geteilter Text.',
     });
   });
@@ -439,6 +445,7 @@ describe('Info-Projektion: ohne Profiltyp-Deklaration bleiben die Klartext-Namen
       kind: InfoElementKind.PROFILE,
       id: PROFILE_ID,
       name: 'Krieger',
+      source: null,
       profileTypeId: PROFILE_TYPE_ID,
       profileTypeName: null,
       characteristics: [{ typeId: MOVE_TYPE_ID, name: null, value: '4' }],

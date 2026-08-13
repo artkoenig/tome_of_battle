@@ -589,6 +589,20 @@ export const DiagnosticKind = Object.freeze({
   // „Fehlerpfade sind explizit; nichts wird still verschluckt", §4). Die beiden
   // Ursachen unterscheidet {@link CatalogueUnreadableReason}.
   UNREADABLE_CATALOGUE: 'unreadableCatalogue',
+  // Eine `<cost>` traegt keine lesbare Kostenart (`typeId`) oder keinen lesbaren
+  // Zahlwert (`value`) und kann deshalb nicht in die Basiskosten eingehen.
+  // Frueher fiel sie kommentarlos weg — eine Einheit war dann still zu billig
+  // (Issue 0102, Punkt 7; „Fehlerpfade sind explizit; nichts wird still
+  // verschluckt", `docs/evaluator-architecture.md` §4).
+  UNREADABLE_COST: 'unreadableCost',
+  // Ein `<modifier>` traegt ein `scope`-Attribut, das ihn auf ein **anderes**
+  // Element richtet als seinen Traeger (z. B. `scope="unit"` an einem Upgrade).
+  // Die Engine wendet jeden Modifikator an seinem Traeger an
+  // (`docs/evaluator-architecture.md` §3.4, „Traeger"); ein abweichender Scope
+  // ist damit nicht umgesetzt und wird gemeldet, statt still am falschen Ort zu
+  // wirken (Issue 0102, Punkt 9). Das Attribut steht in keiner bekannten
+  // BSData-Schemaversion — es ist eine Katalog-Konvention, kein Vertrag.
+  UNSUPPORTED_MODIFIER_SCOPE: 'unsupportedModifierScope',
 });
 
 /**

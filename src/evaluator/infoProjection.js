@@ -11,9 +11,10 @@
  *
  * ── Was ein Eintrag traegt ───────────────────────────────────────────────────
  * Art (Profil oder Regel), die **ID des Vorkommens**, den **effektiven** Namen,
- * bei einem Profil zusaetzlich seinen Profiltyp und die Merkmale als Paare
- * *(Charakteristik-Typ mit Namen, effektiver Wert)*, bei einer Regel ihren
- * Regeltext.
+ * die **Buchquelle** (`source`: Buch mit Klartext-Namen und Seite, `null` ohne
+ * Angabe — Issue 0102), bei einem Profil zusaetzlich seinen Profiltyp und die
+ * Merkmale als Paare *(Charakteristik-Typ mit Namen, effektiver Wert)*, bei einer
+ * Regel ihren Regeltext.
  *
  * ── Wer die Klartext-Namen stellt ────────────────────────────────────────────
  * Die `<profileType>`-Deklarationen des Datensatzes, und nur sie. Das ist keine
@@ -76,6 +77,49 @@ export function createProfileTypeRegistry(profileTypes) {
 }
 
 /**
+ * Ein Nachschlagewerk der Quellen-Deklarationen: der Klartext-Name des Buchs
+ * hinter einer `publicationId`. Wie {@link createProfileTypeRegistry} **einmal je
+ * Bericht** gebaut, nicht je Slot.
+ *
+ * @param {ReadonlyArray<{ id: string, name: string }>} publications
+ * @returns {{ publicationNameOf: (id: string) => string|null }}
+ */
+export function createPublicationRegistry(publications) {
+  const namesById = new Map(publications.map(publication => [publication.id, publication.name]));
+  return Object.freeze({
+    publicationNameOf: id => namesById.get(id) ?? null,
+  });
+}
+
+/** Ein Datensatz ohne Quellen-Deklarationen — der Rueckfall fuer Aufrufer ohne. */
+const EMPTY_PUBLICATION_REGISTRY = createPublicationRegistry([]);
+
+/**
+ * Die **Buchquelle** eines Eintrags: Buch und Seite, wie sie das Datenformat
+ * fuehrt (`publicationId` + `page`, `docs/battlescribe-data-format.md` §5.2 und
+ * §13.3). `null`, wenn weder Buch noch Seite angegeben sind — eine leere Angabe
+ * waere von einer fehlenden nicht zu unterscheiden.
+ *
+ * Gelesen wird die Angabe des **Traegers**, und erst wo er keine hat, die seines
+ * Inhalts: dieselbe Richtung wie bei Identitaet und Name — ein per `infoLink`
+ * bezogenes Profil erscheint unter dem Verweis, und nennt der Verweis ein
+ * eigenes Buch, ist das seine Quelle. Der Klartext-Name kommt aus den
+ * `<publication>`-Deklarationen des Datensatzes und nur von dort; ist die Id dort
+ * unbekannt, bleibt der Name ehrlich `null` statt erfunden.
+ */
+function sourceOf(carrier, registry) {
+  const content = contentOf(carrier);
+  const publicationId = carrier.publicationId ?? content.publicationId ?? null;
+  const page = carrier.page ?? content.page ?? null;
+  if (publicationId === null && page === null) return null;
+  return {
+    publicationId,
+    publicationName: publicationId === null ? null : registry.publicationNameOf(publicationId),
+    page,
+  };
+}
+
+/**
  * Die Definition, die den **Inhalt** eines Traegers stellt: bei einem `infoLink`
  * sein aufgeloestes Ziel, sonst der Traeger selbst. Die **Identitaet** (ID, Name)
  * bleibt davon unberuehrt beim Traeger — ein ueber einen Verweis bezogenes Element
@@ -102,12 +146,13 @@ function entryKindOf(carrier) {
  * jeweils benannt ueber den Charakteristik-Typ, dazu der Profiltyp. Die Merkmale
  * stehen in Dokumentreihenfolge — sie ist die Spaltenordnung der Merkmalstabelle.
  */
-function buildProfileEntry({ node, carrier, effective, registry }) {
+function buildProfileEntry({ node, carrier, effective, registry, publicationRegistry }) {
   const profile = contentOf(carrier);
   return {
     kind: InfoElementKind.PROFILE,
     id: carrier.id,
     name: effective.nameOf(node, carrier),
+    source: sourceOf(carrier, publicationRegistry),
     profileTypeId: profile.typeId ?? null,
     profileTypeName: registry.profileTypeNameOf(profile.typeId),
     characteristics: effective.characteristicEntriesOf(node, carrier).map(({ typeId, value }) => ({
@@ -123,11 +168,12 @@ function buildProfileEntry({ node, carrier, effective, registry }) {
  * Er ist kein Modifikator-Ziel (kein Modifikator der Katalogdaten adressiert
  * `description`) und deshalb der Basiswert, nicht ein effektiver.
  */
-function buildRuleEntry({ node, carrier, effective }) {
+function buildRuleEntry({ node, carrier, effective, publicationRegistry }) {
   return {
     kind: InfoElementKind.RULE,
     id: carrier.id,
     name: effective.nameOf(node, carrier),
+    source: sourceOf(carrier, publicationRegistry),
     text: contentOf(carrier).text ?? null,
   };
 }
@@ -203,11 +249,14 @@ function collectInheritedInfoElements(node, context, entries) {
  * @param {import('./effectiveState.js').EffectiveState} effective  der effektive Zustand.
  * @param {{ profileTypeNameOf: Function, characteristicTypeNameOf: Function }} registry
  *   das Nachschlagewerk aus {@link createProfileTypeRegistry}.
+ * @param {{ publicationNameOf: Function }} [publicationRegistry]
+ *   das Nachschlagewerk aus {@link createPublicationRegistry}. Fehlt es, bleibt
+ *   jeder Klartext-Name einer Buchquelle `null`; Id und Seite stehen trotzdem.
  * @returns {Array<object>} die geordnete Liste der Eintraege.
  */
-export function infoElementsOf(node, effective, registry) {
+export function infoElementsOf(node, effective, registry, publicationRegistry = EMPTY_PUBLICATION_REGISTRY) {
   const entries = [];
-  const context = { effective, registry };
+  const context = { effective, registry, publicationRegistry };
   collectOwnInfoElements(node, context, entries);
   collectInheritedInfoElements(node, context, entries);
   return entries;

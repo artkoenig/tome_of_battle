@@ -339,7 +339,9 @@ export function evaluate(prepared, roster, options) {
 
     // `profileTypes` liefert die Klartext-Namen von Profiltyp und Charakteristik-Typ
     // fuer die Info-Projektion je Slot — die Deklarationen des Datensatzes sind ihre
-    // einzige Quelle (`infoProjection.js`). `categoryIds` ist dieselbe Menge, an der
+    // einzige Quelle (`infoProjection.js`). `publications` liefert ebendort den
+    // Klartext-Namen des Buchs hinter einer `publicationId` (Issue 0102).
+    // `categoryIds` ist dieselbe Menge, an der
     // das Query-Primitiv einen ID-Bezugsrahmen aufloest; die Einordnung einer
     // Verletzung liest daran ab, ob deren Rahmen eine Kategorie oder ein Eintrag ist.
     // `declaredCostTypeIds` sind die Kostenart-Deklarationen des Datensatzes —
@@ -352,6 +354,7 @@ export function evaluate(prepared, roster, options) {
       budgetViolations,
       unstableNodes,
       profileTypes: resolved.profileTypes,
+      publications: resolved.publications,
       categoryIds: resolved.categoryIds,
       declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
       sourceIdByDefId,

@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/issue-102-3gcm6x
 pr:
 ---
 
@@ -63,9 +63,47 @@ Acceptance criteria:
 
 ## Plan
 
+Eine Änderung an einer Stelle: der Katalog-Leser (`src/evaluator/catalogReader.js`)
+liest, was die Dokumentation benennt, oder meldet es als Diagnose. Was er liest,
+aber bewusst nicht auswertet, trägt er trotzdem in den aufbereiteten Datensatz —
+so bleibt der Verzicht ein benannter statt eines stillen Verlusts.
+
 ## Tasks
 
+- [x] **P1 `publications` / `publicationId` / `page`.** Wurzel-`<publications>` als
+  Datensatz-Angabe neben `costTypes`/`profileTypes` gelesen; `publicationId`/`page`
+  an der gemeinsamen `EntryBase`, also an jedem Element. Weg bis in den Bericht:
+  Leser → `mergeCatalogues` → Resolver → `buildReport` → Info-Projektion, wo jedes
+  Profil und jede Regel eine `source` tragen (Buch-Id, Klartext-Name, Seite; `null`
+  ohne Angabe). Den Klartext-Namen stellen allein die `<publication>`-Deklarationen.
+- [x] **P2 `defaultSelectionEntryId`.** An der Gruppe gelesen (`null` ohne Angabe),
+  nicht ausgewertet: Vorbelegen ist eine Regel des Bearbeitens, nicht des Prüfens.
+- [x] **P4 `collective`.** An Eintrag, Gruppe und Verweis gelesen (`isCollective`,
+  XSD-Vorgabe `false`), nicht ausgewertet — die Synchron-Regel bleibt Issue 0104.
+- [x] **P6 `readBoolean` liest `1`/`0`.** Die eine Lesestelle deckt jetzt beide
+  lexikalischen Formen von `xs:boolean` ab; `percentValue` und `primary` hatten
+  daneben je einen eigenen `=== 'true'`-Vergleich und gehen jetzt durch dieselbe.
+- [x] **P7 Kosten ohne lesbaren Wert.** Neue Diagnose `unreadableCost` mit Rohwert,
+  Kostenart und Träger — auch für eine `<cost>` ohne `typeId`.
+- [x] **P9 `modifier/@scope`.** Neue Diagnose `unsupportedModifierScope` mit Träger,
+  Feld, Wert und Rahmen; der rohe Wert steht als `scope` am Modifikator im
+  Datensatz. Der Modifikator wirkt weiterhin am Träger — sichtbar falsch statt
+  still falsch.
+- [x] Dokumentation nachgezogen: `docs/battlescribe-data-format.md` §5.2, §7.1,
+  §7.7, §10, §13.3 und die Datensatz-Verträge in `docs/evaluator-architecture.md`.
+- [x] Suite grün: `npx vitest run src/evaluator` → 97 Dateien, 1758 Tests, Exit 0
+  (vor den neuen Tests). Die Änderung berührt nur `src/evaluator/`, deshalb genügt
+  dieser Lauf (CLAUDE.md).
+
 ## Decisions
+
+- **AC 2 and AC 3 win over the scope cut for P6 and P7, 2026-08-13.** The cut below
+  lists P6 and P7 as "not to be worked", but AC 2 and AC 3 demand exactly them, and
+  AC 2 says outright that P6 "is a read error, not a waiver candidate". The
+  maintainer settled the contradiction: build P6 and P7 as well. Both are two-liners
+  and carry no risk. **Worked: P1, P2, P4, P6, P7, P9.** Still waived, with the
+  reason below: P3 (`import`), P5 (info children on a `categoryLink`), P8
+  (declared-but-never-priced cost types) — no real catalogue reaches them.
 
 - **Scope cut to the measured subset, 2026-08-12.** In scope: P1
   (`publications`/`publicationId`/`page`), P2 (`defaultSelectionEntryId`), P4
@@ -85,6 +123,24 @@ Acceptance criteria:
   Kataloge/BattleScribe schreiben `true`/`false`; Exposition derzeit nil.
 
 ## Log
+
+- 2026-08-13 (implementation) — **The issue's side-finding on P9 is wrong: the target
+  category is not dangling.** The file claims the target id `4990-1770-2328-effd` of
+  the `scope="unit"` category modifiers "is defined in no fixture file". It is:
+  `Dark Elves (6th definitive edition).cat:10239` declares
+  `<categoryEntry name="Slaanesh" id="4990-1770-2328-effd" hidden="false"/>`. The
+  earlier probe evidently searched for `<categoryEntry id=`, and that catalogue
+  writes `name` first. There is no second, hidden defect here — the only defect at
+  those eight modifiers is the ignored `scope`. The claim has been dropped from the
+  documentation rather than repeated.
+
+- 2026-08-13 (implementation) — Counted on the 12 frozen fixture catalogues, not on
+  the 36-document corpora (they are not in this repo): **8** `modifier/@scope`
+  (7 `unit`, 1 `force`), **86** non-empty `defaultSelectionEntryId`, **5**
+  `collective="true"`, **100** `<publication>` declarations — and **0** boolean
+  attributes written `1`/`0`, across all eleven boolean attributes of the format.
+  That last count confirms the 2026-08-12 sweep: P6 is real as a read error but has
+  no exposure in real data.
 
 - 2026-08-12 (real-data sweep) — **Reproduces, but only in four of the nine
   points; the other five have no data behind them.** Counted over both

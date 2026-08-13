@@ -44,6 +44,11 @@ const MERGED_COLLECTIONS = Object.freeze([
   // den Katalogen — also muessen sie ebenso wie die Definitionen ueber alle Quellen
   // hinweg in **einer** Sicht liegen (ADR-0032).
   'profileTypes',
+  // Die Quellen-Deklarationen: eine `publicationId` an einer Definition eines
+  // Katalogs kann ein Buch benennen, das die Spielsystemdatei deklariert. Wie die
+  // Profiltypen muessen sie deshalb ueber alle Quellen hinweg in **einer** Sicht
+  // liegen (ADR-0032, Issue 0102).
+  'publications',
   'diagnostics',
 ]);
 
@@ -51,13 +56,13 @@ const MERGED_COLLECTIONS = Object.freeze([
  * Fuehrt die gelesenen Dokumente in der uebergebenen Reihenfolge zu einem
  * katalog-foermigen Aggregat zusammen (reine, seiteneffektfreie Aggregation).
  *
- * @param {Array<{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], diagnostics?: object[] }>} documents
+ * @param {Array<{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], publications?: object[], diagnostics?: object[] }>} documents
  *   Die gelesenen Dokumente, bereits in deterministischer Reihenfolge (Spielsystem
  *   zuerst, dann die Kataloge in Aufruf-Reihenfolge).
- * @returns {{ entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], profileTypes: object[], diagnostics: object[] }}
+ * @returns {{ entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], profileTypes: object[], publications: object[], diagnostics: object[] }}
  */
 export function mergeCatalogues(documents) {
-  const merged = { entries: [], forces: [], categories: [], sharedEntries: [], infos: [], profileTypes: [], diagnostics: [] };
+  const merged = { entries: [], forces: [], categories: [], sharedEntries: [], infos: [], profileTypes: [], publications: [], diagnostics: [] };
   for (const document of documents) {
     for (const name of MERGED_COLLECTIONS) {
       merged[name].push(...(document[name] ?? []));

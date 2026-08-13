@@ -695,8 +695,8 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * Knoten. Wer erneut aufloesen will, parst erneut — oder, besser, verwendet den
  * aufbereiteten Datensatz wieder (`datasetPreparation.js`).
  *
- * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], diagnostics: object[] }}
+ * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], publications?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], publications: object[], diagnostics: object[] }}
  * @throws {TypeError} Wenn die uebergebenen Knoten schon aufgeloest (und damit
  *   eingefroren) sind — siehe Vorbedingung. Geprueft wird vor dem ersten
  *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
@@ -783,6 +783,11 @@ export function resolveCatalogue(catalogue) {
     // `profile/@typeName` dagegen optional). Die Info-Projektion des Berichts
     // liest sie; ausgewertet wird an ihnen nichts.
     profileTypes: catalogue.profileTypes ?? [],
+    // Die Quellen-Deklarationen wandern ebenso unveraendert durch: sie sind die
+    // einzige Quelle des Klartext-Namens hinter einer `publicationId`. Die
+    // Info-Projektion des Berichts liest sie; ausgewertet wird an ihnen nichts
+    // (Issue 0102).
+    publications: catalogue.publications ?? [],
     diagnostics,
   }, definitionNodes, infoRoots);
 }
