@@ -1,7 +1,7 @@
 ---
 status: active
 branch: claude/was-ist-hier-zu-tun-dy2le2
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/227
 ---
 
 # Gewählte, effektiv versteckte Auswahl erzeugt keinen Fehler
