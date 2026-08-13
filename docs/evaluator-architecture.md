@@ -222,6 +222,11 @@ record ModifierDef    { field: string,                    // roher XSD-`field`, 
                                                            // null, wenn `field` nicht deutbar ist (Diagnose)
                         kind: ModifierKind, value,
                         join: string?,                     // Trennzeichen für append/prepend (vendored)
+                        scope: ScopeRef?,                  // roh mitgeführt, NICHT ausgewertet: ein
+                                                           // Modifikator wirkt an seinem Träger (§3.4).
+                                                           // Ein gesetzter scope ist in keiner bekannten
+                                                           // Schemaversion definiert und erzeugt beim
+                                                           // Lesen `unsupportedModifierScope` (Issue 0102)
                         conditions: ConditionDef[], conditionGroups: ConditionGroupDef[],
                         repeats: RepeatDef[] }
                         // Reihenfolge im Array == Dokumentreihenfolge
@@ -253,6 +258,7 @@ record ModifierGroupDef  { modifiers: ModifierDef[], modifierGroups: ModifierGro
 // genommen, siehe docs/battlescribe-data-format.md §8).
 record InfoElement    { kind: profile | rule | infoGroup | infoLink, id, name, isHidden: bool,
                         hiddenAttribute: bool?,
+                        publicationId: Id?, page: string?,  // die Quellenangabe der EntryBase
                         modifiers: ModifierDef[], modifierGroups: ModifierGroupDef[],
                         characteristics: Characteristic[],  // nur profile
                         typeId: ProfileTypeId,              // nur profile
@@ -265,13 +271,28 @@ record ProfileType    { id, name, characteristicTypes: { id, name }[] }   // die
 
 record InfoEntry      { kind: profile | rule, id, name,     // id/name des VORKOMMENS (bei einem
                         // Verweis der Verweis selbst), name effektiv
+                        source: { publicationId: Id?, publicationName: string?,
+                                  page: string? }?,         // die Buchquelle; null ohne jede
+                        // Angabe. Gelesen wird die des TRÄGERS, erst ersatzweise die seines
+                        // Inhalts — wie bei Id und Name. Den Klartext-Namen stellen allein die
+                        // <publication>-Deklarationen des Datensatzes; unbekannte Id ⇒ null
                         profileTypeId, profileTypeName,     // nur profile
                         characteristics: { typeId, name, value }[],   // nur profile, value effektiv
                         text: string? }                     // nur rule
 
+record Publication    { id, name, shortName: string?, publisher: string?,
+                        publicationDate: string?, publisherUrl: string? }  // die EINE Quelle des
+                        // Klartext-Namens hinter einer publicationId (Datenformat §5.2)
+
 record ResolvedDef  { id, kind: ENTRY | GROUP | FORCE_DEF | CATEGORY_DEF,
                       baseCosts: Map<CostTypeId, number>, baseCategoryIds: Set<CategoryId>,
                       limits: LimitDef[], modifiers: ModifierDef[],
+                      publicationId: Id?, page: string?,   // die Quellenangabe der EntryBase
+                      isCollective: bool,                  // nur ENTRY/GROUP/ENTRY_LINK; gelesen,
+                                                           // aber nicht ausgewertet (Datenformat §10)
+                      defaultSelectionEntryId: Id?,        // nur GROUP; die Vorbelegung einer
+                                                           // Pflichtgruppe — eine Regel des Bearbeitens,
+                                                           // nicht des Prüfens (Datenformat §7.1)
                       children: ResolvedDef[], resolutionLog: Diagnostic[] }
 
 record InstanceNode { defId: Id, count: number, catalogueId: Id?, children: InstanceNode[] }

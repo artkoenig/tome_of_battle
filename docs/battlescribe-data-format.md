@@ -230,6 +230,14 @@ systemweit geteilten Definitionen wie Kostenarten und Profil-Typen abgelegt.
 Profile, Regeln und Einträge referenzieren eine Publication per `publicationId` und geben oft
 zusätzlich eine Seitenzahl (`page`) an. So lässt sich jeder Wert auf eine Buchquelle zurückführen.
 
+> **Der Evaluator liest sie** (Issue 0102). Die `<publication>`-Deklarationen sind die **eine**
+> Quelle des Klartext-Namens hinter einer `publicationId` — wie die `<profileType>`-Deklarationen
+> die des Merkmalsnamens. `publicationId` und `page` hängen an der gemeinsamen `EntryBase` und
+> werden deshalb an **jedem** Element gelesen; in den Bericht trägt sie die Info-Projektion je
+> Profil und je Regel (`source`: Buch-Id, Klartext-Name, Seite; `null` ohne jede Angabe). Die
+> Deklarationen stehen üblicherweise in der `.gst`, die `publicationId` im `.cat` — der Weg führt
+> also über die Zusammenführung der Quellen.
+
 ### 5.3 Cost Types (Kostenarten)
 
 Ein `costType` abstrahiert eine **abzählbare Ressource** — meist Punkte, aber auch beliebige andere:
@@ -474,6 +482,12 @@ Auswertung von `defaultSelectionEntryId`:
   — nicht die erste in der Liste.
 - Fehlt das Attribut oder ist es ungültig, fällt das System auf die **erste verfügbare Option** der
   Gruppe zurück.
+
+> **Der Evaluator liest es, wendet es aber nicht an** (Issue 0102). Vorbelegen ist eine Regel des
+> **Bearbeitens** — der Evaluator wählt nichts aus, er beurteilt Gewähltes. Der Wert steht deshalb
+> im aufbereiteten Datensatz an der Gruppe (`defaultSelectionEntryId`, `null` ohne Angabe) und ist
+> für die Oberfläche da; eine Liste, die die vorbelegte Option nicht enthält, ist kein Verstoß.
+> Der Verzicht ist damit ein benannter, kein stiller.
 
 > **Wichtige Domänenregel:** Optionale Upgrades (kein `min > 0`) dürfen ihre Profile/Regeln **nicht**
 > automatisch auf die Elterneinheit aufaddieren, bevor der Spieler sie tatsächlich wählt. Sonst wird
@@ -758,6 +772,24 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 | `field` | *Constraint-`id`* \| *`<costTypeId>`* \| `hidden` \| `name` \| `category` \| `error` \| `warning` \| `info` \| *`<characteristicTypeId>`* | Was geändert wird. `category` (zusammen mit `add`/`remove`) ändert die Kategoriezugehörigkeit zur Laufzeit. `error`/`warning`/`info` (zusammen mit `type="add"`) tragen keinen Feldwert, sondern einen Klartext-Hinweis für den Spieler (siehe unten). |
 | `value` | Zahl/Text | Der anzuwendende Wert. Bei `append`/`prepend` der anzufügende Text. |
 | `join` | Text (optional, nur `append`/`prepend`) | Trennzeichen zwischen dem bestehenden Namen und dem angehängten/vorangestellten Text. **Wird verbatim übernommen, nicht angenommen** — reale Kataloge nutzen neben einem einfachen Leerzeichen auch NBSP (`&#160;`) und `"&#160;+&#160;"`. Fehlt das Attribut, wird ohne Trennzeichen zusammengefügt (siehe den Widerspruchs-Kasten unten). |
+| `scope` | Bezugsrahmen (optional, **nicht schema-definiert**) | Auf *welches* Element der Modifier wirken soll, statt auf seinen Träger — siehe den Kasten unten. |
+
+> **`scope` an einem `modifier` — in der `Catalogue.xsd` nicht definiert, in echten Daten belegt.**
+> Die vendored `Catalogue.xsd` dieses Projekts kennt kein `scope`-Attribut an `<modifier>`; sie führt
+> es nur an `constraint`, `condition` und `repeat`. Belegt ist es trotzdem: **8 Vorkommen** in den
+> 12 eingefrorenen Fixture-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`), davon 7×
+> `scope="unit"` und 1× `scope="force"`. Beispiel `<modifier type="add" field="category"
+> value="4990-1770-2328-effd" scope="unit"/>` an „Mark of Slaanesh" (`Dark Elves` 5×,
+> `Vampire Counts` 1×) — die Absicht ist erkennbar: die Kategorie „Slaanesh" soll die **Einheit**
+> bekommen, nicht das tragende Upgrade.
+>
+> **Der Evaluator setzt das nicht um, aber er verschweigt es nicht** (Issue 0102, Punkt 9). Ein
+> Modifikator wirkt in dieser Engine an dem Element, an dem er hängt
+> ([`docs/evaluator-architecture.md`](evaluator-architecture.md) §3.4, „Träger") — eine Regel, die aus
+> den Daten belegt ist und an der die ganze Effektiv-Werte-Schicht hängt. Ein abweichender `scope`
+> erzeugt deshalb beim Lesen die Diagnose `unsupportedModifierScope` (mit Träger, Feld, Wert und
+> Rahmen), und der rohe Wert steht als `scope` am Modifikator im aufbereiteten Datensatz. Der
+> Modifikator wirkt weiterhin am Träger — sichtbar falsch statt still falsch.
 
 > **Widerspruch zum Wiki (`append` ohne `join`):** Das Wiki behauptet für `Append`: *„A space is
 > implicitly added between `Field` and `Value`"*
@@ -1378,9 +1410,10 @@ Das `collective`-Flag auf einem Eintrag hat **zwei** Funktionen:
 > Instanzen — die Kosten- und Constraint-Mathematik (`child.number * parent.number`) läuft immer
 > durch (siehe [§7.5](#75-cost--cost-type)).
 
-> **Funktion 2 wird bewusst nicht geprüft (Issue 0104).** Die Engine liest `collective` nicht und
-> meldet keinen Befund, wenn zwei Geschwister-Instanzen mit gemeinsamem Elternknoten ein
-> `collective`-Kind verschieden gewählt haben. Zwei Gründe:
+> **Funktion 2 wird bewusst nicht geprüft (Issue 0104).** Die Engine **liest** `collective` seit
+> Issue 0102 (`isCollective` an Eintrag, Gruppe und Verweis, XSD-Vorgabe `false`), **wertet** es aber
+> nicht aus: sie meldet keinen Befund, wenn zwei Geschwister-Instanzen mit gemeinsamem Elternknoten
+> ein `collective`-Kind verschieden gewählt haben. Zwei Gründe:
 > - **Es ist im Referenzprogramm eine Bearbeitungs-, keine Prüfregel.** Das Wiki beschreibt sie als
 >   Angleichung beim Wählen („wählt ein Ninja sie, müssen alle Ninjas sie nehmen"), nicht als
 >   Verstoß, den ein Validator im Nachhinein feststellt. Eine Liste, die die Regel verletzt, kann im
@@ -1520,8 +1553,17 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `id` | eindeutige Kennung (UUID-artig) |
 | `name` | Anzeigename (nicht eindeutig, nicht als Schlüssel nutzen) |
 | `hidden` | Sichtbarkeit (per Modifier dynamisierbar) |
-| `publicationId` + `page` | Quellenangabe |
+| `publicationId` + `page` | Quellenangabe (Buch aus `<publications>`, Seite) |
 | `revision` (nur Wurzel) | Versionszähler für Update-Erkennung |
+
+**Boolean-Attribute sind `xs:boolean`.** Damit sind **vier** lexikalische Formen gültig: `true`,
+`false`, `1` und `0`. BattleScribe selbst schreibt durchgängig `true`/`false`, und in den
+eingefrorenen Fixture-Katalogen kommt die Kurzform an **keinem** Boolean-Attribut vor (gezählt über
+`hidden`, `shared`, `includeChildSelections`, `includeChildForces`, `percentValue`, `primary`,
+`collective`, `library`, `import`, `roundUp`, `importRootEntries`: 0 Treffer). Gültiges XML ist sie
+trotzdem, und wer sie nicht liest, hält ein `hidden="1"` still für sichtbar. Der Evaluator liest
+deshalb beide Formen an **einer** Stelle (`readBoolean`, `src/evaluator/catalogReader.js`) —
+und damit an jedem dieser Attribute gleich (Issue 0102, Punkt 6).
 
 ---
 

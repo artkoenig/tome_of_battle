@@ -13,14 +13,22 @@
  * und Kategorien kennt. Dazu die **Datensatz-Metadaten** der Katalogwurzel, die
  * ohne Roster gebraucht werden (ADR-0034): die Kostenart-Deklarationen
  * (`costTypes`), die Profiltypen mit ihren Charakteristik-Typen (`profileTypes` —
- * die Quelle der IDs, ueber die ein Modifikator eine Charakteristik adressiert) und
- * das `library`-Kennzeichen. Dazu die **gemeinsame `EntryBase`-Basis** jedes
- * Elements (Catalogue.xsd:102-115) — ID, Name, `hidden`, Modifikatoren und
+ * die Quelle der IDs, ueber die ein Modifikator eine Charakteristik adressiert),
+ * die Quellen-Deklarationen (`publications` — die Buecher, auf die eine
+ * `publicationId` verweist) und das `library`-Kennzeichen. Dazu die **gemeinsame
+ * `EntryBase`-Basis** jedes Elements (Catalogue.xsd:102-115) — ID, Name,
+ * `hidden`, Quellenangabe (`publicationId`/`page`), Modifikatoren und
  * Modifikatorgruppen —, die damit auch an Profilen, Regeln, Info-Gruppen und
  * Info-Verweisen gelesen wird, sowie den **Regeltext** einer Regel
  * (`<description>`), den die Info-Projektion des Berichts durchreicht. Kein
  * ZIP-Entpacken, kein XSD-Gate, keine Link-Ketten/Importe
  * (Resolver-Ausbaustufen spaeter).
+ *
+ * **Lesen oder diagnostizieren** (Issue 0102, `docs/evaluator-architecture.md`
+ * §4): was die BSData-Dokumentation benennt, liest dieser Leser — oder er meldet
+ * es. Was er bewusst nicht *auswertet*, traegt er trotzdem in den aufbereiteten
+ * Datensatz (`collective`, `defaultSelectionEntryId`, `modifier/@scope`), damit
+ * die Entscheidung eine benannte bleibt und kein stiller Verlust wird.
  */
 
 import {
@@ -101,6 +109,10 @@ const Tag = Object.freeze({
   SHARED_PROFILES: 'sharedProfiles',
   SHARED_RULES: 'sharedRules',
   SHARED_INFO_GROUPS: 'sharedInfoGroups',
+  // Die Quellen-Deklarationen des Datensatzes (Wurzelelement, Catalogue.xsd:649,
+  // 719): die Buecher, auf die `publicationId` verweist.
+  PUBLICATIONS: 'publications',
+  PUBLICATION: 'publication',
 });
 
 const Attr = Object.freeze({
@@ -147,6 +159,24 @@ const Attr = Object.freeze({
   // Community-Konvention ausserhalb der vendored Catalogue.xsd: die vom
   // Katalogautor empfohlene Anzeigereihenfolge unter Geschwistern (Issue 0133).
   SORT_INDEX: 'sortIndex',
+  // Die Quellenangabe jeder Definition und jedes Info-Elements
+  // (`PublicationRefAttGroup`, Catalogue.xsd:43-46, an `EntryBase` gebunden):
+  // welches Buch, welche Seite (Issue 0102, Punkt 1).
+  PUBLICATION_ID: 'publicationId',
+  PAGE: 'page',
+  // Weitere Angaben einer `<publication>`-Deklaration (Catalogue.xsd:24-35).
+  SHORT_NAME: 'shortName',
+  PUBLISHER: 'publisher',
+  PUBLICATION_DATE: 'publicationDate',
+  PUBLISHER_URL: 'publisherUrl',
+  // `SelectionEntryBase`-Attribut (Catalogue.xsd:283): der Eintrag wird als
+  // **eine** gestapelte Zeile dargestellt und mit seinen Geschwister-Instanzen
+  // synchronisiert (`docs/battlescribe-data-format.md` §10, Issue 0102 Punkt 4).
+  COLLECTIVE: 'collective',
+  // `selectionEntryGroup`-Attribut (Catalogue.xsd:319): die Option, die bei einer
+  // Pflichtgruppe (`min > 0`) vorbelegt wird
+  // (`docs/battlescribe-data-format.md` §7.1, Issue 0102 Punkt 2).
+  DEFAULT_SELECTION_ENTRY_ID: 'defaultSelectionEntryId',
 });
 
 /** Die gueltigen `type`-Werte einer Bedingung (SSOT-Enum {@link ConditionKind}). */
@@ -192,8 +222,25 @@ const DEFAULT_HIDDEN = false;
 /** XSD-Vorgabe des `library`-Attributs: ein spielbarer Katalog (Catalogue.xsd:762). */
 const DEFAULT_LIBRARY = false;
 
-const BOOLEAN_TRUE_XML = 'true';
-const BOOLEAN_FALSE_XML = 'false';
+/** XSD-Vorgabe des `collective`-Attributs: nicht gestapelt (Catalogue.xsd:283). */
+const DEFAULT_COLLECTIVE = false;
+
+/** XSD-Vorgabe des `primary`-Attributs eines `categoryLink` (Catalogue.xsd:388). */
+const DEFAULT_PRIMARY = false;
+
+/** XSD-Vorgabe des `percentValue`-Attributs der `QueryBase` (Catalogue.xsd:428). */
+const DEFAULT_PERCENT_VALUE = false;
+
+/**
+ * Die vier lexikalischen Formen, die `xs:boolean` fuer wahr bzw. falsch zulaesst.
+ * BattleScribe schreibt durchgaengig `true`/`false` — die Kurzformen `1`/`0` sind
+ * aber ebenso gueltiges XML, und sie **nicht** zu lesen hiess, ein `hidden="1"`
+ * still als sichtbar zu behandeln und ein `hidden="0"` als „nicht gesetzt", das
+ * damit das Basis-`hidden` seines Verweisziels erbt statt es zu ueberschreiben
+ * (Issue 0102, Punkt 6).
+ */
+const BOOLEAN_TRUE_XML = Object.freeze(new Set(['true', '1']));
+const BOOLEAN_FALSE_XML = Object.freeze(new Set(['false', '0']));
 const XML_MIME_TYPE = 'application/xml';
 
 /**
@@ -267,14 +314,19 @@ function wrappedChildren(element, wrapperTag, tagName) {
 }
 
 /**
- * Liest ein Boolean-Attribut mit gegebener Vorgabe. Ein fehlendes oder leeres
- * Attribut faellt auf `defaultValue` zurueck (Battlescribe-XSD-Vorgaben, z. B.
- * `shared` standardmaessig true).
+ * Liest ein Boolean-Attribut mit gegebener Vorgabe. Gelesen werden **beide**
+ * lexikalischen Formen, die `xs:boolean` kennt (`true`/`false` und `1`/`0`); ein
+ * fehlendes, leeres oder anders geschriebenes Attribut faellt auf `defaultValue`
+ * zurueck (Battlescribe-XSD-Vorgaben, z. B. `shared` standardmaessig true).
+ *
+ * Diese **eine** Lesestelle gilt fuer jedes Boolean-Attribut des Formats — auch
+ * fuer `percentValue` und `primary`, die frueher je einen eigenen
+ * `=== 'true'`-Vergleich hatten und die Kurzform damit nicht kannten.
  */
 function readBoolean(element, attr, defaultValue) {
   const raw = element.getAttribute(attr);
-  if (raw === BOOLEAN_TRUE_XML) return true;
-  if (raw === BOOLEAN_FALSE_XML) return false;
+  if (BOOLEAN_TRUE_XML.has(raw)) return true;
+  if (BOOLEAN_FALSE_XML.has(raw)) return false;
   return defaultValue;
 }
 
@@ -317,7 +369,7 @@ function readConstraint(constraintEl, diagnostics) {
   const field = readField(constraintEl.getAttribute(Attr.FIELD));
   const scope = readScope(constraintEl.getAttribute(Attr.SCOPE));
   const value = unlimitedFromSentinel(Number.parseFloat(constraintEl.getAttribute(Attr.VALUE)));
-  const isPercent = constraintEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML;
+  const isPercent = readBoolean(constraintEl, Attr.PERCENT_VALUE, DEFAULT_PERCENT_VALUE);
 
   if (kind === undefined || field === undefined || scope === undefined || Number.isNaN(value)) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_CONSTRAINT, {
@@ -341,15 +393,28 @@ function readLimits(entryEl, diagnostics) {
 /**
  * Liest die Basiskosten eines Eintrags als Abbildung Kostenart-ID → Wert.
  * Kostenarten werden **per ID** (`typeId`), nie per Name, gefuehrt.
+ *
+ * Eine `<cost>` ohne lesbare Kostenart oder ohne lesbaren Zahlwert geht **nicht**
+ * in die Kosten ein — aber sie faellt nicht mehr kommentarlos weg, sondern
+ * meldet {@link DiagnosticKind.UNREADABLE_COST} mit ihren Rohattributen und dem
+ * Traeger, an dem sie haengt (Issue 0102, Punkt 7). Still weggelassen hiesse:
+ * die Einheit ist zu billig, und niemand sieht warum.
  */
-function readCosts(entryEl) {
+function readCosts(entryEl, diagnostics, carrier) {
   const costs = {};
   for (const costEl of wrappedChildren(entryEl, Tag.COSTS, Tag.COST)) {
     const costTypeId = costEl.getAttribute(Attr.TYPE_ID);
     const value = Number.parseFloat(costEl.getAttribute(Attr.VALUE));
-    if (costTypeId !== null && !Number.isNaN(value)) {
-      costs[costTypeId] = value;
+    if (costTypeId === null || costTypeId === '' || Number.isNaN(value)) {
+      diagnostics.push(diagnostic(DiagnosticKind.UNREADABLE_COST, {
+        typeId: costTypeId,
+        value: costEl.getAttribute(Attr.VALUE),
+        carrierId: carrier.id,
+        carrierName: carrier.name,
+      }));
+      continue;
     }
+    costs[costTypeId] = value;
   }
   return costs;
 }
@@ -376,7 +441,7 @@ function readCategoryIds(entryEl) {
  */
 function readPrimaryCategoryId(entryEl) {
   for (const linkEl of wrappedChildren(entryEl, Tag.CATEGORY_LINKS, Tag.CATEGORY_LINK)) {
-    if (linkEl.getAttribute(Attr.PRIMARY) !== 'true') continue;
+    if (!readBoolean(linkEl, Attr.PRIMARY, DEFAULT_PRIMARY)) continue;
     const targetId = linkEl.getAttribute(Attr.TARGET_ID);
     if (targetId !== null && targetId !== '') return targetId;
   }
@@ -463,7 +528,7 @@ function readCondition(conditionEl, diagnostics, carrier) {
     scope,
     targetChildId: conditionEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : conditionEl.getAttribute(Attr.CHILD_ID),
     value: Number.isNaN(value) ? null : value,
-    isPercent: conditionEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
+    isPercent: readBoolean(conditionEl, Attr.PERCENT_VALUE, DEFAULT_PERCENT_VALUE),
     flags: readFlags(conditionEl),
   };
 }
@@ -561,7 +626,7 @@ function readRepeat(repeatEl, diagnostics, carrier) {
     scope,
     targetChildId: repeatEl.getAttribute(Attr.CHILD_ID) === 'any' ? null : repeatEl.getAttribute(Attr.CHILD_ID),
     perValue,
-    isPercent: repeatEl.getAttribute(Attr.PERCENT_VALUE) === BOOLEAN_TRUE_XML,
+    isPercent: readBoolean(repeatEl, Attr.PERCENT_VALUE, DEFAULT_PERCENT_VALUE),
     repeats,
     roundUp: readBoolean(repeatEl, Attr.ROUND_UP, false),
     flags: readFlags(repeatEl),
@@ -605,11 +670,27 @@ function readModifier(modifierEl, diagnostics, carrier) {
     diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER, { type: kind, field, value }));
     return null;
   }
+  const scope = readScope(modifierEl.getAttribute(Attr.SCOPE));
+  if (scope !== undefined) {
+    diagnostics.push(diagnostic(DiagnosticKind.UNSUPPORTED_MODIFIER_SCOPE, {
+      type: kind,
+      field,
+      value,
+      scope,
+      carrierId: carrier.id,
+      carrierName: carrier.name,
+    }));
+  }
   const guardHealth = { unreadable: false };
   return {
     kind,
     field,
     value,
+    // Roh mitgefuehrt, nicht ausgewertet: die Engine wendet jeden Modifikator an
+    // seinem **Traeger** an (`docs/evaluator-architecture.md` §3.4). Ein
+    // abweichender Scope ist deshalb oben schon als Diagnose gemeldet; hier steht
+    // er, damit der aufbereitete Datensatz ihn traegt statt ihn zu verlieren.
+    scope: scope ?? null,
     // `null`, wenn der Katalog kein Trennzeichen deklariert: dann wird der Text
     // ohne Trenner angefuegt.
     join: modifierEl.getAttribute(Attr.JOIN),
@@ -701,9 +782,27 @@ function readEntryBase(element, diagnostics) {
     name,
     isHidden: readBoolean(element, Attr.HIDDEN, DEFAULT_HIDDEN),
     hiddenAttribute: readBoolean(element, Attr.HIDDEN, undefined),
+    // Die Quellenangabe (`PublicationRefAttGroup`, Catalogue.xsd:43-46): welches
+    // Buch, welche Seite. Sie haengt an derselben `EntryBase` wie `hidden` und
+    // gilt damit fuer Eintraege, Gruppen, Verweise, Kontingente, Kategorien
+    // **und** Info-Elemente. Der Evaluator wertet sie nicht aus; er traegt sie
+    // bis in die Info-Projektion des Berichts (`infoProjection.js`), damit ein
+    // Profil oder eine Regel ihre Buchquelle nennen kann (Issue 0102, Punkt 1).
+    publicationId: readOptionalAttribute(element, Attr.PUBLICATION_ID),
+    page: readOptionalAttribute(element, Attr.PAGE),
     modifiers: readModifiers(element, diagnostics, carrier),
     modifierGroups: readModifierGroups(element, diagnostics, carrier),
   };
+}
+
+/**
+ * Ein optionales Attribut als Wert oder `null` — ein leer hingeschriebenes
+ * Attribut zaehlt wie ein fehlendes. Die eine Lesart aller Attribute, die eine
+ * Angabe *oder* nichts sind (Quellenangabe, Vorbelegung, Ziel-IDs).
+ */
+function readOptionalAttribute(element, attr) {
+  const raw = element.getAttribute(attr);
+  return raw === null || raw === '' ? null : raw;
 }
 
 /**
@@ -853,14 +952,32 @@ function readProfileTypes(root) {
   return wrappedChildren(root, Tag.PROFILE_TYPES, Tag.PROFILE_TYPE).map(readProfileType);
 }
 
+/**
+ * Das `collective`-Kennzeichen eines Auswahl-Elements (`SelectionEntryBase`,
+ * Catalogue.xsd:283): gestapelte Darstellung und synchrone Auswahl unter
+ * Geschwistern (`docs/battlescribe-data-format.md` §10).
+ *
+ * Der Leser fuehrt es mit, die Auswertung liest es **nicht**: die Kosten- und
+ * Grenz-Mathematik laeuft laut §10 unabhaengig davon durch, und die
+ * Synchron-Regel ist ein dokumentierter Schnitt mit eigenem Issue (0104). Damit
+ * ist der Wert im aufbereiteten Datensatz vorhanden statt verschluckt — und die
+ * Entscheidung, ihn nicht auszuwerten, ist eine benannte statt einer stillen
+ * (Issue 0102, Punkt 4).
+ */
+function readCollective(element) {
+  return readBoolean(element, Attr.COLLECTIVE, DEFAULT_COLLECTIVE);
+}
+
 /** Liest einen `<selectionEntry>` samt Kosten, Kategorien, Grenzen und Modifikatoren. */
 function readEntry(entryEl, diagnostics) {
+  const base = readEntryBase(entryEl, diagnostics);
   return {
-    ...readEntryBase(entryEl, diagnostics),
+    ...base,
     kind: DefinitionKind.ENTRY,
     type: entryEl.getAttribute(Attr.TYPE),
+    isCollective: readCollective(entryEl),
     sortIndex: readSortIndex(entryEl),
-    costs: readCosts(entryEl),
+    costs: readCosts(entryEl, diagnostics, base),
     categoryIds: readCategoryIds(entryEl),
     primaryCategoryId: readPrimaryCategoryId(entryEl),
     limits: readLimits(entryEl, diagnostics),
@@ -881,6 +998,14 @@ function readGroup(groupEl, diagnostics) {
   return {
     ...readEntryBase(groupEl, diagnostics),
     kind: DefinitionKind.GROUP,
+    isCollective: readCollective(groupEl),
+    // Die vom Katalogautor benannte **Vorbelegung** der Gruppe
+    // (`docs/battlescribe-data-format.md` §7.1): welche Option zu erzeugen ist,
+    // wenn die Gruppe eine Mindestauswahl hat. Sie ist eine Regel des
+    // **Bearbeitens** — der Evaluator waehlt nichts aus, er beurteilt Gewaehltes
+    // —, und deshalb traegt der Leser sie in den aufbereiteten Datensatz, statt
+    // sie auszuwerten oder zu verschlucken (Issue 0102, Punkt 2).
+    defaultSelectionEntryId: readOptionalAttribute(groupEl, Attr.DEFAULT_SELECTION_ENTRY_ID),
     sortIndex: readSortIndex(groupEl),
     limits: readLimits(groupEl, diagnostics),
     infos: readInfos(groupEl, diagnostics),
@@ -901,12 +1026,14 @@ function readGroup(groupEl, diagnostics) {
  * Links/Eintraege werden mitgelesen.
  */
 function readEntryLink(entryLinkEl, diagnostics) {
+  const base = readEntryBase(entryLinkEl, diagnostics);
   return {
-    ...readEntryBase(entryLinkEl, diagnostics),
+    ...base,
     kind: DefinitionKind.ENTRY_LINK,
     targetId: entryLinkEl.getAttribute(Attr.TARGET_ID),
+    isCollective: readCollective(entryLinkEl),
     sortIndex: readSortIndex(entryLinkEl),
-    costs: readCosts(entryLinkEl),
+    costs: readCosts(entryLinkEl, diagnostics, base),
     categoryIds: readCategoryIds(entryLinkEl),
     primaryCategoryId: readPrimaryCategoryId(entryLinkEl),
     limits: readLimits(entryLinkEl, diagnostics),
@@ -1025,6 +1152,29 @@ function readCostTypes(root) {
 }
 
 /**
+ * Liest eine `<publication>` (Quellen-Deklaration des Datensatzes,
+ * Catalogue.xsd:24-35): das **Buch**, auf das die `publicationId` einer
+ * Definition oder eines Info-Elements verweist. Reine Datensatz-Angabe ohne
+ * Roster-Bezug, wie die Kostenarten und die Profiltypen — sie beschreibt, welche
+ * Quellen es gibt, nicht welche gelten.
+ */
+function readPublication(publicationEl) {
+  return {
+    id: publicationEl.getAttribute(Attr.ID),
+    name: publicationEl.getAttribute(Attr.NAME),
+    shortName: readOptionalAttribute(publicationEl, Attr.SHORT_NAME),
+    publisher: readOptionalAttribute(publicationEl, Attr.PUBLISHER),
+    publicationDate: readOptionalAttribute(publicationEl, Attr.PUBLICATION_DATE),
+    publisherUrl: readOptionalAttribute(publicationEl, Attr.PUBLISHER_URL),
+  };
+}
+
+/** Liest alle `<publication>`-Deklarationen der Katalogwurzel. */
+function readPublications(root) {
+  return wrappedChildren(root, Tag.PUBLICATIONS, Tag.PUBLICATION).map(readPublication);
+}
+
+/**
  * Liest einen `<forceEntry>` (Kontingent-Definition) samt eigener Grenzen und
  * geschachtelter Kontingente. Kontingente tragen keine Selektion bei; ihre
  * Kinder im Definitionsbaum sind ihre Unter-Kontingente.
@@ -1084,6 +1234,7 @@ function unreadableCatalogue(reason, sourceName, rootTag) {
     isLibrary: DEFAULT_LIBRARY,
     costTypes: [],
     profileTypes: [],
+    publications: [],
     entries: [],
     forces: [],
     categories: [],
@@ -1117,7 +1268,7 @@ function unreadableCatalogue(reason, sourceName, rootTag) {
  * @param {{ sourceName?: string|null }} [options] Optionaler Name der Quelle
  *   (z. B. der Dateiname). Er dient allein der Diagnose: taucht eine Datei als
  *   unlesbar auf, benennt die Diagnose sie ueber diesen Namen.
- * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], profileTypes: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
+ * @returns {{ id: string|null, name: string|null, gameSystemId: string|null, isLibrary: boolean, costTypes: object[], profileTypes: object[], publications: object[], entries: object[], forces: object[], categories: object[], sharedEntries: object[], infos: object[], catalogueLinks: object[], diagnostics: object[] }}
  */
 export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
   const diagnostics = [];
@@ -1136,6 +1287,7 @@ export function parseCatalogue(catalogXml, { sourceName = null } = {}) {
     isLibrary: readBoolean(root, Attr.LIBRARY, DEFAULT_LIBRARY),
     costTypes: readCostTypes(root),
     profileTypes: readProfileTypes(root),
+    publications: readPublications(root),
     entries: readSelectionChildren(root, diagnostics),
     forces: readForceEntries(root, diagnostics),
     categories: readCategoryEntries(root, diagnostics),

@@ -50,7 +50,7 @@
 import { AnchorKind, ConstraintKind, DefinitionKind, LimitMeasure, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
-import { createProfileTypeRegistry, infoElementsOf } from './infoProjection.js';
+import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
@@ -60,6 +60,9 @@ const NO_UNSTABLE_NODES = new Set();
 
 /** Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer. */
 const NO_PROFILE_TYPES = Object.freeze([]);
+
+/** Ohne Quellen-Deklarationen bleibt der Klartext-Name einer Buchquelle leer. */
+const NO_PUBLICATIONS = Object.freeze([]);
 
 /** Ohne bekannte Kategorie-IDs ist jeder ID-Bezugsrahmen ein Eintrags-Rahmen. */
 const NO_CATEGORY_IDS = new Set();
@@ -582,8 +585,8 @@ function headroomOf(maxResult) {
  * Slots und die effektive Primaerkategorie darunter (`null` = keine) — die
  * UI-Einsortierung liest sie aus dem Bericht, nie aus rohen Katalog-Links
  * (§8). Name, Autor-Meldungen und die **Info-Projektion** (`infoElements`: die fuer diesen
- * Slot geltenden Profile und Regeltexte, samt der von seinen belegten
- * Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die
+ * Slot geltenden Profile und Regeltexte mit ihrer Buchquelle, samt der von seinen
+ * belegten Unter-Auswahlen geerbten) kommen ebenfalls aus dem effektiven Zustand — die
  * Oberflaeche liest damit den Stand *nach* allen greifenden Modifikatoren, ohne
  * selbst zu rechnen (§4.8, Leitprinzip 3).
  *
@@ -593,7 +596,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, costProjection, sourceIdByDefId, anchorOccupancies }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, sourceIdByDefId, anchorOccupancies }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -639,7 +642,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
-    infoElements: infoElementsOf(node, effective, profileTypeRegistry),
+    infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry),
   };
 }
 
@@ -653,7 +656,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -664,6 +667,9 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  *   „Wert nicht stabil" markiert, damit die Unsicherheit am betroffenen Slot steht.
  *   `profileTypes`: die Profiltyp-Deklarationen des Datensatzes (`resolver.js`) —
  *   die Quelle der Klartext-Namen in der Info-Projektion je Slot.
+ *   `publications`: die Quellen-Deklarationen des Datensatzes (`resolver.js`) —
+ *   die Quelle des Buchnamens hinter der `publicationId` eines Info-Eintrags
+ *   (Issue 0102). Fehlen sie, bleibt jeder Buchname `null`, Id und Seite stehen.
  *   `categoryIds`: die bekannten Kategorie-IDs (`resolver.js`) — sie entscheiden,
  *   ob ein ID-Bezugsrahmen einer Grenze eine Kategorie oder einen Eintrag benennt
  *   (`violationClassification.js`), gelesen aus **derselben** Quelle wie im
@@ -685,6 +691,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     budgetViolations = [],
     unstableNodes = NO_UNSTABLE_NODES,
     profileTypes = NO_PROFILE_TYPES,
+    publications = NO_PUBLICATIONS,
     categoryIds = NO_CATEGORY_IDS,
     declaredCostTypeIds = NO_DECLARED_COST_TYPES,
     sourceIdByDefId = NO_DEFINITION_SOURCES,
@@ -698,6 +705,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     effective,
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
+    publicationRegistry: createPublicationRegistry(publications),
     costProjection,
     sourceIdByDefId,
     anchorOccupancies: categoryAnchorOccupancies,
