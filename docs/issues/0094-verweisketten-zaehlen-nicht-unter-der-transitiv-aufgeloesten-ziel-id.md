@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -41,11 +41,29 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 without a code change.** Not reproducible from catalogue
+  data: link chains of length >= 2 occur nowhere in the 36 real catalogue files.
+  The synthetic reproduction stays valid and is recorded in the Log; this is a
+  latent engine defect, not a user-facing one.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28), Fund mit ausgeführtem Repro gegen die echte Fassade.
   Ketten sind in den Fixture-Daten selten — Priorität entsprechend.
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: the shape does not exist in real
+  catalogue data.** Scanned both complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads, plus the 17 fixture books in this repository:
+  **10,391 `entryLink`s, not one of them targeting another `entryLink`.** Every
+  `targetId` resolves — 7,804 to a `selectionEntry`, 2,585 to a
+  `selectionEntryGroup`, 2 to a `rule` — the maximum chain depth is **1**, no
+  `targetId` dangles, and no id is claimed by two element kinds, so the zero is
+  not an artefact of a broken index. The engine defect is real and reproduces
+  synthetically (entries below); no catalogue this project reads can trigger it.
+  Reopen if a fork introduces link-on-link, or when a second game system arrives.
 
 - 2026-08-12 (re-check, independent probe) — **Reproduces, both criteria, with a
   control in the same run.** Synthetic catalogue `link-outer -> link-inner ->

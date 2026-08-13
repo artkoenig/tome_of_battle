@@ -57,6 +57,17 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data E2E) — **Reproduces at the report level, not only in the
+  rendering.** Definitive corpus, roster with **two** contingents of the same
+  definition, force A empty, force B holding "Skeletons": force A's own "Core"
+  category anchor (`0/21`) reads **`current=1`** although force A holds nothing,
+  and 4 of the 11 violations anchor under force A's path. The earlier probe
+  reached the same conclusion by reading `RosterCategorySection`; this one shows
+  the leak is already in the report the UI renders. The neighbouring engine
+  question stands unchanged: whether a `shared="true"` category limit at a
+  `forceEntry`'s `categoryLink` is meant to count another contingent's selections
+  is undecided, and it decides how much of this belongs in the UI at all.
+
 - 2026-08-12 (re-check, independent probe) — **Point 1 reproduces; point 2 is
   confirmed at the code, and a neighbouring engine question turned up.**
   - Point 1: `RosterValidationPanel` takes no `forcePath` prop at all

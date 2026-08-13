@@ -1,5 +1,5 @@
 ---
-status: active
+status: done
 branch: claude/offene-aufgaben-pk52qh
 pr:
 ---
@@ -126,6 +126,8 @@ Acceptance criteria:
   answer, this session.
 
 ## Log
+
+- 2026-08-12 — Status corrected: the work landed on `main` with 9a5b1bc (PR #222), which is also the last commit touching this file. Only the status line was stale.
 
 - 2026-08-12 — Taken up again on branch `claude/offene-aufgaben-pk52qh`. Issue
   0143 has meanwhile landed in `main` (PR #199), so the log entry below about

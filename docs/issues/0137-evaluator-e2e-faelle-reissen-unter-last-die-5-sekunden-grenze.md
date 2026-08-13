@@ -42,6 +42,11 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data sweep) — **Stays open, unchanged.** Nothing about this
+  file depends on catalogue data: the measurement above (538 passed quiet, 6
+  failed under 16 CPU burners, exit code flipping with the load) is the whole
+  claim, and `vitest.config.js` still sets no `testTimeout`.
+
 - 2026-08-12 (re-check, independent measurement) — **Reproduces; criterion 1 is
   demonstrably broken on this machine (4 cores).** Same file, same command,
   `npx vitest run src/evaluator/e2e.testcatalog.test.js`:

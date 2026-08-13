@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -77,6 +77,11 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 without a code change.** Round 4's finding reproduces
+  synthetically and stays recorded, but the only real category it could reach is
+  declared unlimited, in a book that is loaded anyway. Reopen if a fork gives a
+  cross-catalogue category a real limit.
+
 - 2026-07-30 — Dieses Issue entstand aus den Review-Runden 1–4 von Issue
   0098 (`docs/issues/0098-wurzel-eintraege-aller-kataloge-werden-katalogfremd-gepoolt.md`,
   `## Log`, Einträge datiert 2026-07-30). Technische Details der bisherigen
@@ -88,6 +93,20 @@ Acceptance criteria:
   sondern in diesem eigenständigen Issue zu bündeln.
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: no real limit sits in the gap.**
+  Cross-file dynamic category membership is common — 804 `modifier
+  type="add"/"remove" field="category"` in the definitive corpus and 52 in the
+  ergofang corpus name a category declared in another file — but nearly all of
+  them name a category of the **game system**, which is always loaded, and the
+  gap only bites for a category of another **`.cat`** that carries its own
+  limit. Narrowed to that: the definitive corpus holds **11** such modifiers,
+  all in `Ogre Kingdoms (6th definitive edition).cat`, all naming **one**
+  category — "Regiment of Renown" (`ee09-9a50-ad78-9c32`) in `Mercenaries (6th
+  definitive edition).cat` — whose only constraint is `max -1 scope="parent"`,
+  the unlimited sentinel. Ogre Kingdoms declares Mercenaries as a
+  `catalogueLink`, so that book is in scope anyway. The ergofang corpus holds
+  **0**. There is no real limit for the blind spot to swallow.
 
 - 2026-08-12 (re-check, independent probe) — **Reproduces, and the narrowing
   holds: it is a cross-catalogue defect only.** Category `cat-banned` with

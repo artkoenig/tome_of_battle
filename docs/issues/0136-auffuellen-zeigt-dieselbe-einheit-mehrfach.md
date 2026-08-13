@@ -42,6 +42,13 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data E2E) — **Reproduces on real data.** Definitive corpus,
+  "Skeletons" (`9ac2-f4c1-bcc3-3aee`) standing twice in one contingent: the
+  report carries two occupied slots, `0/0` and `0/1`, both with `current=2` and
+  unlimited headroom. One suggestion per slot with no dedup by definition
+  (`AutoFillSuggestions.jsx:109`) turns that into two rows a user cannot tell
+  apart, while the adder dedups the same pair by `seenDefIds`.
+
 - 2026-08-12 (re-check, independent probe) — **Reproduces verbatim.** An entry
   with `max 4 scope="force"`, 40 pts, standing twice with count 1: the report
   carries the slots `0/0` and `0/1`, both `occupied`, both `headroom 2`,

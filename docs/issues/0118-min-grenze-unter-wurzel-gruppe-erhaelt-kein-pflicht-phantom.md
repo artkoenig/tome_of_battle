@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -39,7 +39,22 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Closed 2026-08-12 without a code change.** The first acceptance criterion
+  asked for the data census before anything else; the census says the pattern
+  does not occur. The cut in `PHANTOM_DEFINITION_KINDS` stays as it is.
+
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: root groups do not exist in real
+  catalogues.** Across both complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads — there are **0
+  `selectionEntryGroup`s directly under a catalogue or game-system root** —
+  every book puts its root offers in
+  `selectionEntries` and `entryLinks`. The traversal cut at `GROUP` is therefore
+  unobservable from data, and the question this file opens ("do real catalogues
+  carry the pattern at all?") is answered: they do not.
 
 - 2026-08-12 (re-check, independent probe) — **Reproduces, with the control in
   the same run.** A `selectionEntry` carrying `min 1 scope="roster"` inside a

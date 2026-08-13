@@ -69,6 +69,22 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data E2E) — **Reproduces, and the corpus-wide measurement
+  narrows it sharply: this is an ergofang-only data defect.** Each fork loaded
+  complete (game system plus every book) and evaluated through the facade with an
+  empty contingent:
+  - **ergofang** (16 books, force `7d9d-6c8d-4ea0-b7ad`): Lord `effectiveMax`
+    **0** at 1500 pts (blocked), **null** at 2000 pts, **null** at 3000 pts — the
+    cap vanishes exactly when the list is big enough to need it, as this file
+    describes.
+  - **definitive** (18 books, force `e989-15b8-7eb6-9668`): Lord `effectiveMax`
+    **1** at 1500 and 2000 pts, **2** at 3000 pts — the cap works, and rises the
+    way the rules intend.
+  Earlier measurements in this file loaded five fixture books only; with the whole
+  fork loaded the definitive set reads correctly. So the engine is right (§7.6),
+  the ergofang encoding is wrong, and the definitive fork already carries the
+  encoding that works — which is both the proof and the template for the fix.
+
 - 2026-08-12 (re-check, independent probe) — **Reproduces exactly**, all five
   fixture catalogues of `src/__fixtures__/whfb6/` loaded, empty Vampire Counts
   contingent, the Lord `categoryLink` `223a-0bf6-f992-7db0`:

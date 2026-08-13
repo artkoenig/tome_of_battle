@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch:
 pr:
 ---
@@ -59,11 +59,25 @@ Begründung):
 
 ## Decisions
 
+- **Closed 2026-08-12 as "deliberately dropped".** The file itself put the
+  choice to the human: bring back or drop. Dropped — point 1 is covered by issue
+  0135, point 2 is ruled out by ADR-0034. Reopen with one sentence if the
+  combination search or the General-first ordering is wanted after all.
+
 - **Nicht in Issue 0121 nachgeholt.** Beides liegt außerhalb der dort
   freigegebenen acht Kriterien; die Regel „ein Fund außerhalb der
   Absicht geht an den Menschen" greift. *(Default, unanswered.)*
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Closed: both points are already answered
+  elsewhere.** Point 1: issue 0135 feeds the panel from the report's selectable
+  slots and shows the remaining sum from a 50-point gap upwards; what is gone is
+  the knapsack search, and no acceptance criterion ever asked for it. Point 2:
+  ADR-0034 assigns keyword heuristics to the catalogue fork, not to the app —
+  the data behind it is real (ergofang `Vampire Counts.cat` carries six entries
+  named "General"), which makes it a fork-side naming problem, exactly the class
+  the ADR routes away from the application.
 
 - 2026-08-12 (re-check, independent probe) — **Point 1 is a decision, not a
   defect any more; point 2 reproduces.**

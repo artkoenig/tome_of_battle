@@ -67,6 +67,12 @@ Acceptance criteria:
 
 ## Decisions
 
+- **Scope cut to the measured subset, 2026-08-12.** In scope: P1
+  (`publications`/`publicationId`/`page`), P2 (`defaultSelectionEntryId`), P4
+  (`collective`), P9 (`modifier/@scope`). Out of scope and not to be worked: P3,
+  P5, P6, P7, P8 — zero occurrences across the 36 real catalogue files. The
+  "read it or diagnose it" principle still applies to the four that stay.
+
 - **Herkunft:** Intensiv-Audit der Reinraum-Engine gegen die BSData-Doku im
   Repo (2026-07-28). Als ein Issue geschnitten, weil alle Punkte dieselbe
   Änderung sind: Lesen-oder-Diagnostizieren im Katalog-Leser.
@@ -79,6 +85,28 @@ Acceptance criteria:
   Kataloge/BattleScribe schreiben `true`/`false`; Exposition derzeit nil.
 
 ## Log
+
+- 2026-08-12 (real-data sweep) — **Reproduces, but only in four of the nine
+  points; the other five have no data behind them.** Counted over both
+  complete upstream corpora —
+  `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition` (19 files) and
+  `artkoenig/Warhammer-Fantasy-6th-edition` (17 files), 36 catalogue documents
+  in total, cloned at their current heads:
+  - **P1 publications / `publicationId` / `page` — 150 publication declarations,
+    4,626 elements carrying `publicationId`, 4,237 carrying `page`.** By far the
+  largest of the nine, and the one a user would notice: no book source can ever
+  be shown.
+  - **P2 `defaultSelectionEntryId` — 172 non-empty occurrences.** Real.
+  - **P4 `collective="true"` — 9 occurrences.** Real, small.
+  - **P9 `modifier/@scope` — 8 occurrences** (7 `unit`, 1 `force`). Real, small.
+  - P3 `import="false"` — **0**. P5 `categoryLink` carrying rules/profiles/
+    infoLinks — **0**. P6 boolean attributes written `1`/`0` — **0** (every
+    boolean in both corpora is spelled `true`/`false`). P7 `<cost>` with an
+    unreadable `value` — **0**. P8 declared-but-never-priced cost types — **0 of
+    4**. None of these five can be reached from real catalogue data.
+  This corrects the earlier reading of this file: P6 and P7 were the two points
+  that looked like they hurt most (a hidden entry shown as visible, a unit priced
+  too low), and neither occurs in any real catalogue.
 
 - 2026-08-12 (re-check, independent probe) — **Eight of the nine points verified
   directly; none is silent-free.** Points 1-5 and 8 at the reader, 6, 7 and 9

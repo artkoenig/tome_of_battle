@@ -71,6 +71,17 @@ Acceptance criteria:
 
 ## Log
 
+- 2026-08-12 (real-data sweep) — **The data precondition is confirmed: ids are
+  not unique across the books of one system.** Within the definitive corpus **24
+  ids appear in two different books** (among them `Dogs of War` + `Mercenaries`
+  and `Dark Elves` + `Forces of Chaos`); within the ergofang corpus **22** do
+  (`Orcs and Goblins` + `RH Chaos Dwarfs`). Those pairings are exactly what an
+  allied contingent produces, and the collision is exactly the case where
+  `findEntryInSystem`'s catalogue preference (`catalogResolver.js:142-162`)
+  decides the wrong way — the fallback that "usually saves it" is the thing that
+  cannot save it here. The roster-wide `activeCatalogue` reading itself is
+  unchanged (probe of the same date, below).
+
 - 2026-08-12 (re-check, independent code probe) — **Reproduces; every site the
   file names is still on the roster-wide value.** `RosterEditor` derives
   `activeCatalogue` once from `roster.catalogueId` in an effect
