@@ -47,6 +47,9 @@ regiment of every book.
 4. The candidate list is sorted by that price, descending, as before.
 5. Everything else about the dialog is untouched: which candidates appear, the
    origin filter, hidden and blocked slots, the recruit callback.
+6. The fill-up panel weighs an offer by the same price, so a regiment is
+   suggested when it fits the remaining points and dropped when it does not; an
+   occupied slot, which only grows its count, keeps the report's own cost.
 
 ## Result
 
@@ -65,7 +68,18 @@ new `roster` prop is the cost context (a conditionally raised `min` sees the
 same list as the factory does). `RosterCategorySection` and `ForceEditorSection`
 pass it.
 
-Tests: `CategoryUnitAdder.raiseCost.test.jsx` — real fixture (Vampire Counts)
+`AutoFillSuggestions.jsx`: the same price, restricted to what the apply action
+does. An **offer anchor** is created by the selection factory, so it is weighed
+by its raise price — previously a regiment counted as "costs nothing" and was
+dropped from the suggestions altogether. An **occupied** slot only grows its
+count, so it keeps the report's own cost per instance. Same new `roster` prop.
+
+Tests: `AutoFillSuggestions.raiseCost.test.jsx` — synthetic data set through the
+real facade: a regiment priced at its models (suggested, +40), one whose models
+exceed the remaining sum (dropped), plus control cases for an offer with its own
+cost and for an occupied slot that only grows.
+
+`CategoryUnitAdder.raiseCost.test.jsx` — real fixture (Vampire Counts)
 through `processImportedData` and the real evaluator facade; guards the report
 first (Grave Guard own cost 0), then reads the DOM, compares against
 `getSelectionTotalCost(createSelectionFromDef(...))` rather than a hand-written
@@ -75,6 +89,7 @@ report alone. Three of its four cases fail against the previous state.
 ## Log
 
 - 2026-08-13 — Filed and implemented on `claude/aushebedialog-fehlende-kosten-bk8723`.
-- Not changed here, same root: the fill-up panel (`AutoFillSuggestions`) prices
-  its suggestions from `capability.costs` too, so it silently skips a regiment
-  as "costs nothing" instead of weighing it against the remaining points.
+- 2026-08-13 — The fill-up panel was pulled into the same change on request; it
+  priced its suggestions from `capability.costs` too and silently skipped every
+  regiment as "costs nothing".
+- Version bumped to 2.0.1 (user-visible fix).

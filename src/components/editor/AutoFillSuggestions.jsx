@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { Plus, Wand2 } from 'lucide-react';
-import { findEntryInSystem, foreignCatalogueIdsOf } from '../../roster';
+import { findEntryInSystem, foreignCatalogueIdsOf, getMandatoryChildrenCost } from '../../roster';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**
@@ -44,6 +44,16 @@ import { useTranslation } from '../../i18n/useTranslation';
  * {@link VISIBLE_SUGGESTION_COUNT} Vorschläge hinaus wird der Rest
  * aufklappbar, weil schon eine kleine Liste dutzende Kandidaten hat.
  *
+ * **Was ein Vorschlag kostet**, hängt daran, was das Anwenden tut: an einem
+ * **Angebots-Anker** legt die Selektions-Fabrik die Auswahl neu an — samt ihrer
+ * Pflicht-Unterauswahlen —, und der Preis ist deshalb der Aushebepreis:
+ * Eigenkosten aus dem Bericht plus `getMandatoryChildrenCost` des
+ * Schreibmodells (dieselbe Rechnung wie im Aushebe-Dialog, dort ausführlich
+ * begründet). Ohne den zweiten Posten galt eine Einheit, deren Punkte an ihren
+ * Modellen hängen, als „kostet nichts" und fiel aus den Vorschlägen heraus. An
+ * einem **belegten** Slot wächst dagegen nur die Anzahl; dort ist der Preis der
+ * einer weiteren Instanz, also die Eigenkosten des Berichts allein.
+ *
  * Die **Apply-Mechanik** bleibt die bestehende: eine Unter-Auswahl wächst über
  * `subSelectionOperations.increaseCount`, eine fehlende Einheit wird über
  * `addUnit` ausgehoben. Beides braucht Kontext, den nur der Editor hat
@@ -57,6 +67,9 @@ import { useTranslation } from '../../i18n/useTranslation';
  * Punktwert wird aufgefüllt (Issue 0151).
  */
 const FILL_UP_WINDOW_POINTS = 50;
+
+/** Die Ankerart eines noch nicht vorhandenen Angebots (`report.js`-Ankervertrag). */
+const OFFER_ANCHOR_KIND = 'offerAnchor';
 
 /** So viele Vorschläge stehen ohne Aufklappen da. */
 const VISIBLE_SUGGESTION_COUNT = 8;
@@ -72,7 +85,8 @@ export default function AutoFillSuggestions({
   pathBySelectionId = null,
   addUnit = null,
   system = null,
-  activeCatalogue = null
+  activeCatalogue = null,
+  roster = null
 }) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
@@ -91,6 +105,13 @@ export default function AutoFillSuggestions({
   const ownCatalogueId = forceCatalogueId ?? activeCatalogue?.id ?? null;
   const foreignCatalogueIds = useMemo(
     () => foreignCatalogueIdsOf(system, ownCatalogueId), [system, ownCatalogueId]);
+
+  // Der Katalogeintrag hinter einem Slot — für die bestehende Aushebe-Mechanik
+  // und für den Aushebepreis eines Angebots.
+  const entryFor = useCallback((capability) =>
+    findEntryInSystem(system, capability.defId, activeCatalogue?.id)
+      ?? { id: capability.defId, name: capability.name },
+  [system, activeCatalogue]);
 
   const suggestions = useMemo(() => {
     const collected = [];
@@ -113,18 +134,20 @@ export default function AutoFillSuggestions({
       // nicht (ADR-0032 löst global-by-Id auf, der Bericht verankert deshalb
       // auch fremde Wurzel-Einträge als Angebot).
       if (foreignCatalogueIds.has(capability.sourceId)) continue;
-      const cost = capability.costs?.[costLimitTypeId] ?? 0;
+      // Ein Angebot wird angelegt (Aushebepreis), ein belegter Slot wächst nur
+      // (Kosten einer weiteren Instanz) — siehe Kopfkommentar.
+      const cost = (capability.costs?.[costLimitTypeId] ?? 0)
+        + (capability.anchorKind === OFFER_ANCHOR_KIND
+          ? getMandatoryChildrenCost(system, entryFor(capability), costLimitTypeId,
+            { system, roster, currentCatalogueId: ownCatalogueId })
+          : 0);
       if (cost <= 0 || cost > remainingPoints) continue;
       collected.push({ path, capability, cost });
     }
     collected.sort((a, b) => b.cost - a.cost);
     return collected;
-  }, [capabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
-
-  // Der Katalogeintrag hinter einem Slot — für die bestehende Aushebe-Mechanik.
-  const entryFor = (capability) =>
-    findEntryInSystem(system, capability.defId, activeCatalogue?.id)
-      ?? { id: capability.defId, name: capability.name };
+  }, [capabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath,
+    foreignCatalogueIds, entryFor, system, roster, ownCatalogueId]);
 
   /**
    * Die Anwenden-Aktion eines Vorschlags über die bestehende Mechanik — oder
@@ -235,7 +258,7 @@ export default function AutoFillSuggestions({
  * Kategorie-Anker — benennt keinen Eintrag, den dieses Panel aushebt.
  */
 function isSelectableSlot(capability) {
-  if (capability.anchorKind === 'offerAnchor') return true;
+  if (capability.anchorKind === OFFER_ANCHOR_KIND) return true;
   return capability.anchorKind === 'occupied'
     && (capability.headroom === null || capability.headroom > 0);
 }

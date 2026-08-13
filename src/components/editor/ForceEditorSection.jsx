@@ -169,6 +169,7 @@ export default function ForceEditorSection({
         addUnit={addUnitToThisForce}
         system={system}
         activeCatalogue={activeCatalogue}
+        roster={roster}
       />
 
       <RosterValidationPanel
