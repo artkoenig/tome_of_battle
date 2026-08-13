@@ -122,11 +122,12 @@ Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** 
 
 **Die Meldungsliste ist fachlich eingeordnet und sprachfrei** (`violationClassification.js`, ADR-0034). Die Engine ordnet ein, die Oberfläche formuliert: im Bericht steht kein i18n-Schlüssel und kein übersetzter Satz. Jede Meldung trägt:
 
-- **Herkunft** (`origin`) — der Diskriminator, der bestimmt, welche übrigen Felder besetzt sind: *aus einer Grenze abgeleitet* (eine Katalog-Grenze **oder** die engine-eigene Budget-Regel) oder *Autor-Meldung* des Katalogs. Es gibt bewusst **eine** Liste für beide: zwei Listen wären zwei Wege zur selben Frage („was stimmt an dieser Liste nicht?").
+- **Herkunft** (`origin`) — der Diskriminator, der bestimmt, welche übrigen Felder besetzt sind: *aus einer Grenze abgeleitet* (eine Katalog-Grenze **oder** die engine-eigene Budget-Regel), *Autor-Meldung* des Katalogs oder *versteckte Auswahl*. Es gibt bewusst **eine** Liste für alle drei: mehrere Listen wären mehrere Wege zur selben Frage („was stimmt an dieser Liste nicht?").
 - **Schweregrad** — bei einer abgeleiteten Meldung immer *Fehler* (eine gerissene Grenze macht die Liste regelwidrig; eine unerfüllte Pflicht als bloße Warnung auszuweisen wäre eine Anzeige-Entscheidung und liegt außerhalb der Engine); bei einer Autor-Meldung der aus dem Katalog übernommene (`field="error"`/`"warning"`/`"info"`).
 - **Anker** — Definitions-ID, **effektiver** Name, stabiler Slot-Pfad, **Ankerart** und das Merkmal „Wert nicht stabil". Die Ankerart ist die Aufzählung der Fähigkeitsdatensätze, erweitert um genau einen Wert: den `ROSTER` der Budget-Regel, die an keinem Slot hängt und deshalb `path: null` trägt.
 - **Nur abgeleitet:** Grenz-ID, **Art der Grenze** (Mindest-/Höchstmaß × *was gemessen wird*: Auswahlanzahl, Kontingentanzahl, Kostensumme, eingestellte Kostengrenze oder die Roster-Budget-Regel; dazu die Kostenart und das Prozent-Kennzeichen), **Bezugsrahmen** (dessen *Art* — Schlüsselwort oder Eintrags- bzw. Kategorie-ID —, die Ziel-ID und die drei Zähl-Flags), Ist-Wert, Grenze, Differenz und die **Herleitungskette**.
 - **Nur Autor-Meldung:** der Katalogtext mit aufgelösten Text-Tokens (siehe unten).
+- **Nur versteckte Auswahl:** nichts weiter — die Aussage steckt ganz im Anker (siehe unten).
 - **Ursachen** (optional, nur abgeleitet, ADR-0027, `causes.js`) — siehe unten.
 
 **Jedes Feld der Einordnung ist ein geschlossener Wertevorrat**, keine freie Zeichenkette. Das ist der Punkt: eine Fallunterscheidung in der Oberfläche wird dadurch erschöpfend und ein fehlender Fall auffindbar. Der rohe `scope` einer Grenze etwa ist im XML ein Schlüsselwort *oder* eine ID — ihm sieht man nicht an, welches von beidem; die Einordnung nimmt der Oberfläche genau diesen Rateschritt ab, und zwar an derselben Quelle, an der auch das Query-Primitiv den Rahmen auflöst.
@@ -134,6 +135,8 @@ Ein **Slot** ist seit ADR-0035 **jede Stelle, an der eine Auswahl stehen kann** 
 **Ursachen werden aus der Herleitungskette *gelesen*, nicht rekonstruiert** (`causes.js`). Eine Ursache ist ein Kettenschritt, der drei Dinge zugleich war: **bedingt** (ein unbedingter Modifikator gilt immer und erklärt nichts), **wirksam** (er hat den Wert tatsächlich verändert — gemessen gegen seinen Vorgängerschritt, nicht gegen den Basiswert) und **benennbar** (er trägt einen Zeugen). Ausgegeben werden dessen Zeuge, die Modifikator-Art und der Zwischenwert. Löst eine Bedingung auf keine benennbare Auswahl auf, bleibt der Schritt in der Kette sichtbar, erzeugt aber keine erfundene Ursache; bleibt danach keine übrig, **fehlt das Feld ganz** statt leer dazustehen. Nachträglich ließe sich der Zeuge nur gewinnen, indem alle Bedingungen gegen einen womöglich anderen Index erneut ausgewertet würden — eine zweite Rechenstelle, genau das, was ADR-0034 ausschließt.
 
 **Eine Autor-Meldung wird gerendert, nicht übersetzt** (`authorMessages.js`, ADR-0028). Der Text bleibt in Katalogsprache; aufgelöst wird allein, was BattleScribe selbst auflöst: das Token `{this}` → der **effektive** Name des tragenden Knotens. Die Zuordnung ist eine Tabelle, kein Sonderfall-`if`; ein unbelegtes Token bleibt verbatim stehen, denn eine vollständige Token-Spezifikation existiert nicht. In den Fixture-Katalogen ist `{this}` das einzige vorkommende Token (7 Fundstellen, alle in `modifier/@value` von Meldungs-Modifikatoren). Gerendert wird **einmal**, und dieselben Meldungen speisen den Fähigkeitsdatensatz des Slots *und* die Meldungsliste — zwei Renderstellen könnten zwei Texte führen, die auseinanderlaufen.
+
+**Eine gewählte, effektiv versteckte Auswahl ist selbst eine Meldung** (`report.js`, Issue 0119). Das BSData-Wiki (*Props: Hidden*) sagt beide Richtungen in einem Satz: eine versteckte Entität ist dem Nutzer nicht sichtbar, „and any already selected entries will cause error showing up in error list". Die erste Hälfte ist die Min-Unterdrückung an versteckten Trägern (Issue 0088), die zweite diese Meldung — sie hat keine Grenze, keinen Ist-Wert und keinen Text, nur ihren Anker, und trägt deshalb den Schweregrad *Fehler* aus der Quelle statt aus einer Anzeige-Entscheidung. Gemeldet wird allein der **belegte** Slot: das Pflicht-Phantom und der Angebots-Anker halten gar keine Instanz, der Gruppen- und der Kategorie-Anker sind kein Gewähltes, sondern ein Rahmen. Gelesen wird das `isHidden` des Fähigkeitsdatensatzes, also derselbe effektive Zustand — die Meldung ist damit dynamisch (ein aufdeckender Modifikator lässt sie verschwinden) und deckt jede Quelle der Verdeckung ab: Basis-Attribut, Verweis-ODER-Ziel und jede klammernde versteckte Gruppe. Ein versteckter **Vorfahr** meldet für sich, nicht für seine Kinder — dieselbe Trennung wie bei den Grenzen („maßgeblich ist das eigene effektive hidden des Trägers").
 
 **Ein Angebots-Anker erzeugt auch keine Autor-Meldung.** Dieselbe Berichtsfähigkeits-Regel wie bei den Grenzen: sein Fähigkeitsdatensatz führt sie weiterhin, damit die Oberfläche sie am Angebot zeigen kann, aber die Meldungsliste spräche sonst über etwas, das gar nicht in der Liste steht.
 
@@ -369,6 +372,7 @@ record Message        { origin: MessageOrigin, severity: MessageSeverity, anchor
                         derivation: LimitDerivation?, causes: Cause[]?,   // causes FEHLT, wenn leer
                         // nur origin == AUTHOR_MESSAGE:
                         text: string }               // Katalogtext, Text-Tokens aufgelöst
+                        // origin == HIDDEN_SELECTION: nichts weiter — nur der Anker
 
 record SlotCapability   { node: EvalNode, defId: Id, name: string?,   // name: der **effektive**
                           targetDefId: Id?,             // worauf ein Verweis-Slot zeigt: die
@@ -774,7 +778,7 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
       authorMessages  = renderedAuthorMessagesOf(node, effective),   // §3.6, ADR-0028
       infoElements    = infoElementsOf(node, effective, profileTypes))  // §3.6, infoProjection.js
 
-  // EINE Liste, zwei Herkünfte, ein Diskriminator (§3.6). Die Autor-Meldungen kommen
+  // EINE Liste, drei Herkünfte, ein Diskriminator (§3.6). Die Autor-Meldungen kommen
   // aus den eben gebauten Fähigkeitsdatensätzen — dieselben gerenderten Texte, nicht
   // ein zweites Mal gerendert.
   derived = dedupeArmyWideCategoryViolations(          // §3.6: armeeweite Kategorie-
@@ -783,8 +787,11 @@ function buildReport(tree, effective, results, diagnostics, unstableNodes): Repo
   authored = capabilities.values
                    .filter(c → isReportableAnchorKind(c.anchorKind))   // nie am Angebots-Anker
                    .flatMap(c → c.authorMessages.map(m → classifyAuthorMessage(c.node, m, ctx)))
+  hidden   = capabilities.values                        // §3.6, Issue 0119: was versteckt ist,
+                   .filter(c → c.anchorKind == OCCUPIED and c.isHidden)   // aber trotzdem in der
+                   .map(c → classifyHiddenSelection(c.node, ctx))         // Liste liegt
   return Report(
-    violations   = derived + authored,
+    violations   = derived + authored + hidden,
     capabilities = capabilities,
     diagnostics  = diagnostics)
 

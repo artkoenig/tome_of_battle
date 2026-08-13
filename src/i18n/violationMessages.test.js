@@ -108,6 +108,15 @@ function authorMessage({ text = 'Please enable special characters', severity = '
   };
 }
 
+/** Eine Meldung ueber eine versteckte, aber gewaehlte Auswahl (Issue 0119). */
+function hiddenSelection({ name = 'Scouts' } = {}) {
+  return {
+    origin: 'hiddenSelection',
+    severity: 'error',
+    anchor: { defId: 'entry-scouts', name, path: '0/0/0', anchorKind: 'occupied', isValueUnstable: false },
+  };
+}
+
 /** Ein aufzeichnender translate-Spy mit festem Rueckgabetext. */
 function spy(result = 'ÜBERSETZT') {
   return vi.fn(() => result);
@@ -319,6 +328,24 @@ describe('formatViolation: Autoren-Meldungen (Katalogtext, Pass-through)', () =>
 
   it('gibt einen leeren Katalogtext als leeren String zurueck', () => {
     expect(formatViolation(authorMessage({ text: '' }), spy())).toBe('');
+  });
+});
+
+describe('formatViolation: versteckte Auswahlen (Issue 0119)', () => {
+  it('waehlt den eigenen Schluessel mit dem Anker-Namen als einzigem Parameter', () => {
+    const translate = spy();
+
+    formatViolation(hiddenSelection({ name: 'Scouts' }), translate);
+
+    expect(translate).toHaveBeenCalledWith(`${KEY_PREFIX}.hiddenSelection`, { name: 'Scouts' });
+  });
+
+  it('faellt nicht auf den generischen Grenzen-Schluessel zurueck, obwohl die Meldung keine Grenze traegt', () => {
+    const translate = spy();
+
+    formatViolation(hiddenSelection(), translate);
+
+    expect(translate).not.toHaveBeenCalledWith(`${KEY_PREFIX}.generic`, expect.anything());
   });
 });
 

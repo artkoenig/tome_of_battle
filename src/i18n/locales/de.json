@@ -7,6 +7,7 @@
   "settings.language.label": "Sprache",
   "validation.evaluator.causesTitle": "Ursachen:",
   "validation.evaluator.unresolvedEntry": "„{selectionName}\" gibt es im Katalog nicht mehr.",
+  "validation.evaluator.hiddenSelection": "„{name}\" steht in der Liste, wird aber nicht angeboten.",
   "validation.evaluator.selectionCount.min.local_one": "„{name}\" muss mindestens einmal gewählt werden.",
   "validation.evaluator.selectionCount.min.local_other": "„{name}\" muss mindestens {bound} Mal gewählt werden.",
   "validation.evaluator.selectionCount.min.force_one": "Das Kontingent braucht noch einen „{name}\".",

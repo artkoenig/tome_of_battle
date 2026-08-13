@@ -37,6 +37,13 @@ export const CAUSES_TITLE_KEY = `${KEY_PREFIX}.causesTitle`;
 // des Autors und wird unverändert durchgereicht (ADR 0028), nie übersetzt.
 const AUTHOR_MESSAGE_ORIGIN = 'authorMessage';
 
+// `MessageOrigin.HIDDEN_SELECTION`: eine Auswahl, die in der Liste liegt, dem
+// Nutzer aber gar nicht angeboten werden dürfte (Issue 0119). Sie trägt keine
+// Grenze und keinen Katalogtext — nur ihren Anker; der Satz kommt deshalb aus
+// einem eigenen Schlüssel mit dem Namen des Ankers als einzigem Parameter.
+const HIDDEN_SELECTION_ORIGIN = 'hiddenSelection';
+const HIDDEN_SELECTION_KEY = `${KEY_PREFIX}.hiddenSelection`;
+
 /** Die bekannten Grenzen-Arten (`ConstraintKind`). */
 const KNOWN_KINDS = new Set(['min', 'max']);
 
@@ -92,6 +99,9 @@ function effectivePercent(derivation) {
  *   Schlüssel zurück — nie ein Throw.
  * - Autoren-Meldungen (`origin: 'authorMessage'`) geben den Katalogtext
  *   unverändert zurück, ohne `translate` aufzurufen.
+ * - Versteckte Auswahlen (`origin: 'hiddenSelection'`) wählen den Schlüssel
+ *   `validation.evaluator.hiddenSelection` mit dem Anker-Namen als Parameter —
+ *   sie tragen keine Grenze, aus der ein Grenzen-Schlüssel folgen könnte.
  * - Ein fehlender Verstoß (null/undefined) ergibt einen leeren String.
  *
  * @param {object | null | undefined} violation  eine Verletzung aus dem Bericht
@@ -102,6 +112,9 @@ function effectivePercent(derivation) {
 export function formatViolation(violation, translate) {
   if (!violation) return '';
   if (violation.origin === AUTHOR_MESSAGE_ORIGIN) return violation.text ?? '';
+  if (violation.origin === HIDDEN_SELECTION_ORIGIN) {
+    return translate(HIDDEN_SELECTION_KEY, { name: violation.anchor?.name });
+  }
 
   const limit = violation.limit ?? {};
   const params = {

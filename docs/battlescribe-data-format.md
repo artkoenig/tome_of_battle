@@ -1088,6 +1088,16 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   einer effektiv versteckten Entität werden **nicht** validiert — die §5.6-Regel, per
   Projektentscheidung (Issue 0088) verallgemeinert auf alle Ankerarten; wird die Entität per
   Modifier wieder sichtbar, greifen sie wieder. Max-Grenzen gelten unabhängig von der Sichtbarkeit.
+- **Eine versteckte Entität, die trotzdem im Roster liegt, ist ein Fehler.** Das ist die
+  Gegenrichtung zur Zeile darüber und steht wörtlich in der Quelle: eine versteckte Entität ist dem
+  Nutzer nicht sichtbar, „and any already selected entries will cause error showing up in error list
+  in Roster Editor" ([BSData-Wiki, *Props: Hidden*](bsdata-catalogue-development-wiki/Data-structure-overview.md)).
+  Typisch entsteht das beim Wechsel einer Armee-Variante, der die Altauswahl liegen lässt. Maßgeblich
+  ist wie bei der Min-Unterdrückung das **eigene** effektive `hidden` der Auswahl (Basis-Attribut,
+  `hidden`-Modifier, Verweis-ODER-Ziel und jede sie klammernde versteckte Gruppe) — ein versteckter
+  Vorfahr meldet für sich, nicht für seine Kinder; und wird die Definition per Modifier wieder
+  sichtbar, verschwindet die Meldung. Der Evaluator führt sie als eigene Herkunft
+  `hiddenSelection` in derselben Meldungsliste (Issue 0119).
 - **`hidden` an einem `entryLink` und an seinem Ziel wirken zusammen (ODER).** Ein Vorkommen ist
   versteckt, wenn der Verweis **oder** die verwiesene Definition versteckt ist; ein `hidden`-Modifier
   an einer der beiden Seiten schlägt beide Basiswerte. Das ist die Grundlage des häufigsten

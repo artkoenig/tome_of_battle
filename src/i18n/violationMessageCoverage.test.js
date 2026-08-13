@@ -27,7 +27,7 @@ import { describe, it, expect } from 'vitest';
 import de from './locales/de.json';
 import en from './locales/en.json';
 import { SUPPORTED_LANGUAGES } from './constants';
-import { ConstraintKind, LimitMeasure, ScopeKind } from '../evaluator/model.js';
+import { ConstraintKind, LimitMeasure, MessageOrigin, ScopeKind } from '../evaluator/model.js';
 import { formatViolation, formatViolationCauses } from './violationMessages';
 
 const catalogs = { de, en };
@@ -108,12 +108,23 @@ const causeViolation = {
   ...derivedViolation({ kind: ConstraintKind.MAX, measure: LimitMeasure.SELECTION_COUNT, scopeKind: ScopeKind.PARENT, isPercent: false }),
   causes: [{ witness: { defId: 'entry-musician', name: 'Musician' }, modifierKind: 'set', value: 0 }],
 };
+/** Eine versteckte, aber gewaehlte Auswahl in der veroeffentlichten Berichtsform. */
+const hiddenSelectionViolation = {
+  origin: MessageOrigin.HIDDEN_SELECTION,
+  severity: 'error',
+  anchor: { defId: 'entry-scouts', name: 'Scouts', path: '0/0/0', anchorKind: 'occupied', isValueUnstable: false },
+};
 try {
   for (const key of keysChosenFor(derivedViolation({ kind: 'kuenftige-art', measure: 'kuenftige-messgroesse', scopeKind: 'roster', isPercent: false }))) {
     chosenKeys.add(key);
   }
   // Ebenso der Schluessel der Ursachen-Projektion (ADR-0027).
   for (const key of keysChosenFor(causeViolation, formatViolationCauses)) {
+    chosenKeys.add(key);
+  }
+  // Und der Schluessel der versteckten Auswahl (Issue 0119) — eine Herkunft
+  // ohne Grenze, die deshalb im Kreuzprodukt oben nicht vorkommt.
+  for (const key of keysChosenFor(hiddenSelectionViolation)) {
     chosenKeys.add(key);
   }
 } catch {
