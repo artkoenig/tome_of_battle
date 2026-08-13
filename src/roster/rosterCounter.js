@@ -62,6 +62,30 @@ export function resolveCostLimitLabel(roster, system) {
  */
 
 /**
+ * The full catalogue definition behind an option reference: the resolved entry, and
+ * where that resolution yielded a bare skeleton (no costs, no children of any kind),
+ * the full entry looked up in the system under the same id.
+ *
+ * `ctx` supplies the catalogue the entry was read from (see `resolveContextCatalogueId`);
+ * without it the same-id entry of another loaded catalogue could be resolved instead
+ * (ADR 0018).
+ */
+function resolveFullDefinition(system, entry, catalogueId) {
+  const resolved = resolveEntry(system, entry, catalogueId);
+  if (!resolved) return null;
+
+  const isSkeleton = resolved.id
+    && (!resolved.costs || resolved.costs.length === 0)
+    && (!resolved.selectionEntries || resolved.selectionEntries.length === 0)
+    && (!resolved.entryLinks || resolved.entryLinks.length === 0)
+    && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0);
+  if (!isSkeleton) return resolved;
+
+  const fullEntry = findEntryInSystem(system, resolved.id, catalogueId);
+  return fullEntry ? resolveEntry(system, fullEntry, catalogueId) : resolved;
+}
+
+/**
  * Recursively computes the display cost of an option definition, including its base cost
  * and the costs of any mandatory sub-selections (min > 0).
  *
@@ -71,18 +95,8 @@ export function resolveCostLimitLabel(roster, system) {
  */
 export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
   const catalogueId = resolveContextCatalogueId(ctx);
-  let resolved = resolveEntry(system, entry, catalogueId);
+  const resolved = resolveFullDefinition(system, entry, catalogueId);
   if (!resolved) return 0;
-
-  // If resolved is a skeleton or reference, look up the full entry in the system
-  if (resolved.id && (!resolved.costs || resolved.costs.length === 0) && (!resolved.selectionEntries || resolved.selectionEntries.length === 0) && (!resolved.entryLinks || resolved.entryLinks.length === 0) && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0)) {
-    const fullEntry = findEntryInSystem(system, resolved.id, catalogueId);
-    if (fullEntry) {
-      resolved = resolveEntry(system, fullEntry, catalogueId);
-    }
-  }
-
-  let total = 0;
 
   // 1. Direct cost of this entry, in the requested cost type only. An entry that
   // carries no cost of that type contributes 0 — never the value of another type.
@@ -99,11 +113,44 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
     directCost = getModifiedConstraintValue(tempCon, modifiers, ctx);
   }
 
-  total += directCost;
+  // 2. Plus what the mandatory sub-structure below it costs — the same derivation the
+  // selection factory populates from, so the price shown is the price the actual
+  // recruitment will incur.
+  return directCost + getMandatoryChildrenCost(system, entry, costLimitType, ctx);
+}
 
-  // The mandatory-child minimums below are read as their EFFECTIVE (modifier-adjusted)
-  // value in `ctx`, so a conditionally-raised `min` — a pick a modifier forces — is
-  // priced exactly as the selection factory will populate it.
+/**
+ * The cost of the mandatory sub-selections an option brings along when it is recruited —
+ * **without** its own cost: direct members with a `min` of their own, plus what every
+ * selection-entry group below it contributes, at any depth, each priced with its own
+ * mandatory sub-structure again.
+ *
+ * This is the part of a recruitment price the evaluator report cannot state: a slot's
+ * `costs` are, by contract, the own cost of ONE instance of that definition (ADR 0034,
+ * `costProjection.js`), and an offer anchor is a leaf — the mandatory sub-selections a
+ * recruitment would create hang nowhere in the evaluation tree yet. Which members those
+ * are is an **editing** rule (which option fills a mandatory group), which the evaluator
+ * deliberately does not decide (`catalogReader.js` on `defaultSelectionEntryId`), so the
+ * write model answers it — from the same derivation `createSelectionFromDef` populates
+ * from (`selectionMembers.js`, SSOT). A unit whose points live entirely on its models
+ * (Grave Guard: entry 0, 10 models × 12) is therefore priced at what recruiting it
+ * actually costs.
+ *
+ * The mandatory minimums are read as their EFFECTIVE (modifier-adjusted) value in `ctx`,
+ * so a conditionally-raised `min` — a pick a modifier forces — is priced exactly as the
+ * factory will populate it.
+ *
+ * @param {Object} system the resolved game system.
+ * @param {Object} entry the (unresolved) catalogue entry or link being recruited.
+ * @param {string} costLimitType the cost type to price in.
+ * @param {EvaluationContext} [ctx] see {@link getOptionDisplayCost}.
+ * @returns {number} the sub-structure cost; 0 when the entry brings none along.
+ */
+export function getMandatoryChildrenCost(system, entry, costLimitType, ctx = {}) {
+  const catalogueId = resolveContextCatalogueId(ctx);
+  const resolved = resolveFullDefinition(system, entry, catalogueId);
+  if (!resolved) return 0;
+
   const effectiveMin = (source) => {
     const minConstraint = source.constraints?.find(c => c.type === ConstraintKind.MIN);
     if (!minConstraint) return 0;
@@ -111,15 +158,10 @@ export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
     return value > 0 ? value : 0;
   };
 
-  // 2. Costs of the mandatory children — direct entries and links, plus what every
-  // selection-entry group below the entry contributes, at any depth. Which children
-  // those are is decided by the shared derivation the selection factory populates
-  // from, so the price shown here is the price the actual recruitment will incur.
-  mandatoryChildrenOf(resolved, effectiveMin).forEach(({ def: child, count }) => {
-    total += getOptionDisplayCost(system, child, costLimitType, ctx) * count;
-  });
-
-  return total;
+  return mandatoryChildrenOf(resolved, effectiveMin).reduce(
+    (total, { def: child, count }) => total + getOptionDisplayCost(system, child, costLimitType, ctx) * count,
+    0
+  );
 }
 
 /**

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { Plus, X } from 'lucide-react';
-import { findEntryInSystem, foreignCatalogueIdsOf } from '../../roster';
+import { findEntryInSystem, foreignCatalogueIdsOf, getMandatoryChildrenCost } from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
@@ -13,7 +13,7 @@ import BottomSheet from './BottomSheet';
  * Ziel-Kontingent (`forcePath`): wählbar ist, was dort als Angebots-Anker,
  * Pflicht-Phantom oder belegter Slot mit Restspielraum hängt; gesperrt
  * (`isBlocked`) wird deaktiviert mit „(Nicht verfügbar)" gezeigt; versteckt
- * (`isHidden`) erscheint gar nicht. Kosten liest `capability.costs`. Der
+ * (`isHidden`) erscheint gar nicht. Den Preis daneben siehe unten. Der
  * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
  * ADR-0022) ist ersatzlos entfallen (ADR-0035).
  *
@@ -31,6 +31,27 @@ import BottomSheet from './BottomSheet';
  * wird der Katalogeintrag der Definition übergeben (Auflösung über die
  * Schreibmodell `src/roster/` — die Schreibmechanik lebt dort),
  * ersatzweise ein `{ id, name }`-Paar aus dem Slot.
+ *
+ * ── Der angezeigte Preis ist der Aushebepreis ────────────────────────────────
+ * Gezeigt wird, was das Ausheben tatsächlich kostet, und das sind zwei Posten
+ * aus zwei Quellen, weil es zwei verschiedene Fragen sind:
+ *
+ * - die **Eigenkosten einer Instanz** liest der Bericht (`capability.costs`) —
+ *   effektiv, nach allen Kosten-Modifikatoren (ADR-0034);
+ * - die **Pflicht-Unterauswahlen**, die beim Ausheben mitkommen, rechnet das
+ *   Schreibmodell (`getMandatoryChildrenCost` in `src/roster/`). Der
+ *   Bericht kann das nicht: die Eigenkosten eines Slots sind vertraglich die
+ *   einer Instanz, und ein Angebots-Anker ist ein Blatt — die Pflicht-Kinder,
+ *   die eine Aushebung anlegen würde, hängen noch nirgends im Auswertungsbaum.
+ *   Welche Option eine Pflichtgruppe füllt, ist zudem eine Regel des
+ *   **Bearbeitens**, die der Evaluator bewusst nicht entscheidet. Gerechnet
+ *   wird deshalb aus derselben Ermittlung, aus der die Fabrik die Auswahl
+ *   anlegt (`selectionMembers.js`, SSOT): angezeigter und danach anfallender
+ *   Preis stimmen überein.
+ *
+ * Ohne den zweiten Posten stand bei jeder Einheit, deren Punkte an ihren
+ * Modellen hängen (Grave Guard: Eintrag 0, 10 Modelle × 12), gar kein Preis —
+ * `costs` ist dort 0, und 0 zeigt der Dialog nicht an.
  */
 
 /** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
@@ -44,6 +65,7 @@ export default function CategoryUnitAdder({
   forceCatalogueId = null,
   system,
   activeCatalogue,
+  roster = null,
   costTypeLabel,
   costLimitType,
   addUnit,
@@ -53,66 +75,82 @@ export default function CategoryUnitAdder({
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 
-  if (!activeCatalogue) return null;
-
-  // Erlaubte Definitions-Ids, wenn eine explizite Eintragsliste vorgegeben ist
-  // (z. B. armeeweite Selektoren ohne eigene Kategorie-Sektion).
-  const allowedIds = entries === null
-    ? null
-    : new Set(entries.flatMap(entry => [entry.id, entry.targetId].filter(Boolean)));
-
   // Das eigene Armeebuch ist das des Kontingents; ohne eigenes gilt der aktive
   // Katalog der Liste (Altverhalten).
-  const ownCatalogueId = forceCatalogueId ?? activeCatalogue.id;
-
-  // Der Herkunftsfilter gilt nur ohne explizite Eintragsliste: eine solche Liste
-  // ist bereits vom Aufrufer kuratiert (armeeweite Selektoren), und ein
-  // Herkunftsfilter darüber nähme einen bewusst übergebenen katalogübergreifenden
-  // Eintrag weg.
-  const foreignCatalogueIds = allowedIds === null
-    ? foreignCatalogueIdsOf(system, ownCatalogueId)
-    : null;
-
-  // Kandidaten: je Definition genau ein Slot unter dem Kontingent. Versteckte
-  // Slots erscheinen nicht; die Kategorie-Zuordnung liest die **effektive**
-  // Primärkategorie aus dem Bericht (§8: nie aus rohen Katalog-Links).
-  const seenDefIds = new Set();
-  const candidates = [];
-  for (const { path, capability } of childSlotsOf(capabilities, forcePath)) {
-    if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
-    if (capability.isHidden) continue;
-    if (seenDefIds.has(capability.defId)) continue;
-    if (allowedIds !== null) {
-      if (!allowedIds.has(capability.defId)
-        && !(capability.targetDefId && allowedIds.has(capability.targetDefId))) continue;
-    } else {
-      if (capability.primaryCategoryId !== categoryId) continue;
-      // Herkunft: eine Einheit eines fremden Armeebuchs darf in dieser Liste
-      // nicht aufgestellt werden und erscheint deshalb gar nicht — nicht bloß
-      // gesperrt (ADR-0032 löst global-by-Id auf, der Bericht verankert
-      // deshalb auch fremde Wurzel-Einträge als Angebot).
-      if (foreignCatalogueIds.has(capability.sourceId)) continue;
-    }
-    seenDefIds.add(capability.defId);
-    candidates.push({ path, capability });
-  }
-
-  const costOf = ({ capability }) => capability.costs?.[costLimitType] ?? 0;
-  candidates.sort((a, b) => costOf(b) - costOf(a)); // Descending
-
-  if (candidates.length === 0) return null;
+  const ownCatalogueId = forceCatalogueId ?? activeCatalogue?.id ?? null;
 
   // Der Aushebe-Callback erwartet den Katalogeintrag der Definition (die
   // Selektions-Fabrik liest ihn); bei einer expliziten Eintragsliste ist er
   // schon da, sonst löst ihn das Schreibmodell aus dem System auf.
-  const entryFor = (capability) => {
+  const entryFor = useCallback((capability) => {
     const fromEntries = entries?.find(entry =>
       entry.id === capability.defId || entry.id === capability.targetDefId
       || (entry.targetId && entry.targetId === capability.targetDefId));
     if (fromEntries) return fromEntries;
-    return findEntryInSystem(system, capability.defId, activeCatalogue.id)
+    return findEntryInSystem(system, capability.defId, activeCatalogue?.id)
       ?? { id: capability.defId, name: capability.name };
-  };
+  }, [entries, system, activeCatalogue]);
+
+  // Die Kandidaten samt ihrem Aushebepreis — einmal je Bericht/Katalog gebaut,
+  // nicht je Render: der Preis läuft je Kandidat über die Definitionen des
+  // Katalogs (Pflicht-Unterauswahlen, siehe Kopfkommentar).
+  const candidates = useMemo(() => {
+    if (!activeCatalogue) return [];
+
+    // Erlaubte Definitions-Ids, wenn eine explizite Eintragsliste vorgegeben ist
+    // (z. B. armeeweite Selektoren ohne eigene Kategorie-Sektion).
+    const allowedIds = entries === null
+      ? null
+      : new Set(entries.flatMap(entry => [entry.id, entry.targetId].filter(Boolean)));
+
+    // Der Herkunftsfilter gilt nur ohne explizite Eintragsliste: eine solche Liste
+    // ist bereits vom Aufrufer kuratiert (armeeweite Selektoren), und ein
+    // Herkunftsfilter darüber nähme einen bewusst übergebenen katalogübergreifenden
+    // Eintrag weg.
+    const foreignCatalogueIds = allowedIds === null
+      ? foreignCatalogueIdsOf(system, ownCatalogueId)
+      : null;
+
+    // Der Lesekontext der Pflicht-Kinder-Rechnung: derselbe Katalog, aus dem der
+    // Kandidat stammt (ADR-0018 — eine Eintrags-Id ist nur in ihrem Katalog
+    // eindeutig), und die Liste selbst, damit ein bedingt angehobenes `min`
+    // dieselbe Bedingung sieht wie beim tatsächlichen Ausheben.
+    const costContext = { system, roster, currentCatalogueId: ownCatalogueId };
+
+    // Kandidaten: je Definition genau ein Slot unter dem Kontingent. Versteckte
+    // Slots erscheinen nicht; die Kategorie-Zuordnung liest die **effektive**
+    // Primärkategorie aus dem Bericht (§8: nie aus rohen Katalog-Links).
+    const seenDefIds = new Set();
+    const collected = [];
+    for (const { path, capability } of childSlotsOf(capabilities, forcePath)) {
+      if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
+      if (capability.isHidden) continue;
+      if (seenDefIds.has(capability.defId)) continue;
+      if (allowedIds !== null) {
+        if (!allowedIds.has(capability.defId)
+          && !(capability.targetDefId && allowedIds.has(capability.targetDefId))) continue;
+      } else {
+        if (capability.primaryCategoryId !== categoryId) continue;
+        // Herkunft: eine Einheit eines fremden Armeebuchs darf in dieser Liste
+        // nicht aufgestellt werden und erscheint deshalb gar nicht — nicht bloß
+        // gesperrt (ADR-0032 löst global-by-Id auf, der Bericht verankert
+        // deshalb auch fremde Wurzel-Einträge als Angebot).
+        if (foreignCatalogueIds.has(capability.sourceId)) continue;
+      }
+      seenDefIds.add(capability.defId);
+      // Eigenkosten aus dem Bericht plus die Pflicht-Unterauswahlen, die beim
+      // Ausheben mitkommen (Kopfkommentar): zusammen der Aushebepreis.
+      const points = (capability.costs?.[costLimitType] ?? 0)
+        + getMandatoryChildrenCost(system, entryFor(capability), costLimitType, costContext);
+      collected.push({ path, capability, points });
+    }
+
+    collected.sort((a, b) => b.points - a.points); // Descending
+    return collected;
+  }, [capabilities, forcePath, categoryId, entries, entryFor, system, roster, activeCatalogue, ownCatalogueId, costLimitType]);
+
+  if (!activeCatalogue) return null;
+  if (candidates.length === 0) return null;
 
   return (
     <div ref={wrapperRef} className="category-unit-adder-container">
@@ -133,8 +171,7 @@ export default function CategoryUnitAdder({
         containerRef={wrapperRef}
       >
         <div className="popover-list">
-          {candidates.map(({ path, capability }) => {
-            const points = costOf({ capability });
+          {candidates.map(({ path, capability, points }) => {
             // Verfügbarkeit wird **abgelesen** (ADR-0035): gesperrt ist, wessen
             // Höchstmaß ausgeschöpft ist — keine Diff-Rechnung, keine Sperrtabelle.
             const isBlocked = capability.isBlocked === true;

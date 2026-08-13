@@ -140,6 +140,7 @@ export default function ForceEditorSection({
               forceCatalogueId={forceCatalogueId}
               system={system}
               activeCatalogue={activeCatalogue}
+              roster={roster}
               costTypeLabel={costTypeLabel}
               costLimitType={roster.costLimitType}
               addUnit={addUnitToThisForce}

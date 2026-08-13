@@ -154,6 +154,7 @@ export default function RosterCategorySection({
             forceCatalogueId={forceCatalogueId}
             system={system}
             activeCatalogue={activeCatalogue}
+            roster={roster}
             costTypeLabel={costTypeLabel}
             costLimitType={roster.costLimitType}
             addUnit={addUnit}
