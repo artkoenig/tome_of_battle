@@ -25,7 +25,7 @@
       "depth": "full",
       "status": "todo",
       "note": "Whole issue, criteria 1-9, in one slice: the report field and its two readers are one change — the field without a reader is code nobody asked for, and each reader is a line.",
-      "branch": "",
+      "branch": "claude/aushebedialog-fehlende-kosten-pes5x2--INC-1",
       "steps": [],
       "attempts": []
     }
