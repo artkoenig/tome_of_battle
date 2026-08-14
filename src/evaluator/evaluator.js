@@ -61,6 +61,7 @@ import { evaluateToFixpoint, applyAnchorPostPass } from './fixpoint.js';
 import { evaluateConstraints, categoryAnchorOccupancies } from './constraints.js';
 import { evaluateRosterBudget } from './budget.js';
 import { buildReport } from './report.js';
+import { buildRaiseCostProjection } from './costProjection.js';
 import { createRosterBudget } from './rosterBudget.js';
 import { MeasuredPhase, measurementFor } from './measurement.js';
 
@@ -329,6 +330,19 @@ export function evaluate(prepared, roster, options) {
     // dieselbe eine `violations`-Liste des Berichts.
     const budgetViolations = evaluateRosterBudget(index, budget);
 
+    // The raise cost per slot (`SlotCapability.raiseCosts`): what putting this
+    // slot on the table would cost, its own cost plus the mandatory children it
+    // would have to create with it. Built HERE and not in the report layer,
+    // because it needs the count index and the query context that only this
+    // facade holds — and AFTER the constraint phase, so the ordering shows on
+    // the code that it can feed nothing back into what was already evaluated.
+    const raiseCostProjection = buildRaiseCostProjection(root, effective, {
+      index,
+      categoryIds: resolved.categoryIds,
+      budget,
+      primaryCatalogueByForceDefId,
+    });
+
     const diagnostics = [
       ...datasetDiagnostics,
       ...joinDiagnostics,
@@ -359,6 +373,7 @@ export function evaluate(prepared, roster, options) {
       declaredCostTypeIds: costTypesOf(contents).map(costType => costType.id),
       sourceIdByDefId,
       categoryAnchorOccupancies: anchorOccupancies,
+      raiseCostProjection,
     });
   });
 

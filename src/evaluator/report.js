@@ -25,7 +25,7 @@
  *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
  *   (`infoProjection.js`) sowie die **Kostenprojektion** je Slot — Eigenkosten
  *   einer Instanz (`costs`) und Gesamtkosten des Teilbaums (`totalCosts`,
- *   `costProjection.js`),
+ *   `costProjection.js`) sowie den **Aushebe-Preis** des Slots (`raiseCosts`),
  * - **`costTotals`** — die roster-weite Kostensumme je deklarierter Kostenart
  *   (Kosten je Instanz × absolute Anzahl, Modifikatoren angewandt; deklarierte
  *   Kostenarten ohne Vorkommen mit 0, Issue 0121),
@@ -576,6 +576,12 @@ function headroomOf(maxResult) {
  * meldet beide. `isBlocked`/`isMandatoryUnmet` lesen umgekehrt **jede** Grenze
  * des Slots: ein ausgeschoepftes Punktebudget sperrt genauso wie eine erreichte
  * Stueckzahl.
+ * `raiseCosts` ist die dritte Sicht derselben Projektion: der **Aushebe-Preis**
+ * des Slots — seine Eigenkosten plus, je Pflicht-Kind, dessen effektive
+ * Mindestanzahl mal dessen Aushebe-Preis (rekursiv). Ein Slot ohne Pflicht-Kinder
+ * traegt damit denselben Wert wie in `costs`. Wird der Bericht ohne
+ * Aushebe-Projektion gebaut, faellt das Feld auf `costs` zurueck — genau der Wert,
+ * den es fuer einen Slot ohne Pflicht-Kinder ohnehin hat.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
  * die **effektiven** Eigenkosten EINER Instanz (nach Kosten-Modifikatoren, auch
  * an Angebots-Ankern: was EINE Instanz beim Waehlen kosten wuerde) und die
@@ -596,7 +602,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, sourceIdByDefId, anchorOccupancies }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   return {
@@ -615,6 +621,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     name: effective.nameOf(node),
     costs: costProjection.costsOf(node),
     totalCosts: costProjection.totalCostsOf(node),
+    raiseCosts: raiseCostProjection?.raiseCostsOf(node) ?? costProjection.costsOf(node),
     categoryIds: effective.categoryIdsOf(node),
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
@@ -656,7 +663,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number> } | null }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -696,6 +703,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     declaredCostTypeIds = NO_DECLARED_COST_TYPES,
     sourceIdByDefId = NO_DEFINITION_SOURCES,
     categoryAnchorOccupancies = NO_ANCHOR_OCCUPANCIES,
+    raiseCostProjection = null,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -707,6 +715,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
     publicationRegistry: createPublicationRegistry(publications),
     costProjection,
+    raiseCostProjection,
     sourceIdByDefId,
     anchorOccupancies: categoryAnchorOccupancies,
   };

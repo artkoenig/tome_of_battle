@@ -113,7 +113,11 @@ export default function AutoFillSuggestions({
       // nicht (ADR-0032 löst global-by-Id auf, der Bericht verankert deshalb
       // auch fremde Wurzel-Einträge als Angebot).
       if (foreignCatalogueIds.has(capability.sourceId)) continue;
-      const cost = capability.costs?.[costLimitTypeId] ?? 0;
+      // Der **Aushebe-Preis** (`raiseCosts`), nicht der Eigenpreis: was ein
+      // Vorschlag wirklich kostet, ist der Preis samt seiner Pflicht-Kinder
+      // (Issue 0085). Über `costs` fiel eine modell-bepreiste Einheit als
+      // vermeintlich kostenlos aus der Schranke unten heraus.
+      const cost = capability.raiseCosts?.[costLimitTypeId] ?? 0;
       if (cost <= 0 || cost > remainingPoints) continue;
       collected.push({ path, capability, cost });
     }

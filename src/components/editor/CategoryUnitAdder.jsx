@@ -13,7 +13,10 @@ import BottomSheet from './BottomSheet';
  * Ziel-Kontingent (`forcePath`): wählbar ist, was dort als Angebots-Anker,
  * Pflicht-Phantom oder belegter Slot mit Restspielraum hängt; gesperrt
  * (`isBlocked`) wird deaktiviert mit „(Nicht verfügbar)" gezeigt; versteckt
- * (`isHidden`) erscheint gar nicht. Kosten liest `capability.costs`. Der
+ * (`isHidden`) erscheint gar nicht. Kosten liest `capability.raiseCosts` — der
+ * Dialog bepreist ein **Ausheben**, und ein Ausheben erzeugt die Pflicht-Kinder
+ * mit: eine Einheit, deren Punkte am Pflicht-Modell hängen, zeigte über
+ * `capability.costs` gar keinen Preis (Issue 0085). Der
  * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
  * ADR-0022) ist ersatzlos entfallen (ADR-0035).
  *
@@ -97,7 +100,7 @@ export default function CategoryUnitAdder({
     candidates.push({ path, capability });
   }
 
-  const costOf = ({ capability }) => capability.costs?.[costLimitType] ?? 0;
+  const costOf = ({ capability }) => capability.raiseCosts?.[costLimitType] ?? 0;
   candidates.sort((a, b) => costOf(b) - costOf(a)); // Descending
 
   if (candidates.length === 0) return null;
