@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/aushebedialog-fehlende-kosten-pes5x2
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/231
 ---
 
 # The raise dialog shows no cost for units whose points sit on their models
