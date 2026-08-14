@@ -5,6 +5,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  /* Parser errors can carry an unbreakable token (a URL). Without this the
+     banner's min-content width grows past its column and clips the layout. */
+  overflow-wrap: anywhere;
+}
+
+/* The icon keeps its size while the message wraps. */
+.importer-status-banner > svg {
+  flex-shrink: 0;
 }
 
 .importer-status-banner--error {
