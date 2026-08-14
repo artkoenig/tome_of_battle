@@ -382,6 +382,10 @@ export default function UnitSelectionCard({
               subSelectionOperations={subSelectionOperations}
               activeCatalogue={activeCatalogue}
               isSubUnit={true}
+              // Without this hand-down the sub-unit card still draws the
+              // BookOpen affordance on its linked rule chips, but the click
+              // goes nowhere: RuleChipIcon only calls what it was given.
+              onShowRule={onShowRule}
             />
           ))}
         </div>
