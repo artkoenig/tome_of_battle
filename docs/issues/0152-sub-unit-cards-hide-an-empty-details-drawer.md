@@ -1,7 +1,7 @@
 ---
-status: active
+status: waiting
 branch: claude/goblin-streitwagengruppe-profile-pgjxon
-pr:
+pr: 234
 ---
 
 # A sub-unit card hides its chips behind a drawer that is often empty
@@ -65,3 +65,5 @@ its toggle and opens on click, and cost, actions menu and torn-edge marker of a
 sub-card are unchanged.
 
 ## Log
+
+- 2026-08-14 — Implemented, tests green, version bumped to 2.0.3, PR #234 open.
