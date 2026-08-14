@@ -45,6 +45,142 @@
             "summary": "Planned the raise cost as a fourth view of the evaluator's cost projection: for each slot, the mandatory children of its definition are built as DETACHED nodes — carrying parent and forceRoot into the real tree but never pushed into parent.children — seeded and run through the existing modifier machinery, so the effective cost and effective minimum of a child that is not yet in the list are read in the context of the force the offer hangs under; the recursion is bounded by a branch-local visited set, and the two surfaces each change one line to read the new `raiseCosts` field. Test plan pins Grave Guard at 120 in the Standard force and 100 in the Necromancer's Army force over the real fixture, plus twenty cases across four new files."
           },
           "prompt": "Issue directory: docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units\nThis increment is worked on its own branch: `claude/aushebedialog-fehlende-kosten-pes5x2--INC-1`, off `claude/aushebedialog-fehlende-kosten-pes5x2`.\nBefore anything else, on `claude/aushebedialog-fehlende-kosten-pes5x2`: record the name with the backlog helper's `branch` subcommand, as `branch docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 claude/aushebedialog-fehlende-kosten-pes5x2--INC-1`, commit that state change and push `claude/aushebedialog-fehlende-kosten-pes5x2`. Then create the branch with `git checkout -b claude/aushebedialog-fehlende-kosten-pes5x2--INC-1`, push it with `-u`, and work on it from there.\nThis run works docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/issue.md one increment at a time, and increment 1 is yours:\n  The raise cost, from the report to the raise dialog — Every capability record of the evaluator report carries the cost of raising one instance of that slot including the child selections the raise is obliged to create, and the two surfaces that offer a raise (the category raise dialog and the auto-fill suggestions) show and sort by that number instead of the own cost. A unit like Grave Guard, whose points hang on its mandatory model child, then shows a price where it showed none.\nWhat it has to satisfy:\n  - Every capability record carries the raise cost of the slot in its own field beside `costs` and `totalCosts`: the effective own cost of one instance plus, for every mandatory child of that slot, that child's raise cost times the child's effective minimum count, applied recursively.\n  - The meaning of `costs` and of `totalCosts` is unchanged.\n  - The raise cost reads effective values only: the cost after every cost modifier holding in the current state, and the effective minimum after every modifier on that bound. A cost modifier tied to the force the offer hangs under is reflected in the number — the Necromancer's Army force (`d3af-1add-4e99-b977`), which sets the Grave Guard model cost to 10, reports a raise cost that differs from the Standard force's accordingly.\n  - In an empty `Standard (VC-AB)` force (`e989-15b8-7eb6-9668`) of the definitive-edition Vampire Counts fixture, the offer anchor of `Grave Guard` (`92ee-2ebf-c6c0-71ff`) reports a raise cost of 120 for cost type `ecfa-8486-4f6c-c249`.\n  - A slot with no mandatory children reports the same raise cost as its own cost, so every unit that shows a price today shows the same price after the change.\n  - The raise cost terminates on catalogue data that links in a cycle.\n  - `CategoryUnitAdder` shows the raise cost instead of the own cost, both in the price it prints and in the descending sort of its candidates, in the form it already uses (`+120 pts`) with no `from` prefix and no extra marker.\n  - `AutoFillSuggestions` reads the raise cost for the same offers, in place of the own cost.\n  - Option lists inside a unit (`SelectionConfigurator`, `OptionGroup`) are untouched and still show an option's own cost.\n  - The roster-wide cost totals (`costTotals`), the validation and the displayed cost of a selection already in the list are unchanged; an offer still contributes to no sum.\n  - The raise cost is pinned by tests over real catalogue data, not only over synthetic XML, and the evaluator's E2E scenarios and unit tests stay green.\n  - `npm run typecheck`, `npm run lint` and `npm test` pass.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nThe planner's codemap is in the run state: read it with the backlog helper's `codemap` subcommand, as `codemap docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json`, before you begin.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 research:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 research:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `needsTests`\n  - `plan`\n  - `moduleMap`\n  - `environment`\n  - `testPlan`\n  - `checks`\n  - `questions`\n  - `summary`\n"
+        },
+        {
+          "label": "tests:INC-1.0",
+          "at": "2026-08-14T10:29:25.859Z",
+          "return": {
+            "cases": [
+              {
+                "case": "Criterion 5 (KONTROLLE): entry with own costs and no children — raiseCosts[pts] === costs[pts] and raiseCosts deep-equal costs.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 4 (KONTROLLE): ein Slot ohne Pflicht-Kinder zeigt denselben Preis wie heute > KONTROLLE: raiseCosts entspricht costs an einem Eintrag ohne Kinder",
+                "got": "TypeError: Cannot read properties of undefined (reading 'cost-points') at anchor.raiseCosts[POINTS_ID] — raiseCosts does not exist on the capability yet."
+              },
+              {
+                "case": "Criterion 1 + 4: unit with no own costs, mandatory model child (min 10, 12 pts) — raiseCosts[pts] === 120, costs[pts] and totalCosts[pts] stay 0.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 1: die Aushebe-Kosten haengen am Pflicht-Kind, wenn die Einheit selbst keine traegt > traegt 120 (10 × 12) als raiseCosts, waehrend costs und totalCosts bei 0 bleiben",
+                "got": "TypeError: Cannot read properties of undefined (reading 'cost-points') at anchor.raiseCosts[POINTS_ID]; the costs/totalCosts guard assertions (both 0) already pass today."
+              },
+              {
+                "case": "Criterion 1, applied recursively: Regiment(4) -> Model(min2, 5) -> Harness(min3, 1); Model raise 8, Regiment raise 20.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 1: der Aushebe-Preis rechnet sich rekursiv ueber mehrere Ebenen > Model traegt 8 (5 + 3×1), Regiment traegt 20 (4 + 2×8)",
+                "got": "TypeError: Cannot read properties of undefined (reading 'cost-points') at model.raiseCosts[POINTS_ID]."
+              },
+              {
+                "case": "Criterion 3, effective cost: a cost modifier on the mandatory child, gated on the force it holds under, changes the raise cost (50 under Force A where it fires, 120 under Force B where it does not).",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 3: der Aushebe-Preis liest effektive Kosten — ein feuernder Modifikator schlaegt durch > unter Kontingent A (Modifikator feuert): 50 (10 × 5) statt 120 / unter Kontingent B (Modifikator feuert nicht): 120 (10 × 12), der Katalog-Grundwert",
+                "got": "Both cases: TypeError: Cannot read properties of undefined (reading 'cost-points') at anchor.raiseCosts[POINTS_ID]."
+              },
+              {
+                "case": "Criterion 3, effective minimum: a modifier on the min-limit id (set 3) changes the mandatory count the raise cost multiplies by — 36 instead of 120.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 3: der Aushebe-Preis liest die effektive Mindestanzahl — ein Modifikator auf die Grenze schlaegt durch > rechnet mit der modifizierten Mindestanzahl 3 statt der Katalog-Grenze 10: 36 (3 × 12)",
+                "got": "TypeError: Cannot read properties of undefined (reading 'cost-points') at anchor.raiseCosts[POINTS_ID]."
+              },
+              {
+                "case": "Edge: a minimum modified to 0 — the child contributes nothing, raiseCosts deep-equal costs.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Randfall: eine auf 0 modifizierte Mindestanzahl macht das Kind wieder unverbindlich > das Kind traegt nichts bei: raiseCosts entspricht costs",
+                "got": "AssertionError: expected undefined to deeply equal {} — raiseCosts is undefined, costs is {}."
+              },
+              {
+                "case": "Edge: a slot with several mandatory children and several cost types — every cost type present in either child is summed, a cost type only the parent declares keeps its own value.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Randfall: mehrere Pflicht-Kinder tragen ihre jeweiligen Kostenarten bei — und was nur der Elter deklariert, bleibt eigen > summiert jede Kostenart, die irgendein Kind traegt, und behaelt eine reine Elter-Kostenart unveraendert",
+                "got": "AssertionError: expected undefined to deeply equal { 'cost-points': 9, 'cost-gold': 5, 'cost-mana': 9 } — raiseCosts is undefined."
+              },
+              {
+                "case": "Criterion 6, cycle: two entries linked into a cycle (A -> B min1, B -> A min1) — raiseCosts is a finite number, the call returns instead of hanging or blowing the stack.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 5: der Aushebe-Preis terminiert auf Katalogdaten mit einem Zyklus > liefert eine endliche Zahl statt zu haengen oder den Stapel zu sprengen",
+                "got": "TypeError: Cannot read properties of undefined (reading 'cost-points') at anchor.raiseCosts[POINTS_ID] — the call itself already returns today (no hang), the field is simply missing."
+              },
+              {
+                "case": "Criterion 10 (KONTROLLE): with the unit only offered (not in the roster), costTotals stays 0 and no violation names the offer's slot.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 10 (KONTROLLE): ein Angebot traegt zu keiner Summe bei und meldet keine Verletzung > KONTROLLE: costTotals bleibt 0 und keine Verletzung nennt den unausgewaehlten Slot",
+                "got": "Passes already today (exit 0) — this is the one case that is genuinely green from the start, as the plan says of every KONTROLLE case."
+              },
+              {
+                "case": "Criterion 9 (KONTROLLE): an optional (non-mandatory) child slot of a selected unit reports raiseCosts deep-equal to costs — untouched, the number SelectionConfigurator/OptionGroup read.",
+                "file": "src/evaluator/costProjection.raiseCost.test.js",
+                "testName": "Kriterium 9 (KONTROLLE): eine optionale Kindauswahl zeigt weiterhin ihren eigenen Preis > KONTROLLE: raiseCosts der optionalen Option entspricht ihren costs",
+                "got": "AssertionError: expected undefined to deeply equal { 'cost-points': 6 } — raiseCosts is undefined."
+              },
+              {
+                "case": "Criterion 4: Grave Guard's offer anchor in the empty Standard (VC-AB) force reports raiseCosts[ecfa-8486-4f6c-c249] === 120, while costs stays 0 (the reported state).",
+                "file": "src/evaluator/costProjection.raiseCostFixture.test.js",
+                "testName": "Kriterium 3: Grave Guard im leeren Standard-Kontingent (der gemeldete Fall) > traegt 120 Punkte Aushebe-Preis, waehrend costs bei 0 bleibt — der Zustand, den die Meldung beschreibt",
+                "got": "TypeError: Cannot read properties of undefined (reading 'ecfa-8486-4f6c-c249') at anchor.raiseCosts[POINTS_ID]."
+              },
+              {
+                "case": "Criterion 3 on real data, second force: under the Necromancer's Army (sets the model cost to 10 by modifier), raiseCosts === 100.",
+                "file": "src/evaluator/costProjection.raiseCostFixture.test.js",
+                "testName": "Kriterium 3: ein Kosten-Modifikator des Kontingents schlaegt im Aushebe-Preis durch > unter der Necromancer's-Army (setzt das Modell auf 10 Punkte): 100 statt 120",
+                "got": "TypeError: Cannot read properties of undefined (reading 'ecfa-8486-4f6c-c249') at anchor.raiseCosts[POINTS_ID]. Note: I could not independently confirm 100 beyond the catalogue's own set-10 modifier value (10 min × 10 pts) since raiseCosts does not exist to check against — see openQuestions."
+              },
+              {
+                "case": "Criterion 5 on real data, corpus invariant: over the Standard-force report, raiseCosts[pts] >= costs[pts] for every capability, offenders reported by slot path and name.",
+                "file": "src/evaluator/costProjection.raiseCostFixture.test.js",
+                "testName": "Kriterium 5: ueber den gesamten Standard-Bericht ist der Aushebe-Preis nie kleiner als der Eigenpreis > kein Faehigkeitsdatensatz unterschreitet seinen eigenen Preis",
+                "got": "AssertionError: 29 offenders today (raiseCosts undefined treated as 0, several capabilities carry a positive own cost) — e.g. '0/1 / Vampire Thrall', '0/46 / Necromancer', '0/48 / Vampire Count', 26 more listed in the failure."
+              },
+              {
+                "case": "Criterion 5 on real data, exact equality: every definition declaring no selectionEntries/selectionEntryGroups/entryLinks of its own has raiseCosts deep-equal costs everywhere the report carries it; population asserted > 0, never an exact count.",
+                "file": "src/evaluator/costProjection.raiseCostFixture.test.js",
+                "testName": "Kriterium 5: Deckungsgleichheit fuer Definitionen ohne eigene Kinder-Container > jede Definition ohne eigene Kinder-Container zeigt raiseCosts === costs, an jedem Slot, den der Bericht dafuer fuehrt",
+                "got": "AssertionError: 'The Laws of Undeath (767a-b50c-7874-68a9): expected undefined to deeply equal {}' — raiseCosts is undefined for the first checked capability, population size is nonzero (checked > 0) as required."
+              },
+              {
+                "case": "The premise of the issue, as a positive control: over the Standard-force report, the count of offer anchors under the force with raiseCosts[pts] > 0 is strictly greater than the count with costs[pts] > 0 (measured today: 17 of 71 priced by own cost).",
+                "file": "src/evaluator/costProjection.raiseCostFixture.test.js",
+                "testName": "Die Praemisse der Meldung, als Positivkontrolle > mehr Angebots-Anker unter dem Kontingent zeigen einen Preis ueber raiseCosts als ueber costs (gemessen: 17 von 71 heute)",
+                "got": "AssertionError: expected 0 to be greater than 24 — with raiseCosts undefined every anchor's raiseCosts[pts]??0 is 0, so the raise-priced count is 0 against 24 own-priced anchors measured in this fixture today (the issue's own text quotes 17 of 71 for the app's default force selection; this file's count differs slightly because it counts every offerAnchor at frame.path '0', not just primary-category ones the app shows)."
+              },
+              {
+                "case": "Criterion 7, the printed price: CategoryUnitAdder prints exactly '+120 pts' for Regiment (whose points hang on its mandatory model child), no 'from' prefix, no extra marker.",
+                "file": "src/components/editor/CategoryUnitAdder.raiseCost.test.jsx",
+                "testName": "CategoryUnitAdder: der Aushebe-Dialog zeigt den Aushebe-Preis statt des Eigenpreises (Issue 0085) > zeigt +120 pts fuer Regiment, dessen Preis am Pflicht-Modell haengt (heute: gar kein Preis)",
+                "got": "AssertionError: expected undefined to be 120 — the guard assertion on capability.raiseCosts fails before the DOM is even queried, since the field does not exist."
+              },
+              {
+                "case": "Criterion 7, the sort: Regiment (raise 120) renders before Champion (raise 60) in .popover-item order.",
+                "file": "src/components/editor/CategoryUnitAdder.raiseCost.test.jsx",
+                "testName": "CategoryUnitAdder: der Aushebe-Dialog zeigt den Aushebe-Preis statt des Eigenpreises (Issue 0085) > sortiert absteigend nach dem Aushebe-Preis: Regiment (120) vor Champion (60)",
+                "got": "AssertionError: expected undefined to be 120 — the guard assertion on capability.raiseCosts fails before rendering."
+              },
+              {
+                "case": "Criterion 5 at the surface (KONTROLLE): Champion (no mandatory children) still prints exactly '+60 pts'.",
+                "file": "src/components/editor/CategoryUnitAdder.raiseCost.test.jsx",
+                "testName": "CategoryUnitAdder: der Aushebe-Dialog zeigt den Aushebe-Preis statt des Eigenpreises (Issue 0085) > KONTROLLE: Champion (ohne Pflicht-Kinder) zeigt weiterhin genau +60 pts",
+                "got": "AssertionError: expected undefined to be 60 — the guard on capability.raiseCosts fails; today's own-cost display is untouched but the guard is on the new field, so this KONTROLLE is red until raiseCosts exists (see openQuestions on the plan's KONTROLLE claim)."
+              },
+              {
+                "case": "Criterion 8, the offer appears: AutoFillSuggestions suggests Swarm (own cost 0, raise cost 30) at 40 remaining points, which the cost <= 0 gate drops today.",
+                "file": "src/components/editor/AutoFillSuggestions.raiseCost.test.jsx",
+                "testName": "AutoFillSuggestions: die Restpunkt-Vorschlaege lesen den Aushebe-Preis statt des Eigenpreises (Issue 0085) > kriterium 6: Swarm erscheint mit 30 Punkten, obwohl sein Eigenpreis 0 ist (heute faellt er ueber die cost <= 0-Schranke heraus)",
+                "got": "AssertionError: expected undefined to be 30 — the guard on capability.raiseCosts fails before rendering the panel."
+              },
+              {
+                "case": "Criterion 8, the offer is gated by the raise cost: at 20 remaining points Swarm (raise 30) is NOT suggested while Banner (raise 15) still is.",
+                "file": "src/components/editor/AutoFillSuggestions.raiseCost.test.jsx",
+                "testName": "AutoFillSuggestions: die Restpunkt-Vorschlaege lesen den Aushebe-Preis statt des Eigenpreises (Issue 0085) > kriterium 6: bei 20 Restpunkten faellt Swarm (Aushebe-Preis 30) aus dem Fenster, waehrend Banner (15) bleibt",
+                "got": "AssertionError: expected undefined to be 30 — the guard on capability.raiseCosts fails before rendering the panel."
+              }
+            ],
+            "openQuestions": [
+              "The plan's closing note claims 'every case marked KONTROLLE: is expected green from the start', but two evaluator KONTROLLE cases (criteria 4 and 9 of the plan — my 'Kriterium 4 (KONTROLLE)' and 'Kriterium 9 (KONTROLLE)' describe blocks) and the CategoryUnitAdder KONTROLLE case (criterion 5 at the surface, case 18) all guard-assert capability.raiseCosts directly, so they are red before the implementation like every other case that reads the new field — only the criterion-10 costTotals/violations KONTROLLE case (case 9 of the plan) is actually green today. The plan's blanket claim is inaccurate for these three cases; flagging it rather than silently reclassifying them.",
+              "Case 12 (real-fixture, Necromancer's Army, expects raiseCosts === 100): the plan instructs 'if the engine reports another number, do NOT adjust the expectation to match the engine: report the discrepancy as an open question.' I pinned 100 (10 minimum x the modifier's set-10 model cost, both confirmed against the raw fixture XML at lines 1043-1047 of the catalogue) but could not run the number through a real raiseCosts computation to cross-check it, since the field does not exist yet — the implementer's first run of this file is the first real check of that number.",
+              "Case 15's positive-control count (my file B, 'Die Praemisse der Meldung') measured 24 anchors with a positive own cost under the Standard force at frame.path '0' today, not the issue's quoted 17 of 71 — the difference is plausibly that the issue's count is scoped to primary-category offers the app's raise dialog actually shows, while mine counts every offerAnchor directly under the force regardless of category. I recorded the discrepancy in a code comment rather than changing the assertion, since the test only needs the strict inequality (raise-priced > own-priced), which holds either way."
+            ],
+            "questions": [],
+            "summary": "Wrote and ran four new failing test files for Issue 0085 increment 1 (costProjection.raiseCost.test.js, costProjection.raiseCostFixture.test.js, CategoryUnitAdder.raiseCost.test.jsx, AutoFillSuggestions.raiseCost.test.jsx) covering all 20 cases of the researcher's test plan; every case that reads the new raiseCosts field fails today with the expected undefined/TypeError, and the one true regression-guard KONTROLLE case (costTotals/violations, criterion 10) already passes. Updated src/components/editor/CLAUDE.md to add raiseCosts to the guard-assert field list, as the plan required."
+          },
+          "prompt": "Turn the researcher's test plan into failing tests.\n\nIssue directory: docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units\nThis increment is worked on branch `claude/aushebedialog-fehlende-kosten-pes5x2--INC-1`. Before anything else make sure you are on it: `git fetch origin claude/aushebedialog-fehlende-kosten-pes5x2--INC-1` and check it out; if the remote does not have it, create it from `claude/aushebedialog-fehlende-kosten-pes5x2` and push it with `-u`.\nThis run works docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/issue.md one increment at a time, and increment 1 is yours:\n  The raise cost, from the report to the raise dialog — Every capability record of the evaluator report carries the cost of raising one instance of that slot including the child selections the raise is obliged to create, and the two surfaces that offer a raise (the category raise dialog and the auto-fill suggestions) show and sort by that number instead of the own cost. A unit like Grave Guard, whose points hang on its mandatory model child, then shows a price where it showed none.\nWhat it has to satisfy:\n  - Every capability record carries the raise cost of the slot in its own field beside `costs` and `totalCosts`: the effective own cost of one instance plus, for every mandatory child of that slot, that child's raise cost times the child's effective minimum count, applied recursively.\n  - The meaning of `costs` and of `totalCosts` is unchanged.\n  - The raise cost reads effective values only: the cost after every cost modifier holding in the current state, and the effective minimum after every modifier on that bound. A cost modifier tied to the force the offer hangs under is reflected in the number — the Necromancer's Army force (`d3af-1add-4e99-b977`), which sets the Grave Guard model cost to 10, reports a raise cost that differs from the Standard force's accordingly.\n  - In an empty `Standard (VC-AB)` force (`e989-15b8-7eb6-9668`) of the definitive-edition Vampire Counts fixture, the offer anchor of `Grave Guard` (`92ee-2ebf-c6c0-71ff`) reports a raise cost of 120 for cost type `ecfa-8486-4f6c-c249`.\n  - A slot with no mandatory children reports the same raise cost as its own cost, so every unit that shows a price today shows the same price after the change.\n  - The raise cost terminates on catalogue data that links in a cycle.\n  - `CategoryUnitAdder` shows the raise cost instead of the own cost, both in the price it prints and in the descending sort of its candidates, in the form it already uses (`+120 pts`) with no `from` prefix and no extra marker.\n  - `AutoFillSuggestions` reads the raise cost for the same offers, in place of the own cost.\n  - Option lists inside a unit (`SelectionConfigurator`, `OptionGroup`) are untouched and still show an option's own cost.\n  - The roster-wide cost totals (`costTotals`), the validation and the displayed cost of a selection already in the list are unchanged; an offer still contributes to no sum.\n  - The raise cost is pinned by tests over real catalogue data, not only over synthetic XML, and the evaluator's E2E scenarios and unit tests stay green.\n  - `npm run typecheck`, `npm run lint` and `npm test` pass.\nEvery other increment is settled; this is the last one, so the issue is complete once yours is.\nYour work order is the researcher's test plan. It is in the run state, and these reads are how you get it, with the `steps` subcommand of the backlog helper your shared brief names:\n  - `steps docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 research:INC-1.0 --fields testPlan` — the test plan.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 tests:INC-1.0 <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json INC-1 tests:INC-1.0 <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `cases`\n  - `openQuestions`\n  - `questions`\n  - `summary`\n"
         }
       ],
       "attempts": []

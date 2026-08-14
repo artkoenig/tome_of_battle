@@ -91,7 +91,7 @@ than reparsed per case (see
   the real report FIRST — `toMatchObject` on the capability at
   `pathBySelectionId.get(<selection id>)` (`anchorKind`, `effectiveMin`,
   `effectiveMax`, `isMandatoryUnmet`, `isBlocked`, `headroom`, `current`,
-  `costs`, `totalCosts`, `infoElements`, …) — before asserting on the rendered
+  `costs`, `totalCosts`, `raiseCosts`, `infoElements`, …) — before asserting on the rendered
   DOM. The point of the guard is that a broken fixture or a wrong path fails
   loudly at the assumption, not inside a DOM query that could also fail for an
   unrelated reason; a case never assumes what the report says. A control case
