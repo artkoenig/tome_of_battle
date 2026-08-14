@@ -97,11 +97,16 @@
 .unit-card-torn-edge {
   display: none;
 }
-/* :not(:has(.gothic-bottomsheet.open)) suspends the clip while a bottom sheet
-   (action popover / info modal) rendered inside this node is open -- clip-path
-   clips the absolutely-positioned desktop popover, so on a short collapsed card
-   the popover would otherwise be sliced to the card's torn-edge polygon. */
-.selection-node:has(.unit-card-details.is-open .unit-card-torn-edge):not(:has(.gothic-bottomsheet.open)) {
+/* The child combinators keep the marker on its own card: a sub-unit card sits
+   inside its group's .selection-node and its drawer is permanently open (it has
+   no toggle), so a descendant :has() would match the group card too and tear
+   the bottom edge off the whole group instead of the card that hides something.
+   :not(:has(.gothic-bottomsheet.open)) stays a descendant match -- it suspends
+   the clip while a bottom sheet (action popover / info modal) rendered anywhere
+   inside this node is open, because clip-path clips the absolutely-positioned
+   desktop popover: on a short collapsed card the popover would otherwise be
+   sliced to the card's torn-edge polygon. */
+.selection-node:has(> .selection-node-header > .unit-card-details.is-open > .unit-card-torn-edge):not(:has(.gothic-bottomsheet.open)) {
   border-bottom-color: transparent !important;
   clip-path: polygon(
     0% 0%, 100% 0%,
