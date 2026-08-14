@@ -24,10 +24,20 @@
  *   bereits vollstaendig). Angebots-Anker und die uebrigen synthetischen Anker
  *   zaehlen nicht: sie tragen keine Instanz.
  *
+ * Eine vierte Sicht steht daneben, siehe {@link buildRaiseCostProjection}: je
+ * Slot der **Aushebe-Preis** (`raiseCosts`) — was das Aufstellen dieses Slots
+ * kostet, seine Eigenkosten plus die seiner Pflicht-Kinder. Sie ist die einzige
+ * Sicht, die einen Slot bepreist, den der Baum nicht fuehrt.
+ *
  * Die Projektion **liest** ausschliesslich — den Baum und die Effektiv-Werte —
  * und rechnet nichts zweites her: dieselben effektiven Kosten speisen auch den
  * Zaehlindex (`countIndex.js`, `contributionOf`).
  */
+
+import { createDetachedChildNode, mandatoryChildDefsOf } from './evalTree.js';
+import { extendBaseEffectiveState } from './effectiveState.js';
+import { applyModifiersOfNodes } from './modifiers.js';
+import { UNLIMITED } from './model.js';
 
 /** Die leere Kostensicht eines Knotens, den die Projektion nicht kennt. */
 const NO_COSTS = Object.freeze({});
@@ -97,5 +107,119 @@ export function buildCostProjection(root, effective, declaredCostTypeIds) {
     costsOf: node => costsByNode.get(node) ?? NO_COSTS,
     totalCostsOf: node => totalCostsByNode.get(node) ?? NO_COSTS,
     costTotals: Object.freeze(costTotals),
+  };
+}
+
+/**
+ * Builds the **raise cost** projection: per slot what raising it would cost —
+ * its own effective cost plus, for every child it is obliged to create, that
+ * child's effective minimum count times that child's raise cost, recursively.
+ *
+ * This is the fourth projected view beside `costs`, `totalCosts` and
+ * `costTotals`, and it is the only one that has to price a slot which is NOT in
+ * the tree: an offer anchor is a leaf by design (`offer.js`), so a unit whose
+ * points hang on a mandatory model child has no node to read them from. For each
+ * such child the projection therefore builds a **detached** node
+ * ({@link import('./evalTree.js').createDetachedChildNode}) — one that carries
+ * `parent` and `forceRoot` but is never pushed into `parent.children`, so nothing
+ * that walks the tree can reach it — and runs the two steps the anchor post pass
+ * runs on offer anchors on it: seed its base values, then apply its modifiers.
+ * Only then are its cost and its minimum read, so both are the **effective**
+ * values in the context of the force the slot hangs under (a force-gated cost
+ * modifier on the model changes the raise price, exactly as the catalogue says).
+ *
+ * Writing into the report's own `EffectiveState` is required, not merely
+ * convenient: the same state is handed to the query context, and a fresh one
+ * would make `ancestor`/category-scope conditions read empty values off the REAL
+ * ancestors. It is free of feedback for the same three reasons
+ * {@link import('./fixpoint.js').applyAnchorPostPass} documents: the count index
+ * is finished and only read, the state keys by node OBJECT so a detached node can
+ * never overwrite a real node's value, and the tree is not modified.
+ *
+ * The modifier diagnostics of this pass are collected locally and **dropped**:
+ * the pass evaluates a slot that does not exist in the list, so a finding of it
+ * would speak about a node no report path names, and the very same modifier is
+ * already diagnosed wherever it applies to a slot that does exist. This is the
+ * one place in the engine where a modifier diagnosis is deliberately not
+ * forwarded.
+ *
+ * Termination on cyclic catalogue data is carried by a `visited` set of
+ * definition ids along the CURRENT branch: a definition already on the branch
+ * contributes nothing and is not descended into, while the same definition
+ * reached through two different branches is still counted twice.
+ *
+ * @param {{ children: object[] }} root  root of the finished evaluation tree.
+ * @param {import('./effectiveState.js').EffectiveState} effective  the converged
+ *   effective state; it is EXTENDED by the values of the detached nodes.
+ * @param {{ index: { get: Function }, categoryIds: Set<string>, budget?: object, primaryCatalogueByForceDefId?: Map<string, string> }} context
+ *   the final count index, the known category ids, the roster budget and the
+ *   origin index of the forces — the context {@link import('./modifiers.js').applyModifiersOfNodes} needs.
+ * @returns {{ raiseCostsOf: (node: object) => Record<string, number> }}
+ */
+export function buildRaiseCostProjection(root, effective, { index, categoryIds, budget, primaryCatalogueByForceDefId }) {
+  const raiseCostsByNode = new Map();
+  /** Diagnostics of this pass — collected and dropped on purpose, see above. */
+  const droppedDiagnostics = [];
+  /** Memoised per definition OBJECT: the answer is a pure function of `node.def`. */
+  const mandatoryChildrenByDef = new Map();
+
+  function mandatoryChildrenOf(node) {
+    let children = mandatoryChildrenByDef.get(node.def);
+    if (children === undefined) {
+      children = mandatoryChildDefsOf(node);
+      mandatoryChildrenByDef.set(node.def, children);
+    }
+    return children;
+  }
+
+  /** The effective own cost of one instance — the same source `costs` reads. */
+  function ownCostsOf(node) {
+    /** @type {Record<string, number>} */
+    const costs = {};
+    for (const [costTypeId, perInstance] of effective.costEntriesOf(node)) {
+      costs[costTypeId] = perInstance;
+    }
+    return costs;
+  }
+
+  function raiseCostOf(node, visited) {
+    const costs = ownCostsOf(node);
+    for (const { def, gates, limit } of mandatoryChildrenOf(node)) {
+      const ids = [def.id, def.resolved?.id].filter(id => id !== undefined && id !== null);
+      if (ids.some(id => visited.has(id))) continue;
+      const shadow = createDetachedChildNode(root, node, def, gates);
+      extendBaseEffectiveState(effective, [shadow]);
+      applyModifiersOfNodes([shadow], effective, {
+        root, index, categoryIds, diagnostics: droppedDiagnostics, budget, primaryCatalogueByForceDefId,
+      });
+      // The bound is read AFTER the modifier pass: a minimum a modifier lifts
+      // from 0 counts, one it drops to 0 contributes nothing and stops the
+      // recursion there. An unlimited bound is no piece count at all.
+      const bound = effective.limitValue(shadow, limit.id) ?? limit.value;
+      if (bound === UNLIMITED) continue;
+      const mandatoryCount = Math.max(0, bound);
+      if (mandatoryCount === 0) continue;
+      const childCosts = raiseCostOf(shadow, new Set([...visited, ...ids]));
+      for (const [costTypeId, perInstance] of Object.entries(childCosts)) {
+        addTo(costs, costTypeId, mandatoryCount * perInstance);
+      }
+    }
+    return costs;
+  }
+
+  function projectRaiseCost(node) {
+    const ownIds = [node.def.id, node.def.resolved?.id].filter(id => id !== undefined && id !== null);
+    raiseCostsByNode.set(node, Object.freeze(raiseCostOf(node, new Set(ownIds))));
+    for (const child of node.children) {
+      projectRaiseCost(child);
+    }
+  }
+
+  for (const child of root.children) {
+    projectRaiseCost(child);
+  }
+
+  return {
+    raiseCostsOf: node => raiseCostsByNode.get(node) ?? NO_COSTS,
   };
 }

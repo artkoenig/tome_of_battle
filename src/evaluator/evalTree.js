@@ -43,7 +43,7 @@
  * Slots ist damit abgelesen und nicht aus Pfadform oder Definitionsart geraten.
  */
 
-import { AnchorKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
+import { AnchorKind, CountedFieldKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
 import { isInCatalogueScope, declaredCatalogueIdOf, forceCatalogueReferenceOf } from './catalogSet.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
@@ -814,6 +814,86 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
       }
     }
   }
+}
+
+/**
+ * The parent-scoped MIN limit that makes a child definition **mandatory** for its
+ * owner — or `null` when the definition carries none.
+ *
+ * Only a bound that counts PIECES qualifies: a cost-measured minimum
+ * (`field.kind !== SELECTION_COUNT`) and a percentage minimum are not a number of
+ * children the raise has to create, so they make no child mandatory here. The
+ * candidate is picked by the mere PRESENCE of the bound, never by its base value —
+ * the effective value after every modifier is read later, by the caller.
+ */
+function mandatoryMinLimitOf(def) {
+  return limitsOf(def).find(limit =>
+    limit.kind === ConstraintKind.MIN
+    && limit.scope === ScopeKeyword.PARENT
+    && limit.field?.kind === CountedFieldKind.SELECTION_COUNT
+    && !limit.isPercent,
+  ) ?? null;
+}
+
+/**
+ * The child definitions a slot is **obliged** to create when it is raised: every
+ * selection under its owner definition ({@link ownerDefinitionOf}) that carries a
+ * parent-scoped MIN limit ({@link mandatoryMinLimitOf}), together with the
+ * visibility gates walked to reach it and that very limit.
+ *
+ * This is the same reading of "which children must this slot create" that
+ * {@link synthesizeParentScopePhantoms} uses, exposed for the raise-cost
+ * projection (`costProjection.js`), which has to price children that do not exist
+ * in the tree. A `categoryLink` is skipped: a category is not a selection anyone
+ * pays for.
+ *
+ * The answer is a pure function of `node.def`, so a caller may memoise it by that
+ * object.
+ *
+ * @param {object} node  the slot whose mandatory children are asked for.
+ * @returns {Array<{ def: object, gates: object[], limit: object }>}
+ */
+export function mandatoryChildDefsOf(node) {
+  const found = [];
+  for (const { def, gates } of selectionDefinitionsUnder(ownerDefinitionOf(node))) {
+    if (def.kind === DefinitionKind.CATEGORY_LINK) continue;
+    const limit = mandatoryMinLimitOf(def);
+    if (limit !== null) found.push({ def, gates, limit });
+  }
+  return found;
+}
+
+/**
+ * A node in the shape of a mandatory phantom ({@link attachPhantom}) that is
+ * **deliberately NOT pushed into `parent.children`**: everything that reaches
+ * nodes reaches them through `children`, so staying out of that array is what
+ * keeps this hypothetical slot out of the report — no capability record, no slot
+ * path, no constraint result, no violation, no index entry, no cost total.
+ *
+ * It still carries `parent` and `forceRoot`, because that ancestor chain is what
+ * lets `query.js` resolve the `parent`, `force` and `ancestor` scopes of the
+ * modifiers evaluated on it (`costProjection.js`, {@link buildRaiseCostProjection}).
+ *
+ * @param {object} root  root of the tree (carries the source of frame identities).
+ * @param {object} parent  the node this child would hang under.
+ * @param {object} def  the child definition.
+ * @param {object[]} [gates]  the visibility gates walked to reach `def`.
+ * @returns {object} the detached node.
+ */
+export function createDetachedChildNode(root, parent, def, gates = []) {
+  return {
+    def,
+    instance: null,
+    parent,
+    children: [],
+    isPhantom: true,
+    isRoot: false,
+    isForce: false,
+    anchorKind: AnchorKind.MANDATORY_PHANTOM,
+    frameId: root.nextFrameId(),
+    forceRoot: parent.forceRoot,
+    visibilityGates: gates,
+  };
 }
 
 /** Ob eine Definition ein deklariertes `sortIndex` traegt (Issue 0133). */
