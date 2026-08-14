@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: active
 branch: claude/goblin-streitwagengruppe-profile-pgjxon
 pr:
 ---
@@ -43,5 +43,25 @@ the chips would read as properties of every sub-unit.
    lower edge.
 
 ## Result
+
+`UnitSelectionCard.jsx`, two places: the details toggle is now wrapped in
+`{!isSubUnit && ...}`, and the section's open state reads
+`isSubUnit || isDetailsOpen` instead of `isDetailsOpen` alone. A sub-unit card
+therefore has no toggle and shows its chip row permanently; nothing else about
+the card changed, and the top-level card is untouched. The play view's card
+(`PlayUnitDetails`) already hid its toggle on sub-units the same way.
+
+Because `UnitUpgradesChips` renders `null` without upgrades, the permanently
+open section of a sub-unit without upgrades stays empty and takes no height —
+only the `.unit-card-torn-edge` marker sits in it, which renders nothing itself
+and merely tells the CSS that the options editor below is still collapsed.
+
+Tests: `UnitSelectionCard.subUnitDetails.test.jsx` — seven cases over a Goblin
+Wolf Chariots group with two chariots, one with chips and one without. Two of
+them fail against the old card (no toggle on a sub-card; chips visible without
+a click), the rest are controls: the sub-cards exist, the empty drawer stays
+empty, sub-cards carry neither stat block nor rules chips, the group card keeps
+its toggle and opens on click, and cost, actions menu and torn-edge marker of a
+sub-card are unchanged.
 
 ## Log

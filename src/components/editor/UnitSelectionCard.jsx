@@ -198,7 +198,14 @@ export default function UnitSelectionCard({
   };
 
   const isUnitEditing = selectedRosterSelection?.id === selection.id;
-  const detailsOpen = isDetailsOpen;
+  // A sub-unit card carries neither the stat block nor the rules chips (both
+  // hang on `!isSubUnit` below) -- its profiles are inherited upwards and read
+  // off the parent card. Its only detail is the upgrade chip row, and that row
+  // is empty whenever the sub-unit has no upgrades, so the toggle would open an
+  // empty drawer. The chips therefore stay permanently visible and the sub-unit
+  // card has no toggle at all; the play view's card does the same
+  // (`PlayUnitDetails`, `!isSubUnit` on its toggle).
+  const detailsOpen = isSubUnit || isDetailsOpen;
   // Der effektive Name kommt aus dem Slot des Berichts (Issue 0121, Task 8;
   // ADR-0034); ohne Slot bleibt der gespeicherte Selektionsname stehen.
   const effectiveName = capability?.name ?? selection.name;
@@ -228,18 +235,20 @@ export default function UnitSelectionCard({
                 {displayPoints} {costTypeLabel}
               </span>
             )}
-            <button
-              type="button"
-              className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsDetailsOpen(!isDetailsOpen);
-              }}
-              title={isDetailsOpen ? t('editor.hideDetails') : t('editor.showDetails')}
-              aria-expanded={isDetailsOpen}
-            >
-              <ReceiptText size={16} />
-            </button>
+            {!isSubUnit && (
+              <button
+                type="button"
+                className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDetailsOpen(!isDetailsOpen);
+                }}
+                title={isDetailsOpen ? t('editor.hideDetails') : t('editor.showDetails')}
+                aria-expanded={isDetailsOpen}
+              >
+                <ReceiptText size={16} />
+              </button>
+            )}
             <div ref={menuRef} className="unit-card-menu-container" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
