@@ -17,6 +17,8 @@
  * sondern nur, ob eine vorhandene Chip-Zeile ohne Zutun sichtbar ist.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
@@ -194,5 +196,61 @@ describe('UnitSelectionCard: Untereinheiten-Karte ohne Details-Knopf (Issue 0152
     expect(card.querySelector('.selection-node-cost').textContent).toContain('60');
     expect(card.querySelector('[data-testid="unit-actions-menu"]')).not.toBeNull();
     expect(card.querySelector('.unit-card-details .unit-card-torn-edge')).not.toBeNull();
+  });
+});
+
+/**
+ * Der Zackenrand gehoert der Karte, die ihn traegt — nicht ihren Vorfahren.
+ *
+ * Die Untereinheiten-Karte hat keinen Details-Knopf und ihre Lade steht darum
+ * dauerhaft offen; sie traegt den Rand-Marker also immer. Greift die
+ * `:has()`-Regel den Marker als beliebigen Nachfahren, passt sie auch auf die
+ * umschliessende Gruppenkarte, und der Zackenrand erscheint unter der ganzen
+ * Gruppe statt unter der Karte, die noch etwas Eingeklapptes verbirgt.
+ *
+ * Der Test liest den Selektor aus dem Stylesheet und prueft ihn mit
+ * `Element.matches()` gegen den echten Baum — die Regel selbst wendet jsdom
+ * nicht an, der Selektor ist aber genau das Bewegliche daran.
+ */
+const tornEdgeClipSelector = () => {
+  const css = readFileSync(join(process.cwd(), 'src/styles/30-unit-chips-and-details.css'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
+  const block = css
+    .split('}')
+    .find((chunk) => chunk.includes('unit-card-torn-edge') && chunk.includes('clip-path'));
+  return block.slice(0, block.indexOf('{')).trim();
+};
+
+describe('UnitSelectionCard: der Zackenrand bleibt auf seiner eigenen Karte', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockResolveEntry.mockImplementation((_system, entry) =>
+      entry?.id === CHARIOT_ENTRY_ID ? SUB_UNIT_ENTRY : { type: 'unit', collective: false }
+    );
+  });
+
+  it('schneidet die Gruppenkarte nicht an, solange nur die Untereinheiten offen sind', () => {
+    const { container } = renderGroupCard();
+
+    const groupCard = container.querySelector('.selection-node');
+    expect(groupCard.querySelector('.unit-card-details').className).not.toContain('is-open');
+    expect(groupCard.matches(tornEdgeClipSelector())).toBe(false);
+  });
+
+  it('schneidet jede Untereinheiten-Karte an, weil deren Lade offen steht', () => {
+    const { container } = renderGroupCard();
+
+    const selector = tornEdgeClipSelector();
+    subCards(container).forEach((card) => {
+      expect(card.matches(selector)).toBe(true);
+    });
+  });
+
+  it('KONTROLLE: schneidet die Gruppenkarte an, sobald ihre eigene Lade offen steht', () => {
+    const { container } = renderGroupCard();
+
+    fireEvent.click(container.querySelector('.unit-card-details-toggle'));
+
+    expect(container.querySelector('.selection-node').matches(tornEdgeClipSelector())).toBe(true);
   });
 });
