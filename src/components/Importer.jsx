@@ -348,8 +348,11 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
     );
   };
 
-  return (
-    <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
+  // In the empty state the container is a centering flex row (.empty-state-wrapper).
+  // The banners therefore belong inside the stacked layout below; as siblings of it
+  // they would become a second flex item and squeeze the column beside the panel.
+  const statusBanners = (
+    <>
       {error && (
         <div className="validation-error-item importer-status-banner importer-status-banner--error">
           <ShieldAlert className="text-danger" size={20} />
@@ -363,6 +366,12 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
           <span className="text-success">{successMsg}</span>
         </div>
       )}
+    </>
+  );
+
+  return (
+    <div className={`container ${showAsEmptyState ? 'empty-state-wrapper' : ''}`}>
+      {!showAsEmptyState && statusBanners}
 
       {loading && (
         <div className="modal-overlay">
@@ -376,6 +385,8 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
 
       {showAsEmptyState ? (
         <div className="empty-importer-layout">
+          {statusBanners}
+
           <div className="empty-importer-text-center">
             <div className="empty-state-image empty-importer-image empty-importer-image-centered" />
             <h2 className="empty-state-title empty-state-title-large">{t('importer.empty.title')}</h2>
