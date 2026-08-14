@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "issue": "docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/issue.md",
+  "workflow": "agile-loop",
+  "codemap": "# Codemap - issue 085, raise cost of an offer\n\n## Evaluator (the number)\n\n- `src/evaluator/costProjection.js` - the cost projection of the report; today it projects own cost per slot, subtree total per slot and the roster-wide totals. The raise cost is a third projected view and belongs here.\n- `src/evaluator/report.js` - builds the capability record and is where `costs`, `totalCosts` and the effective bounds are put on it; the new field is added beside them (~line 579-625).\n- `src/evaluator/evalTree.js` - the evaluation tree and the limits attached to its nodes (`limitsOf`, `evaluableLimitsOf`, offer anchors via `attachOfferAnchor`); an offer anchor is a leaf, so whatever the raise cost needs about a slot's mandatory children is reached from here. Touched only if the projection needs something this module does not expose yet.\n- `src/evaluator/effectiveState.js` - the effective values after all modifiers (costs and bounds). Read by the projection; touched only if the effective minimum of a not-yet-instantiated child is not reachable today.\n- `src/evaluator/constraints.js` - the constraint evaluation that yields the effective min/max bounds the report already reports. Same reason as above: source of the effective minimum a mandatory child is obliged to.\n\n## Evaluator tests\n\n- `src/evaluator/costProjection.test.js` - the unit suite of the projection; the new view's synthetic-XML cases go here.\n- `src/evaluator/report.test.js` - the report contract suite; the new capability field belongs in the record's contract cases.\n- a new test file under `src/evaluator/` over the `whfb6-definitive` fixture - criteria 3, 4 and the second force of criterion 2 have to be pinned on real catalogue data, which the synthetic suites above cannot carry. Fixture: `src/evaluator/__fixtures__/whfb6-definitive/`.\n- `src/evaluator/CLAUDE.md` - the suite doc for this directory; it lists what the layer's suites cover and must name a newly added test file.\n\n## Surface (the two readers)\n\n- `src/components/editor/CategoryUnitAdder.jsx` - the raise dialog: `costOf` at line 100 reads `capability.costs?.[costLimitType]`, feeds both the printed price and the descending sort; the module header at line 16 documents which field it reads.\n- `src/components/editor/AutoFillSuggestions.jsx` - line 116 reads the same field for the same kind of offer, for the fill-up window and its sort.\n- `src/components/editor/CategoryUnitAdder.evaluator.test.jsx` - the suite that builds capabilities from the evaluator and asserts on the rendered dialog; the price and sort change is pinned here.\n- `src/components/editor/AutoFillSuggestions.evaluator.test.jsx` - the same for the suggestions.\n- `src/components/editor/CLAUDE.md` - the editor suite doc; line 94 enumerates the capability fields a test stubs (`costs`, `totalCosts`, ...) and needs the new one.\n\n## Read, not changed\n\n- `docs/adr/0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md` and `docs/adr/0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md` - why the number must come from the report and not from the surface, and what an offer anchor is.\n- `docs/battlescribe-data-format.md` - what a mandatory child is in the data (constraints of type `min`, scope `parent`) and how an `entryLink` carries costs over its target (§9.3).\n",
+  "increments": [
+    {
+      "id": "INC-1",
+      "title": "The raise cost, from the report to the raise dialog",
+      "goal": "Every capability record of the evaluator report carries the cost of raising one instance of that slot including the child selections the raise is obliged to create, and the two surfaces that offer a raise (the category raise dialog and the auto-fill suggestions) show and sort by that number instead of the own cost. A unit like Grave Guard, whose points hang on its mandatory model child, then shows a price where it showed none.",
+      "criteria": [
+        "Every capability record carries the raise cost of the slot in its own field beside `costs` and `totalCosts`: the effective own cost of one instance plus, for every mandatory child of that slot, that child's raise cost times the child's effective minimum count, applied recursively.",
+        "The meaning of `costs` and of `totalCosts` is unchanged.",
+        "The raise cost reads effective values only: the cost after every cost modifier holding in the current state, and the effective minimum after every modifier on that bound. A cost modifier tied to the force the offer hangs under is reflected in the number — the Necromancer's Army force (`d3af-1add-4e99-b977`), which sets the Grave Guard model cost to 10, reports a raise cost that differs from the Standard force's accordingly.",
+        "In an empty `Standard (VC-AB)` force (`e989-15b8-7eb6-9668`) of the definitive-edition Vampire Counts fixture, the offer anchor of `Grave Guard` (`92ee-2ebf-c6c0-71ff`) reports a raise cost of 120 for cost type `ecfa-8486-4f6c-c249`.",
+        "A slot with no mandatory children reports the same raise cost as its own cost, so every unit that shows a price today shows the same price after the change.",
+        "The raise cost terminates on catalogue data that links in a cycle.",
+        "`CategoryUnitAdder` shows the raise cost instead of the own cost, both in the price it prints and in the descending sort of its candidates, in the form it already uses (`+120 pts`) with no `from` prefix and no extra marker.",
+        "`AutoFillSuggestions` reads the raise cost for the same offers, in place of the own cost.",
+        "Option lists inside a unit (`SelectionConfigurator`, `OptionGroup`) are untouched and still show an option's own cost.",
+        "The roster-wide cost totals (`costTotals`), the validation and the displayed cost of a selection already in the list are unchanged; an offer still contributes to no sum.",
+        "The raise cost is pinned by tests over real catalogue data, not only over synthetic XML, and the evaluator's E2E scenarios and unit tests stay green.",
+        "`npm run typecheck`, `npm run lint` and `npm test` pass."
+      ],
+      "depth": "full",
+      "status": "todo",
+      "note": "Whole issue, criteria 1-9, in one slice: the report field and its two readers are one change — the field without a reader is code nobody asked for, and each reader is a line.",
+      "branch": "",
+      "steps": [],
+      "attempts": []
+    }
+  ],
+  "run": {
+    "steps": [
+      {
+        "label": "decompose",
+        "at": "2026-08-14T10:04:08.173Z",
+        "return": {
+          "questions": [],
+          "summary": "Issue 085 is cut as a single increment, INC-1 (chain depth full): the report's new raise-cost field and its two readers, CategoryUnitAdder and AutoFillSuggestions, are one change, since the field without a reader delivers nothing and each reader is a line. All nine acceptance criteria land in it; the codemap in backlog.json names the evaluator files that carry the number, the suites that pin it and the two surfaces that show it."
+        },
+        "prompt": "Issue directory: docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units\nOpen the run state for docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/issue.md: map the issue against the codebase, decide the cut, and write both into docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json with the `init` subcommand of the backlog helper your shared brief names, with workflow \"agile-loop\" and the whole codemap in the payload's `codemap` field.\nThis run works at most 8 increments, so a cut that needs more than that is a cut that is too fine.\nAnnounce this step before you begin it and record it before you return, the way your shared brief describes, with the backlog helper it names:\n  - `start docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json - decompose <the prompt file>` — the prompt you were given, verbatim and whole, in a file outside the repository.\n  - `record docs/issues/085-raise-dialog-shows-no-cost-for-model-based-units/backlog.json - decompose <the return file> <the prompt file>` — your return, in a file outside the repository, with that same prompt file. Commit it with your work and push the commit.\nThe fields your return carries, and your page says what each one holds:\n  - `questions`\n  - `summary`\n"
+      }
+    ],
+    "attempts": []
+  }
+}
