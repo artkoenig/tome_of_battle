@@ -17,6 +17,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
  * @property {import('../types.js').Force} [force]
  */
 import { collectPrimaryCategoryEntries, isSelectionEntryHidden } from './entryVisibility.js';
+import { collectRootOfferEntries } from './rootOffers.js';
 import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
 import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
 import { ConstraintScope } from './battlescribeConstants.js';
@@ -169,7 +170,7 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
 /**
  * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
  * {@link collectPrimaryCategoryEntries} durchläuft:
- * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
+ * `selectionEntries`/`entryLinks`) nach eindeutigen
  * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
  * weder ausgeblendet noch bereits in `force.selections` vertreten sind
  * (Issue 0138, AC1/AC2/AC3/AC7).
@@ -195,11 +196,11 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
   if (!system || !catalogue || !force) return missing;
 
   const catalogueId = catalogue.id;
-  const pools = [
-    ...(catalogue.selectionEntries || []),
-    ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
-  ];
+  // Nur die Wurzelangebote (`collectRootOfferEntries`): ein Eintrag, der allein in
+  // der geteilten Bibliothek steht, ist keine Listenregel des Kontingents, sondern
+  // ein Link-Ziel — z. B. „Pure of Heart" (Hochelfen), das nur die Honours-Gruppe
+  // eines Helden einbindet.
+  const pools = collectRootOfferEntries(catalogue);
 
   // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche
   // Hülle nähert die kontingentweite Selektions-/Kategorie-Zählung an, die

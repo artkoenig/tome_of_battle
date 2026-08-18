@@ -4,6 +4,7 @@ import {
   resolveContextCatalogueId
 } from './modifierEvaluator.js';
 import { buildModifierEvalContext } from './modifierContext.js';
+import { collectRootOfferEntries } from './rootOffers.js';
 
 /**
  * Wertet den effektiven hidden-Status eines Elements aus: statisches
@@ -154,8 +155,8 @@ export function isSelectionEntryHidden(entry, context) {
 }
 
 /**
- * Sammelt die (nicht-versteckten) Katalog-Einträge, die in `categoryId` **primär**
- * sind, jeweils mit ihrem aufgelösten Eintrag. Gemeinsame Grundlage des
+ * Sammelt die (nicht-versteckten) **Wurzelangebote** des Katalogs, die in
+ * `categoryId` **primär** sind, jeweils mit ihrem aufgelösten Eintrag. Gemeinsame Grundlage des
  * „+"-Adders (CategoryUnitAdder) und der Listenregel-Erkennung — beide gruppieren
  * datengetrieben über die effektive Primärkategorie (ADR 0003 §4), nicht über
  * Kategorienamen. Dedupliziert per aufgelöster Entry-ID.
@@ -168,11 +169,10 @@ export function collectPrimaryCategoryEntries(system, catalogue, categoryId, { r
   const found = [];
   if (!system || !catalogue) return found;
 
-  const pools = [
-    ...(catalogue.selectionEntries || []),
-    ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
-  ];
+  // Nur die Wurzelangebote des Katalogs — ein Eintrag der geteilten Bibliothek ist
+  // kein eigenes Angebot des Kontingents, sondern nur dort wählbar, wo ein
+  // `entryLink` ihn einbindet (siehe rootOffers.js).
+  const pools = collectRootOfferEntries(catalogue);
   const seenResolvedIds = new Set();
   // The catalogue being enumerated is the one its entries resolve against — not the
   // roster's, which may well be a different one of the loaded catalogues (ADR 0018).

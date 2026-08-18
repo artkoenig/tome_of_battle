@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
   isCategoryLinkHidden,
-  isEntryPrimaryInCategory,
+  collectPrimaryCategoryEntries,
   resolveListRuleGroup,
   childSelectionsOf
 } from '../../roster';
@@ -28,14 +28,12 @@ function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, catego
   const forceCatalogue = system.catalogues?.find(c => c.id === force.catalogueId);
   if (!forceCatalogue) return false;
 
-  const isPrimaryHere = (entry) =>
-    isEntryPrimaryInCategory(entry, categoryId, {
-      system, roster, selectionCounts, force, catalogueId: forceCatalogue.id
-    });
-
-  return forceCatalogue.selectionEntries?.some(isPrimaryHere) ||
-         forceCatalogue.entryLinks?.some(isPrimaryHere) ||
-         forceCatalogue.sharedSelectionEntries?.some(isPrimaryHere);
+  // Dieselbe Aufzählung, die der Hinzufüger benutzt — damit ist die Sektion per
+  // Konstruktion deckungsgleich mit seinem Angebot und zählt nur die
+  // Wurzelangebote des Katalogs, nie seine geteilte Bibliothek.
+  return collectPrimaryCategoryEntries(system, forceCatalogue, categoryId, {
+    roster, selectionCounts, force
+  }).length > 0;
 }
 
 /**

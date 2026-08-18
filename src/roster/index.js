@@ -35,7 +35,7 @@ export {
 export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { reconcileImportedSelectionIds, syncRosterSelectionsWithSystem } from './rosterSync.js';
 export { findForceEntryById } from './forceEntries.js';
-export { isCategoryLinkHidden, isEntryPrimaryInCategory } from './entryVisibility.js';
+export { isCategoryLinkHidden, isEntryPrimaryInCategory, collectPrimaryCategoryEntries } from './entryVisibility.js';
 export { collectUnreachableArmyWideSelectors } from './armyWideSelectors.js';
 export { isIndependentSubUnit } from './subUnit.js';
 export { getUnitOptions } from './optionsCollector.js';
