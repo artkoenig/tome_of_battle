@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "commands": {
+    "test": {
+      "command": "npx vitest run",
+      "parser": "jest",
+      "runArg": "{pattern}",
+      "failingPattern": ""
+    },
+    "lint": {
+      "command": "npm run lint && npm run depcruise",
+      "parser": "generic",
+      "failingPattern": "^[^[:space:]]+:[0-9]+:[0-9]+|error [a-z-]+:"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "parser": "generic",
+      "failingPattern": "^[^(]+\\([0-9]+,[0-9]+\\): error TS[0-9]+"
+    },
+    "build": {
+      "command": "npm run build",
+      "parser": "generic",
+      "failingPattern": ""
+    }
+  },
+  "compaction": { "maxLines": 60, "headLines": 30, "tailLines": 15 },
+  "guard": {
+    "rewrite": [
+      { "match": "(npm|pnpm|yarn|bun) (run )?depcruise", "wrapper": "forge-lint" },
+      { "match": "(npm|pnpm|yarn|bun) (run )?analyze", "wrapper": "forge-lint" }
+    ]
+  },
+  "issueBackend": "markdown"
+}

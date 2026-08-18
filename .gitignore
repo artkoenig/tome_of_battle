@@ -45,6 +45,13 @@ e2e-failure.png
 .screenshots/
 .claude/worktrees/
 
+# forge: Laufzeitausgabe der Check-Wrapper, Metriken und Kontext-Mitschnitte.
+# .forge/config.json und .claude/rules/ bleiben versioniert.
+.forge/last/
+.forge/metrics.jsonl
+.forge/context.jsonl
+.forge/context/
+
 # Lokale Ausgabe des Zustandsbericht-Generators (scripts/project-state/generate.js).
 # In CI wird der Bericht direkt ins Pages-Deployment gelegt und nie committet.
 .report/
