@@ -28,6 +28,7 @@
 4. [Das Objektmodell im Überblick](#4-das-objektmodell-im-überblick)
 5. [Game System (`.gst`)](#5-game-system-gst)
 6. [Catalogue (`.cat`)](#6-catalogue-cat)
+   - [6.1 Wurzelangebote und Bibliothek](#61-wurzelangebote-und-bibliothek)
 7. [Die Kernbausteine im Detail](#7-die-kernbausteine-im-detail)
    - [7.1 Selection Entry & Selection Entry Group](#71-selection-entry--selection-entry-group)
    - [7.2 Entry Link, Info Link, Category Link](#72-entry-link-info-link-category-link)
@@ -409,6 +410,65 @@ catalogue
 
 Manche Kataloge referenzieren zusätzlich per `<catalogueLinks>`/`<catalogueLink targetId="…">`
 einen *Library*-Katalog, um dessen geteilte Definitionen zu importieren.
+
+---
+
+### 6.1 Wurzelangebote und Bibliothek
+
+Die Top-Level-Pools eines Katalogs sind **nicht gleichwertig**. Nur zwei von ihnen sind
+*Wurzelangebote* — das, was ein Kontingent unmittelbar aufnehmen darf; alle übrigen sind reine
+**Bibliothek**: Definitionen, die erst dort auftauchen, wo ein `entryLink` sie einbindet.
+
+| Top-Level-Pool | Rolle |
+|----------------|-------|
+| `selectionEntries` | **Wurzelangebot.** Direkt an der Wurzel des Katalogs wählbar. |
+| `entryLinks` | **Wurzelangebot.** Verweis an der Wurzel — auf einen geteilten Eintrag desselben Katalogs, eines per `catalogueLink` eingebundenen Library-Katalogs oder des Game Systems. |
+| `sharedSelectionEntries` | Bibliothek. Nur über einen `entryLink` erreichbar. |
+| `sharedSelectionEntryGroups` | Bibliothek. Nur über einen Gruppen-Link erreichbar. |
+| `sharedProfiles`, `sharedRules`, `sharedInfoGroups` | Bibliothek (Anzeige-Inhalte, nie Angebot). |
+| `categoryEntries`, `forceEntries`, `publications`, `costTypes` | kein Angebot — Kategorien, Detachments, Metadaten. |
+
+Ein geteilter Eintrag wird also nicht dadurch zum Wurzelangebot, dass er im Katalog steht,
+sondern erst dadurch, dass ein **Wurzel-`entryLink`** ihn einbindet. Das ist die Ausnahme, nicht
+die Regel — Zählung über die zwölf Kataloge der „Definitive Edition" (`.cat`-Fixtures unter
+`src/evaluator/__fixtures__/whfb6-definitive/`), Ziel-Id eines Wurzel-`entryLink` gegen die Ids
+der `sharedSelectionEntries` desselben Katalogs:
+
+| Katalog | `selectionEntries` | `entryLinks` (Wurzel) | `sharedSelectionEntries` | davon an der Wurzel verlinkt |
+|---------|---:|---:|---:|---:|
+| Bretonnia | 21 | 13 | 74 | 0 |
+| Dark Elves | 41 | 49 | 93 | 0 |
+| Dwarfs (2005) | 34 | 48 | 80 | 0 |
+| Forces of Chaos | 75 | 47 | 166 | 1 (*War Mammoth*) |
+| High Elves | 33 | 45 | 58 | 0 |
+| Lizardmen | 31 | 51 | 27 | 0 |
+| Mercenaries | 0 | 0 | 91 | 0 |
+| Ogre Kingdoms | 17 | 30 | 47 | 0 |
+| Orcs and Goblins | 69 | 50 | 61 | 0 |
+| Skaven | 61 | 49 | 62 | 1 (*Under cover of darkness*) |
+| The Empire | 56 | 56 | 153 | 0 |
+| Vampire Counts | 61 | 50 | 539 | 2 (*Zombie Dragon*, *Winged Nightmare*) |
+
+Zwei Befunde daraus:
+
+- **Die Wurzel-`entryLinks` zeigen fast immer nach außen.** Bei *High Elves* zielen alle 45 auf
+  fremde Kataloge: 41 auf `Mercenaries (6th definitive edition).cat` (`library="true"`, per
+  `catalogueLink` eingebunden — der Katalog selbst hat 0 `selectionEntries` und 0 Wurzel-
+  `entryLinks`, ist also nirgends Angebot), 4 auf das Game System (*Allow special characters?*,
+  *Allow experimental rules?*, *Campaign/Scenario rules*, *Mercenaries and Regiments of Renown*).
+- **Ein Eintrag der Bibliothek ohne Wurzelverweis ist kein Angebot der Armeeliste.** Beleg
+  *Pure of Heart* in *High Elves*: definiert als `selectionEntry id="d0ce-b0c4-fcc1-6cac"`
+  innerhalb von `sharedSelectionEntries`, eingebunden ausschließlich vom `entryLink`
+  `30b5-bd1a-60e2-2354` in der `sharedSelectionEntryGroup` „Honours" (`45a3-3e65-6c49-5cc0`) —
+  also nur am Helden wählbar, nirgends an der Wurzel.
+
+Dass ein solcher Eintrag **Constraints mit `scope="roster"` trägt, macht ihn nicht zum
+Wurzelangebot.** *Pure of Heart* führt neben `max`-Grenzen ein
+`<constraint type="min" field="selections" scope="roster" value="1" includeChildSelections="true"
+includeChildForces="true"/>` — eine armeeweite Mindestgrenze auf einem Eintrag, den die Armeeliste
+selbst nie anbietet. Der Scope sagt, **wo gezählt** wird, nicht, **wo gewählt** werden darf. Die
+Aufzählung der Wurzelangebote (§9.9) folgt deshalb allein den beiden Wurzel-Pools; die
+armeeweite Grenze wird davon unabhängig ausgewertet.
 
 ---
 
