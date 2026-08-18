@@ -29,11 +29,12 @@ Agent liest sie, bevor er formatnahen Code oder Katalogdaten anfasst — auch Su
   hochgeladener Dateien, plus advisory XSD-Prüfung `schemaValidator.js`, ADR 0016) und
   `src/evaluator/catalogReader.js` (Auswertung). Eine Formatkorrektur im einen impliziert nie
   automatisch dieselbe im anderen — prüfen, ob beide betroffen sind.
-- Die XSD liegt vendored als Konformitätsquelle im Repo (`src/parser/schema/Catalogue.xsd`,
-  ADR 0016); der Evaluator teilt deren
-  Enum-SSOT (ADR 0031). Ein Enum-Wert wird dort gepflegt, nicht per Hand dupliziert.
+- Die XSD liegt vendored als Konformitätsquelle im Repo (`src/parser/schema/Catalogue.xsd`, ADR
+  0016); der Evaluator teilt deren Enum-SSOT (ADR 0031) — dort pflegen, nie duplizieren.
 - Kataloge liegen **nicht** im Repo: sie kommen zur Laufzeit aus dem externen Fork (ADR 0014,
   0017, 0018). Für Tests gibt es den eingefrorenen Ausschnitt unter `src/__fixtures__/whfb6/` —
   der ist Fixture, kein Datenstand zum Aktualisieren.
+- Wurzelangebot vs. Bibliothek: nur `selectionEntries` und `entryLinks` an der Katalogwurzel sind
+  Angebot, alle `shared*`-Pools nicht (Formatdoku §6.1) — ein `scope="roster"`-Constraint ändert das nicht.
 - Verweisziele lösen laut ADR 0032 **global über die ID** in einer flachen Tabelle auf, nicht
   katalog-lokal. Die Formatdoku beschreibt an mancher Stelle noch die katalog-lokale Lesart.
