@@ -254,7 +254,12 @@ export const evaluateCondition = (cond, ctx = {}) => {
         if (forceEntryId) {
           const isInstance = (ctx.force?.forceEntryId === forceEntryId) ||
                              (roster?.forces?.some(f => f.forceEntryId === forceEntryId));
-          return cond.value === 0 ? !isInstance : isInstance;
+          // `value` has no effect on `instanceOf`/`notInstanceOf` (BSData §7.7,
+          // `docs/battlescribe-data-format.md`, upstream wiki: "Has no effect where
+          // Type is instance of|not instance of"). Only the comparison kind negates,
+          // and it does so once, below — reading `value === 0` as a second negation
+          // here flipped every `value="0"` force gate into its opposite.
+          return isInstance;
         }
 
         if (!selection || !system) return false;
