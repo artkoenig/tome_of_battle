@@ -1,5 +1,5 @@
 ---
-status: waiting
+status: done
 branch: claude/hochelfen-pure-of-heart-ap1xda
 pr: 242
 ---
