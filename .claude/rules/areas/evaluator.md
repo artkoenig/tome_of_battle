@@ -28,3 +28,14 @@ means; it outranks the ADRs where the two disagree.
   A change that widens a traversal needs that number checked.
 - Report messages are projected to text elsewhere (`src/i18n/violationMessages.js`); a new
   violation kind is only half-done inside this folder.
+- The E2E fixture corpus `src/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18
+  Definitive-Edition books. A scenario for an army whose `.cat` is missing cannot be written until
+  the book is added — check the folder listing before planning one.
+- Fetch a missing book verbatim from the commit the fixture README pins, never from `main` and
+  never hand-edited:
+  `curl -sSL -o "src/evaluator/__fixtures__/whfb6-definitive/<Book> (6th definitive edition).cat" \
+  "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition/<pinned-commit>/<Book>%20(6th%20definitive%20edition).cat"`
+  The exact file name and casing come from the repo's own tree — a wrong case returns a 14-byte
+  "404: Not Found" body with HTTP 200 via the raw host, which looks like a successful download.
+- Adding a book makes `src/evaluator/__fixtures__/whfb6-definitive/README.md` stale: it states the
+  count of books present, which of them are there and why. Update it in the same commit.
