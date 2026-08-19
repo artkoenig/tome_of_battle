@@ -21,8 +21,8 @@ aus, die ein Nutzer beim Import erlebt — inklusive katalogübergreifender
 
 ## Warum diese Teilmenge (nicht alle 18 Kataloge)
 
-Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **11** der 18
-`.cat` plus die `.gst` — aus zwei verschiedenen Gründen.
+Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **12** der 18
+`.cat` plus die `.gst` — aus drei verschiedenen Gründen.
 
 **Fünf Dateien sind der minimale echte Multi-`.cat`-Fall.** Die
 Abhängigkeits­struktur ist ein **Stern**: **jeder** der 17 Armee-Kataloge
@@ -42,9 +42,23 @@ Belegt an den echten Daten: die Ogre-`.cat` hat 244 eindeutige `targetId`s,
 Abhängigkeit — kein toter Verweis.
 
 **Sieben weitere Dateien liegen aus Abdeckungsgründen hier** (siehe den
-nächsten Abschnitt). Die sieben noch fehlenden Bücher bringen **keine weitere
+nächsten Abschnitt). Die sechs noch fehlenden Bücher bringen **keine weitere
 Zelle** und bleiben deshalb draußen — jedes Byte Korpus wird bei jedem
 Inventar- und Drift-Lauf bezahlt.
+
+**Ein Buch liegt wegen eines einzelnen Szenarios hier: `High Elves (6th
+definitive edition).cat`** (`b59c-7ff5-fb34-405e`), hinzugefügt für Issue 0153
+aus demselben oben genannten Commit, unverändert kopiert. Es trägt den im
+ganzen Korpus einzigen **geteilten** Eintrag mit eigenem `min`-Constraint
+`scope="roster"` ≥ 1 und ohne eigene Unterauswahlen — „Pure of Heart"
+(`d0ce-b0c4-fcc1-6cac`), erreichbar allein über den `entryLink`
+`30b5-bd1a-60e2-2354` in der geteilten Gruppe „Honours" unter
+Prince/Archmage/Commander/Mage. Ohne dieses Buch ist der Fall „geteilter
+Eintrag ist kein Wurzel-Angebot" an echten Daten nicht zu pinnen; das Szenario
+dazu liegt unter
+[`docs/testing/shared-entry-roster-min-hero-option/`](../../../../docs/testing/shared-entry-roster-min-hero-option/README.md).
+Ein Abdeckungsargument steht dahinter nicht — die Zellen des Buchs bleiben in
+der Inventur, was sie waren.
 
 ## Why these seven books
 

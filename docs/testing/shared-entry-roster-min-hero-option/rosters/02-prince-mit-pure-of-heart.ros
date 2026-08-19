@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="serm-02" name="SERM 02 – Standard (HE-AB): Prince mit Pure of Heart" battleScribeVersion="2.03" generatedBy="tome-of-battle tester (hand-authored shared-entry-roster-min-hero-option E2E fixture)" gameSystemId="0d13-7737-ea86-4662" gameSystemName="Warhammer Fantasy Battles (6th definitive edition)" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <!-- Derselbe Aufbau wie 01, aber der Prince hat "Pure of Heart" genommen: die
+         Auswahl traegt die Id des VERWEISES (entryLinkId 30b5-bd1a-60e2-2354), unter
+         dem der Katalog den geteilten Eintrag d0ce-b0c4-fcc1-6cac fuehrt, und haengt
+         in der Gruppe "Honours" (entryGroupId 45a3-3e65-6c49-5cc0) unter dem Helden.
+         Damit ist der Platz belegt — an derselben Stelle, an der 01 ihn als Angebot
+         zeigt, und nirgends sonst. -->
+    <force id="force-1" name="Standard (HE-AB)" entryId="c236-0d80-eff8-3cf9" catalogueId="b59c-7ff5-fb34-405e" catalogueRevision="1" catalogueName="High Elves">
+      <selections>
+        <selection id="sel-prince" name="Prince" entryId="f42c-be6f-8a5d-7199" entryLinkId="" number="1" type="unit" collective="false">
+          <selections>
+            <selection id="sel-pure-of-heart" name="Pure of Heart" entryId="d0ce-b0c4-fcc1-6cac" entryLinkId="30b5-bd1a-60e2-2354" entryGroupId="45a3-3e65-6c49-5cc0" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
+      </selections>
+    </force>
+  </forces>
+</roster>

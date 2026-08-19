@@ -24,8 +24,9 @@ run a single file: `npx vitest run scripts/lib/<file>.test.js`.
   cases in the unit file and the corpus-backed ones in the integration file,
   as `evaluator-coverage-cells.test.js` / `evaluator-coverage-corpus.test.js`
   do, so a change to the classification rules doesn't force a ~11 s corpus
-  parse (the full seventeen-file corpus, measured under plain node with jsdom)
-  on every unit-level run. That is also why the corpus test's `beforeAll`
+  parse (the full corpus — eighteen files since issue 0153 — measured under
+  plain node with jsdom) on every unit-level run. That is also why the corpus
+  test's `beforeAll`
   carries an explicit 120 s timeout: the parse alone blows vitest's 10 s hook
   default.
 - German comments appear in older files here; write new ones in English.
@@ -49,14 +50,16 @@ grep -rhoE '<modifierGroup[ />]' src/evaluator/__fixtures__/whfb6-definitive src
 ```
 
 Issue 0148, increment 2 re-baselined every corpus figure in this doc and in
-`evaluator-coverage-corpus.test.js` for the seventeen-file corpus (the twelve
-`whfb6-definitive` books plus the five `whfb6` ones) — none of the numbers
-below are ten-file-corpus figures anymore.
+`evaluator-coverage-corpus.test.js` for the seventeen-file corpus; issue 0153
+re-baselined them again for the **eighteen-file** corpus (the thirteen
+`whfb6-definitive` files plus the five `whfb6` ones), when `High Elves (6th
+definitive edition).cat` joined for one scenario. Adding a book to a fixture
+directory moves every figure here — it is not an inert copy.
 
 The character class matters: a trailing-space pattern (`grep -o '<constraint '
 -r <fixture dirs> | wc -l`) undercounts attribute-less elements — measured on
-the frozen seventeen-file corpus, `modifierGroup` reads 375 instead of 417 with
-the trailing-space form, and `repeats` reads 0 instead of 496. Use the `[ />]`
+the frozen eighteen-file corpus, `modifierGroup` reads 384 instead of 426 with
+the trailing-space form, and `repeats` reads 0 instead of 510. Use the `[ />]`
 character-class form above (substituting the tag name)
 for every kind, the same form `evaluator-coverage-corpus.test.js` itself uses.
 
