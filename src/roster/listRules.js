@@ -167,12 +167,31 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  */
 
 /**
- * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
- * {@link collectPrimaryCategoryEntries} durchläuft:
- * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
- * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
- * weder ausgeblendet noch bereits in `force.selections` vertreten sind
+ * Sucht in den **Wurzel-Pools** eines Katalogs — ausschließlich
+ * `selectionEntries` und `entryLinks` — nach eindeutigen Pflicht-Listenregeln
+ * ({@link isUnconditionalMandatoryListRule}), die aktuell weder ausgeblendet
+ * noch bereits in `force.selections` vertreten sind
  * (Issue 0138, AC1/AC2/AC3/AC7).
+ *
+ * `sharedSelectionEntries` ist bewusst **ausgenommen**: eine geteilte
+ * Definition ist nur über eine Referenz erreichbar und damit ein Angebot
+ * ausschließlich an der Stelle dieser Referenz, nie an der Katalog-Wurzel. Sie
+ * ist deshalb kein Kandidat für das automatische Setzen auf Kontingent-Ebene —
+ * unabhängig davon, wie ihre eigenen Constraints lauten: ein
+ * `min=1 scope="roster" includeChildSelections="true"` an einem solchen Eintrag
+ * sagt „irgendwo in der Armee muss eine Auswahl davon existieren", nicht „das
+ * Kontingent hält ihn lose an seiner Wurzel" (Issue 0153, `Pure of Heart` aus
+ * der geteilten Gruppe `Honours` der Hochelfen — sie wird nur an Charakteren
+ * angeboten, die die Gruppe verlinken).
+ *
+ * Die Reinraum-Engine hält dieselbe Regel, beide Modelle lesen den Katalog also
+ * gleich: ADR 0032, umgesetzt in `collectRootDefinitions` und
+ * `collectArmyLevelCandidates` in `src/evaluator/resolver.js`, die nur
+ * `children` folgen und nie dem aufgelösten Link-Ziel.
+ *
+ * Ein Wurzel-`entryLink`, dessen Ziel ein geteilter Eintrag ist, funktioniert
+ * unverändert weiter: die Filter laufen auf dem **aufgelösten** Eintrag, der
+ * Typ und Constraints des Ziels trägt.
  *
  * Durchsucht die Wurzel-Pools direkt statt kategorienweise über
  * {@link resolveListRuleGroup} zu gehen — Kriterium 1 verlangt keine
@@ -198,7 +217,6 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
   const pools = [
     ...(catalogue.selectionEntries || []),
     ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
   ];
 
   // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche
