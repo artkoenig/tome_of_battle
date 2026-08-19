@@ -1,7 +1,7 @@
 ---
-status: active
-branch: claude/issue-done-on-pr
-pr:
+status: done
+branch: claude/0154-pure-of-heart-mandatory
+pr: 244
 ---
 
 # Pure of Heart is mandatory, but a hero has to take it
