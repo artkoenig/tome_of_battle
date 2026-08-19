@@ -670,3 +670,117 @@ describe('findMissingMandatoryListRuleSelections — costed mandatory list rules
     }
   });
 });
+
+/**
+ * Issue 0153 — "A shared honour reachable only from a hero is auto-added to
+ * the army". `findMissingMandatoryListRuleSelections` swept three root pools,
+ * one of them `catalogue.sharedSelectionEntries` — so a shared-only entry with
+ * its own `min >= 1` was reported missing at force/roster level even though
+ * the catalogue never offers it there, only behind a group a character links.
+ * Criterion 1 drops the shared pool from the sweep; criterion 2 keeps both
+ * root-declared forms working, including a root `entryLink` onto a shared
+ * target (a case not covered by Issue 0138/0140's fixtures, which never gave
+ * their root link a shared, min-carrying target).
+ */
+describe('findMissingMandatoryListRuleSelections — a shared-only entry is no candidate (Issue 0153)', () => {
+  const CATALOGUE_ID = 'cat-high-elves';
+  const emptyForce = () => ({ id: 'f1', catalogueId: CATALOGUE_ID, selections: [] });
+
+  /**
+   * "Pure of Heart" (`d0ce-b0c4-fcc1-6cac`), shape-for-shape out of
+   * `High Elves (6th definitive edition).cat`: it lives only in
+   * `sharedSelectionEntries`, `type="upgrade"`, no own sub-options, and its
+   * own `min=1 scope="roster" includeChildSelections="true"
+   * includeChildForces="true"` — the exact shape the old sweep treated as an
+   * eligible root candidate. It is offered through exactly one place: the
+   * shared group "Honours" (`45a3-3e65-6c49-5cc0`), which a character
+   * `selectionEntry` pulls in by an `entryLink` of type `selectionEntryGroup`.
+   */
+  const pureOfHeart = {
+    id: 'd0ce-b0c4-fcc1-6cac',
+    name: 'Pure of Heart',
+    type: 'upgrade',
+    hidden: false,
+    costs: [],
+    constraints: [
+      { id: 'c-max-roster', type: 'max', value: 1, scope: 'roster' },
+      { id: 'c-max-parent', type: 'max', value: 1, scope: 'parent' },
+      {
+        id: 'c-min-roster', type: 'min', value: 1, scope: 'roster',
+        includeChildSelections: true, includeChildForces: true,
+      },
+    ],
+  };
+
+  const honoursGroup = {
+    id: '45a3-3e65-6c49-5cc0',
+    name: 'Honours',
+    entryLinks: [{ id: 'link-pure-of-heart', targetId: 'd0ce-b0c4-fcc1-6cac', type: 'selectionEntry' }],
+  };
+
+  const character = {
+    id: 'char-hero',
+    name: 'Hero',
+    type: 'unit',
+    hidden: false,
+    entryLinks: [{ id: 'link-honours', targetId: '45a3-3e65-6c49-5cc0', type: 'selectionEntryGroup' }],
+  };
+
+  it('criterion 1: reports nothing for a fresh, empty force, however Pure of Heart\'s own constraints read', () => {
+    const system = {
+      id: 'sys-shared-honour',
+      catalogues: [{
+        id: CATALOGUE_ID,
+        selectionEntries: [character],
+        sharedSelectionEntries: [pureOfHeart],
+        sharedSelectionEntryGroups: [honoursGroup],
+      }],
+    };
+
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing).toEqual([]);
+  });
+
+  describe('criterion 2: a root entryLink onto a shared mandatory target is still reported', () => {
+    const SHARED_TARGET_ID = 'shared-mandatory-target';
+    const ROOT_LINK_ID = 'link-root-mandatory';
+
+    const sharedMandatoryEntry = {
+      id: SHARED_TARGET_ID,
+      name: 'Shared Mandatory Rule',
+      type: 'upgrade',
+      hidden: false,
+      costs: [],
+      constraints: [{ id: 'c-min-shared', type: 'min', value: 1, scope: 'roster' }],
+    };
+
+    const rootLink = {
+      id: ROOT_LINK_ID,
+      name: 'Shared Mandatory Rule',
+      targetId: SHARED_TARGET_ID,
+      type: 'selectionEntry',
+    };
+
+    const buildSystem = () => ({
+      id: 'sys-root-link',
+      catalogues: [{
+        id: CATALOGUE_ID,
+        selectionEntries: [],
+        entryLinks: [rootLink],
+        sharedSelectionEntries: [sharedMandatoryEntry],
+      }],
+    });
+
+    it('reports exactly one missing selection — not two, the shared pool does not also report the target', () => {
+      const system = buildSystem();
+      const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+      expect(missing).toHaveLength(1);
+    });
+
+    it('the one reported item is the root link itself, carrying the shared target\'s id', () => {
+      const system = buildSystem();
+      const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+      expect(missing[0].entry.targetId).toBe(SHARED_TARGET_ID);
+    });
+  });
+});
