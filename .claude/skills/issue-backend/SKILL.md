@@ -61,6 +61,9 @@ cat docs/issues/<id>-*.md
 
 `status` is one of `backlog`, `active`, `waiting`, `done`.
 
+An issue is `done` as soon as its pull request exists. Opening the PR is the transition —
+do not wait for the merge, and do not park the issue in `waiting` for a review.
+
 ```bash
 f=$(ls docs/issues/<id>-*.md) && sed -i -E "1,6s/^status: .*/status: <status>/" "$f"
 ```
