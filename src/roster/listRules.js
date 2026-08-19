@@ -167,12 +167,24 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  */
 
 /**
- * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
- * {@link collectPrimaryCategoryEntries} durchläuft:
- * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
- * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
- * weder ausgeblendet noch bereits in `force.selections` vertreten sind
- * (Issue 0138, AC1/AC2/AC3/AC7).
+ * Sucht in den **Wurzel-Pools** eines Katalogs (`selectionEntries`/`entryLinks`)
+ * nach eindeutigen Pflicht-Listenregeln
+ * ({@link isUnconditionalMandatoryListRule}), die aktuell weder ausgeblendet
+ * noch bereits in `force.selections` vertreten sind (Issue 0138,
+ * AC1/AC2/AC3/AC7).
+ *
+ * `sharedSelectionEntries` gehören **nicht** dazu (Issue 0153): geteilte
+ * Definitionen sind kein Wurzelbestand, sondern nur über einen Verweis
+ * erreichbar und erscheinen allein an dessen Stelle. §9.9 der BSData-Doku nennt
+ * genau zwei Kodierungen der armeeweiten Pflicht — den Wurzel-`selectionEntry`
+ * und den Wurzel-`entryLink`; der Reinraum-Evaluator zieht dieselbe Grenze in
+ * `collectArmyLevelCandidates`. Ohne sie setzte die App die Hochelfen-Ehre
+ * „Pure of Heart" (geteilter Eintrag, nur über die Gruppe „Honours" unter einem
+ * Helden wählbar) auf Armee-Ebene automatisch.
+ *
+ * {@link collectPrimaryCategoryEntries} liest den geteilten Pool weiterhin,
+ * filtert dort aber zusätzlich auf die primäre Kategorie — ein geteilter Eintrag
+ * ohne `categoryLink` erscheint dort ohnehin nie.
  *
  * Durchsucht die Wurzel-Pools direkt statt kategorienweise über
  * {@link resolveListRuleGroup} zu gehen — Kriterium 1 verlangt keine
@@ -198,7 +210,6 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
   const pools = [
     ...(catalogue.selectionEntries || []),
     ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
   ];
 
   // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche

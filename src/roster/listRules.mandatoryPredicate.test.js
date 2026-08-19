@@ -670,3 +670,128 @@ describe('findMissingMandatoryListRuleSelections — costed mandatory list rules
     }
   });
 });
+
+/**
+ * Issue 0153 — „Pure of Heart" wird der Armeeliste hinzugefügt, statt als
+ * Helden-Option gewählt zu werden. `findMissingMandatoryListRuleSelections`
+ * durchsuchte neben den echten Wurzel-Pools auch `sharedSelectionEntries`.
+ * Geteilte Definitionen sind aber kein Wurzelbestand: sie sind nur über einen
+ * Verweis erreichbar und erscheinen allein an dessen Stelle — §9.9 der
+ * BSData-Doku kennt für die armeeweite Pflicht genau zwei Wurzelformen, den
+ * `selectionEntry` und den `entryLink`.
+ *
+ * Fixture-Formen sind an den echten Katalogdaten belegt
+ * (`High Elves (6th definitive edition).cat`):
+ *
+ *  - `d0ce-b0c4-fcc1-6cac` „Pure of Heart": geteilter `selectionEntry`,
+ *    `type="upgrade"`, `hidden="false"`, ohne eigene Unterauswahlen,
+ *    `min value="1" scope="roster"` (dazu `max=1` in `roster` und `parent`),
+ *    alle Kosten 0, ohne `categoryLink`. Erreichbar allein über die geteilte
+ *    Gruppe `45a3-3e65-6c49-5cc0` „Honours", die an vier Helden-Einträgen hängt.
+ *  - `Errantry War` (Bretonnia) steht stellvertretend für die unveränderte
+ *    Wurzelform: derselbe Merkmalssatz, aber im Pool `selectionEntries`.
+ */
+describe('findMissingMandatoryListRuleSelections — geteilte Definitionen sind kein Wurzelbestand (Issue 0153)', () => {
+  const CATALOGUE_ID = 'cat-high-elves';
+  const HONOURS_GROUP_ID = '45a3-3e65-6c49-5cc0';
+
+  /** Der echte geteilte Eintrag, Form für Form. */
+  const pureOfHeart = {
+    id: 'd0ce-b0c4-fcc1-6cac',
+    name: 'Pure of Heart',
+    type: 'upgrade',
+    hidden: false,
+    costs: [{ typeId: 'cost-pts', value: 0 }],
+    constraints: [
+      { id: '4720-59d3-07c4-68b3', type: 'max', value: 1, scope: 'roster' },
+      { id: '69ac-892d-a730-545d', type: 'max', value: 1, scope: 'parent' },
+      { id: '82ef-69c7-f459-5e20', type: 'min', value: 1, scope: 'roster' },
+    ],
+  };
+
+  /** Die geteilte Gruppe „Honours", über die die Ehre allein erreichbar ist. */
+  const honoursGroup = {
+    id: HONOURS_GROUP_ID,
+    name: 'Honours',
+    hidden: false,
+    entryLinks: [
+      { id: '30b5-bd1a-60e2-2354', name: 'Pure of Heart', targetId: pureOfHeart.id, type: 'selectionEntry' },
+    ],
+  };
+
+  /** Ein Held im Wurzel-Pool, der die Gruppe per Verweis einbindet. */
+  const heroWithHonours = {
+    id: 'hero-prince',
+    name: 'Prince',
+    type: 'unit',
+    hidden: false,
+    costs: [{ typeId: 'cost-pts', value: 140 }],
+    entryLinks: [
+      { id: 'c7fa-d10c-2cea-bfa2', name: 'Honours', targetId: HONOURS_GROUP_ID, type: 'selectionEntryGroup' },
+    ],
+  };
+
+  /** Die unveränderte Wurzelform derselben Merkmale — „Errantry War" (Bretonnia). */
+  const errantryWar = {
+    id: 'errantry-war',
+    name: 'Errantry War',
+    type: 'upgrade',
+    hidden: false,
+    costs: [],
+    constraints: [{ id: 'c-min-errantry', type: 'min', value: 1, scope: 'force' }],
+    categoryLinks: [{ id: 'cl-errantry', targetId: 'cat-special-rules', primary: true }],
+  };
+
+  const buildSystem = ({ selectionEntries = [], entryLinks = [], sharedSelectionEntries = [], sharedSelectionEntryGroups = [] }) => ({
+    id: 'sys-whfb6-definitive',
+    catalogues: [{ id: CATALOGUE_ID, selectionEntries, entryLinks, sharedSelectionEntries, sharedSelectionEntryGroups }],
+  });
+  const emptyForce = () => ({ id: 'f1', catalogueId: CATALOGUE_ID, selections: [] });
+
+  it('AC1: meldet „Pure of Heart" nicht, obwohl es jedes übrige Merkmal der Pflicht-Listenregel trägt', () => {
+    const system = buildSystem({
+      selectionEntries: [heroWithHonours],
+      sharedSelectionEntries: [pureOfHeart],
+      sharedSelectionEntryGroups: [honoursGroup],
+    });
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing).toEqual([]);
+  });
+
+  it('AC1: das Prädikat selbst urteilt unverändert — der Eintrag scheitert allein an seinem Pool, nicht an seiner Form', () => {
+    expect(isUnconditionalMandatoryListRule(pureOfHeart)).toBe(true);
+  });
+
+  it('AC3: die Wurzelform derselben Merkmale wird weiterhin gemeldet — „Errantry War"', () => {
+    const system = buildSystem({ selectionEntries: [errantryWar] });
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing.map(m => m.resolved.id)).toEqual(['errantry-war']);
+  });
+
+  it('AC1/AC3: liegt beides im selben Katalog, bleibt genau die Wurzelform übrig', () => {
+    const system = buildSystem({
+      selectionEntries: [heroWithHonours, errantryWar],
+      sharedSelectionEntries: [pureOfHeart],
+      sharedSelectionEntryGroups: [honoursGroup],
+    });
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing.map(m => m.resolved.id)).toEqual(['errantry-war']);
+  });
+
+  it('AC3: die Wurzel-entryLink-Form auf dieselbe geteilte Definition wird sehr wohl gemeldet', () => {
+    // Ein Katalog, der die Pflicht als Wurzel-`entryLink` kodiert (die zweite
+    // Form aus §9.9), meint sie ernst — der Verweis steht in der Wurzel, nicht
+    // unter einem Helden. Der Link trägt den Constraint selbst.
+    const rootLink = {
+      id: 'root-link-pure-of-heart',
+      name: 'Pure of Heart',
+      targetId: pureOfHeart.id,
+      type: 'selectionEntry',
+      hidden: false,
+      constraints: [{ id: 'c-min-root-link', type: 'min', value: 1, scope: 'roster' }],
+    };
+    const system = buildSystem({ entryLinks: [rootLink], sharedSelectionEntries: [pureOfHeart] });
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing.map(m => m.resolved.id)).toEqual([pureOfHeart.id]);
+  });
+});
