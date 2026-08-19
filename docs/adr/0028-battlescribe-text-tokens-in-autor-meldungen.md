@@ -10,7 +10,7 @@
 ## Kontext und Problemstellung
 
 Autor-Meldungen (`modifier-error/-warning/-info`) werden wortgetreu aus dem
-Katalog durchgereicht (ADR-0022, CONTEXT.md „Autor-Meldung": „bleibt … in seiner
+Katalog durchgereicht (ADR-0022, „Autor-Meldung": „bleibt … in seiner
 Katalogsprache unangetastet"). Reale Katalogtexte enthalten jedoch das
 BattleScribe-Text-Token `{this}`, das für den Namen des Eintrags steht, an dem
 die Meldung hängt. Beispiel (Aushebe-Dialog, „Gnoblars"):
@@ -81,7 +81,7 @@ ADR-0003/YAGNI und ohne offizielle Grundlage.
 - **Positiv:** erweiterbar — ein künftig belegtes Token ist ein weiterer
   Map-Eintrag.
 - **Negativ:** erstmals wird Autortext programmatisch verändert — die
-  „unangetastet"-Aussage aus ADR-0022/CONTEXT.md wird bewusst auf „keine
+  „unangetastet"-Aussage aus ADR-0022 wird bewusst auf „keine
   Übersetzung" präzisiert.
 - **Neutral:** solange kein Katalog `{this}` nutzt, ändert sich nichts.
 

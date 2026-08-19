@@ -2,8 +2,8 @@
 
 Unit and integration tests for the library modules behind `scripts/*.js`
 CLI tools. Framework: vitest (`environment: 'jsdom'`, `globals: true`, see
-`vitest.config.js`). Run the whole directory: `npx vitest run scripts/lib`;
-run a single file: `npx vitest run scripts/lib/<file>.test.js`.
+`vitest.config.js`). Run the whole directory: `forge-test --run scripts/lib`;
+run a single file: `forge-test --run scripts/lib/<file>.test.js`.
 
 ## Conventions
 

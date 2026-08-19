@@ -78,7 +78,7 @@ Konkret:
   + `scenario.json`); Runner und jedes `.test.js` gehören zur Engine-Seite und
   sind kein Autoren-Artefakt. Rolle, Allow-List, Manifest-Vertrag und Grenze sind
   in der Begleit-Dokumentation
-  [`docs/agents/e2e-testcase-author.md`](../agents/e2e-testcase-author.md)
+  `.claude/agents/e2e-testcase-author.md`
   beschrieben.
 - **Abgleich statt Anpassung an die Engine.** Die blind abgeleitete Erwartung
   eines Szenarios trifft die Engine erst im **Runner-Lauf** — das *ist* der

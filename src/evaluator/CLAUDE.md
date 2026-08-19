@@ -2,12 +2,11 @@
 
 Unit and layer tests for the Reinraum evaluator engine (ADR 0030). Framework:
 vitest, plain `describe`/`it`, German titles. Run the whole directory:
-`npx vitest run src/evaluator`; a single file: `npx vitest run
-src/evaluator/<file>.test.js`. The same directory also holds the
+`forge-test --run src/evaluator`; a single file: `forge-test --run src/evaluator/<file>.test.js`. The same directory also holds the
 manifest-driven black-box E2E runner (`e2e.testcatalog.test.js`,
 `crossCatalog.test.js`) over the scenarios committed under `docs/testing/` —
 that runner and its scenarios are a separate authorship track (see
-`docs/agents/e2e-testcase-author.md`, ADR 0033) and not part of what this doc
+`.claude/agents/e2e-testcase-author.md`, ADR 0033) and not part of what this doc
 covers.
 
 ## Conventions

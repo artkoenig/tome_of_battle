@@ -61,7 +61,7 @@ veröffentlicht das Repository zusätzlich über **GitHub Pages** — den
 Zustandsbericht und den `docs/`-Baum. Das berührt diese Entscheidung nicht:
 
 - **Vercel liefert die Anwendung aus.** Nur hier gelten *Deployment*, *Release*
-  und *Production* im Sinne des Glossars (`CONTEXT.md`).
+  und *Production*.
 - **Pages liefert Projektdokumentation aus** — nie ein Build der Anwendung. Die
   Pages-Veröffentlichung ist weder ein Deployment noch ein Release; sie hat kein
   Freigabe-Gate, weil sie nichts freizugeben hat.

@@ -4,12 +4,12 @@
 // English key set.
 export const SUPPORTED_LANGUAGES = ['de', 'en'];
 
-// Fallback language (ADR 0026, CONTEXT.md "Fallback-Sprache"). Also the default
+// Fallback language (ADR 0026). Also the default
 // active language before detection runs.
 export const FALLBACK_LANGUAGE = 'en';
 
 // localStorage key under which the manual UI-language choice is persisted. The
-// choice is stored per surface (CONTEXT.md "UI-Sprache"); this key belongs to
+// choice is stored per surface; this key belongs to
 // the app surface, separate from any language choice the landing page keeps.
 export const LANGUAGE_STORAGE_KEY = 'tome-of-battle.ui-language';
 
