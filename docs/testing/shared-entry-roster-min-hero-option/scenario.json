@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "name": "shared-entry-roster-min-hero-option",
+  "description": "Ein geteilter Eintrag mit eigenem min-Constraint scope=\"roster\" (\"Pure of Heart\", Hoch-Elfen) ist kein Wurzel-Angebot: sein einziger Platz liegt unter dem Helden, dessen Gruppe den Verweis darauf fuehrt — als Angebot, solange er nicht genommen ist, und als belegter Platz, sobald er es ist.",
+  "dataset": {
+    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat",
+      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-prince-ohne-pure-of-heart.ros",
+      "description": "Prince ohne Pure of Heart: der einzige Platz der Ehrung ist ein Angebot unter dem Helden — nicht unter dem Kontingent.",
+      "expect": {
+        "firing": [],
+        "absent": [],
+        "capabilities": [
+          {
+            "defId": "30b5-bd1a-60e2-2354",
+            "targetDefId": "d0ce-b0c4-fcc1-6cac",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "f42c-be6f-8a5d-7199",
+            "name": "Pure of Heart",
+            "current": 0,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false,
+            "isMandatoryUnmet": true,
+            "infoElements": [
+              { "id": "dc8f-265a-b611-d092", "kind": "rule", "name": "Pure of Heart" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-prince-mit-pure-of-heart.ros",
+      "description": "Prince mit Pure of Heart: derselbe Platz ist belegt, weiterhin unter dem Helden, und das Hoechstmass 1 damit ausgeschoepft.",
+      "expect": {
+        "firing": [],
+        "absent": [
+          "4720-59d3-07c4-68b3",
+          "69ac-892d-a730-545d",
+          "82ef-69c7-f459-5e20"
+        ],
+        "capabilities": [
+          {
+            "defId": "30b5-bd1a-60e2-2354",
+            "targetDefId": "d0ce-b0c4-fcc1-6cac",
+            "anchorKind": "occupied",
+            "frameDefId": "f42c-be6f-8a5d-7199",
+            "name": "Pure of Heart",
+            "current": 1,
+            "effectiveMin": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true,
+            "isMandatoryUnmet": false
+          }
+        ]
+      }
+    }
+  ]
+}

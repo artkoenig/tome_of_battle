@@ -493,6 +493,11 @@ const EXPECTED_PER_FILE_COUNTS = {
   'Dark Elves (6th definitive edition).cat': 1,
   'Dwarfs (2005) (6th definitive edition).cat': 5,
   'Forces of Chaos (6th definitive edition).cat': 29,
+  // Issue 0153: das Hoch-Elfen-Buch kam fuer das Szenario
+  // docs/testing/shared-entry-roster-min-hero-option in den Korpus; seine vier
+  // Vorkommen sind wie alle anderen hier aus dem Korpus hergeleitet, nicht aus
+  // der Issue-0150-Tabelle uebernommen (die 149 nannte, ohne dieses Buch).
+  'High Elves (6th definitive edition).cat': 4,
   'Lizardmen (6th definitive edition).cat': 7,
   'Mercenaries (6th definitive edition).cat': 2,
   'Ogre Kingdoms (6th definitive edition).cat': 3,
@@ -561,23 +566,23 @@ beforeAll(() => {
 
 describe('Beide Korpora: Verweise mit eigenen lokalen Kindern (Issue 0150, Kriterium 1 des Inkrements)', () => {
   it(
-    'KONTROLLE: die pro Datei hergeleitete Anzahl entspricht der eingefrorenen Tabelle aus Issue 0150 (149 insgesamt, aus dem Korpus selbst hergeleitet)',
+    'KONTROLLE: die pro Datei hergeleitete Anzahl entspricht der eingefrorenen Tabelle (153 insgesamt, aus dem Korpus selbst hergeleitet)',
     () => {
       expect(
         PER_FILE_COUNTS,
-        `Die Zahlen sind aus dem Korpus hergeleitet, nicht aus der Issue-Tabelle uebernommen; die Issue-Tabelle nannte 149 insgesamt.`,
+        `Die Zahlen sind aus dem Korpus hergeleitet, nicht aus der Issue-Tabelle uebernommen; die Issue-0150-Tabelle nannte 149 insgesamt, vor dem Hoch-Elfen-Buch (Issue 0153).`,
       ).toEqual(EXPECTED_PER_FILE_COUNTS);
     },
   );
 
-  it('KONTROLLE: die hergeleitete Gesamtzahl ist 149, aus 15 beitragenden Dateien', () => {
-    expect(DERIVED_TOTAL).toBe(149);
-    expect(CONTRIBUTING_FILES).toHaveLength(15);
+  it('KONTROLLE: die hergeleitete Gesamtzahl ist 153, aus 16 beitragenden Dateien', () => {
+    expect(DERIVED_TOTAL).toBe(153);
+    expect(CONTRIBUTING_FILES).toHaveLength(16);
   });
 
-  it('KONTROLLE: eine zweite, unabhaengige Herleitung ueber CSS-Selektoren stimmt mit der Baum-Traversierung ueberein (ebenfalls 149)', () => {
+  it('KONTROLLE: eine zweite, unabhaengige Herleitung ueber CSS-Selektoren stimmt mit der Baum-Traversierung ueberein (ebenfalls 153)', () => {
     expect(PER_FILE_SELECTOR_COUNTS).toEqual(PER_FILE_COUNTS);
-    expect(Object.values(PER_FILE_SELECTOR_COUNTS).reduce((sum, count) => sum + count, 0)).toBe(149);
+    expect(Object.values(PER_FILE_SELECTOR_COUNTS).reduce((sum, count) => sum + count, 0)).toBe(153);
   });
 
   it('KONTROLLE: keine der beiden .gst-Dateien haelt einen Verweis mit eigenen lokalen Kindern', () => {
@@ -676,14 +681,14 @@ describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl', () => {
-  it('erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 149', () => {
+  it('erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 153', () => {
     // DERIVED_TOTAL: the pre-classification tally (PER_FILE_COUNTS, itself
     // corpus-derived, and cross-checked above against the independent
     // selector-based tally). ALL_RECORDED.length + ALL_OCCURRENCES.length: the
     // sum of the two books that classification produces from that tally.
     // EXPECTED_PER_FILE_COUNTS: the frozen table from the issue, independent
     // of both.
-    expect(DERIVED_TOTAL).toBe(149);
+    expect(DERIVED_TOTAL).toBe(153);
     expect(ALL_RECORDED.length + ALL_OCCURRENCES.length).toBe(DERIVED_TOTAL);
     expect(DERIVED_TOTAL).toBe(Object.values(EXPECTED_PER_FILE_COUNTS).reduce((sum, count) => sum + count, 0));
   });
@@ -717,15 +722,15 @@ describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl',
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = hergeleitete Kinderzahl', () => {
-  it('KONTROLLE: die hergeleitete Gesamtzahl der lokal deklarierten Kinder ist 760', () => {
-    expect(DERIVED_CHILD_TOTAL).toBe(760);
+  it('KONTROLLE: die hergeleitete Gesamtzahl der lokal deklarierten Kinder ist 776', () => {
+    expect(DERIVED_CHILD_TOTAL).toBe(776);
   });
 
   it('die Kind-Buecher schliessen: einzeln geprueft plus verschattet ergibt die hergeleitete Kinderzahl', () => {
     // INDIVIDUALLY_ASSERTED_CHILDREN is counted from the group structure
     // itself (a size-1 target-identity group), not from a subtraction of the
     // shadowed count against the derived total.
-    expect(INDIVIDUALLY_ASSERTED_CHILDREN).toBe(754);
+    expect(INDIVIDUALLY_ASSERTED_CHILDREN).toBe(770);
     expect(ALL_SHADOWED).toHaveLength(6);
     expect(INDIVIDUALLY_ASSERTED_CHILDREN + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
   });
@@ -755,17 +760,17 @@ describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = herge
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// E — guard: no branch of any of the 15 rosters was silently dropped from the
+// E — guard: no branch of any of the 16 rosters was silently dropped from the
 // tree by an unresolvable definition (that would shift its siblings' paths).
 // Other diagnostic kinds (e.g. danglingModifierTarget, unresolvedBudgetLimit)
 // are expected in the corpus and have nothing to do with this invariant —
 // they are not checked here.
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Wache: keine unaufloesbare Definition in einem der 15 Rosters', () => {
+describe('Wache: keine unaufloesbare Definition in einem der 16 Rosters', () => {
   it('KONTROLLE: kein Bericht traegt eine UNRESOLVED_DEFINITION-Diagnose', () => {
     const counts = Object.fromEntries(DIAGNOSTIC_COUNTS);
-    expect(Object.keys(counts)).toHaveLength(15);
+    expect(Object.keys(counts)).toHaveLength(16);
     const zeros = Object.fromEntries(Object.keys(counts).map(file => [file, 0]));
     expect(counts).toEqual(zeros);
   });

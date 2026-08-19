@@ -39,3 +39,16 @@ means; it outranks the ADRs where the two disagree.
   "404: Not Found" body with HTTP 200 via the raw host, which looks like a successful download.
 - Adding a book makes `src/evaluator/__fixtures__/whfb6-definitive/README.md` stale: it states the
   count of books present, which of them are there and why. Update it in the same commit.
+- Adding a book also breaks every **frozen corpus figure**, in four places that must move with it
+  (measured: one book broke 18 assertions): `scripts/lib/evaluator-coverage-corpus.test.js`
+  (file count, the seven per-kind tag totals, landmark occurrence counts, the per-file
+  "owns this cell alone" claims), `src/evaluator/evaluator.corpusLinkLocalChildren.test.js`
+  (per-file table, totals, contributing-file count), and the suite docs
+  `scripts/lib/CLAUDE.md` + the fixture README. Run the **full** `forge-test` for such a change —
+  `--run src/evaluator` misses the `scripts/lib` half.
+- A "no other file carries this cell" claim is an argument about the **coverage set**, not about
+  whatever happens to lie in the folder: a book added for a single scenario is excluded from the
+  comparison rather than the claim being deleted.
+- `docs/testing/worklist.json` / `covered-cells.json` only move when a book brings a **new cell
+  key**; more occurrences of known cells leave them untouched. Check before assuming a
+  regeneration is due.

@@ -167,12 +167,29 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  */
 
 /**
- * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
- * {@link collectPrimaryCategoryEntries} durchläuft:
- * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
- * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
- * weder ausgeblendet noch bereits in `force.selections` vertreten sind
+ * Sucht in den **Wurzel-Angeboten** eines Katalogs
+ * (`selectionEntries`/`entryLinks`) nach eindeutigen Pflicht-Listenregeln
+ * ({@link isUnconditionalMandatoryListRule}), die aktuell weder ausgeblendet
+ * noch bereits in `force.selections` vertreten sind
  * (Issue 0138, AC1/AC2/AC3/AC7).
+ *
+ * **`sharedSelectionEntries` gehören nicht dazu** (Issue 0153). Ein geteilter
+ * Eintrag ist keine Wurzel-Auswahl: er ist ausschließlich über einen Verweis
+ * erreichbar und erscheint allein an dessen Stelle (BSData-Doku §7.2; dieselbe
+ * Regel hält der Reinraum-Evaluator in `resolver.js`,
+ * `collectArmyLevelCandidates`). Sie mitzulesen hob „Pure of Heart"
+ * (`d0ce-b0c4-fcc1-6cac`, Hoch-Elfen) auf Armee-Ebene: der Eintrag hängt im
+ * Katalog nur am `entryLink` `30b5-bd1a-60e2-2354` in der geteilten Gruppe
+ * „Honours" unter Prince/Archmage/Commander/Mage, trägt aber einen eigenen
+ * `min`-Constraint `scope="roster"` ≥ 1 — und wurde dadurch ohne jede
+ * Nutzerwahl ins Kontingent gesetzt. Angeboten wird er weiterhin dort, wo der
+ * Katalog ihn führt: unter dem Helden. Er ist im ganzen WHFB6-DE-Korpus der
+ * einzige geteilte Eintrag, den dieser Pfad je traf.
+ *
+ * Der `+`-Adder ({@link collectPrimaryCategoryEntries}) liest die geteilten
+ * Einträge dagegen weiter: dort sind sie über ihre **primäre Kategorie**
+ * gebunden (die Söldner-Regimenter der `Mercenaries`-Bibliothek stehen so zur
+ * Aushebung bereit) — eine Wahl des Nutzers, keine automatische Setzung.
  *
  * Durchsucht die Wurzel-Pools direkt statt kategorienweise über
  * {@link resolveListRuleGroup} zu gehen — Kriterium 1 verlangt keine
@@ -195,10 +212,11 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
   if (!system || !catalogue || !force) return missing;
 
   const catalogueId = catalogue.id;
+  // Nur die Wurzel-Angebote: ein `sharedSelectionEntry` ist allein über einen
+  // Verweis erreichbar und deshalb nie eine armeeweite Pflicht (Issue 0153).
   const pools = [
     ...(catalogue.selectionEntries || []),
     ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
   ];
 
   // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche
