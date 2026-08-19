@@ -167,12 +167,24 @@ function findPresentSelection(system, selections, resolvedId, catalogueId) {
  */
 
 /**
- * Sucht in den **Wurzel-Pools** eines Katalogs (dieselben, die
- * {@link collectPrimaryCategoryEntries} durchläuft:
- * `selectionEntries`/`entryLinks`/`sharedSelectionEntries`) nach eindeutigen
- * Pflicht-Listenregeln ({@link isUnconditionalMandatoryListRule}), die aktuell
- * weder ausgeblendet noch bereits in `force.selections` vertreten sind
- * (Issue 0138, AC1/AC2/AC3/AC7).
+ * Sucht in den **Wurzel-Pools** eines Katalogs (`selectionEntries`/`entryLinks`)
+ * nach eindeutigen Pflicht-Listenregeln
+ * ({@link isUnconditionalMandatoryListRule}), die aktuell weder ausgeblendet noch
+ * bereits in `force.selections` vertreten sind (Issue 0138, AC1/AC2/AC3/AC7).
+ *
+ * `sharedSelectionEntries` gehören **nicht** dazu (Issue 0153): eine geteilte
+ * Definition ist kein Wurzeleintrag, sondern nur über einen `entryLink`
+ * erreichbar, und erscheint allein an dessen Stelle — die Reinraum-Engine zieht
+ * dieselbe Linie (`src/evaluator/resolver.js`, `collectArmyLevelCandidates`).
+ * `docs/battlescribe-data-format.md` §9.9 kennt für eine armeeweite Pflicht genau
+ * zwei Wurzelformen: den Wurzel-`selectionEntry` und den Wurzel-`entryLink`; bei
+ * der Link-Form liegt das geteilte Ziel im geteilten Pool und wird über den Link
+ * aufgelöst, der Pool selbst muss dafür nicht durchsucht werden. Nahm der Sweep
+ * ihn mit, setzte er die Hochelfen-Ehre „Pure of Heart"
+ * (`d0ce-b0c4-fcc1-6cac`, `min value="1" scope="roster"`, nur von der geteilten
+ * Gruppe „Honours" `45a3-3e65-6c49-5cc0` unter Prince/Archmage/Commander/Mage
+ * verlinkt) als eigene Zeile in die Armeeliste, statt sie am Helden wählbar zu
+ * lassen.
  *
  * Durchsucht die Wurzel-Pools direkt statt kategorienweise über
  * {@link resolveListRuleGroup} zu gehen — Kriterium 1 verlangt keine
@@ -198,7 +210,6 @@ export function findMissingMandatoryListRuleSelections(system, catalogue, force)
   const pools = [
     ...(catalogue.selectionEntries || []),
     ...(catalogue.entryLinks || []),
-    ...(catalogue.sharedSelectionEntries || []),
   ];
 
   // Nur eine Force liegt vor (kein volles Roster) — die eigene, roster-ähnliche

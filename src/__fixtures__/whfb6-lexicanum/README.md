@@ -71,6 +71,20 @@ neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
   geteilte „Ogre Bulls"-Einheit lebt real in einem Library-Katalog außerhalb dieser
   `.cat` und ist hier als minimaler Kern-Unit-Eintrag nachgebildet, damit der Link
   aufgelöst und gezählt werden kann.
+- `high-elves-shared-honour.cat.xml` — Reduzierter Verbatim-Auszug aus
+  `High Elves (6th definitive edition).cat` (abgerufen 2026-08-19): der geteilte
+  `selectionEntry` „Pure of Heart" (`d0ce-b0c4-fcc1-6cac`) samt seiner realen
+  Constraints (`max 1 scope="roster"`, `max 1 scope="parent"`, **`min 1
+  scope="roster"`**) und der Wurzel-`selectionEntry` „Intrigue at Court"
+  (`a4dc-9040-d98e-7bc1`) samt seiner realen `modifierGroups`/`modifiers`, die
+  dessen roster-weites `min` von 0 auf 1 heben, solange das Kontingent weder
+  Prince (`fc1b-d92c-9b94-f1e1`) noch Commander (`bc11-d14e-4c78-1496`) führt.
+  **Reduziert** (nicht verbatim): der Wurzel-`selectionEntry` „Commander"
+  (`dd92-a190-b470-c5ab`) ist auf seine Gruppe „Magic and Honors"
+  (`c948-599e-7ebf-c4ef`) mit dem einen „Honours"-`entryLink`
+  (`6892-0e07-bfa5-348d`) eingekürzt, und die geteilte Gruppe „Honours"
+  (`45a3-3e65-6c49-5cc0`) behält von ihren sechs Ehren-Links nur den auf „Pure of
+  Heart". Dieselben Ids trägt der ältere ergofarg-Satz (`High Elf.cat`).
 
 ## Wozu
 
@@ -112,6 +126,17 @@ force-scoped `min`-Constraint **am Link**, die der „Standard"-Modifier der Gru
 (gegatet auf `notInstanceOf` Ironskin Tribe) von 0 auf 1 anhebt. Test: Standard-Armee
 ohne Ogerbullen → blockierender `force-selector-min`; mit einer Ogerbullen-Einheit →
 kein Verstoß; Ironskin-Tribe-Armee → kein Verstoß (der Link-min bleibt 0).
+
+`high-elves-shared-honour.cat.xml` verankert Issue 0153 im Schreibmodell
+(`src/roster/listRules.sharedEntryPool.test.js`): Eine **geteilte** Definition ist
+kein Wurzeleintrag. Die Ehre „Pure of Heart" erfüllt alle Merkmale einer
+eindeutigen Pflicht-Listenregel (`upgrade`, keine Unterauswahlen, eigener
+`min 1 scope="roster"`), ist aber allein über die geteilte Gruppe „Honours" an der
+Heldengruppe „Magic and Honors" erreichbar. Der Pflicht-Sweep
+`findMissingMandatoryListRuleSelections` zählte `sharedSelectionEntries` zu den
+Wurzel-Pools und setzte sie deshalb als eigene Zeile in die Armeeliste, statt sie
+am Helden wählbar zu lassen; „Intrigue at Court" im selben Auszug belegt, dass die
+echte Wurzel-Pflichtregel des Katalogs weiter gefunden wird.
 
 `characters-max-force.cat.xml` belegt zusätzlich die strukturelle Voraussetzung
 des `inheritedCategoryMax`-Quirks: Die **Characters**-`categoryLink` trägt einen

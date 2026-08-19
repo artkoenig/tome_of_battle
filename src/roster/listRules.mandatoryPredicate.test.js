@@ -670,3 +670,131 @@ describe('findMissingMandatoryListRuleSelections — costed mandatory list rules
     }
   });
 });
+
+/**
+ * Issue 0153 — «„Pure of Heart" wird bei Hochelfen in die Armeeliste gesetzt statt
+ * am Helden gewählt». The sweep used to treat `catalogue.sharedSelectionEntries`
+ * as a root pool. Shared definitions are not root entries: they are reachable
+ * only through an `entryLink` and appear solely in its place
+ * (`docs/battlescribe-data-format.md` §9.9 names exactly two root encodings —
+ * root `selectionEntry` and root `entryLink`; the clean-room engine already draws
+ * the same line in `src/evaluator/resolver.js`, `collectArmyLevelCandidates`).
+ *
+ * Fixture shapes and ids are the real High Elves data, identical in both catalog
+ * sources (definitive `High Elves (6th definitive edition).cat` and ergofarg
+ * `High Elf.cat`): the shared `selectionEntry` "Pure of Heart"
+ * (`d0ce-b0c4-fcc1-6cac`, type upgrade, no own sub-choices, own
+ * `min value=1 scope=roster includeChildSelections=true`) is linked only from the
+ * shared `selectionEntryGroup` "Honours" (`45a3-3e65-6c49-5cc0`), which in turn
+ * hangs off the four heroes' "Magic and Honors" group — never off a catalogue
+ * root. It carries no `categoryLink`, which is why the "+" adder and the
+ * checklist never showed it either.
+ */
+describe('findMissingMandatoryListRuleSelections — shared definitions are no root pool (Issue 0153)', () => {
+  const CATALOGUE_ID = 'b59c-7ff5-fb34-405e';
+  const HONOURS_GROUP_ID = '45a3-3e65-6c49-5cc0';
+
+  // The real shared entry, verbatim in every field the sweep reads.
+  const pureOfHeart = {
+    id: 'd0ce-b0c4-fcc1-6cac',
+    name: 'Pure of Heart',
+    type: 'upgrade',
+    hidden: false,
+    costs: [{ typeId: 'ecfa-8486-4f6c-c249', value: 0 }],
+    constraints: [
+      { id: '4720-59d3-07c4-68b3', type: 'max', value: 1, scope: 'roster' },
+      { id: '69ac-892d-a730-545d', type: 'max', value: 1, scope: 'parent' },
+      { id: '82ef-69c7-f459-5e20', type: 'min', value: 1, scope: 'roster' },
+    ],
+  };
+
+  // A real root entry of the same catalogue, so the assertions show the sweep is
+  // still awake: "Intrigue at Court" (`a4dc-9040-d98e-7bc1`) is a root
+  // `selectionEntry` whose roster-scoped `min` sits at 0 in the catalogue and is
+  // raised to 1 by its own modifier while the force holds neither a Prince
+  // (`fc1b-d92c-9b94-f1e1`) nor a Commander (`bc11-d14e-4c78-1496`) — which is
+  // exactly the state of a fresh, empty force.
+  const intrigueAtCourt = {
+    id: 'a4dc-9040-d98e-7bc1',
+    name: 'Intrigue at Court',
+    type: 'upgrade',
+    hidden: false,
+    costs: [{ typeId: 'ecfa-8486-4f6c-c249', value: 0 }],
+    constraints: [
+      { id: '3130-9fac-fd29-f213', type: 'min', value: 0, scope: 'roster' },
+      { id: 'd748-d47c-8922-74e3', type: 'max', value: 0, scope: 'roster' },
+    ],
+    modifiers: [{ type: 'set', field: '3130-9fac-fd29-f213', value: 1 }],
+    categoryLinks: [{ id: '6a8e-273e-50be-7639', targetId: '32f1-197f-d719-a393', primary: true }],
+  };
+
+  const highElvesCatalogue = () => ({
+    id: CATALOGUE_ID,
+    name: 'High Elves',
+    selectionEntries: [intrigueAtCourt],
+    entryLinks: [],
+    sharedSelectionEntries: [pureOfHeart],
+    sharedSelectionEntryGroups: [{
+      id: HONOURS_GROUP_ID,
+      name: 'Honours',
+      entryLinks: [{
+        id: '30b5-bd1a-60e2-2354',
+        name: 'Pure of Heart',
+        type: 'selectionEntry',
+        targetId: pureOfHeart.id,
+      }],
+    }],
+  });
+
+  const buildSystem = () => ({ id: '0d13-7737-ea86-4662', catalogues: [highElvesCatalogue()] });
+  const emptyForce = () => ({ id: 'f1', catalogueId: CATALOGUE_ID, selections: [] });
+
+  it('AC1: does not report a shared-only mandatory entry — "Pure of Heart" stays a hero option', () => {
+    const system = buildSystem();
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing.map(m => m.resolved.id)).not.toContain('d0ce-b0c4-fcc1-6cac');
+  });
+
+  it('AC3: the catalogue\'s real root entry is still reported from the same sweep', () => {
+    const system = buildSystem();
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], emptyForce());
+    expect(missing.map(m => m.resolved.id)).toEqual(['a4dc-9040-d98e-7bc1']);
+  });
+
+  it('AC2: a root entryLink onto a shared target is still reported (§9.9 entryLink form)', () => {
+    // The "Ogre Bulls" encoding: the shared unit lives in the shared pool, the
+    // catalogue root references it by `entryLink`, and the mandatory `min` hangs
+    // on the LINK. Dropping the shared pool must not cost this case its hit.
+    const sharedBulls = {
+      id: '7754-8b3d-df99-d2d5',
+      name: 'Ogre Bulls',
+      type: 'upgrade',
+      hidden: false,
+      costs: [{ typeId: 'ecfa-8486-4f6c-c249', value: 120 }],
+      constraints: [],
+    };
+    const rootLink = {
+      id: 'd82e-111e-89b9-2be1',
+      name: 'Ogre Bulls',
+      type: 'selectionEntry',
+      targetId: sharedBulls.id,
+      constraints: [{ id: '32ed-26da-3f27-5c04', type: 'min', value: 1, scope: 'force' }],
+    };
+    const system = {
+      id: '0d13-7737-ea86-4662',
+      catalogues: [{
+        id: '731d-5b13-2a92-5427',
+        name: 'Ogre Kingdoms',
+        selectionEntries: [],
+        entryLinks: [rootLink],
+        sharedSelectionEntries: [sharedBulls],
+      }],
+    };
+    const force = { id: 'f1', catalogueId: '731d-5b13-2a92-5427', selections: [] };
+    const missing = findMissingMandatoryListRuleSelections(system, system.catalogues[0], force);
+    // `resolveEntry` keeps the LINK's id on a resolved link (catalogResolver.js:285,
+    // "Keep the link's id for roster mapping") — hence the link id, not the target's.
+    expect(missing.map(m => m.resolved.id)).toEqual(['d82e-111e-89b9-2be1']);
+    expect(missing[0].resolved.name).toBe('Ogre Bulls');
+  });
+});

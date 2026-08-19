@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Reduzierter Verbatim-Auszug aus `High Elves (6th definitive edition).cat`
+  (Repo lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition,
+  Fork artkoenig/…, Branch main, abgerufen 2026-08-19; gameSystemId
+  0d13-7737-ea86-4662, Katalog b59c-7ff5-fb34-405e).
+
+  Zweck (Issue 0153): verankert, dass eine **geteilte** Definition kein
+  Wurzeleintrag ist. Die Ehre „Pure of Heart" (d0ce-b0c4-fcc1-6cac) erfüllt alle
+  Merkmale einer eindeutigen Pflicht-Listenregel — Typ `upgrade`, keine eigenen
+  Unterauswahlen, eigener `min value="1" scope="roster"` — lebt aber
+  ausschließlich in `sharedSelectionEntries` und ist allein über die geteilte
+  Gruppe „Honours" (45a3-3e65-6c49-5cc0) erreichbar, die an der Heldengruppe
+  „Magic and Honors" hängt. Sie darf deshalb nie in die Armeeliste gesetzt,
+  sondern nur am Helden gewählt werden. Dieselbe Struktur unter denselben Ids
+  trägt auch der ältere ergofarg-Satz (`High Elf.cat`, 3878-c4be-6286-15a7).
+
+  Verbatim übernommen sind: die `catalogue`-Wurzel, der Wurzel-`selectionEntry`
+  „Intrigue at Court" (a4dc-9040-d98e-7bc1) samt seiner modifierGroups/modifiers
+  — die echte Wurzel-Pflichtregel dieses Katalogs, deren roster-weites `min` per
+  Modifier von 0 auf 1 steigt, solange das Kontingent weder Prince
+  (fc1b-d92c-9b94-f1e1) noch Commander (bc11-d14e-4c78-1496) führt — sowie der
+  geteilte `selectionEntry` „Pure of Heart".
+
+  Reduziert (nicht verbatim): der Wurzel-`selectionEntry` „Commander"
+  (dd92-a190-b470-c5ab) ist auf seine Gruppe „Magic and Honors"
+  (c948-599e-7ebf-c4ef) und darin auf den einen „Honours"-entryLink
+  (6892-0e07-bfa5-348d) eingekürzt — er belegt den echten Erreichbarkeitspfad
+  der Ehre. Die geteilte Gruppe „Honours" behält von ihren sechs Ehren-Links nur
+  den auf „Pure of Heart"; die fünf übrigen zeigen auf Einträge, die hier
+  ebenso fehlen wie die von den Ehren referenzierten `sharedRules` (für die
+  Wurzel-Pool-Frage unerheblich).
+-->
+<catalogue xmlns="http://www.battlescribe.net/schema/catalogueSchema" id="b59c-7ff5-fb34-405e" name="High Elves" revision="1" battleScribeVersion="2.03" authorName="Lexicanum Imperialis" library="false" gameSystemId="0d13-7737-ea86-4662" gameSystemRevision="1" type="catalogue">
+  <categoryEntries>
+    <categoryEntry id="32f1-197f-d719-a393" name="Special list rules" hidden="false"/>
+  </categoryEntries>
+  <selectionEntries>
+    <selectionEntry id="dd92-a190-b470-c5ab" name="Commander" hidden="false" collective="false" import="true" type="unit">
+      <selectionEntryGroups>
+        <selectionEntryGroup name="Magic and Honors" id="c948-599e-7ebf-c4ef" hidden="false" collective="false" import="true">
+          <entryLinks>
+            <entryLink import="true" name="Honours" hidden="false" id="6892-0e07-bfa5-348d" collective="false" targetId="45a3-3e65-6c49-5cc0" type="selectionEntryGroup"/>
+          </entryLinks>
+        </selectionEntryGroup>
+      </selectionEntryGroups>
+    </selectionEntry>
+    <selectionEntry id="a4dc-9040-d98e-7bc1" name="Intrigue at Court" hidden="true" collective="false" import="true" type="upgrade">
+      <constraints>
+        <constraint field="selections" scope="roster" value="0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="3130-9fac-fd29-f213" type="min"/>
+        <constraint field="selections" scope="roster" value="0" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="d748-d47c-8922-74e3" type="max"/>
+      </constraints>
+      <categoryLinks>
+        <categoryLink name="Special list rules" hidden="false" id="6a8e-273e-50be-7639" targetId="32f1-197f-d719-a393" primary="true"/>
+        <categoryLink name="General" hidden="false" id="8413-8744-a2c7-6b39" targetId="a37e-7207-de6d-acb0" primary="false"/>
+      </categoryLinks>
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0"/>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="2"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="2"/>
+      </costs>
+      <infoLinks>
+        <infoLink id="d9456d23-9ef1-4baf-8613-cadf97de3350" name="Intrigue at Court" hidden="false" targetId="27d6-7f5f-bd69-c668" type="rule"/>
+      </infoLinks>
+      <modifierGroups>
+        <modifierGroup type="and">
+          <modifiers>
+            <modifier type="set" value="1" field="d748-d47c-8922-74e3"/>
+            <modifier type="set" value="false" field="hidden"/>
+            <modifier type="set" value="1" field="3130-9fac-fd29-f213"/>
+          </modifiers>
+          <conditionGroups>
+            <conditionGroup type="and">
+              <conditions>
+                <condition type="lessThan" value="1" field="selections" scope="force" childId="fc1b-d92c-9b94-f1e1" shared="true" includeChildSelections="true"/>
+                <condition type="lessThan" value="1" field="selections" scope="force" childId="bc11-d14e-4c78-1496" shared="true" includeChildSelections="true"/>
+              </conditions>
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition type="lessThan" value="1" field="selections" scope="force" childId="f42c-be6f-8a5d-7199" shared="true" includeChildSelections="true"/>
+                    <condition type="notInstanceOf" value="1" field="selections" scope="force" childId="1951-b0c9-254a-bcff" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+            </conditionGroup>
+          </conditionGroups>
+        </modifierGroup>
+      </modifierGroups>
+      <modifiers>
+        <modifier type="add" value="{this} is not allowed if the Sea Lord is selected" field="error">
+          <conditionGroups>
+            <conditionGroup type="and">
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="f42c-be6f-8a5d-7199" shared="true" includeChildSelections="true"/>
+                <condition type="instanceOf" value="1" field="selections" scope="force" childId="1951-b0c9-254a-bcff" shared="true" includeChildSelections="true"/>
+              </conditions>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+        <modifier type="remove" value="a37e-7207-de6d-acb0" field="category">
+          <conditionGroups>
+            <conditionGroup type="or">
+              <conditionGroups>
+                <conditionGroup type="and">
+                  <conditions>
+                    <condition type="atLeast" value="1" field="selections" scope="force" childId="f42c-be6f-8a5d-7199" shared="true" includeChildSelections="true"/>
+                    <condition type="instanceOf" value="1" field="selections" scope="force" childId="1951-b0c9-254a-bcff" shared="true" includeChildSelections="true"/>
+                  </conditions>
+                </conditionGroup>
+              </conditionGroups>
+              <conditions>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="fc1b-d92c-9b94-f1e1" shared="true" includeChildSelections="true"/>
+                <condition type="atLeast" value="1" field="selections" scope="force" childId="bc11-d14e-4c78-1496" shared="true" includeChildSelections="true"/>
+              </conditions>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+        <modifier type="add" value="{this} is not allowed if Eltharion is selected" field="error">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="bc11-d14e-4c78-1496" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+        <modifier type="add" value="{this} is not allowed if Tyrion is selected" field="error">
+          <conditions>
+            <condition type="atLeast" value="1" field="selections" scope="force" childId="fc1b-d92c-9b94-f1e1" shared="true" includeChildSelections="true"/>
+          </conditions>
+        </modifier>
+      </modifiers>
+    </selectionEntry>
+  </selectionEntries>
+  <sharedSelectionEntries>
+    <selectionEntry id="d0ce-b0c4-fcc1-6cac" name="Pure of Heart" hidden="false" collective="false" import="true" type="upgrade">
+      <constraints>
+        <constraint field="selections" scope="roster" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="4720-59d3-07c4-68b3" type="max"/>
+        <constraint field="selections" scope="parent" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" id="69ac-892d-a730-545d" type="max"/>
+        <constraint field="selections" scope="roster" value="1" percentValue="false" shared="true" includeChildSelections="true" includeChildForces="true" id="82ef-69c7-f459-5e20" type="min"/>
+      </constraints>
+      <infoLinks>
+        <infoLink id="dc8f-265a-b611-d092" name="Pure of Heart" hidden="false" targetId="aef2-97fe-962d-9f7a" type="rule"/>
+      </infoLinks>
+      <costs>
+        <cost name="pts" typeId="ecfa-8486-4f6c-c249" value="0"/>
+        <cost name=" Casting Dice" typeId="fcec-2340-6368-a2ba" value="0"/>
+        <cost name=" Dispel Dice" typeId="6001-b2bf-4529-c07d" value="0"/>
+      </costs>
+    </selectionEntry>
+  </sharedSelectionEntries>
+  <sharedSelectionEntryGroups>
+    <selectionEntryGroup id="45a3-3e65-6c49-5cc0" name="Honours" publicationId="a40f-696a-94e8-ecfb" page="15" hidden="false" collective="false" import="true" collapsible="true">
+      <entryLinks>
+        <entryLink id="30b5-bd1a-60e2-2354" name="Pure of Heart" hidden="false" collective="false" import="true" targetId="d0ce-b0c4-fcc1-6cac" type="selectionEntry"/>
+      </entryLinks>
+    </selectionEntryGroup>
+  </sharedSelectionEntryGroups>
+</catalogue>

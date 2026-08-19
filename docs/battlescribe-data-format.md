@@ -1380,6 +1380,23 @@ werden die **Constraint und die Modifier des Links** ausgewertet (nicht die des 
 bedingte Anhebung greift; das Ziel wird nur zur Namensauflösung aufgelöst. Führte ein Katalog
 dieselbe Pflicht in beiden Formen, wird sie über die Ziel-Id entdoppelt (genau ein Verstoß).
 
+> **„Wurzeleintrag" heißt Wurzel-`selectionEntry` oder Wurzel-`entryLink` — nichts sonst.**
+> `<sharedSelectionEntries>` ist der **Definitionsvorrat** eines Katalogs, kein Wurzelbestand: eine
+> geteilte Definition ist ausschließlich über einen `entryLink` erreichbar und erscheint allein an
+> dessen Stelle (§3.4). Bei der Link-Form liegt das Ziel typischerweise *genau dort* — der geteilte
+> Pool muss dafür nicht durchsucht werden, der Wurzel-Link löst es auf. Zählt eine Schicht den
+> geteilten Pool trotzdem zum Wurzelbestand, erfindet sie armeeweite Pflichten aus Einträgen, die
+> gar nicht auf Armee-Ebene stehen: so setzte das Schreibmodell die Hochelfen-**Ehre** „Pure of
+> Heart" (`High Elves`, `d0ce-b0c4-fcc1-6cac`, `min value="1" scope="roster"`, nur über die geteilte
+> Gruppe „Honours" `45a3-3e65-6c49-5cc0` an Prince/Archmage/Commander/Mage erreichbar) als eigene
+> Zeile in die Armeeliste, statt sie am Helden wählbar zu lassen (Issue 0153). Die Reinraum-Engine
+> zieht die Linie in `src/evaluator/resolver.js` (`collectArmyLevelCandidates`), das Schreibmodell
+> in `src/roster/listRules.js` (`findMissingMandatoryListRuleSelections`).
+>
+> Kehrseite: eine Pflicht, die im Datensatz an **keinem** Wurzeleintrag hängt, wird auch nicht
+> erzwungen. Die Armeebuchregel „ein Hochelfen-Held muss die Ehre ‚Pure of Heart' tragen" bleibt
+> damit ungeprüft — bewusst, nach §11.1 („Erlauben schlägt Verbieten").
+
 ---
 
 ## 10. Collective Entries
