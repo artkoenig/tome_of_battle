@@ -11,9 +11,9 @@ aus, die ein Nutzer beim Import erlebt — inklusive katalogübergreifender
 - Quelle: `artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition`, Branch
   `main`, Commit `4a558216aabea1719d15c8f45bf52b6ee0cd5e3e`. The seven books
   added for the coverage campaign (The Empire, Bretonnia, Dark Elves, Dwarfs
-  (2005), Skaven, Lizardmen, Forces of Chaos) come from that same pinned
-  commit and are copied verbatim — not reformatted, not re-indented, not
-  normalised.
+  (2005), Skaven, Lizardmen, Forces of Chaos) and `High Elves (6th definitive
+  edition).cat` come from that same pinned commit and are copied verbatim — not
+  reformatted, not re-indented, not normalised.
   Upstream: `lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition`
   (Karak Norn Wargaming Club) — dieselbe Quelle, die die App zur Laufzeit über
   `CATALOG_REPO_RAW_BASE_URL` (`src/db/catalogUpdate.js`) bezieht.
@@ -21,8 +21,8 @@ aus, die ein Nutzer beim Import erlebt — inklusive katalogübergreifender
 
 ## Warum diese Teilmenge (nicht alle 18 Kataloge)
 
-Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **11** der 18
-`.cat` plus die `.gst` — aus zwei verschiedenen Gründen.
+Der volle DE-Satz ist 18 `.cat` + 1 `.gst` (~14 MB). Hier liegen **12** der 18
+`.cat` plus die `.gst` — aus drei verschiedenen Gründen.
 
 **Fünf Dateien sind der minimale echte Multi-`.cat`-Fall.** Die
 Abhängigkeits­struktur ist ein **Stern**: **jeder** der 17 Armee-Kataloge
@@ -42,9 +42,20 @@ Belegt an den echten Daten: die Ogre-`.cat` hat 244 eindeutige `targetId`s,
 Abhängigkeit — kein toter Verweis.
 
 **Sieben weitere Dateien liegen aus Abdeckungsgründen hier** (siehe den
-nächsten Abschnitt). Die sieben noch fehlenden Bücher bringen **keine weitere
+nächsten Abschnitt). Die sechs noch fehlenden Bücher bringen **keine weitere
 Zelle** und bleiben deshalb draußen — jedes Byte Korpus wird bei jedem
 Inventar- und Drift-Lauf bezahlt.
+
+**`High Elves (6th definitive edition).cat` liegt wegen eines gemeldeten
+Fehlers hier** (Issue 0153). Der Katalog trägt den einzigen Beleg des Korpus
+dafür, dass ein Eintrag der **geteilten Bibliothek** eine roster-weite
+Mindestgrenze trägt und trotzdem **kein Wurzelangebot** ist: *Pure of Heart*
+(`selectionEntry d0ce-b0c4-fcc1-6cac` in `sharedSelectionEntries`, `type
+upgrade`, `min 1 scope="roster"`) wird ausschließlich vom `entryLink`
+`30b5-bd1a-60e2-2354` in der `sharedSelectionEntryGroup` „Honours"
+(`45a3-3e65-6c49-5cc0`) eingebunden — also nur am Helden wählbar. Ohne diese
+Datei ließe sich die Regel „Bibliothek ist kein Angebot" an echten Daten nicht
+festnageln.
 
 ## Why these seven books
 

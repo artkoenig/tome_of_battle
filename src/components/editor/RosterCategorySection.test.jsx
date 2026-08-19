@@ -9,12 +9,12 @@ vi.mock('lucide-react', () => ({
 }));
 
 const mockIsCategoryLinkHidden = vi.fn();
-const mockIsEntryPrimaryInCategory = vi.fn();
+const mockCollectPrimaryCategoryEntries = vi.fn();
 const mockResolveListRuleGroup = vi.fn();
 
 vi.mock('../../roster', () => ({
   isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
-  isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
+  collectPrimaryCategoryEntries: (...args) => mockCollectPrimaryCategoryEntries(...args),
   resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),
   childSelectionsOf: (force) => force.selections || [],
 }));
@@ -84,7 +84,7 @@ describe('RosterCategorySection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCategoryLinkHidden.mockReturnValue(false);
-    mockIsEntryPrimaryInCategory.mockReturnValue(true);
+    mockCollectPrimaryCategoryEntries.mockReturnValue([{ entry: { id: 'entry-1' }, resolved: { id: 'entry-1' } }]);
     mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
   });
 
@@ -135,7 +135,7 @@ describe('RosterCategorySection', () => {
   });
 
   it('bleibt verborgen, wenn die leere Kategorie für keinen Eintrag Primär-Kategorie ist', () => {
-    mockIsEntryPrimaryInCategory.mockReturnValue(false);
+    mockCollectPrimaryCategoryEntries.mockReturnValue([]);
     const { container } = renderSection({ force: { ...force, selections: [] } });
 
     expect(container.querySelector('.roster-category-group')).toBeNull();
@@ -155,8 +155,9 @@ describe('RosterCategorySection', () => {
       activeCatalogue: foreignCatalogue
     });
 
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalledWith(
-      { id: 'entry-1' },
+    expect(mockCollectPrimaryCategoryEntries).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: 'bret-cat' }),
       'cat-core',
       expect.objectContaining({ force })
     );

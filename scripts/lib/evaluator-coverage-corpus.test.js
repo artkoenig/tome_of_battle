@@ -17,7 +17,7 @@ import {
 import { extractCells, coveredKeysFromManifests, diffCells, keysFromCoveredRecord } from './evaluator-coverage-cells.js';
 
 // Integration level: this file parses the real, frozen fixture corpus (the
-// seventeen-file whfb6-definitive + whfb6 set, seconds rather than
+// eighteen-file whfb6-definitive + whfb6 set, seconds rather than
 // milliseconds) instead of synthetic XML — the module-level extraction rules
 // themselves are pinned in evaluator-coverage-cells.test.js.
 const RULE_KINDS = ['constraint', 'condition', 'conditionGroup', 'modifier', 'modifierGroup', 'repeat', 'repeatList'];
@@ -36,13 +36,13 @@ function totalOccurrencesByKind(cells, kind) {
 
 // ── Case 21 ───────────────────────────────────────────────────────────────
 describe('loadCorpus — static walk of both fixture sets', () => {
-  it('returns exactly seventeen catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
+  it('returns exactly eighteen catalogue/game-system files, excludes each README.md, and reports no parsererror', () => {
     expect(corpus.failures).toEqual([]);
-    expect(corpus.sources).toHaveLength(17);
+    expect(corpus.sources).toHaveLength(18);
 
     const definitiveFiles = corpus.sources.filter(s => s.file.includes('whfb6-definitive'));
     const whfb6Files = corpus.sources.filter(s => !s.file.includes('whfb6-definitive'));
-    expect(definitiveFiles).toHaveLength(12);
+    expect(definitiveFiles).toHaveLength(13);
     expect(whfb6Files).toHaveLength(5);
 
     expect(corpus.sources.some(s => s.file.toLowerCase().endsWith('readme.md'))).toBe(false);
@@ -57,22 +57,23 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
   // elements such as `<modifierGroup>`. The fixtures are frozen, so a mismatch
   // is a real extraction bug and the grep is the arbiter — re-run it before
   // touching the extraction if this fails.
-  // Issue 0148, increment 2: recomputed for the seventeen-file corpus once the
+  // Issue 0153: recomputed for the eighteen-file corpus once High Elves joined
+  // it; Issue 0148, increment 2 had recomputed them for the seventeen-file corpus once the
   // seven definitive books joined src/evaluator/__fixtures__/whfb6-definitive/
   // — every kind moves, conditionGroup and modifierGroup included.
   it.each([
-    ['constraint', 10287],
-    ['condition', 4426],
-    ['conditionGroup', 792],
-    ['modifier', 4755],
-    ['modifierGroup', 417],
-    ['repeat', 506],
+    ['constraint', 10848],
+    ['condition', 4619],
+    ['conditionGroup', 818],
+    ['modifier', 4971],
+    ['modifierGroup', 426],
+    ['repeat', 520],
     // (C2, round 3 correction) repeatList is arbitrated with `<repeats[ />]`;
     // a trailing-space pattern misses the attribute-less `<repeats>` tag the
     // same way it misses `<modifierGroup>`. totalOccurrencesByKind keys off
     // the cell-key prefix, so this counts every `repeatList|...` cell, not
     // the `<repeat>` tag.
-    ['repeatList', 496],
+    ['repeatList', 510],
   ])('totals %s occurrences to %i', (kind, expected) => {
     expect(totalOccurrencesByKind(inventory.cells, kind)).toBe(expected);
   });
@@ -197,8 +198,15 @@ describe('worklist — the duplicated-id landmark resolves to the dataset-correc
     const cell = inventory.cells.find(c => c.key === key);
 
     expect(cell).toBeDefined();
-    expect(cell.occurrences).toBe(1);
-    expect(cell.files).toEqual({ 'src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1 });
+    // Seit High Elves im Korpus liegt (Issue 0153), trägt auch dieses Buch die
+    // Zelle einmal. Was der Fall pinnt, ist die Trennung der beiden Skopen
+    // desselben Constraints — nicht, dass nur eine Datei die roster-Skopus-Zelle
+    // trägt: die `.gst` des anderen Satzes bleibt ihr Träger dort.
+    expect(cell.occurrences).toBe(2);
+    expect(cell.files).toEqual({
+      'src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1,
+      'src/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat': 1,
+    });
 
     const manifests = loadManifests(TESTING_DIR);
     const coveredRecord = JSON.parse(readFileSync(COVERED_CELLS_PATH, 'utf-8'));
@@ -281,12 +289,12 @@ describe('extractCells over the real corpus — repeat cell count once shared/in
 
 // ── Case 28 (round 2 correction, Finding 1) ─────────────────────────────────
 describe('extractCells over the real corpus — landmark flagged repeat cells (R8)', () => {
-  it('contains repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false with 34 occurrences', () => {
+  it('contains repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false with 37 occurrences', () => {
     const cell = inventory.cells.find(
       c => c.key === 'repeat|selectionCount|parent|child=model|repeats=1|s=true|ics=true|icf=false|roundUp=false|pct=false',
     );
     expect(cell).toBeDefined();
-    expect(cell.occurrences).toBe(34);
+    expect(cell.occurrences).toBe(37);
   });
 
   it('contains repeat|selectionCount|roster|child=id|repeats=1|s=true|ics=true|icf=true|roundUp=false|pct=false with 13 occurrences', () => {
@@ -313,6 +321,22 @@ describe('extractCells over the real corpus — Dogs of War carries a construct 
 // ── Case 36 (issue 0148, increment 2 — why each definitive book is in the
 // corpus) ────────────────────────────────────────────────────────────────
 describe('extractCells over the real corpus — each of the seven added definitive books carries a construct no other book of either set carries', () => {
+  // Dark Elves is the exception since Issue 0153 put High Elves into the corpus:
+  // its landmark cell is now carried by two files, one occurrence each, so the
+  // "no other file" shape below no longer fits it. Pinned separately rather than
+  // dropped — the cell is still the reason Dark Elves is in the corpus.
+  it('Dark Elves shares its landmark cell with High Elves since that book joined the corpus', () => {
+    const cell = inventory.cells.find(
+      c => c.key === 'constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false'
+    );
+    expect(cell).toBeDefined();
+    expect(cell.occurrences).toBe(2);
+    expect(cell.files).toEqual({
+      'src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat': 1,
+      'src/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat': 1,
+    });
+  });
+
   it.each([
     [
       'The Empire (6th definitive edition).cat',
@@ -320,7 +344,7 @@ describe('extractCells over the real corpus — each of the seven added definiti
       51,
     ],
     ['Bretonnia (6th definitive edition).cat', 'condition|notEqualTo|roster|limitValue|child=any', 1],
-    ['Dark Elves (6th definitive edition).cat', 'constraint|min|selectionCount|parent|s=true|ics=true|icf=false|pct=false', 1],
+
     ['Dwarfs (2005) (6th definitive edition).cat', 'modifier|multiply|costValue', 3],
     [
       'Skaven (6th definitive edition).cat',

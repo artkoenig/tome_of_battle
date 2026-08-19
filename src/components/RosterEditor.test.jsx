@@ -46,7 +46,7 @@ let mockCanRedo = false;
 
 // Mock validator spy functions
 const mockResolveEntry = vi.fn().mockReturnValue({ id: 'entry-resolved', name: 'Resolved Entry' });
-const mockIsEntryPrimaryInCategory = vi.fn().mockReturnValue(false);
+const mockCollectPrimaryCategoryEntries = vi.fn().mockReturnValue([]);
 const mockFindEntryInSystem = vi.fn().mockReturnValue({ id: 'entry-raw', name: 'Raw Entry' });
 const mockCollectUnitProfilesAndRules = vi.fn().mockReturnValue({ profiles: [], rules: [] });
 
@@ -137,7 +137,7 @@ vi.mock('../roster', async (importOriginal) => ({
   getEffectiveModifiers: (source) => source?.modifiers || [],
   calculateRosterCosts: () => ({ pts: 420 }),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
+  collectPrimaryCategoryEntries: (...args) => mockCollectPrimaryCategoryEntries(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   getSelectionTotalCost: (sel) => sel.cost,
@@ -227,13 +227,14 @@ describe('RosterEditor Component', () => {
   it('verifies that validator methods are called with the expected game system and catalog context', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
 
-    // RosterEditor.jsx checks effective primary-category membership when deciding which
-    // category sections to surface. Ensure that check runs against our game system.
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalled();
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalledWith(
+    // RosterEditor.jsx enumerates the catalogue's root offers per category when
+    // deciding which sections to surface. Ensure that runs against our game system.
+    expect(mockCollectPrimaryCategoryEntries).toHaveBeenCalled();
+    expect(mockCollectPrimaryCategoryEntries).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'sys-1' }),
       expect.any(Object),
       expect.any(String),
-      expect.objectContaining({ system: expect.objectContaining({ id: 'sys-1' }) })
+      expect.any(Object)
     );
   });
 

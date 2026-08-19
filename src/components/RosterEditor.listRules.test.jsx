@@ -78,7 +78,8 @@ vi.mock('../roster', async (importOriginal) => ({
   isCategoryLinkHidden: (link) => link.hidden === true,
   // List rules are primary catalog entries in their category, so the (empty) group
   // still surfaces even before any rule is checked — mirroring production.
-  isEntryPrimaryInCategory: (_entry, categoryId) => categoryId === 'cat-rules',
+  collectPrimaryCategoryEntries: (_system, _catalogue, categoryId) =>
+    (categoryId === 'cat-rules' ? [{ entry: { id: 'rule-entry' }, resolved: { id: 'rule-entry' } }] : []),
   collectUnreachableArmyWideSelectors: () => [],
   getExtraResourceTotals: () => [],
   formatConstraintLimit: (value) => `${value}`,

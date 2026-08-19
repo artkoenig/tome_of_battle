@@ -39,7 +39,7 @@ vi.mock('../../roster', () => ({
   collectUnreachableArmyWideSelectors: (...args) => mockCollectUnreachableArmyWideSelectors(...args),
   childSelectionsOf: (force) => force.selections || [],
   isCategoryLinkHidden: () => false,
-  isEntryPrimaryInCategory: () => true,
+  collectPrimaryCategoryEntries: () => [{ entry: { id: 'entry-1' }, resolved: { id: 'entry-1' } }],
   resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 

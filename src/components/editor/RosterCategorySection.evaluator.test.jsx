@@ -57,7 +57,7 @@ vi.mock('../../roster', async (importOriginal) => ({
   // Nicht unter Test (Sichtbarkeit/Listenregeln): benigne Stubs wie im
   // bestehenden RosterCategorySection.test.jsx.
   isCategoryLinkHidden: () => false,
-  isEntryPrimaryInCategory: () => true,
+  collectPrimaryCategoryEntries: () => [{ entry: { id: 'entry-1' }, resolved: { id: 'entry-1' } }],
   resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 

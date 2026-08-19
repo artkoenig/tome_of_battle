@@ -21,7 +21,7 @@
  * (11 catalogues) and `src/__fixtures__/whfb6` (4 catalogues) — never from any
  * engine module other than the facade (`prepareDataset` + `evaluate`, ADR
  * 0030, ADR 0033), every `entryLink` that declares its own children across
- * all 15 catalogue files, and asserts that a roster holding that link gets a
+ * all 16 catalogue files, and asserts that a roster holding that link gets a
  * report slot for each of those children under the link's own slot.
  * Existence is the whole claim (criterion 3 of the issue): `isHidden` is
  * never asserted.
@@ -488,11 +488,14 @@ const CONTRIBUTING_FILES = Object.keys(PER_FILE_COUNTS);
 
 // The frozen table from Issue 0150's intent section, re-derived above rather
 // than assumed — a drift here names its file via a deep-equal failure.
+// Issue 0153 added High Elves to the corpus: 4 further occurrences, one more
+// contributing file, 153 instead of 149 in total, 776 instead of 760 children.
 const EXPECTED_PER_FILE_COUNTS = {
   'Bretonnia (6th definitive edition).cat': 13,
   'Dark Elves (6th definitive edition).cat': 1,
   'Dwarfs (2005) (6th definitive edition).cat': 5,
   'Forces of Chaos (6th definitive edition).cat': 29,
+  'High Elves (6th definitive edition).cat': 4,
   'Lizardmen (6th definitive edition).cat': 7,
   'Mercenaries (6th definitive edition).cat': 2,
   'Ogre Kingdoms (6th definitive edition).cat': 3,
@@ -556,28 +559,28 @@ beforeAll(() => {
 }, 120_000);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// A — KONTROLLE: coverage of all 15 files, total re-derived from the corpus.
+// A — KONTROLLE: coverage of all 16 files, total re-derived from the corpus.
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Beide Korpora: Verweise mit eigenen lokalen Kindern (Issue 0150, Kriterium 1 des Inkrements)', () => {
   it(
-    'KONTROLLE: die pro Datei hergeleitete Anzahl entspricht der eingefrorenen Tabelle aus Issue 0150 (149 insgesamt, aus dem Korpus selbst hergeleitet)',
+    'KONTROLLE: die pro Datei hergeleitete Anzahl entspricht der eingefrorenen Tabelle (153 insgesamt, aus dem Korpus selbst hergeleitet)',
     () => {
       expect(
         PER_FILE_COUNTS,
-        `Die Zahlen sind aus dem Korpus hergeleitet, nicht aus der Issue-Tabelle uebernommen; die Issue-Tabelle nannte 149 insgesamt.`,
+        `Die Zahlen sind aus dem Korpus hergeleitet, nicht aus der Issue-Tabelle uebernommen; die Tabelle nennt 153 insgesamt.`,
       ).toEqual(EXPECTED_PER_FILE_COUNTS);
     },
   );
 
-  it('KONTROLLE: die hergeleitete Gesamtzahl ist 149, aus 15 beitragenden Dateien', () => {
-    expect(DERIVED_TOTAL).toBe(149);
-    expect(CONTRIBUTING_FILES).toHaveLength(15);
+  it('KONTROLLE: die hergeleitete Gesamtzahl ist 153, aus 16 beitragenden Dateien', () => {
+    expect(DERIVED_TOTAL).toBe(153);
+    expect(CONTRIBUTING_FILES).toHaveLength(16);
   });
 
-  it('KONTROLLE: eine zweite, unabhaengige Herleitung ueber CSS-Selektoren stimmt mit der Baum-Traversierung ueberein (ebenfalls 149)', () => {
+  it('KONTROLLE: eine zweite, unabhaengige Herleitung ueber CSS-Selektoren stimmt mit der Baum-Traversierung ueberein (ebenfalls 153)', () => {
     expect(PER_FILE_SELECTOR_COUNTS).toEqual(PER_FILE_COUNTS);
-    expect(Object.values(PER_FILE_SELECTOR_COUNTS).reduce((sum, count) => sum + count, 0)).toBe(149);
+    expect(Object.values(PER_FILE_SELECTOR_COUNTS).reduce((sum, count) => sum + count, 0)).toBe(153);
   });
 
   it('KONTROLLE: keine der beiden .gst-Dateien haelt einen Verweis mit eigenen lokalen Kindern', () => {
@@ -676,14 +679,14 @@ describe('Die beiden benannten Faelle (der Defekt, den PR #214 behob)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl', () => {
-  it('erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 149', () => {
+  it('erfasste Vorkommen plus geprueftes Invariant ergeben die hergeleitete Gesamtzahl, und diese ist 153', () => {
     // DERIVED_TOTAL: the pre-classification tally (PER_FILE_COUNTS, itself
     // corpus-derived, and cross-checked above against the independent
     // selector-based tally). ALL_RECORDED.length + ALL_OCCURRENCES.length: the
     // sum of the two books that classification produces from that tally.
     // EXPECTED_PER_FILE_COUNTS: the frozen table from the issue, independent
     // of both.
-    expect(DERIVED_TOTAL).toBe(149);
+    expect(DERIVED_TOTAL).toBe(153);
     expect(ALL_RECORDED.length + ALL_OCCURRENCES.length).toBe(DERIVED_TOTAL);
     expect(DERIVED_TOTAL).toBe(Object.values(EXPECTED_PER_FILE_COUNTS).reduce((sum, count) => sum + count, 0));
   });
@@ -717,15 +720,15 @@ describe('Die Buecher schliessen: erfasst + geprueft = hergeleitete Gesamtzahl',
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = hergeleitete Kinderzahl', () => {
-  it('KONTROLLE: die hergeleitete Gesamtzahl der lokal deklarierten Kinder ist 760', () => {
-    expect(DERIVED_CHILD_TOTAL).toBe(760);
+  it('KONTROLLE: die hergeleitete Gesamtzahl der lokal deklarierten Kinder ist 776', () => {
+    expect(DERIVED_CHILD_TOTAL).toBe(776);
   });
 
   it('die Kind-Buecher schliessen: einzeln geprueft plus verschattet ergibt die hergeleitete Kinderzahl', () => {
     // INDIVIDUALLY_ASSERTED_CHILDREN is counted from the group structure
     // itself (a size-1 target-identity group), not from a subtraction of the
     // shadowed count against the derived total.
-    expect(INDIVIDUALLY_ASSERTED_CHILDREN).toBe(754);
+    expect(INDIVIDUALLY_ASSERTED_CHILDREN).toBe(770);
     expect(ALL_SHADOWED).toHaveLength(6);
     expect(INDIVIDUALLY_ASSERTED_CHILDREN + ALL_SHADOWED.length).toBe(DERIVED_CHILD_TOTAL);
   });
@@ -755,17 +758,17 @@ describe('Die Kind-Buecher schliessen: einzeln geprueft plus verschattet = herge
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// E — guard: no branch of any of the 15 rosters was silently dropped from the
+// E — guard: no branch of any of the 16 rosters was silently dropped from the
 // tree by an unresolvable definition (that would shift its siblings' paths).
 // Other diagnostic kinds (e.g. danglingModifierTarget, unresolvedBudgetLimit)
 // are expected in the corpus and have nothing to do with this invariant —
 // they are not checked here.
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Wache: keine unaufloesbare Definition in einem der 15 Rosters', () => {
+describe('Wache: keine unaufloesbare Definition in einem der 16 Rosters', () => {
   it('KONTROLLE: kein Bericht traegt eine UNRESOLVED_DEFINITION-Diagnose', () => {
     const counts = Object.fromEntries(DIAGNOSTIC_COUNTS);
-    expect(Object.keys(counts)).toHaveLength(15);
+    expect(Object.keys(counts)).toHaveLength(16);
     const zeros = Object.fromEntries(Object.keys(counts).map(file => [file, 0]));
     expect(counts).toEqual(zeros);
   });

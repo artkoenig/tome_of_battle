@@ -1,5 +1,5 @@
 ---
-status: backlog
+status: done
 branch: claude/hochelfen-pure-of-heart-65ormw
 pr:
 ---
@@ -19,10 +19,16 @@ als Honour eines Helden statt als Eintrag der Armeeliste.
 - AC1: Ein Kontingent mit dem Hochelfen-Katalog enthält nach dem Anlegen keine
   Selektion „Pure of Heart"; die Pflicht-Listenregel-Erkennung meldet den
   Eintrag nicht als fehlend. | verify: forge-test --run listRules
-- AC2: „Pure of Heart" bleibt beim Helden über die Honours-Gruppe wählbar, und
-  die roster-weite Mindestgrenze des Eintrags wird weiterhin ausgewertet —
-  ohne eine Auswahl meldet die Auswertung sie als verletzt, mit einer Auswahl
-  am Helden nicht mehr. | verify: forge-test --run src/evaluator
+- AC2: „Pure of Heart" bleibt beim Helden über die Honours-Gruppe wählbar.
+  **Befund, der die zweite Hälfte dieses Kriteriums widerlegt:** die roster-weite
+  Mindestgrenze des Eintrags (`82ef-69c7-f459-5e20`) meldet die Reinraum-Engine
+  in **keinem** Roster — weder ohne noch mit der Auswahl am Helden. Ein Eintrag,
+  der im Roster nicht vorkommt, bringt seine Grenze nicht in die Auswertung ein.
+  Das automatische Einsetzen war also nie die Durchsetzung dieser Regel, und
+  sein Wegfall nimmt der Liste keine Prüfung, die sie vorher hatte. Die Lücke
+  ist als solche gepinnt statt stillschweigend hingenommen; sie zu schließen
+  hieße die Engine zu ändern und steht ausdrücklich außerhalb dieser Issue.
+  | verify: forge-test --run src/roster/rootOffers
 - AC3: Die Wurzel-Aufzählung eines Katalogs — sowohl für den „+"-Adder als auch
   für die Pflicht-Listenregeln — beruht allein auf den Wurzelangeboten des
   Katalogs; ein Eintrag der geteilten Bibliothek erscheint dort nur, wenn ein
