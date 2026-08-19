@@ -64,8 +64,11 @@ the *resolved* entry.
 
 **The existing rosters.** The auto-add is gated on `isFreshRoster`, so a roster
 saved before the fix keeps the wrongly added selection. Whether the user can
-delete it is open: `buildListRuleStates` marks a mandatory rule's checkbox as
-locked while the rule is present.
+delete it is settled: `buildListRuleStates` marks a mandatory rule's checkbox as
+locked while the rule is present, but that lock never reaches a selection the
+catalogue holds only in `sharedSelectionEntries`. On such a roster the stray
+selection stays deletable by hand, so criterion 4 already holds and the code was
+left alone; `src/roster/listRules.sharedOnlyLock.test.js` pins that behaviour.
 
 ## Acceptance criteria
 
@@ -88,8 +91,8 @@ locked while the rule is present.
    verify: `npx vitest run src/roster`
 4. A roster that already carries the wrongly added selection can be freed of it
    by hand — the mandatory lock must not hold a selection at a place the
-   catalogue never offered. Establish first whether the lock does that today; if
-   it does not, record that in this file and leave the code alone.
+   catalogue never offered. Established: the lock does not hold such a selection today, so the code stays
+   unchanged and this file records the verdict above.
 5. The JSDoc of `findMissingMandatoryListRuleSelections` states the rule and
    names ADR 0032, so the write model and the engine read the same on this
    point.
