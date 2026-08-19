@@ -1,7 +1,7 @@
 ---
-status: backlog
+status: waiting
 branch: claude/hochelfen-pure-of-heart-emj86h
-pr:
+pr: https://github.com/artkoenig/tome_of_battle/pull/241
 ---
 
 # A shared honour reachable only from a hero is auto-added to the army
