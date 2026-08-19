@@ -368,7 +368,15 @@ function hasUnfilteredPhantomAnywhereFor(root, defId) {
 function countInstances(fromNode, defId) {
   let total = 0;
   for (const node of nodeAndDescendants(fromNode)) {
-    if (!node.isPhantom && !node.isRoot && node.def?.id === defId) {
+    if (node.isPhantom || node.isRoot) continue;
+    // Ein Verweis-Knoten zaehlt fuer sein **Ziel** mit (Issue 0154): eine
+    // Auswahl, die ueber einen `entryLink` hereinkam, traegt die Id des
+    // Verweises, ist aber ein Vorkommen der Zieldefinition — genau das, was
+    // die Grenze der Zieldefinition ohnehin zaehlt (`constraints.js`,
+    // `countedTargetId`). Ohne diese Zeile haengt der Absenz-Anker einer
+    // geteilten Pflichtdefinition auch dann, wenn sie laengst in der Liste
+    // steht: ein Phantom neben einer erfuellten Pflicht.
+    if (node.def?.id === defId || (isLinkDefinition(node.def) && node.def.targetId === defId)) {
       total += node.instance?.count ?? 0;
     }
   }
@@ -1161,6 +1169,95 @@ export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogue
   // damit die stabilen Pfade der realen Geschwister unveraendert bleiben.
   synthesizeGroupAnchors(root, resolved, nextFrameId);
   return { root, diagnostics };
+}
+
+/**
+ * Die **aufgeloeste Ziel-Id** eines Knotens: bei einem Verweis dessen Ziel,
+ * sonst die eigene Definition — dieselbe Identitaet, ueber die die
+ * Constraint-Schicht zaehlt (`countedTargetId`).
+ */
+function resolvedTargetIdOf(node) {
+  if (!node.def) return null;
+  return isLinkDefinition(node.def) ? node.def.targetId : node.def.id;
+}
+
+/**
+ * **Baumphase 2.5**: die Pflicht-Phantome der **geteilten** Definitionen, die in
+ * diesem Roster tatsaechlich **angeboten** werden (Issue 0154).
+ *
+ * Ein geteilter Eintrag ist kein Wurzel-Angebot (Issue 0153, ADR-0032) und
+ * bekommt in Phase 1 deshalb kein Phantom: seine `min`-Grenze duerfte sonst in
+ * jedem Roster feuern, auch dort, wo ihn nichts erreichbar macht. Er kann aber
+ * eine **armee- bzw. kontingentweite Pflicht** an sich selbst tragen —
+ * „mindestens einer davon in dieser Armee" —, und die gilt der Liste, nicht dem
+ * Platz: sie ist genau dann einzufordern, wenn der Roster den Eintrag
+ * ueberhaupt anbietet. Real getragen von den Hoch-Elfen-Ehrungen: „Pure of
+ * Heart" steht allein unter `<sharedSelectionEntries>`, ist allein ueber den
+ * `entryLink` der geteilten Gruppe „Honours" unter einem Helden waehlbar und
+ * traegt dort `min 1 scope="roster"` — mindestens ein Held muss sie nehmen.
+ *
+ * **Angebotsregel.** Angeboten ist, was ein Anker des fertigen Baums fuehrt:
+ * ein belegter Slot oder ein Angebots-Anker, dessen aufgeloestes Ziel diese
+ * Definition ist. Deshalb laeuft diese Phase **nach** {@link import('./offer.js').attachOfferAnchors} —
+ * vorher ist die Frage „wird das hier angeboten?" nicht beantwortbar. Ein
+ * geteilter Eintrag, auf den im ganzen Korpus **kein** `entryLink` zeigt,
+ * bleibt damit stumm (das Muster des Szenarios `roster-scope-mandatory-chariot`,
+ * RSMC-R7), und eine leere Armee fordert nichts ein: ohne Auswahl gibt es
+ * keinen Rahmen, der etwas anboete.
+ *
+ * Alles Weitere ist die Phase-1-Regel, unveraendert: das Phantom haengt nur bei
+ * **Absenz** ({@link countInstances}, das einen Verweis fuer sein Ziel
+ * mitzaehlt), nur im Rahmen seiner Grenze (ROSTER an der Wurzel, FORCE am
+ * Kontingent) und nur im **Katalog-Bezugsrahmen** ({@link isInCatalogueScope}) —
+ * eine Pflicht eines fremden Armeebuchs bleibt dessen Sache.
+ *
+ * @returns {object[]} die angehaengten Phantome, in Anhaenge-Reihenfolge; der
+ *   Aufrufer traegt sie wie die Angebots-Anker in die Effektiv-Werte-Schicht nach.
+ */
+export function synthesizeOfferedSharedMandatoryPhantoms(root, resolved, catalogueScope, primaryCatalogueByForceDefId) {
+  const sharedDefinitions = resolved.sharedDefinitions ?? [];
+  if (sharedDefinitions.length === 0) return [];
+  const nextFrameId = root.nextFrameId;
+  const attached = [];
+
+  const offeredIdsUnder = node => {
+    const ids = new Set();
+    for (const descendant of nodeAndDescendants(node)) {
+      if (descendant.isRoot) continue;
+      // Ein Pflicht-Phantom ist selbst kein Angebot — es ist die Meldung ueber
+      // eine Absenz und darf keine zweite begruenden.
+      if (descendant.anchorKind === AnchorKind.MANDATORY_PHANTOM) continue;
+      const id = resolvedTargetIdOf(descendant);
+      if (id !== null) ids.add(id);
+    }
+    return ids;
+  };
+
+  const forceNodeList = [...forceNodes(root)];
+  const rosterCatalogueReferences = rosterCatalogueReferencesOf(forceNodeList, primaryCatalogueByForceDefId);
+  const rosterOfferedIds = offeredIdsUnder(root);
+  for (const def of sharedDefinitions) {
+    const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
+    if (hasMinLimit(limits, ScopeKeyword.ROSTER) && rosterOfferedIds.has(def.id)
+        && countInstances(root, def.id) === 0
+        && isInCatalogueScope(def.id, rosterCatalogueReferences, catalogueScope)) {
+      attached.push(attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly));
+    }
+  }
+  for (const forceNode of forceNodeList) {
+    const forceOfferedIds = offeredIdsUnder(forceNode);
+    const forceReference = forceCatalogueReferenceOf(forceNode, primaryCatalogueByForceDefId);
+    const forceCatalogueReferences = forceReference === null ? [] : [forceReference];
+    for (const def of sharedDefinitions) {
+      const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
+      if (hasMinLimit(limits, ScopeKeyword.FORCE) && forceOfferedIds.has(def.id)
+          && countInstances(forceNode, def.id) === 0
+          && isInCatalogueScope(def.id, forceCatalogueReferences, catalogueScope)) {
+        attached.push(attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly));
+      }
+    }
+  }
+  return attached;
 }
 
 /** Rekursiver Generator ueber einen Knoten und alle seine Nachfahren. */

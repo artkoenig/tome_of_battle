@@ -53,7 +53,7 @@
 
 import { PreparedDataset } from './datasetPreparation.js';
 import { buildDatasetDescription, costTypesOf } from './datasetDescription.js';
-import { buildEvalTree } from './evalTree.js';
+import { buildEvalTree, synthesizeOfferedSharedMandatoryPhantoms } from './evalTree.js';
 import { attachOfferAnchors } from './offer.js';
 import { extendBaseEffectiveState } from './effectiveState.js';
 import { buildIndex } from './countIndex.js';
@@ -295,7 +295,16 @@ export function evaluate(prepared, roster, options) {
     // in den konvergierten Zustand nachgetragen, damit ihre Grenzen vom Katalogwert
     // aus fortgeschrieben werden und nicht von 0.
     const offerAnchors = attachOfferAnchors(root, resolved, catalogueScope, primaryCatalogueByForceDefId);
-    extendBaseEffectiveState(effective, offerAnchors);
+    // Baumphase 2.5 (Issue 0154): die Pflicht-Phantome der **geteilten**
+    // Definitionen, die dieser Roster tatsaechlich anbietet. Sie kann erst hier
+    // laufen — „wird das hier ueberhaupt angeboten?" beantwortet der Baum erst
+    // mit seinen Angebots-Ankern — und ihre Anker gehen denselben Weg wie diese:
+    // ohne Instanz, ohne Zaehlbeitrag, mit Basiswerten aus demselben
+    // Nach-Durchlauf.
+    const sharedMandatoryPhantoms = synthesizeOfferedSharedMandatoryPhantoms(
+      root, resolved, catalogueScope, primaryCatalogueByForceDefId,
+    );
+    extendBaseEffectiveState(effective, [...offerAnchors, ...sharedMandatoryPhantoms]);
 
     // Nach-Durchlauf: die synthetischen Anker — die aus Phase 1 wie die eben
     // angehaengten — bekommen ihre effektiven Werte in **einem** Durchlauf gegen

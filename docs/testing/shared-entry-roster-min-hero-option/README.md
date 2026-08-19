@@ -60,10 +60,26 @@ existierte sonst zusätzlich und die Auswahl bliebe mehrdeutig.
 
 | Roster | Aufbau | Erwartung |
 | --- | --- | --- |
-| `01-prince-ohne-pure-of-heart.ros` | Force „Standard (HE-AB)", darin ein Prince | Genau ein Platz für `30b5-bd1a-60e2-2354`: **Angebot** (`offerAnchor`) im Rahmen des Prince, Ist 0, effektives Mindest-/Höchstmaß 1, Spielraum 1, Pflicht unerfüllt. Der Platz trägt die Regel `dc8f-265a-b611-d092`. |
+| `01-prince-ohne-pure-of-heart.ros` | Force „Standard (HE-AB)", darin ein Prince | Genau ein Platz für `30b5-bd1a-60e2-2354`: **Angebot** (`offerAnchor`) im Rahmen des Prince, Ist 0, effektives Mindest-/Höchstmaß 1, Spielraum 1, Pflicht unerfüllt. Der Platz trägt die Regel `dc8f-265a-b611-d092`. Dazu **genau eine** Meldung der armeeweiten Pflicht `82ef-69c7-f459-5e20` (Ist 0, Grenze 1). Die beiden `max`-Grenzen `4720-59d3-07c4-68b3` und `69ac-892d-a730-545d` schweigen: nichts steht in der Liste, was ein Höchstmaß reißen könnte. |
 | `02-prince-mit-pure-of-heart.ros` | derselbe Aufbau, der Prince hat die Ehrung genommen (`entryLinkId="30b5-bd1a-60e2-2354"`, `entryGroupId="45a3-3e65-6c49-5cc0"`) | Derselbe Platz ist **belegt** (`occupied`), weiterhin im Rahmen des Prince, Ist 1, Spielraum 0, Höchstmaß ausgeschöpft. Keine der drei Grenzen `4720-59d3-07c4-68b3`, `69ac-892d-a730-545d`, `82ef-69c7-f459-5e20` feuert: eine Ehrung im Roster, eine unter diesem Elternteil, das Mindestmaß erfüllt. |
 
-Roster 01 macht bewusst **keine** Aussage über die `min`-Grenze
-`82ef-69c7-f459-5e20`: ob eine unerfüllte armeeweite Pflicht an einem noch
-unbesetzten Angebot bereits als Verletzung gemeldet wird, ist eine andere
-Frage als die, wo der Platz liegt — und diese eine Frage pinnt dieses Szenario.
+## Die Pflicht (Nachtrag, Issue 0154)
+
+Ursprünglich machte Roster 01 bewusst **keine** Aussage über die `min`-Grenze
+`82ef-69c7-f459-5e20` — gepinnt war allein, *wo* der Platz liegt. Die
+Katalogdaten beantworten die zweite Frage aber ebenso eindeutig, und zwar in
+derselben Zeile 5180 ff.: der geteilte Eintrag trägt
+
+```
+constraint id="82ef-69c7-f459-5e20" type="min" field="selections" value="1"
+           scope="roster" includeChildSelections="true" includeChildForces="true"
+```
+
+Das ist keine Aussage über den Platz, sondern über die **Liste**: „mindestens
+eine davon im ganzen Roster, geschachtelte Vorkommen und Unter-Kontingente
+eingeschlossen." Der verlinkte Regeltext (`aef2-97fe-962d-9f7a`) sagt dasselbe
+in Prosa: *„This Honour MUST be given to exactly one high Elf character."*
+Beide Roster pinnen die Pflicht deshalb jetzt von beiden Seiten — Roster 01,
+dass sie **feuert**, solange kein Held die Ehrung genommen hat, Roster 02, dass
+sie **schweigt**, sobald einer sie hat. Wo der Platz liegt, ändert das nicht:
+er bleibt in beiden Rostern der `entryLink` unter dem Prince.
