@@ -677,6 +677,16 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * `lookup`, aber nicht hier, damit ihre `min`-Grenze keine falsche
  * Pflichtverletzung synthetisiert.
  *
+ * Die **geteilten Definitionen** (`sharedDefinitions`) stehen daneben als eigene
+ * Liste (Issue 0154): dieselbe Traversierung ueber `sharedEntries`, ohne die
+ * schon in `definitions` gesehenen. Sie ist ausschliesslich die zweite Quelle
+ * der Pflicht-Phantom-Synthese fuer armee- bzw. kontingentweite `min`-Grenzen —
+ * die Pflicht "mindestens einer davon in dieser Armee" gilt auch, wenn ihr
+ * Traeger nur geteilt gefuehrt und allein ueber einen `entryLink` unter einer
+ * Auswahl erreichbar ist. Wer sie fuer etwas anderes liest, macht geteilte
+ * Eintraege zu Wurzel-Angeboten — genau das, was Issue 0153 rueckgaengig
+ * gemacht hat.
+ *
  * Daneben liefert er die **Kandidatenmenge des Angebots auf Armee-Ebene**
  * (`armyLevelCandidates`, siehe {@link collectArmyLevelCandidates}) als eigene,
  * benannte Sicht — die Grundlage der Angebots-Anker je Kontingent (ADR-0035).
@@ -696,7 +706,7 @@ function assertUnresolved(definitionNodes, infoRoots) {
  * aufbereiteten Datensatz wieder (`datasetPreparation.js`).
  *
  * @param {{ entries?: object[], forces?: object[], categories?: object[], sharedEntries?: object[], infos?: object[], profileTypes?: object[], publications?: object[] }} catalogue Ergebnis von `parseCatalogue` oder `mergeCatalogues`.
- * @returns {{ lookup: (id: string) => object|null, definitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], publications: object[], diagnostics: object[] }}
+ * @returns {{ lookup: (id: string) => object|null, definitions: object[], sharedDefinitions: object[], armyLevelCandidates: object[], categoryIds: Set<string>, groupMemberIds: Map<string, Set<string>>, profileTypes: object[], publications: object[], diagnostics: object[] }}
  * @throws {TypeError} Wenn die uebergebenen Knoten schon aufgeloest (und damit
  *   eingefroren) sind — siehe Vorbedingung. Geprueft wird vor dem ersten
  *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
@@ -732,6 +742,20 @@ export function resolveCatalogue(catalogue) {
   const seen = new Set();
   for (const definition of rootForest) {
     collectRootDefinitions(definition, definitions, seen);
+  }
+
+  // Zweite, getrennt gefuehrte Quelle (Issue 0154): die **geteilten** Eintraege.
+  // Sie sind kein Wurzel-Angebot — deshalb stehen sie nicht in `definitions` —,
+  // koennen aber eine armee- bzw. kontingentweite **Pflicht** an sich selbst
+  // tragen ("mindestens einer in dieser Armee"). Diese Pflicht gilt der Liste,
+  // nicht dem Platz: wird sie nirgends erfuellt, ist die Liste unfertig, gleich
+  // ob der Katalog die Definition als Wurzel-Eintrag oder nur geteilt fuehrt.
+  // Getrennt gefuehrt, weil sie **nur** dieser Zweck erreichen darf: die
+  // Phantom-Synthese filtert sie zusaetzlich ueber den Katalog-Bezugsrahmen
+  // (`evalTree.js`), und keine andere Schicht bekommt sie zu sehen.
+  const sharedDefinitions = [];
+  for (const definition of catalogue.sharedEntries ?? []) {
+    collectRootDefinitions(definition, sharedDefinitions, seen);
   }
 
   // Modifikator-Ziele einmal ueber die globale Symboltabelle aufloesen — fuer alle
@@ -774,6 +798,7 @@ export function resolveCatalogue(catalogue) {
   return freezeResolvedView({
     lookup: id => byId.get(id) ?? null,
     definitions,
+    sharedDefinitions,
     armyLevelCandidates: collectArmyLevelCandidates(catalogue.entries ?? []),
     categoryIds,
     groupMemberIds,

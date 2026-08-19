@@ -24,6 +24,18 @@ means; it outranks the ADRs where the two disagree.
   `e2e-testcase-author` subagent, which reads catalog data only and never the engine source
   (`docs/agents/e2e-testcase-author.md`, ADR 0033). Writing one from the engine source makes the
   test mirror the bug instead of catching it.
+- The tree is built in phases, and *when* an anchor may be synthesised follows from what the
+  phase knows: phase 1 (`buildEvalTree`) sees only the roster's real nodes, phase 2
+  (`attachOfferAnchors`, from `evaluator.js`'s post-pass) first answers "is this offered here at
+  all?". A rule that depends on being offered belongs after phase 2 — anchors attached there must
+  be handed to `extendBaseEffectiveState` alongside the offer anchors, or their bounds start from
+  0 instead of the catalogue value.
+- Three rules pin what an unselected entry may report, and each has its own test guarding it:
+  an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
+  entry is no root offer and synthesises no mandatory phantom from its own `min` (ADR-0032), and a
+  mandatory obligation declared in a foreign army book never fires (`isInCatalogueScope`,
+  Issue 0098). Any change to "which absence is reported" hits all three; check them before
+  designing, not after the test run.
 - Effort has a budget: `node scripts/measure-evaluator.js` fails over 100 ms on real catalog data.
   A change that widens a traversal needs that number checked.
 - Report messages are projected to text elsewhere (`src/i18n/violationMessages.js`); a new
