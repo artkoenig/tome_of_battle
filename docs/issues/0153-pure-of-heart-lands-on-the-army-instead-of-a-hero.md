@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: waiting
+branch: claude/hochelfen-pure-of-heart-ap1xda
+pr: 242
 ---
 
 # Pure of Heart lands on the army instead of a hero
