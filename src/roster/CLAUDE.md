@@ -17,6 +17,16 @@ src/roster/<file>.test.js`.
   `resolveEntry` from `catalogResolver.js` in `rosterCounter.mandatoryGroupDefault.test.js`)
   — resolving links/entries by id against an inline fixture, never a mock of
   the module under test or of a sibling module.
+- `listRules.js` has both styles, in separate files: `listRules.test.js` and
+  `listRules.mandatoryState.test.js` mock `./catalogResolver.js` and
+  `./entryVisibility.js` file-wide (older style, established first);
+  `listRules.mandatoryPredicate.test.js` and `listRules.sharedOnlyLock.test.js`
+  drive the same functions against a real, inline `{ id, catalogues: [{ id,
+  selectionEntries, entryLinks, sharedSelectionEntries,
+  sharedSelectionEntryGroups }] }` system with both collaborators unmocked. A
+  new case joins whichever style its file already uses; it never mixes the two
+  in one file (a mocked collector would decide the outcome instead of the
+  production code it is meant to test).
 - A catalogue fixture is a generic, schema-shaped object literal built inline
   per file or per case (ADR-0003) — `selectionEntries`/`entryLinks`/
   `selectionEntryGroups` with the same field names the real `.cat`/`.gst`
