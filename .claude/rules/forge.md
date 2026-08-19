@@ -24,6 +24,9 @@
 
 ## Before an issue is merged
 
-A change a user can see (fix or feature) needs a version bump: `node scripts/release.js
-<patch|minor|X.Y.Z>`, committed on the issue's branch before the PR. Never for refactoring or
-chores. The tag is pushed by `.github/workflows/tag-on-version-bump.yml`, never by an agent.
+A change a user can see (fix or feature) needs a version bump. Never for refactoring or chores —
+they have no release reason. Propose the next version (patch for a fix, minor for a feature) and
+let the user confirm, override it, or decline; then `node scripts/release.js <patch|minor|X.Y.Z>`,
+committed on the issue's branch before the PR, so the squash-merge carries it into `main`. The tag
+is pushed by `.github/workflows/tag-on-version-bump.yml`, never by an agent — a tag push from a
+Cloud Session's Git relay fails with HTTP 403 (ADR 0019).

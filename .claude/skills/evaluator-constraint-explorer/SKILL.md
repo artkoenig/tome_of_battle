@@ -37,7 +37,7 @@ Read `docs/testing/worklist.json`. Its `cells` are sorted heaviest first (`sortC
 
 Each record carries `key` (the pipe-delimited cell key), `kind` (`constraint | condition | conditionGroup | modifier | modifierGroup | repeat | repeatList`), `axes`, `occurrences`, `files` (occurrence count per corpus file), and `examples[]` with `file`, `ancestor` (`tag`, `id` and `name` of the nearest named catalog element the construct hangs on) and `raw` (the element's own attributes). `examples[]` is the whole address a scenario author needs: jsdom exposes no line numbers, so the ancestor id is the handle.
 
-Prefer an example under `src/evaluator/__fixtures__/whfb6-definitive/`. Where every occurrence of a cell sits under `src/__fixtures__/whfb6/`, the scenario author cannot read it — its allow-list in `docs/agents/e2e-testcase-author.md` covers the definitive corpus only. Park such a cell with the question whether the allow-list should be extended to the upstream corpus, and take the next cell.
+Prefer an example under `src/evaluator/__fixtures__/whfb6-definitive/`. A cell occurring only under `src/__fixtures__/whfb6/` is authorable too — the allow-list in `.claude/agents/e2e-testcase-author.md` covers both corpora — but the scenario's `dataset` names the files of **one** set and never mixes them: the same id can carry different attributes in each.
 
 ## 5. Step 3 — derive the rule the cell demands, from data only
 
@@ -49,7 +49,7 @@ The output of this step is one plain-language sentence — what the catalog data
 
 ## 6. Step 4 — delegate the scenario to `e2e-testcase-author`
 
-Delegate the scenario to the `e2e-testcase-author` subagent; never write it in the main conversation. Its premise (`docs/agents/e2e-testcase-author.md`) takes `rule` (required, plain language), `scenario_name` (required, the slug of the new directory under `docs/testing/`) and an optional dataset hint.
+Delegate the scenario to the `e2e-testcase-author` subagent; never write it in the main conversation. Its premise (`.claude/agents/e2e-testcase-author.md`) takes `rule` (required, plain language), `scenario_name` (required, the slug of the new directory under `docs/testing/`) and an optional dataset hint.
 
 Choose a kebab-case slug that describes the construct, in the style of the existing directories (`modifier-group-repeats`, `condition-group-not`), and check that `docs/testing/<slug>/` does not exist yet.
 
@@ -66,9 +66,9 @@ The author reports back a summary, including any gap that made it stop. A gap it
 
 ## 7. Step 5 — run the evaluator tests
 
-Run exactly `npx vitest run src/evaluator`. The change touches only `docs/testing/`, which that suite consumes, so no other suite is run here.
+Run exactly `forge-test --run src/evaluator`. The change touches only `docs/testing/`, which that suite consumes, so no other suite is run here.
 
-Isolate the new scenario's cases with `npx vitest run src/evaluator/e2e.testcatalog.test.js -t "Szenario: <slug>"` — the runner names its dynamic cases `Szenario: <manifest.name>` and, per roster, `<label>: Bericht entspricht der deklarierten Erwartung`.
+Isolate the new scenario's cases with `forge-test --run 'src/evaluator/e2e.testcatalog.test.js -t "Szenario: <slug>"'` — the runner names its dynamic cases `Szenario: <manifest.name>` and, per roster, `<label>: Bericht entspricht der deklarierten Erwartung`.
 
 Only failures naming the new scenario decide green or red. Other evaluator failures are the campaign's already-pinned gaps: they are neither this cell's result nor this skill's to fix. `CLAUDE.md`'s "all unit tests must pass" is suspended for exactly those pinned red scenarios recorded in `docs/testing/campaign-state.json`, each of which phase B closes.
 
@@ -86,7 +86,7 @@ Update `docs/testkatalog-evaluator-e2e.md` in the same step: the catalog and the
 
 Commit everything of the cell together — the scenario directory, `covered-cells.json`, the regenerated `worklist.json` and the Testkatalog entry — in one commit, for example `test(coverage): pin <cell key> with scenario <slug>`.
 
-Verify the bookkeeping with `npx vitest run scripts/lib/evaluator-coverage-corpus.test.js`; its drift guard recomputes the worklist from the corpus and deep-equals the committed file, so a forgotten regeneration is caught there.
+Verify the bookkeeping with `forge-test --run scripts/lib/evaluator-coverage-corpus.test.js`; its drift guard recomputes the worklist from the corpus and deep-equals the committed file, so a forgotten regeneration is caught there.
 
 Never delete a committed green scenario. Campaign progress is monotone.
 

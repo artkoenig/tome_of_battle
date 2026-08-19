@@ -57,7 +57,7 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
 - **Ablauf:** Erhebt den Projektzustand (Qualitäts-Gates mit ihrer tatsächlichen Wirksamkeit, Kennzahlen, offene Vorgänge des lokalen `docs/issues/`-Trackers), erzeugt daraus den **Zustandsbericht** als HTML-Seite, baut `docs/` zusätzlich mit `actions/jekyll-build-pages` und deployt beides gemeinsam über GitHub Pages. Der Bericht wird **nicht** committet — er ist reine Build-Ausgabe, analog zu `dist/`, womit die Regel „`main` kommt nur über PR-Merges voran" unangetastet bleibt.
 - **Besonderheiten:** Als bisher einziger Workflow braucht er `pages: write` und `id-token: write` sowie einen Checkout mit vollständiger Historie und allen Remote-Refs (der Issue-Teil liest den Tracker über mehrere Branches). Ein Gate, das gar nicht erst anläuft, lässt den Lauf nicht scheitern, sondern erscheint im Bericht als „nicht angelaufen".
 - **Vorbedingung:** Die Pages-Quelle muss von Hand auf „GitHub Actions" stehen; das bewirkt kein Workflow-Code (siehe [ADR 0025](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)).
-- **Abgrenzung:** Dieser Workflow liefert Projektdokumentation aus, nicht die Anwendung — die kommt weiterhin von Vercel (ADR 0008). Seine Veröffentlichung ist kein *Deployment* im Sinne des Glossars (`CONTEXT.md`).
+- **Abgrenzung:** Dieser Workflow liefert Projektdokumentation aus, nicht die Anwendung — die kommt weiterhin von Vercel (ADR 0008). Seine Veröffentlichung ist kein *Deployment*.
 
 ---
 

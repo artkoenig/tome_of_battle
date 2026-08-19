@@ -1,16 +1,15 @@
 ---
 paths:
   - "docs/**"
+  - ".agents/**"
   - "CLAUDE.md"
-  - "CONTEXT.md"
   - "README.md"
 ---
 
 # Dokumentation
 
-Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch. `CONTEXT.md`
-legt die Begriffe fest, die dieses Projekt eng führt (Release vs. Deployment vs. Version,
-Query/Scope/Modifier/ConditionGroup) — vor ihrer Verwendung dort nachsehen.
+Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch.
+`CLAUDE.md` ist ein Symlink auf `.agents/AGENTS.md` — die echte Datei dort bearbeiten.
 
 - **Rangfolge bei Widerspruch:** `docs/battlescribe-data-format.md` → ADR → `docs/project-map.md`.
   Die Karte ist Orientierungshilfe, nie Beleg; wer sie widerlegt findet, korrigiert sie.

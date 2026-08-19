@@ -4,8 +4,7 @@ Unit tests for the app's write model (ADR 0022/0023): the selection factory,
 sub-selection editing, the tree helpers, catalogue resolution (`resolveEntry`/
 `findEntryInSystem`), catalogue sync, and the display-cost helpers in
 `rosterCounter.js`. Framework: vitest, plain `describe`/`it`. Run the whole
-directory: `npx vitest run src/roster`; a single file: `npx vitest run
-src/roster/<file>.test.js`.
+directory: `forge-test --run src/roster`; a single file: `forge-test --run src/roster/<file>.test.js`.
 
 ## Conventions
 

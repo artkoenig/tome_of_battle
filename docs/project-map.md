@@ -13,12 +13,11 @@ correction.
 ## Root layout
 
 - **`.agents/AGENTS.md`** (symlinked as `CLAUDE.md` at the repo root) — the
-  agent process entry point: required reading, commands, the issue-tracker
-  convention, the version-bump workflow.
-- **`CONTEXT.md`** — German glossary for terms this project uses in a
-  specific, easily-confused sense (Release vs. Deployment vs. Version,
-  Query/Scope/Modifier/ConditionGroup, ...). Skim it before using any of
-  those words in a commit, ADR, or issue.
+  agent entry point: required reading, the one command block, and pointers
+  into `.claude/rules/` for everything else.
+- **`.claude/rules/`** — the project's working rules, one topic per file.
+  `areas/<area>.md` carries what is true of one directory only and loads on a
+  `paths:` glob when an agent reads a file it matches.
 - **`README.md`** — contributor-facing (English): features, getting started,
   an Architecture section covering the write model and the evaluator, the
   data model, tech stack.
@@ -63,8 +62,8 @@ depcruise` / `npm run lint` catch a violation immediately.
   development ([`AGENTS.md`](../CLAUDE.md)). See [`adr/README.md`](adr/README.md)
   for the full index; the [cluster overview](#adr-clusters-quick-index-by-topic)
   below groups them by topic.
-- **`agents/`** — subagent role contracts (currently just
-  [`e2e-testcase-author.md`](agents/e2e-testcase-author.md): what it may
+- **`../.claude/agents/`** — subagent role contracts (currently just
+  `.claude/agents/e2e-testcase-author.md`: what it may
   read, what it must produce, why it's kept blind to the evaluator source).
 - **`PRD-*.md`** — product requirement docs for specific larger features
   (undo/redo, catalog updates & roster compatibility, roster serialization
@@ -117,10 +116,10 @@ Three layers, easy to conflate:
    `crossCatalog.test.js`) dynamically discovers scenarios under
    `docs/testing/`. Scenarios are authored **only** by the
    `e2e-testcase-author` subagent, from catalog data alone, never from
-   evaluator source — see [`agents/e2e-testcase-author.md`](agents/e2e-testcase-author.md)
+   evaluator source — see `.claude/agents/e2e-testcase-author.md`
    and [ADR 0033](adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md).
    If a change touches only `src/evaluator/`, this plus its unit tests are
-   all you need to run (`npx vitest run src/evaluator`).
+   all you need to run (`forge-test --run src/evaluator`).
 3. **App E2E** — `e2e/ui.test.js` (Puppeteer smoke test over the real UI,
    `data-testid` selectors) and `e2e/pwa.test.js` (manifest/icon file
    checks), sharing the harness `scripts/lib/e2e-harness.js`. Part of

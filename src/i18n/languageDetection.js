@@ -1,7 +1,7 @@
 import { SUPPORTED_LANGUAGES, FALLBACK_LANGUAGE } from './constants';
 
 // Language tag prefix that maps to German. Everything else maps to the fallback
-// language (CONTEXT.md "UI-Sprache": Deutsch -> Deutsch, sonst Englisch).
+// language: Deutsch -> Deutsch, everything else -> English.
 const GERMAN_PREFIX = 'de';
 const GERMAN = 'de';
 

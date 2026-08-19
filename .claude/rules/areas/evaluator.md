@@ -22,7 +22,7 @@ means; it outranks the ADRs where the two disagree.
   over the scenarios in `docs/testing/`. The full suite is not required.
 - New E2E scenarios under `docs/testing/` are **not** written here: they are delegated to the
   `e2e-testcase-author` subagent, which reads catalog data only and never the engine source
-  (`docs/agents/e2e-testcase-author.md`, ADR 0033). Writing one from the engine source makes the
+  (`.claude/agents/e2e-testcase-author.md`, ADR 0033). Writing one from the engine source makes the
   test mirror the bug instead of catching it.
 - The tree is built in phases, and *when* an anchor may be synthesised follows from what the
   phase knows: phase 1 (`buildEvalTree`) sees only the roster's real nodes, phase 2
@@ -38,6 +38,8 @@ means; it outranks the ADRs where the two disagree.
   designing, not after the test run.
 - Effort has a budget: `node scripts/measure-evaluator.js` fails over 100 ms on real catalog data.
   A change that widens a traversal needs that number checked.
+  `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser
+  (Puppeteer) and shows how far jsdom's XML reader skews the jsdom figure.
 - Report messages are projected to text elsewhere (`src/i18n/violationMessages.js`); a new
   violation kind is only half-done inside this folder.
 - The E2E fixture corpus `src/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18

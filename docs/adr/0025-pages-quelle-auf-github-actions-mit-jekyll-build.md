@@ -7,7 +7,7 @@
 
 ## Kontext und Problemstellung
 
-Der Zustandsbericht (siehe Glossar in `CONTEXT.md`) soll bei jedem Push auf
+Der Zustandsbericht  soll bei jedem Push auf
 `main` neu erzeugt und öffentlich erreichbar sein. Der naheliegende Weg dorthin
 ist GitHub Pages — und genau dort liegt der Konflikt.
 

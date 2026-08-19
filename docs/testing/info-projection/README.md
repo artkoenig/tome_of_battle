@@ -107,7 +107,7 @@ direkt unter der Einheit — dieselbe Kodierung wie in
 Die Negativhaelfte von IPJ-R4, IPJ-R6 und IPJ-R8 laeuft ueber den
 Manifest-Schluessel `expect.capabilities[].infoElementsAbsent` — eine Liste von
 Vorkommens-Ids, die in der Projektion **dieses** Slots **nicht** stehen duerfen
-(siehe [`docs/agents/e2e-testcase-author.md`](../../agents/e2e-testcase-author.md)).
+(siehe `.claude/agents/e2e-testcase-author.md`).
 `infoElements` allein ist eine Teilmengen-Zusicherung und bemerkt einen zu viel
 gefuehrten Eintrag nie.
 

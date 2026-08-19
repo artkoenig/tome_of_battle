@@ -5,8 +5,8 @@ and its wiring to the evaluator, ADR-0022/0034), `useRosterList`,
 `useAppData`, `useAppNavigation`, `usePlayState`, `usePwaLifecycle`,
 `useRuleUrl`, `useToast`, `useUndoableState`, `useViewportHeight`. Framework:
 vitest + `@testing-library/react` (`renderHook`, `act`), plain
-`describe`/`it`. Run the whole directory: `npx vitest run src/hooks`; a single
-file: `npx vitest run src/hooks/<file>.test.js`.
+`describe`/`it`. Run the whole directory: `forge-test --run src/hooks`; a single
+file: `forge-test --run src/hooks/<file>.test.js`.
 
 ## Conventions
 

@@ -58,7 +58,7 @@ Satz *ohne* Mercenaries — per Roster-`dataset`-Override im Manifest.
 
 Das Szenario wird **Black-Box** autoriert — allein aus den Katalogdaten, ohne
 Blick in den Evaluator-Quellcode — durch den dedizierten Subagenten
-`e2e-testcase-author` (siehe [`docs/agents/e2e-testcase-author.md`](agents/e2e-testcase-author.md)
+`e2e-testcase-author` (siehe `.claude/agents/e2e-testcase-author.md`
 und [ADR 0033](adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md)).
 So prüft der Test die Engine, statt ihr Verhalten zu spiegeln. Es entsteht dabei
 **kein** handgeschriebener `src/evaluator/e2e.*.test.js` mehr — nur Szenario-Daten.

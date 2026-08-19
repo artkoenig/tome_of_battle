@@ -7,7 +7,7 @@ Fixpunkt bewusst weggelassen) stehen in ADR-0030. Die Pseudocode-Typen und
 Funktionssignaturen unten sind Entwurf/Leitbild, nicht der finale Vertrag: die
 Umsetzung darf Details schärfen, solange das beschriebene Verhalten erhalten bleibt.
 
-Begriffs-Brücke zum Glossar (CONTEXT.md, Abschnitt „Regelauswertung"):
+Begriffs-Brücke deutsch/englisch:
 Limit → Grenze (Constraint), Condition → Bedingung, Repeat → Wiederholung,
 Scope → Bezugsrahmen, target/childId → Ziel, report/violations → Validierungsmeldungen,
 diagnostics → Diagnosen. „Phantomknoten", „Gruppen-Anker", „Fixpunkt" und

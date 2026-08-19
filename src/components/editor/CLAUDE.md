@@ -8,9 +8,7 @@ display (`ListRuleChecklist`, `ValidationCauses`, `ValidationMessage`,
 `RosterValidationPanel`) and small display components (`UnitChips`,
 `CategoryCountBadge`, `RuleChipIcon`). Framework: vitest +
 `@testing-library/react` (`render`/`fireEvent`/`screen`), plain
-`describe`/`it`, German titles. Run the whole directory: `npx vitest run
-src/components/editor`; a single file: `npx vitest run
-src/components/editor/<file>.test.jsx`.
+`describe`/`it`, German titles. Run the whole directory: `forge-test --run src/components/editor`; a single file: `forge-test --run src/components/editor/<file>.test.jsx`.
 
 ## Conventions
 

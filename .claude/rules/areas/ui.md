@@ -18,8 +18,10 @@ paths:
   key does not fail a test — it fails silently for the user.
 - The Puppeteer app E2E (`node e2e/ui.test.js`) is outside `forge-test`. Run it by hand for a
   change here; it is what catches a view that no longer renders.
-- After a user-visible change, take a screenshot of the affected view and send it to the user:
-  `node scripts/generate_screenshots.js` runs offline against the frozen fixture and needs no
-  catalog data.
+- After a user-visible change, take a screenshot of the affected view and send it to the user
+  (skip it when the session runs on the user's own machine): `node
+  scripts/generate_screenshots.js` runs offline against the frozen fixture and needs no catalog
+  data. For a one-off investigation build a throwaway script on `scripts/lib/e2e-harness.js` —
+  it offers the browser console log, a DOM dump and a headed browser.
 - The repo language is mixed by intent: docs, issues and commit messages in German, code and
-  identifiers in English. `CONTEXT.md` fixes the terms this project uses in a narrow sense.
+  identifiers in English.
