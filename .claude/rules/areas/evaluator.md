@@ -36,6 +36,12 @@ means; it outranks the ADRs where the two disagree.
   mandatory obligation declared in a foreign army book never fires (`isInCatalogueScope`,
   Issue 0098). Any change to "which absence is reported" hits all three; check them before
   designing, not after the test run.
+- Root-level offers are deduplicated by **target id** (`attachOfferAnchors`/`identityIdsOf` in
+  `offer.js`), and a root `entryLink` is exempt from the catalogue scope filter. Several army
+  books linking the same shared library entry therefore compete for one anchor, and the winner
+  brings its own source and its own category modifiers. A bug of the shape "unit missing from one
+  army's dialog" reproduces only with the **whole corpus** loaded — with two catalogues it looks
+  correct.
 - Effort has a budget: `node scripts/measure-evaluator.js` fails over 100 ms on real catalog data.
   A change that widens a traversal needs that number checked.
   `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser

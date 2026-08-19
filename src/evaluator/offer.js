@@ -98,6 +98,14 @@ function identityIdsOf(def) {
   return ids;
 }
 
+/**
+ * Das Ziel eines Verweises als Entdopplungs-Schluessel: die ID des aufgeloesten
+ * Ziels, ersatzweise die im Link genannte Ziel-ID; `null`, wenn beides fehlt.
+ */
+function linkTargetIdentityOf(def) {
+  return def.resolved?.id ?? def.targetId ?? null;
+}
+
 /** Die Identitaets-IDs aller Knoten, die im Rahmen bereits haengen (Entdopplungs-Basis). */
 function occupiedIdsOf(frame) {
   const ids = new Set();
@@ -187,10 +195,29 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
     const forceCategoryIds = linkedCategoryIdsOf(frame.def);
     const forceReference = forceCatalogueReferenceOf(frame, primaryCatalogueByForceDefId);
     const catalogueReferences = forceReference === null ? [] : [forceReference];
+    const carried = armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds));
+    const isOwn = def => isInCatalogueScope(def.id, catalogueReferences, catalogueScope);
+    // Dasselbe geteilte Ziel wird oft von MEHREREN Armeebuechern je eigenem
+    // Wurzel-`entryLink` angeboten (Issue 0155: der Riese der Mercenaries-
+    // Bibliothek haengt an je einem Link in O&G, Dunkelelfen, Skaven, Imperium
+    // und Vampirfuersten). Weil die Entdopplung in {@link attachOfferAnchors}
+    // ueber die Ziel-ID laeuft, verankert nur der erste dieser Links — und traegt
+    // dann seine Herkunft und seine Kategorie-Modifikatoren statt derer des
+    // Kontingents. Deshalb weicht hier ein fremder Link, sobald das Armeebuch
+    // DIESES Kontingents selbst einen Link auf dasselbe Ziel fuehrt; wo es
+    // keinen fuehrt, bleibt das fremde Angebot bestehen (der etablierte
+    // „Regiments of Renown"-Weg, siehe oben).
+    const targetsOfOwnLinks = new Set();
+    for (const def of carried) {
+      if (def.kind !== DefinitionKind.ENTRY_LINK || !isOwn(def)) continue;
+      const targetId = linkTargetIdentityOf(def);
+      if (targetId !== null) targetsOfOwnLinks.add(targetId);
+    }
     // Ein Wurzel-Angebot steht unmittelbar im Kontingent — es gibt keine
     // durchschrittene Gruppe, die es klammern koennte.
-    return armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds)
-      && (def.kind === DefinitionKind.ENTRY_LINK || isInCatalogueScope(def.id, catalogueReferences, catalogueScope)))
+    return carried.filter(def => (def.kind === DefinitionKind.ENTRY_LINK
+      ? isOwn(def) || !targetsOfOwnLinks.has(linkTargetIdentityOf(def))
+      : isOwn(def)))
       .map(def => ({ def, gates: [] }));
   }
   return [...optionDefinitionsUnder(ownerDefinitionOf(frame))];
