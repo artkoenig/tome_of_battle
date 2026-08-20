@@ -345,9 +345,10 @@ export function evaluate(prepared, roster, options) {
     // dieselbe eine `violations`-Liste des Berichts.
     const budgetViolations = evaluateRosterBudget(index, budget);
 
-    // The raise cost per slot (`SlotCapability.raiseCosts`): what putting this
-    // slot on the table would cost, its own cost plus the mandatory children it
-    // would have to create with it. Built HERE and not in the report layer,
+    // The raise cost per slot (`SlotCapability.raiseCosts`) and, from the same
+    // walk, its mandatory members (`SlotCapability.raiseMembers`): what putting
+    // this slot on the table would cost and which children it would have to
+    // create with it. Built HERE and not in the report layer,
     // because it needs the count index and the query context that only this
     // facade holds — and AFTER the constraint phase, so the ordering shows on
     // the code that it can feed nothing back into what was already evaluated.

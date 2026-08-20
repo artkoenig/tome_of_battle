@@ -263,7 +263,14 @@ describe('useRoster Hook', () => {
     vi.useRealTimers();
   });
 
-  it('selects the default selection entry by ID when adding unit with selectionEntryGroups', () => {
+  it('adds the bare unit when the evaluator has nothing to say — the obligation comes from the report', () => {
+    // Dieses System traegt kein `rawXmls`, der Bericht ist also leer. Welche
+    // Pflicht-Mitglieder eine Einheit mitbringt, sagt seit Issue 0157 allein
+    // der Bericht (`capability.raiseMembers`) — ohne ihn legt das Ausheben
+    // nichts an, auch nicht die Vorauswahl einer Pflichtgruppe. Die Regel, WAS
+    // eine Pflichtgruppe beisteuert, ist im Evaluator gepinnt
+    // (`src/evaluator/costProjection.raiseMembers.test.js`), ihre Aufloesung in
+    // `src/roster/selectionFactory.test.js`.
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
 
@@ -277,12 +284,8 @@ describe('useRoster Hook', () => {
           name: 'Mounts',
           defaultSelectionEntryId: 'mount-horse',
           constraints: [{ type: 'min', value: 1 }],
-          selectionEntries: [
-            { id: 'mount-foot', name: 'On Foot' }
-          ],
-          entryLinks: [
-            { id: 'mount-horse', name: 'Bretonnian Warhorse' }
-          ]
+          selectionEntries: [{ id: 'mount-foot', name: 'On Foot' }],
+          entryLinks: [{ id: 'mount-horse', name: 'Bretonnian Warhorse' }]
         }
       ]
     };
@@ -291,46 +294,9 @@ describe('useRoster Hook', () => {
       result.current.addUnit(testEntry, 'cat-1');
     });
 
-    expect(result.current.roster.forces[0].selections.length).toBe(1);
     const unitSel = result.current.roster.forces[0].selections[0];
     expect(unitSel.name).toBe('Bretonnian Lord');
-    expect(unitSel.selections.length).toBe(1);
-    expect(unitSel.selections[0].name).toBe('Bretonnian Warhorse');
-    expect(unitSel.selections[0].selectionEntryId || unitSel.selections[0].entryLinkId).toBe('mount-horse');
-  });
-
-  it('falls back to the first option when defaultSelectionEntryId does not match or is absent', () => {
-    const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
-
-    const testEntry = {
-      id: 'unit-lord-no-default',
-      name: 'Bretonnian Lord No Default',
-      type: 'unit',
-      selectionEntryGroups: [
-        {
-          id: 'group-mounts',
-          name: 'Mounts',
-          constraints: [{ type: 'min', value: 1 }],
-          selectionEntries: [
-            { id: 'mount-foot', name: 'On Foot' }
-          ],
-          entryLinks: [
-            { id: 'mount-horse', name: 'Bretonnian Warhorse' }
-          ]
-        }
-      ]
-    };
-
-    act(() => {
-      result.current.addUnit(testEntry, 'cat-1');
-    });
-
-    expect(result.current.roster.forces[0].selections.length).toBe(1);
-    const unitSel = result.current.roster.forces[0].selections[0];
-    expect(unitSel.selections.length).toBe(1);
-    expect(unitSel.selections[0].name).toBe('On Foot');
-    expect(unitSel.selections[0].selectionEntryId || unitSel.selections[0].entryLinkId).toBe('mount-foot');
+    expect(unitSel.selections).toEqual([]);
   });
 
   it('updateRosterName updates the roster name', () => {

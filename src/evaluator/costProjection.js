@@ -34,13 +34,16 @@
  * Zaehlindex (`countIndex.js`, `contributionOf`).
  */
 
-import { createDetachedChildNode, mandatoryChildDefsOf } from './evalTree.js';
+import { createDetachedChildNode, mandatoryMemberDefsOf } from './evalTree.js';
 import { extendBaseEffectiveState } from './effectiveState.js';
 import { applyModifiersOfNodes } from './modifiers.js';
 import { UNLIMITED } from './model.js';
 
 /** Die leere Kostensicht eines Knotens, den die Projektion nicht kennt. */
 const NO_COSTS = Object.freeze({});
+
+/** Die leere Mitglieder-Sicht eines Knotens, den die Projektion nicht kennt. */
+const NO_MEMBERS = Object.freeze([]);
 
 /** Addiert einen Betrag auf eine Kostenart eines Kosten-Records. */
 function addTo(record, costTypeId, value) {
@@ -154,10 +157,13 @@ export function buildCostProjection(root, effective, declaredCostTypeIds) {
  * @param {{ index: { get: Function }, categoryIds: Set<string>, budget?: object, primaryCatalogueByForceDefId?: Map<string, string> }} context
  *   the final count index, the known category ids, the roster budget and the
  *   origin index of the forces — the context {@link import('./modifiers.js').applyModifiersOfNodes} needs.
- * @returns {{ raiseCostsOf: (node: object) => Record<string, number> }}
+ * @returns {{ raiseCostsOf: (node: object) => Record<string, number>, raiseMembersOf: (node: object) => ReadonlyArray<{ defId: string, targetDefId: string|null, count: number, members: ReadonlyArray<object> }> }}
+ *   the price of raising a slot and, from the very same walk, the members that
+ *   raising it creates — so the price and the tree it prices can never diverge.
  */
 export function buildRaiseCostProjection(root, effective, { index, categoryIds, budget, primaryCatalogueByForceDefId }) {
   const raiseCostsByNode = new Map();
+  const raiseMembersByNode = new Map();
   /** Diagnostics of this pass — collected and dropped on purpose, see above. */
   const droppedDiagnostics = [];
   /** Memoised per definition OBJECT: the answer is a pure function of `node.def`. */
@@ -166,10 +172,22 @@ export function buildRaiseCostProjection(root, effective, { index, categoryIds, 
   function mandatoryChildrenOf(node) {
     let children = mandatoryChildrenByDef.get(node.def);
     if (children === undefined) {
-      children = mandatoryChildDefsOf(node);
+      children = mandatoryMemberDefsOf(node);
       mandatoryChildrenByDef.set(node.def, children);
     }
     return children;
+  }
+
+  /**
+   * Seeds a detached node's base values and applies its modifiers — the two
+   * steps the anchor post pass runs, on a node the tree does not carry.
+   */
+  function evaluateDetached(shadow) {
+    extendBaseEffectiveState(effective, [shadow]);
+    applyModifiersOfNodes([shadow], effective, {
+      root, index, categoryIds, diagnostics: droppedDiagnostics, budget, primaryCatalogueByForceDefId,
+    });
+    return shadow;
   }
 
   /** The effective own cost of one instance — the same source `costs` reads. */
@@ -182,34 +200,49 @@ export function buildRaiseCostProjection(root, effective, { index, categoryIds, 
     return costs;
   }
 
-  function raiseCostOf(node, visited) {
+  function raiseOf(node, visited) {
     const costs = ownCostsOf(node);
-    for (const { def, gates, limit } of mandatoryChildrenOf(node)) {
+    const members = [];
+    for (const { def, gates, limit, limitDef } of mandatoryChildrenOf(node)) {
       const ids = [def.id, def.resolved?.id].filter(id => id !== undefined && id !== null);
       if (ids.some(id => visited.has(id))) continue;
-      const shadow = createDetachedChildNode(root, node, def, gates);
-      extendBaseEffectiveState(effective, [shadow]);
-      applyModifiersOfNodes([shadow], effective, {
-        root, index, categoryIds, diagnostics: droppedDiagnostics, budget, primaryCatalogueByForceDefId,
-      });
+      const shadow = evaluateDetached(createDetachedChildNode(root, node, def, gates));
+      // A hidden obligation is none: a MIN limit at a hidden anchor is not
+      // validated (§8, `evaluableLimitsOf`), so the raise neither owes this
+      // child nor pays for it. Read after the modifier pass, like the bound —
+      // a modifier may uncover it, and its visibility gates count too.
+      if (effective.isHidden(shadow)) continue;
       // The bound is read AFTER the modifier pass: a minimum a modifier lifts
       // from 0 counts, one it drops to 0 contributes nothing and stops the
       // recursion there. An unlimited bound is no piece count at all.
-      const bound = effective.limitValue(shadow, limit.id) ?? limit.value;
+      // For a pick-one group the bound hangs on the GROUP, so it is read off a
+      // detached node of the group — evaluated the same way, one level up.
+      const boundCarrier = limitDef === def
+        ? shadow
+        : evaluateDetached(createDetachedChildNode(root, node, limitDef, gates.slice(0, -1)));
+      const bound = effective.limitValue(boundCarrier, limit.id) ?? limit.value;
       if (bound === UNLIMITED) continue;
       const mandatoryCount = Math.max(0, bound);
       if (mandatoryCount === 0) continue;
-      const childCosts = raiseCostOf(shadow, new Set([...visited, ...ids]));
-      for (const [costTypeId, perInstance] of Object.entries(childCosts)) {
+      const child = raiseOf(shadow, new Set([...visited, ...ids]));
+      for (const [costTypeId, perInstance] of Object.entries(child.costs)) {
         addTo(costs, costTypeId, mandatoryCount * perInstance);
       }
+      members.push(Object.freeze({
+        defId: def.id,
+        targetDefId: def.resolved?.id ?? null,
+        count: mandatoryCount,
+        members: child.members,
+      }));
     }
-    return costs;
+    return { costs, members: Object.freeze(members) };
   }
 
   function projectRaiseCost(node) {
     const ownIds = [node.def.id, node.def.resolved?.id].filter(id => id !== undefined && id !== null);
-    raiseCostsByNode.set(node, Object.freeze(raiseCostOf(node, new Set(ownIds))));
+    const { costs, members } = raiseOf(node, new Set(ownIds));
+    raiseCostsByNode.set(node, Object.freeze(costs));
+    raiseMembersByNode.set(node, members);
     for (const child of node.children) {
       projectRaiseCost(child);
     }
@@ -221,5 +254,6 @@ export function buildRaiseCostProjection(root, effective, { index, categoryIds, 
 
   return {
     raiseCostsOf: node => raiseCostsByNode.get(node) ?? NO_COSTS,
+    raiseMembersOf: node => raiseMembersByNode.get(node) ?? NO_MEMBERS,
   };
 }

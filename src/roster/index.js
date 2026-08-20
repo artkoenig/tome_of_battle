@@ -20,11 +20,9 @@ export {
   findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
 export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
-export { buildModifierEvalContext } from './modifierContext.js';
 export {
-  aggregateRosterCategoryCounts, computeRosterCounts,
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
-} from './rosterCounter.js';
+} from './costTypeLabels.js';
 export {
   classifyGroupItem, classifyStandaloneOption, isGroupSingleChoice, isItemRepeatableWithinGroup
 } from './selectionBehavior.js';

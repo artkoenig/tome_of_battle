@@ -1106,8 +1106,8 @@ Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirk
 > Modifier „multiple times" greifen, ohne einen Fall für `set` zu nennen ([§15](#15-lücken-der-quelle)).
 
 Ein Modifier kann auch `field="hidden"` setzen, um Einträge/Kategorielinks kontextabhängig ein- oder
-auszublenden (in diesem Projekt ausgewertet von `src/roster/entryVisibility.js` fuer die
-Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
+auszublenden (in diesem Projekt ausgewertet allein von `src/evaluator/`; die Oberflaeche liest
+das `isHidden` des Berichts).
 
 ---
 
@@ -1166,10 +1166,11 @@ Einsortierung und von `src/evaluator/` fuer das `isHidden` des Berichts).
   begleitendes `add category`, und die Einheit *ist* ein Regiment of Renown. `unset-primary`
   löscht dagegen nur das Flag; die Mitgliedschaft bleibt, denn zählrelevant ist allein sie. **Sämtliche** kategorie-abhängige
   Logik muss deshalb die **effektiven** (nach Modifier-Anwendung gültigen) Kategorie-Links auswerten, nicht
-  die rohen Katalog-Links — sowohl die Zähler-/Validierungs-Logik (via `getEffectiveCategoryLinks` in
-  `src/roster/modifierEvaluator.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
+  die rohen Katalog-Links — sowohl die Zähler-/Validierungs-Logik (im Evaluator,
+  `effectiveState.js`) als auch die **UI-Einsortierung** (Aushebe-Dialog,
   Sektions-Sichtbarkeit, armeeweite Selektoren; via `getEffectiveEntryCategoryLinks` /
-  `isEntryPrimaryInCategory` in `src/roster/entryVisibility.js`). Ein häufiger Fall: ein Katalog importiert
+  `isEntryPrimaryInCategory`; beide lesen heute den Bericht, `capability.categoryIds` /
+  `capability.primaryCategoryId`, ADR-0034). Ein häufiger Fall: ein Katalog importiert
   per `entryLink` eine Einheit aus einem verlinkten Bibliothekskatalog und gliedert sie per `set-primary`
   in eine eigene Kategorie um — würde nur der statische Link gelesen, verschwände die Einheit aus der UI.
 - Beziehungen zwischen Einträgen und Kategorien werden **ausschließlich über `categoryLinks`/IDs**
@@ -1345,8 +1346,8 @@ kann**:
 - Das `increment`+`<repeat>`-Stepper-Muster ([§9.7](#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc))
   bleibt davon **unberührt** — es wird gesondert erkannt und als Mengen-Stepper gerendert.
 
-**Umsetzung:** Die statische „hebbar?"-Erkennung liefert `canGroupMaxBeRaisedAboveSingleChoice`
-(`src/roster/modifierEvaluator.js`); die *aktuellen*
+**Umsetzung:** Die statische „hebbar?"-Erkennung liefert der Bericht
+(`capability.isMaxRaisable`, `src/evaluator/groupBehavior.js`); die *aktuellen*
 effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintLimit`. Sämtliche
 Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
 „Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`) leiten sich aus

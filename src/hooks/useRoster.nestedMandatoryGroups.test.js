@@ -27,6 +27,13 @@ function loadCatalogue(catFile) {
     [{ name: DEFINITIVE_GST, content: gstContent }],
     [{ name: catFile, content: catContent }],
   );
+  // Der Bericht ist die Quelle der Pflicht-Mitgliedschaft (Issue 0157), und er
+  // haengt an den Rohdaten des Systems: ohne `rawXmls` wertet `evaluateAppRoster`
+  // gar nicht aus, und das Ausheben legt dann nichts an.
+  system.rawXmls = {
+    gst: [{ name: DEFINITIVE_GST, content: gstContent }],
+    cat: [{ name: catFile, content: catContent }],
+  };
   const catalogue = system.catalogues[0];
   // The definitive edition carries its contingent on the catalogue, not the game system.
   const forceEntryId = (catalogue.forceEntries?.[0] ?? system.forceEntries?.[0])?.id;
@@ -84,13 +91,18 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
     }
   });
 
-  it('does not create "Lore of Necromancy" — its group ("Lores of Magic") has a max but no min', () => {
+  it('does not create \"Lore of Necromancy\" — the report hides that obligation, and a hidden obligation is none', () => {
     const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
 
     expect(zacharias.selections.map(s => s.name)).not.toContain('Lore of Necromancy');
   });
 
-  it('does not create any of the five Equipment members — their group carries no constraints at all', () => {
+  it('creates each of the five Equipment members exactly once — each carries min=1 of its own (Issue 0157)', () => {
+    // Bis Issue 0157 las die Fabrik die Pflicht selbst aus den Constraints und
+    // liess diese fuenf aus, weil ihre Gruppe kein eigenes `min` traegt — der
+    // Bericht forderte sie zugleich als unerfuellte Pflicht ein. Beide Seiten
+    // lesen die Verpflichtung jetzt aus derselben Quelle, also kommt Zacharias
+    // mit seiner festen Ausruestung auf den Tisch.
     const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 
@@ -101,7 +113,7 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
       'Scrolls of Semhtep (Arcane Item)',
       'Staff of Kaphamon (Enchanted Item)',
     ]) {
-      expect(names, equipmentName).not.toContain(equipmentName);
+      expect(names.filter(n => n === equipmentName), equipmentName).toHaveLength(1);
     }
   });
 

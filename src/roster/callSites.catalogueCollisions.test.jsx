@@ -141,7 +141,12 @@ describe('Aufrufstellen des Resolvers — kollidierende IDs über Katalogsgrenze
       resolveEntry,
       catalogueId: CHAOS_DWARFS_CATALOGUE_ID,
       entry: chaosDwarfLink,
-      categoryId: HERO_CATEGORY_ID
+      categoryId: HERO_CATEGORY_ID,
+      // Die Pflicht-Mitgliedschaft sagt der Bericht (Issue 0157); die Fabrik loest
+      // die genannte Id auf — und zwar im mitgegebenen Katalog. Beide Kataloge
+      // fuehren ein Pflicht-Kind gleichen Namens unter *verschiedenen* Ids, also
+      // faellt eine kontextlose Aufloesung hier sichtbar durch.
+      mandatoryMembers: [{ defId: CHAOS_DWARF_HERO.childId, count: 1 }]
     });
 
     expect(selection.name).toBe(CHAOS_DWARF_HERO.name);

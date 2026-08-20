@@ -13,6 +13,7 @@ import { withChangedOptionCount } from '../../roster/subSelectionEditing.js';
 import { getUnitOptions } from '../../roster/optionsCollector.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
+import { findChildSlot } from '../../evaluation/slotLookups.js';
 
 /**
  * Issue 0131, Kriterium 3 — „Eine verschachtelte Mitgliedsgruppe verhaelt sich
@@ -142,7 +143,19 @@ beforeAll(() => {
 
 function buildRoster(unitId) {
   const entry = system.catalogues[0].selectionEntries.find(e => e.id === unitId);
-  const unit = createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId: 'characters' });
+  // Die Pflicht-Mitglieder kommen aus dem Bericht (Issue 0157): das Angebot des
+  // leeren Kontingents traegt sie je Einheit als `raiseMembers`, genau wie beim
+  // Ausheben in der App.
+  const emptyForce = {
+    catalogueId, name: 'test', costLimit: 2000, costLimitType: PTS,
+    forces: [{ id: 'force-1', forceEntryId, catalogueId, selections: [] }],
+  };
+  const adapted = toEvaluatorRoster(emptyForce);
+  const offer = evaluate(prepared, adapted.evalRoster).capabilities;
+  const unit = createSelectionFromDef({
+    system, resolveEntry, catalogueId, entry, categoryId: 'characters',
+    mandatoryMembers: findChildSlot(offer, adapted.pathByForceId.get('force-1'), entry.id)?.raiseMembers ?? [],
+  });
   return {
     catalogueId,
     name: 'test',

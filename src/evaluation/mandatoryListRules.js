@@ -38,6 +38,8 @@ const resolvedIdOf = (capability) => capability.targetDefId ?? capability.defId;
  * @property {string} defId        die Definitions-Id des Slots.
  * @property {string} resolvedId   die aufgeloeste Id (stabiler Abgleich).
  * @property {string} name         ihr Anzeigename laut Bericht.
+ * @property {ReadonlyArray<object>} mandatoryMembers  ihre Pflicht-Mitglieder laut
+ *   Bericht (`capability.raiseMembers`), fuer die Selektions-Fabrik.
  */
 
 /**
@@ -101,6 +103,9 @@ export function findMissingMandatoryListRules(capabilities, forcePath, context =
       defId: capability.defId,
       resolvedId,
       name: capability.name,
+      // Die Pflicht-Mitglieder der Regel selbst — dieselbe Auskunft des
+      // Berichts, aus der die Fabrik den Teilbaum anlegt (Issue 0157).
+      mandatoryMembers: capability.raiseMembers ?? [],
     });
   }
   return missing;

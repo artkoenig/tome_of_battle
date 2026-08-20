@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { memberDefsOf, resolveGroupDefaultMember } from './selectionMembers.js';
+import { findMemberDefById, memberDefsOf } from './selectionMembers.js';
 
 // Generische, schema-förmige Fixtures (nicht katalog-/einheitsspezifisch, ADR-0003).
 const lightArmour = { id: 'link-light', targetId: 'entry-light', name: 'Light Armour' };
@@ -19,38 +19,46 @@ describe('memberDefsOf', () => {
   });
 });
 
-describe('resolveGroupDefaultMember', () => {
-  it('wählt die im Katalog vorgegebene Option, auch wenn sie nicht die erste ist', () => {
-    const group = {
-      defaultSelectionEntryId: heavyArmour.id,
-      entryLinks: [lightArmour, heavyArmour]
+describe('findMemberDefById — die Id des Berichts zurück auf ihr Katalog-Objekt', () => {
+  // Der Bericht nennt die **eigene** Id des Mitglieds; bei einem Verweis ist das
+  // dessen Link-Id, nie die targetId seines Ziels (Issue 0157).
+  const noGroupLinks = () => null;
+
+  it('findet ein direktes Mitglied über seine eigene Id', () => {
+    const def = { selectionEntries: [shield], entryLinks: [lightArmour] };
+
+    expect(findMemberDefById(def, 'link-light', noGroupLinks)).toBe(lightArmour);
+    expect(findMemberDefById(def, 'entry-shield', noGroupLinks)).toBe(shield);
+  });
+
+  it('steigt in geschachtelte Gruppen jeder Tiefe ab', () => {
+    const def = {
+      selectionEntryGroups: [{
+        id: 'group-outer',
+        selectionEntryGroups: [{ id: 'group-inner', entryLinks: [heavyArmour] }]
+      }]
     };
 
-    expect(resolveGroupDefaultMember(group)).toBe(heavyArmour);
+    expect(findMemberDefById(def, 'link-heavy', noGroupLinks)).toBe(heavyArmour);
   });
 
-  it('fällt ohne hinterlegte Vorgabe auf das erste Mitglied zurück', () => {
-    const group = { defaultSelectionEntryId: null, entryLinks: [lightArmour, heavyArmour] };
+  it('folgt einem Gruppen-Verweis über den mitgegebenen Auflöser', () => {
+    const groupLink = { id: 'link-group', targetId: 'group-shared', type: 'selectionEntryGroup' };
+    const sharedGroup = { id: 'group-shared', entryLinks: [heavyArmour] };
+    const resolveGroupDef = (member) => (member === groupLink ? sharedGroup : null);
 
-    expect(resolveGroupDefaultMember(group)).toBe(lightArmour);
+    expect(findMemberDefById({ entryLinks: [groupLink] }, 'link-heavy', resolveGroupDef))
+      .toBe(heavyArmour);
   });
 
-  it('fällt auf das erste Mitglied zurück, wenn die Vorgabe kein Mitglied trifft', () => {
-    const group = { defaultSelectionEntryId: 'nicht-vorhanden', entryLinks: [lightArmour, heavyArmour] };
+  it('greift ersatzweise auf die aufgelöste Ziel-Id zurück', () => {
+    const def = { entryLinks: [lightArmour] };
 
-    expect(resolveGroupDefaultMember(group)).toBe(lightArmour);
+    expect(findMemberDefById(def, 'unbekannt', noGroupLinks, 'entry-light')).toBe(lightArmour);
   });
 
-  it('trifft die Vorgabe über die Link-Id, nicht über die targetId des Ziel-Eintrags', () => {
-    const group = {
-      defaultSelectionEntryId: heavyArmour.targetId,
-      entryLinks: [lightArmour, heavyArmour]
-    };
-
-    expect(resolveGroupDefaultMember(group)).toBe(lightArmour);
-  });
-
-  it('liefert null für eine leere Gruppe', () => {
-    expect(resolveGroupDefaultMember({ defaultSelectionEntryId: 'egal' })).toBeNull();
+  it('liefert null, wenn die Id unter der Definition nicht vorkommt', () => {
+    expect(findMemberDefById({ entryLinks: [lightArmour] }, 'link-heavy', noGroupLinks)).toBeNull();
+    expect(findMemberDefById(null, 'link-heavy', noGroupLinks)).toBeNull();
   });
 });

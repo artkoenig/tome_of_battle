@@ -850,30 +850,77 @@ function mandatoryMinLimitOf(def) {
 }
 
 /**
- * The child definitions a slot is **obliged** to create when it is raised: every
- * selection under its owner definition ({@link ownerDefinitionOf}) that carries a
- * parent-scoped MIN limit ({@link mandatoryMinLimitOf}), together with the
- * visibility gates walked to reach it and that very limit.
+ * The member a **mandatory group** contributes when no member of it carries a
+ * minimum of its own: the one the catalogue names
+ * (`selectionEntryGroup/@defaultSelectionEntryId`, which references the member's
+ * OWN id — at a link that is the link id, never its `targetId`), else the first
+ * member in document order.
+ */
+function defaultMemberOf(groupDef, members) {
+  const declared = groupDef.defaultSelectionEntryId ?? null;
+  if (declared !== null) {
+    const named = members.find(({ def }) => def.id === declared);
+    if (named !== undefined) return named;
+  }
+  return members[0] ?? null;
+}
+
+/**
+ * The children a slot is **obliged** to create when it is raised — the one
+ * reading of that question in the engine, and the source of both the raise cost
+ * and the raise members of a slot (`costProjection.js`).
  *
- * This is the same reading of "which children must this slot create" that
- * {@link synthesizeParentScopePhantoms} uses, exposed for the raise-cost
- * projection (`costProjection.js`), which has to price children that do not exist
- * in the tree. A `categoryLink` is skipped: a category is not a selection anyone
- * pays for.
+ * Two shapes make a child mandatory, and they are exclusive per group:
+ * - **itemised** — the member carries a parent-scoped MIN limit of its own
+ *   ({@link mandatoryMinLimitOf}). Every such member counts, whatever the group
+ *   around it says; that is the same reading {@link synthesizeParentScopePhantoms}
+ *   uses, so a slot creates exactly what the report would otherwise demand of it.
+ * - **pick-one** — no member of the group is itemised, but the GROUP carries the
+ *   MIN limit ("take one out of this pot"). Then the group's default member
+ *   ({@link defaultMemberOf}) fills it, and the bound to read is the group's, so
+ *   the entry named as `limitDef` is the group rather than the member.
+ *
+ * A group whose own limit is absent contributes nothing by itself; descent into a
+ * nested group is never gated on it (`selectionDefinitionsUnder` walks through).
+ * A `categoryLink` is skipped throughout: a category is not a selection anyone
+ * creates or pays for.
  *
  * The answer is a pure function of `node.def`, so a caller may memoise it by that
  * object.
  *
- * @param {object} node  the slot whose mandatory children are asked for.
- * @returns {Array<{ def: object, gates: object[], limit: object }>}
+ * @param {object} node  the slot whose mandatory members are asked for.
+ * @returns {Array<{ def: object, gates: object[], limit: object, limitDef: object }>}
+ *   in document order; `limitDef` is the definition whose `limit` gives the count.
  */
-export function mandatoryChildDefsOf(node) {
+export function mandatoryMemberDefsOf(node) {
   const found = [];
+  /** Members per innermost gate — the group that immediately holds them. */
+  const membersByGroup = new Map();
+  const itemisedGroups = new Set();
+
   for (const { def, gates } of selectionDefinitionsUnder(ownerDefinitionOf(node))) {
     if (def.kind === DefinitionKind.CATEGORY_LINK) continue;
+    const group = gates.length > 0 ? gates[gates.length - 1] : null;
     const limit = mandatoryMinLimitOf(def);
-    if (limit !== null) found.push({ def, gates, limit });
+    if (limit !== null) {
+      found.push({ def, gates, limit, limitDef: def });
+      if (group !== null) itemisedGroups.add(group);
+      continue;
+    }
+    if (group === null) continue;
+    if (!membersByGroup.has(group)) membersByGroup.set(group, []);
+    membersByGroup.get(group).push({ def, gates });
   }
+
+  for (const [group, members] of membersByGroup) {
+    if (itemisedGroups.has(group)) continue;
+    const limit = mandatoryMinLimitOf(group);
+    if (limit === null) continue;
+    const chosen = defaultMemberOf(group, members);
+    if (chosen === null) continue;
+    found.push({ def: chosen.def, gates: chosen.gates, limit, limitDef: group });
+  }
+
   return found;
 }
 

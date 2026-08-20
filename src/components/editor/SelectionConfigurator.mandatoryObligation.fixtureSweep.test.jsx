@@ -11,6 +11,7 @@ import { createSelectionFromDef } from '../../roster/selectionFactory.js';
 import { rootSelectionsOf } from '../../roster/rosterTree.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
+import { findChildSlot } from '../../evaluation/slotLookups.js';
 
 /**
  * Issue 0145, increment 2, Kriterien 3, 4 und 6 — über ALLE Einheiten der
@@ -231,8 +232,22 @@ beforeAll(() => {
     const { system, catalogue, prepared, forceEntryId } = loadCatalogue(spec);
     expect(forceEntryId, `Kontingent fuer ${spec.cat}`).toBeTruthy();
 
+    // Das Angebot des leeren Kontingents: es traegt je Einheit die
+    // Pflicht-Mitglieder, die das Ausheben anlegt (`raiseMembers`, Issue 0157)
+    // — dieselbe Auskunft, aus der `useRoster.addUnit` seine Selektion baut.
+    const emptyForceRoster = {
+      catalogueId: catalogue.id, name: 'test', costLimit: 3000, costLimitType: PTS,
+      forces: [{ id: 'force-1', forceEntryId, catalogueId: catalogue.id, selections: [] }],
+    };
+    const emptyAdapted = toEvaluatorRoster(emptyForceRoster);
+    const offer = evaluate(prepared, emptyAdapted.evalRoster).capabilities;
+    const offerForcePath = emptyAdapted.pathByForceId.get('force-1');
+
     for (const entry of (catalogue.selectionEntries || []).filter(e => e.type === 'unit')) {
-      const unit = createSelectionFromDef({ system, resolveEntry, catalogueId: catalogue.id, entry });
+      const unit = createSelectionFromDef({
+        system, resolveEntry, catalogueId: catalogue.id, entry,
+        mandatoryMembers: findChildSlot(offer, offerForcePath, entry.id)?.raiseMembers ?? [],
+      });
       const roster = {
         catalogueId: catalogue.id,
         name: 'test',
@@ -399,15 +414,17 @@ beforeAll(() => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge', () => {
-  test('Positivkontrolle: die unerfuellte Pflicht-Population ist nicht leer', () => {
-    // Gemessen auf diesem Stand: 73 Zeilen auf 32 Karten (70 Checkboxen,
-    // 3 Mengensteller, keine Radios) — vor Issue 0147 waren es 83; 0147 hat
-    // die Lores-of-Magic-Zeilen versteckt, inc-1 hat zwei weitere erfuellt.
-    // Die Schwelle steht bewusst als Untergrenze, nicht als exakte Zahl — ein
-    // exakter Treffer waere Geisel jeder kuenftigen Evaluator-Aenderung.
-    const unmet = rows.filter(r => r.isMandatoryUnmet === true);
-    expect(unmet.length, 'Zeilen mit isMandatoryUnmet').toBeGreaterThanOrEqual(50);
-    expect(new Set(unmet.map(r => r.where)).size, 'Karten mit mindestens einer offenen Pflicht').toBeGreaterThan(0);
+  test('Positivkontrolle: die Pflicht-Population ist nicht leer — und seit Issue 0157 vollstaendig erfuellt', () => {
+    // Gemessen waren hier 73 offene Pflicht-Zeilen auf 32 Karten (vor Issue
+    // 0147: 83). Seit Issue 0157 legt das Ausheben an, was der **Bericht** als
+    // Pflicht-Mitglieder meldet (`raiseMembers`) — dieselbe Lesart, aus der die
+    // Zeile ihr `isMandatoryUnmet` bezieht. Beide Seiten sagen damit dasselbe,
+    // und keine Karte startet mehr mit einer offenen Pflicht. Die Kontrolle
+    // haelt jetzt fest, dass die Population ueberhaupt zustande kommt: viele
+    // Pflicht-Zeilen, keine davon offen.
+    const mandatory = rows.filter(r => r.isMandatory === true);
+    expect(mandatory.length, 'Pflicht-Zeilen insgesamt').toBeGreaterThanOrEqual(50);
+    expect(rows.filter(r => r.isMandatoryUnmet === true), 'Zeilen mit offener Pflicht').toEqual([]);
   });
 
   test('Kriterium 3 (Anzeige): keine Zeile mit isMandatoryUnmet rendert angehakt', () => {
@@ -560,26 +577,22 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
     const entry = ambiguous.find(a => a.where === 'Vampire Counts (6th definitive edition).cat / Wight Lord' && a.name === 'Handweapon');
     expect(entry, 'der mehrdeutige Name "Handweapon" auf "Wight Lord" steht im Durchlauf').toBeTruthy();
 
+    // Zwei Slots gleichen Namens, beide Pflicht (min=max=1). Vor Issue 0157
+    // blieb der zweite offen: die Fabrik las die Pflicht selbst aus den
+    // Constraints und uebersah ihn. Sie liest sie jetzt aus dem Bericht —
+    // derselben Quelle, aus der auch `isMandatoryUnmet` stammt —, also sind
+    // beide erfuellt und rendern angehakt und gesperrt.
     expect(entry.caps.length, 'genau 2 Slots').toBe(2);
     const met = entry.caps.filter(c => c.isMandatoryUnmet === false);
-    const unmet = entry.caps.filter(c => c.isMandatoryUnmet === true);
-    expect(met.length, 'genau ein erfuellter Slot').toBe(1);
-    expect(met[0].effectiveMin).toBe(1);
-    expect(met[0].effectiveMax).toBe(1);
-    expect(unmet.length, 'genau ein offener Slot').toBe(1);
-    expect(unmet[0].effectiveMin).toBe(1);
-    expect(unmet[0].effectiveMax).toBe(1);
-    expect(unmet[0].isBlocked).toBe(false);
+    expect(met.length, 'beide Slots erfuellt').toBe(2);
+    met.forEach(capability => {
+      expect(capability.effectiveMin).toBe(1);
+      expect(capability.effectiveMax).toBe(1);
+    });
 
     expect(entry.rowWrites.length, 'genau 2 Zeilen').toBe(2);
     const checkedDisabled = entry.rowWrites.filter(w => w.control.checked === true && w.control.disabled === true);
-    const uncheckedEnabled = entry.rowWrites.filter(w => w.control.checked === false && w.control.disabled === false);
-    expect(checkedDisabled.length, 'genau eine angehakte, gesperrte Zeile').toBe(1);
-    expect(uncheckedEnabled.length, 'genau eine nicht angehakte, nicht gesperrte Zeile').toBe(1);
-
-    const openRow = uncheckedEnabled[0];
-    expect(openRow.increaseOnControl, 'die offene Zeile schreibt increaseCount ueber den Schalter').toBe(true);
-    expect(openRow.increaseOnRow, 'die offene Zeile schreibt increaseCount ueber die Zeile').toBe(true);
+    expect(checkedDisabled.length, 'beide Zeilen angehakt und gesperrt').toBe(2);
 
     expect(entry.rowWrites.every(w => !w.decreaseCalled), 'keine der beiden Zeilen loest decreaseCount aus').toBe(true);
   });

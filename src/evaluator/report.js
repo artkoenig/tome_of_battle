@@ -69,6 +69,9 @@ const SINGLE_CHOICE_GROUP_MAX = 1;
 /** Kein Traeger, keine wiederholbaren Optionen. */
 const NO_REPEATABLE_IDS = Object.freeze(new Set());
 
+/** Die Pflicht-Mitglieder eines Slots ohne Aushebe-Projektion: keine. */
+const NO_RAISE_MEMBERS = Object.freeze([]);
+
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
 
@@ -600,6 +603,14 @@ function headroomOf(maxResult) {
  * traegt damit denselben Wert wie in `costs`. Wird der Bericht ohne
  * Aushebe-Projektion gebaut, faellt das Feld auf `costs` zurueck — genau der Wert,
  * den es fuer einen Slot ohne Pflicht-Kinder ohnehin hat.
+ * `raiseMembers` ist dieselbe Auskunft in Baumform und aus demselben Durchlauf:
+ * je Pflicht-Kind `defId` (die eigene Id, bei einem Verweis dessen Link-Id),
+ * `targetDefId`, die effektive `count` und dessen eigene `members`. Das ist die
+ * **Pflicht-Mitgliedschaft eines noch nicht ausgehobenen Eintrags** — was das
+ * Schreibmodell beim Ausheben anlegt (`selectionFactory.js`), damit es die
+ * Verpflichtung nicht ein zweites Mal aus den Katalog-Constraints liest
+ * (ADR-0034). Preis und Baum stammen aus einem Durchlauf und koennen deshalb
+ * nicht auseinanderlaufen. Leer an jedem Slot ohne Pflicht-Kinder.
  * `costs`/`totalCosts` kommen aus der Kostenprojektion (`costProjection.js`):
  * die **effektiven** Eigenkosten EINER Instanz (nach Kosten-Modifikatoren, auch
  * an Angebots-Ankern: was EINE Instanz beim Waehlen kosten wuerde) und die
@@ -643,6 +654,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     costs: costProjection.costsOf(node),
     totalCosts: costProjection.totalCostsOf(node),
     raiseCosts: raiseCostProjection?.raiseCostsOf(node) ?? costProjection.costsOf(node),
+    raiseMembers: raiseCostProjection?.raiseMembersOf(node) ?? NO_RAISE_MEMBERS,
     categoryIds: effective.categoryIdsOf(node),
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
@@ -758,7 +770,7 @@ function createCatalogueOrigin(root, { libraryCatalogueIds, gameSystemId, primar
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number> } | null, libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number>, raiseMembersOf: (node: object) => ReadonlyArray<object> } | null, libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,

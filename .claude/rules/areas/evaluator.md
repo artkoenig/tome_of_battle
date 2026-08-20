@@ -51,6 +51,14 @@ means; it outranks the ADRs where the two disagree.
   normally filtered out of the tree already (Issue 0140); the report field is the second line for
   the shared-target competition of ADR-0032, so a fixture that wants a `true` here must build
   that case, not two plain books.
+- `raiseCosts` and `raiseMembers` are **one** walk (`costProjection.js`,
+  `mandatoryMemberDefsOf` in `evalTree.js`): the price of raising a slot and the children raising
+  it creates. Two shapes make a child mandatory and they are exclusive per group — an itemised
+  member (its own parent-scoped MIN, whatever the group says) and, only where no member is
+  itemised, the group's own MIN filled by `defaultSelectionEntryId` (else the first member). A
+  hidden child is skipped: its MIN is not validated, so it is neither created nor priced. The
+  write model reads exactly this (`src/roster/selectionFactory.js`, Issue 0157), so a change here
+  changes what a recruit puts on the table.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
   entry is no root offer and synthesises no mandatory phantom from its own `min` (ADR-0032), and a
