@@ -20,7 +20,9 @@
  *   `docs/battlescribe-data-format.md` §8), effektives min/max, aktueller
  *   Stand, Restspielraum (alle vier als **Stueckzahl**), die **kostenbezogenen
  *   Grenzen** des Slots je Kostenart (`costLimits`), die
- *   Pflicht-/Gesperrt-/Versteckt-Flags, das Merkmal „Wert nicht stabil", die
+ *   Pflicht-/Gesperrt-/Versteckt-Flags, das **Wahlverhalten** der Gruppe hinter
+ *   einem Gruppen-Anker (`isSingleChoice`/`isMaxRaisable`) bzw. der Option darin
+ *   (`isRepeatableWithinGroup`, `groupBehavior.js`), das Merkmal „Wert nicht stabil", die
  *   **Autor-Meldungen** des Katalogs und die **Info-Projektion** — die fuer den
  *   Slot geltenden Profile (mit ihren effektiven Merkmalswerten) und Regeltexte
  *   (`infoProjection.js`) sowie die **Kostenprojektion** je Slot — Eigenkosten
@@ -54,6 +56,16 @@ import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf } 
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
+import { createGroupBehavior } from './groupBehavior.js';
+
+/**
+ * Ein Gruppen-Max von hoechstens diesem Wert bietet **eine** einander
+ * ausschliessende Wahl an (`groupBehavior.js`).
+ */
+const SINGLE_CHOICE_GROUP_MAX = 1;
+
+/** Kein Traeger, keine wiederholbaren Optionen. */
+const NO_REPEATABLE_IDS = Object.freeze(new Set());
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
@@ -602,12 +614,15 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies, groupBehavior }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
+  const effectiveMax = maxResult === null ? null : maxResult.bound;
+  const targetDefId = targetDefIdOf(node);
+  const repeatableIds = node.parent ? groupBehavior.repeatableIdsUnder(node.parent) : NO_REPEATABLE_IDS;
   return {
     defId: node.def.id,
-    targetDefId: targetDefIdOf(node),
+    targetDefId,
     // Rein deskriptiv (Issue 0133): die vom Katalogautor empfohlene
     // Geschwister-Reihenfolge des Slots selbst — bei einem Verweis-Slot die
     // des Verweises, nie die seines Ziels (dasselbe Link-vor-Ziel-Prinzip wie
@@ -625,7 +640,29 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     categoryIds: effective.categoryIdsOf(node),
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
-    effectiveMax: maxResult === null ? null : maxResult.bound,
+    effectiveMax,
+    // Das **Wahlverhalten** der Gruppe hinter einem Gruppen-Anker
+    // (`groupBehavior.js`, Issue 0156): echte Einzelwahl ist sie, sobald ihr
+    // effektives Max hoechstens 1 ist UND kein Modifikator dieses Max ueber 1
+    // heben kann. Kein Max heisst kein Deckel und damit Mehrfachauswahl. An
+    // jedem anderen Slot ist die Frage nicht gestellt und die Antwort `false`.
+    isSingleChoice: node.anchorKind === AnchorKind.GROUP_ANCHOR
+      && effectiveMax !== null
+      && effectiveMax <= SINGLE_CHOICE_GROUP_MAX
+      && !groupBehavior.isGroupMaxRaisable(node),
+    // Die statische Kehrseite daneben: ob ueberhaupt ein Modifikator das Max
+    // dieser Gruppe ueber die Einzelwahl-Deckelung heben **koennte** — gleich, ob
+    // seine Bedingung gerade haelt. Eine so hebbare Gruppe klammert ihr Angebot
+    // nicht am erreichten Deckel ab: sonst koennte die Option, die den Deckel
+    // hebt, nie gewaehlt werden (Ruestung+Schild, ADR-0029).
+    isMaxRaisable: groupBehavior.isGroupMaxRaisable(node),
+    // Ob dieser Options-Slot innerhalb einer Gruppe seines Traegers
+    // **wiederholbar** ist: eine Gruppe hebt ihr eigenes Max je gewaehlter Kopie
+    // genau dieser Option (`increment` + `<repeat childId>`, §9.7) — das Muster
+    // der mehrfach nehmbaren Magiegegenstaende. Eine so getragene Option ist
+    // trotz gedeckelter Gruppe kein Radiobutton.
+    isRepeatableWithinGroup: repeatableIds.has(node.def.id)
+      || (targetDefId !== null && repeatableIds.has(targetDefId)),
     costLimits: costLimitsOf(resultsByAnchor, node),
     // Wo eine Grenze ausgewertet wurde, ist deren Ist-Wert die berichtete Zahl —
     // zu ihm passen Hoechstmass, Restspielraum und Sperrung daneben. Erst ohne
@@ -718,6 +755,9 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     raiseCostProjection,
     sourceIdByDefId,
     anchorOccupancies: categoryAnchorOccupancies,
+    // Ebenfalls einmal je Bericht: das Wahlverhalten der Gruppen (Einzelwahl,
+    // wiederholbare Optionen) aus den Katalogdefinitionen (Issue 0156).
+    groupBehavior: createGroupBehavior(root),
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

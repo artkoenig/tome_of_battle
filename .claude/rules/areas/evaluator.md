@@ -30,6 +30,14 @@ means; it outranks the ADRs where the two disagree.
   all?". A rule that depends on being offered belongs after phase 2 — anchors attached there must
   be handed to `extendBaseEffectiveState` alongside the offer anchors, or their bounds start from
   0 instead of the catalogue value.
+- `catalogReader.js` does **not** normalise a modifier's `value`: it is the raw attribute string
+  (`"1"`), while a constraint's `value` is already a number. A `repeat`'s `field` is a structured
+  counted-field object, never an id — only `targetChildId` names an option (`null` for
+  `childId="any"`). Anything that reads modifier/repeat data statically must parse for itself.
+- A **static, catalogue-shaped** answer the UI needs (a group's single-choice/max-raisable
+  behaviour, an option's repeatability, `groupBehavior.js`) belongs in the report next to the
+  evaluated bounds, built once per report in `buildReport`'s capability context — not recomputed
+  per slot, and never left to a component (ADR-0034).
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
   entry is no root offer and synthesises no mandatory phantom from its own `min` (ADR-0032), and a

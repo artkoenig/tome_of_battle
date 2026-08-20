@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
 import {
-  resolveEntry, getEffectiveModifiers, canGroupMaxBeRaisedAboveSingleChoice,
-  isItemRepeatableWithinGroup, isGroupSingleChoice, classifyGroupItem,
+  resolveEntry, classifyGroupItem,
   resolveCostLimitTypeId, resolveCostLimitLabel
 } from '../../roster';
 import { findChildSlot } from '../../evaluation/slotLookups';
@@ -35,9 +34,12 @@ import { useTranslation } from '../../i18n/useTranslation';
  * eigenen Zeilen — die Verschachtelung stammt aus der Katalogstruktur, nicht aus
  * dem Bericht, dessen Anker flach nebeneinander liegen (Issue 0131, ADR-0036).
  *
- * Übergangsweise bleibt die statische „Gruppen-Max über 1 hebbar"-Erkennung
- * (ADR-0029, Rüstung+Schild-Fall) beim Helfer des Schreibmodells — sie liest
- * reine Katalogstruktur und zieht mit dem Schreibmodell in Task 8 um.
+ * Auch das **Wahlverhalten** kommt aus dem Bericht (Issue 0156): ob die Gruppe
+ * echte Einzelwahl ist (`isSingleChoice`), ob ein Modifikator ihr Max über 1
+ * heben könnte (`isMaxRaisable`, ADR-0029, Rüstung+Schild-Fall) und ob eine
+ * Option innerhalb der Gruppe wiederholbar ist (`isRepeatableWithinGroup`). Die
+ * Komponente wertet damit keinen Katalog-Modifikator mehr selbst aus; die
+ * Auflösung (`resolveEntry`) bleibt allein Beiwerk für Detail-/Regeltexte.
  */
 export default function OptionGroupComponent({
   group,
@@ -94,17 +96,14 @@ export default function OptionGroupComponent({
   // holds counts just the same.
   const [isExpanded, setIsExpanded] = useState(() => hasSelectedDescendant || rows.some(row => row.count > 0));
 
-  // Gruppen-Grenze aus dem Gruppen-Anker des Berichts; die statische
-  // „Max-hebbar"-Erkennung bleibt beim Helfer des Schreibmodells (siehe Kopfkommentar).
+  // Gruppen-Grenze **und** Wahlverhalten aus dem Gruppen-Anker des Berichts
+  // (Issue 0156): Einzelwahl und Max-Hebbarkeit werden hier nicht mehr am
+  // Katalog nachgerechnet, sondern abgelesen.
   const groupCapability = findChildSlot(capabilities, selectionPath, group.id);
   const effectiveGroupMax = groupCapability?.effectiveMax ?? Infinity;
-  const isGroupMaxRaisable = canGroupMaxBeRaisedAboveSingleChoice(group);
-  const groupSingleChoice = isGroupSingleChoice(
-    effectiveGroupMax === null ? Infinity : effectiveGroupMax,
-    isGroupMaxRaisable
-  );
+  const isGroupMaxRaisable = groupCapability?.isMaxRaisable === true;
+  const groupSingleChoice = groupCapability?.isSingleChoice === true;
   const isGroupCapReached = groupCapability?.isBlocked === true;
-  const groupModifiers = getEffectiveModifiers(group);
 
   const pointsOf = (capability) => capability.costs?.[costTypeId] ?? 0;
   const currentPoints = rows.reduce((sum, row) => sum + pointsOf(row.capability) * row.count, 0);
@@ -206,7 +205,7 @@ export default function OptionGroupComponent({
             // Grenzen und Namen kommen aus dem Bericht.
             const res = resolveEntry(system, option, activeCatalogue?.id);
             const isCollective = res?.collective || option.collective || false;
-            const isRepeatableByGroupModifier = isItemRepeatableWithinGroup(option, res, group, groupModifiers);
+            const isRepeatableByGroupModifier = capability.isRepeatableWithinGroup === true;
             const { isMandatory, isMandatoryMet, isRadio, isBinary } = classifyGroupItem({
               minLimit,
               maxLimit,
@@ -239,7 +238,7 @@ export default function OptionGroupComponent({
             const decreaseSelectedSiblings = () => {
               rows.forEach(other => {
                 if (other.item.option.id === option.id) return;
-                if (isItemRepeatableWithinGroup(other.item.option, resolveEntry(system, other.item.option, activeCatalogue?.id), group, groupModifiers)) return;
+                if (other.capability.isRepeatableWithinGroup === true) return;
                 if (other.count > 0) {
                   subSelectionOperations.decreaseCount(other.item.ownerSelectionId || selection.id, other.item.option);
                 }
