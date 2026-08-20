@@ -13,8 +13,10 @@ Roster folgt den bereits verifizierten Fixtures (direktes `entryId`,
   Issue 0159 verankert der unter einem Vampirfuersten-Kontingent kein Angebot
   mehr) und
   `Mercenaries (6th definitive edition).cat` (die per `catalogueLink` benoetigte
-  Abhaengigkeit, in der die Kategorien „Mercenaries“/„Regiment of Renown“ und
-  „Manbiters“ selbst definiert sind)
+  Abhaengigkeit, in der die Kategorien „Mercenaries“/„Regiment of Renown“ sowie
+  die Einheiten „Manbiters“ und „Toxote’s Hellmounts“ selbst definiert sind —
+  auf **letztere** fuehrt die Vampirfuersten-`.cat` einen **eigenen**
+  Wurzel-`entryLink`, weshalb sie das Angebot dieses Szenarios traegt)
 
 ## Worum es geht
 
@@ -73,8 +75,8 @@ welchen Wert hat:
 
 | Feld | Bedeutung | Beispiel aus diesem Szenario |
 |------|-----------|------------------------------|
-| `defId` | die **eigene** Definition des Slots. Bei einem Verweis-Slot ist das der **Verweis selbst**, nicht sein Ziel. | Kategorie-Anker „Mercenaries“ → `categoryLink 6b8f-90b1-38b5-6e1c`; Angebots-Anker „Manbiters“ → Wurzel-`entryLink e3c2-1778-d3d5-edd1` |
-| `targetDefId` | worauf ein Verweis-Slot **zeigt**: die Kategorie eines `categoryAnchor` bzw. der Eintrag hinter einem `entryLink`. `null`, wenn der Slot kein Verweis ist. | `b640-7e9c-3054-c1ce` (Kategorie „Mercenaries“); `0efb-7f63-7932-0655` (`selectionEntry "Manbiters"`) |
+| `defId` | die **eigene** Definition des Slots. Bei einem Verweis-Slot ist das der **Verweis selbst**, nicht sein Ziel. | Kategorie-Anker „Mercenaries“ → `categoryLink 6b8f-90b1-38b5-6e1c`; Angebots-Anker „Toxote’s Hellmounts“ → Wurzel-`entryLink d582-0c51-60be-ce82` der VC-`.cat` |
+| `targetDefId` | worauf ein Verweis-Slot **zeigt**: die Kategorie eines `categoryAnchor` bzw. der Eintrag hinter einem `entryLink`. `null`, wenn der Slot kein Verweis ist. | `b640-7e9c-3054-c1ce` (Kategorie „Mercenaries“); `1a52-2060-f39b-38ee` (`selectionEntry "Toxote's Hellmounts"`) |
 
 Daraus folgt fuer dieses Szenario:
 
@@ -87,19 +89,29 @@ Daraus folgt fuer dieses Szenario:
   Optionen einer Einheit (Musician, Standard Bearer, Black Knights of Bretonnia)
   sind **keine** Verweis-Slots: `defId` ist ihre eigene Id, `targetDefId` ist
   `null`.
-- **„Manbiters“ ist der Sonderfall — und faellt deshalb seit Issue 0159 ganz
-  aus dem Angebot dieses Szenarios heraus**: In den drei Katalogen des
-  Datensatzes gibt es dafuer **keinen** Wurzel-`selectionEntry` — die Definition
-  `0efb-7f63-7932-0655` liegt in den `<sharedSelectionEntries>` der
-  Mercenaries-`.cat` (Zeilen 88–9525, also nicht wurzelnah), und der einzige
+- **Der Verweis-Slot dieses Szenarios ist „Toxote’s Hellmounts“**: Die
+  Definition `1a52-2060-f39b-38ee` liegt in den `<sharedSelectionEntries>` der
+  Mercenaries-`.cat` (Zeile 6362, Abschnitt 88–9525, also **nicht** wurzelnah);
+  ins Angebot eines Blood-Dragon-Kontingents kommt sie ueber den
+  Wurzel-`entryLink d582-0c51-60be-ce82` der **Vampirfuersten**-`.cat` selbst
+  (Zeile 29641, in `<entryLinks>` 29513–29656). Ihr Slot ist damit ein
+  Verweis-Slot: `defId` = der Link, `targetDefId` = `1a52-2060-f39b-38ee`. Das
+  Manifest benennt ihn ueber `targetDefId` + `anchorKind` + `frameDefId` — auch
+  die O&G-`.cat` fuehrt einen Wurzel-`entryLink` auf dasselbe Ziel
+  (`7df6-a1bb-e19b-c63d`), die Ziel-Id ist aber beiden gemeinsam und darum das
+  stabile Namensfeld.
+- **„Manbiters“ steht hier deshalb nicht mehr.** Der Bauplan ist derselbe — die
+  Definition `0efb-7f63-7932-0655` liegt ebenfalls in den
+  `<sharedSelectionEntries>` der Mercenaries-`.cat` —, aber der **einzige**
   Wurzel-`entryLink` darauf steht in der **O&G**-`.cat`
-  (`e3c2-1778-d3d5-edd1`, Zeile 14896, in `<entryLinks>` 14643–14914). Die
-  Vampirfuersten-`.cat` deklariert keinen. Ein Kontingent wird aber nur gegen
+  (`e3c2-1778-d3d5-edd1`, Zeile 14896, in `<entryLinks>` 14643–14914); **kein**
+  Vampirfuersten-Katalog deklariert einen. Ein Kontingent wird aber nur gegen
   sein eigenes Armeebuch, dessen `catalogueLink`-Huelle und das Spielsystem
   ausgewertet (Issue 0159): der O&G-Link verankert unter einem
   Vampirfuersten-Kontingent **kein** Angebot mehr. Frueher tat er das, weil ein
   Wurzel-`entryLink` von der Herkunftspruefung ausgenommen war — diese Ausnahme
-  ist ersatzlos entfallen.
+  ist ersatzlos entfallen. „Toxote’s Hellmounts“ dagegen wird vom eigenen Buch
+  verlinkt und ist deshalb der Anker, den dieses Szenario festnagelt.
 
 ---
 
@@ -108,7 +120,7 @@ Daraus folgt fuer dieses Szenario:
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
 | **OCS-R1** | **Angebot je Kontingent.** Ein Wurzel-`selectionEntry` des Armeekatalogs, das das Roster nicht enthaelt, bekommt unter dem Kontingent einen Slot `anchorKind=offerAnchor`. Beispiel „Fell Bats“: Basis-Kategorie **Special**, die jedes hier genutzte `forceEntry` traegt. | VC-`.cat`, Wurzel-`<selectionEntries>` (Zeilen 70–13466) → `selectionEntry "Fell Bats"` **`a431-097d-4712-eb01`**, `categoryLink 37e5-5246-afa8-2176 → 43cc-fc3f-35a7-8d03` (Special). Die Einheit selbst traegt **keine** `<constraints>` → `effectiveMin/effectiveMax/headroom = null`, `current = 0`. Weil sie ein Wurzel-`selectionEntry` ist (kein Verweis), ist `defId = a431…` und `targetDefId = null`. |
-| **OCS-R2** | **Der Kategorie-Filter ist echt** — und die Herkunftsgrenze steht davor. Ein Wurzel-Eintrag, dessen Basis-Kategorien das `forceEntry` **nicht** traegt, bekommt **keinen** Angebots-Anker. Beispiel „Manbiters“: einzige Basis-Kategorie ist **Regiment of Renown**, die „Army of the Lichemaster“ nicht traegt. Unter „Clan Blood Dragons“ (traegt `ee09…`) kaeme es durch diesen Filter — es wird dort seit Issue 0159 trotzdem nicht angeboten, weil der einzige Wurzel-`entryLink` darauf aus einem **fremden** Armeebuch (O&G) stammt und damit ausserhalb des Auswertungsumfangs eines Vampirfuersten-Kontingents liegt. Beide Kontingente fuehren „Manbiters“ deshalb nicht; das Manifest pinnt fuer diese Regel keinen Slot mehr, die Belege bleiben Prosa. Seine einzige eigene Grenze ist `max 0` → `effectiveMax 0`, `headroom 0` (der Modifikator, der sie auf 1 hebt, verlangt „Allow experimental rules?“ `8b76-92c4-23f9-54b1` im Kontingent — in keinem Roster gewaehlt). Der Slot ist ein **Verweis-Slot**: `defId` = der Wurzel-`entryLink`, `targetDefId` = der verlinkte Eintrag. | Wurzel-`<entryLinks>` der O&G-`.cat` (Zeilen 14643–14914) → `entryLink "Manbiters" e3c2-1778-d3d5-edd1 → 0efb-7f63-7932-0655` (ohne eigene `categoryLinks`). Ziel in Mercenaries-`.cat` (`<sharedSelectionEntries>`): `selectionEntry "Manbiters" 0efb-7f63-7932-0655` mit genau einem `categoryLink dc60-fb87-cc94-ad35 → ee09-9a50-ad78-9c32` und genau einer eigenen Grenze `constraint 30f0-d417-2185-bf4a` `max 0 field=selections scope=parent`. `forceEntry "Clan Blood Dragons (VC-AB)" 5e95-7d57-2b9c-d77d` hat `categoryLink 6948-84bc-be26-e39a → ee09…`; `forceEntry "Army of the Lichemaster (WD#309-UK)" f37a-a93e-fa22-61a8` hat **weder** `ee09…` noch `b640…`. |
+| **OCS-R2** | **Der Kategorie-Filter ist echt** — und die Herkunftsgrenze steht davor. Ein Wurzel-Eintrag, dessen Basis-Kategorien das `forceEntry` **nicht** traegt, bekommt **keinen** Angebots-Anker. Beispiel „Manbiters“: einzige Basis-Kategorie ist **Regiment of Renown**, die „Army of the Lichemaster“ nicht traegt. Unter „Clan Blood Dragons“ (traegt `ee09…`) kaeme es durch diesen Filter — es wird dort seit Issue 0159 trotzdem nicht angeboten, weil der einzige Wurzel-`entryLink` darauf aus einem **fremden** Armeebuch (O&G) stammt und damit ausserhalb des Auswertungsumfangs eines Vampirfuersten-Kontingents liegt. Beide Kontingente fuehren „Manbiters“ deshalb nicht; das Manifest pinnt fuer diese Regel keinen Slot mehr, die Belege bleiben Prosa. Die positive Gegenprobe zur Herkunftsgrenze steht in **OCS-R11**. Seine einzige eigene Grenze ist `max 0` → `effectiveMax 0`, `headroom 0` (der Modifikator, der sie auf 1 hebt, verlangt „Allow experimental rules?“ `8b76-92c4-23f9-54b1` im Kontingent — in keinem Roster gewaehlt). Der Slot ist ein **Verweis-Slot**: `defId` = der Wurzel-`entryLink`, `targetDefId` = der verlinkte Eintrag. | Wurzel-`<entryLinks>` der O&G-`.cat` (Zeilen 14643–14914) → `entryLink "Manbiters" e3c2-1778-d3d5-edd1 → 0efb-7f63-7932-0655` (ohne eigene `categoryLinks`). Ziel in Mercenaries-`.cat` (`<sharedSelectionEntries>`): `selectionEntry "Manbiters" 0efb-7f63-7932-0655` mit genau einem `categoryLink dc60-fb87-cc94-ad35 → ee09-9a50-ad78-9c32` und genau einer eigenen Grenze `constraint 30f0-d417-2185-bf4a` `max 0 field=selections scope=parent`. `forceEntry "Clan Blood Dragons (VC-AB)" 5e95-7d57-2b9c-d77d` hat `categoryLink 6948-84bc-be26-e39a → ee09…`; `forceEntry "Army of the Lichemaster (WD#309-UK)" f37a-a93e-fa22-61a8` hat **weder** `ee09…` noch `b640…`. |
 | **OCS-R3** | **Angebot unterhalb einer besetzten Auswahl.** Die direkten Optionen der Einheit „Black Knights“ — auch die Mitglieder der constraint-losen Gruppe „Command“ — haengen mit `frameDefId` = **Einheit**. | VC-`.cat` → `selectionEntry "Black Knights" 115c-d87a-35e6-26c9`; darin `selectionEntryGroup "Command" e801-929e-ea87-2f62` (**ohne** `<constraints>`, also kein eigener Gruppen-Anker) mit `"Musician" 472e-27c4-2bb2-a482` (constraint `0d6c-d973-9d3a-efa6` `max 1 scope=parent`) und `"Standard Bearer" 4249-136b-4089-bf98` (constraint `6526-3601-6280-93f9` `max 1 scope=parent`). Beide sind `<selectionEntry>`-Elemente, keine `entryLink`s → `defId` = ihre eigene Id, `targetDefId = null`. |
 | **OCS-R4** | **Eine Ebene tiefer gehoert nicht dazu.** Die magischen Standarten sind Optionen des **Standartentraegers**, nicht der Einheit: das Angebot der Einheit stoppt beim ersten Eintrag. | `"Standard Bearer" 4249-136b-4089-bf98` traegt `entryLink 89cb-7891-0f33-2d89 → selectionEntryGroup "Magic Standards" 0937-a1bc-b331-8ce1` (constraint `ffa7-0f2f-7f2e-8781` `max 1 scope=parent`); deren Mitglieder sind u. a. `entryLink "Hell Banner" ae3c-bbc2-0ee8-4ef8 → fb58-1e62-1283-db8c`. |
 | **OCS-R5** | **Verborgen wird materialisiert und markiert — auf beiden Ebenen.** (a) Die Aufwertung „Black Knights of Bretonnia“ ist per Basis `hidden="true"` und wird **nur** im Blood-Dragon-Kontingent eingeblendet; als **nicht** gewaehlte Option bleibt sie ein Angebots-Anker (dort mit `isHidden=false`). (b) Umgekehrt der Wurzel-Eintrag „Dire Wolves“: er ist per Basis sichtbar, wird aber in **genau** den beiden hier genutzten Kontingenten verborgen — er bleibt trotzdem im Angebot, mit `isHidden=true`. | (a) `selectionEntry "Black Knights of Bretonnia" 6afd-186f-15da-94e0` (`hidden="true"`), `modifier set hidden=false` mit `condition instanceOf value=1 childId="5e95-7d57-2b9c-d77d" scope=force`; constraint **`082a-e7cc-492d-1091`** `max 1 field=selections scope=parent`. (b) VC-`.cat`, Wurzel-`<selectionEntries>` → `selectionEntry "Dire Wolves" 3c0f-28ce-0807-81fa` (`hidden="false"`, **ohne** eigene `<constraints>`), `categoryLink 333e-ebd4-f9cd-c7f8 → 64bf-efb4-9978-26df` (Core), `modifier set hidden=true` mit `conditionGroup type="or"` aus `instanceOf … childId="f37a-a93e-fa22-61a8"` und `instanceOf … childId="5e95-7d57-2b9c-d77d"`. |
@@ -117,6 +129,7 @@ Daraus folgt fuer dieses Szenario:
 | **OCS-R8** | **Ein Angebots-Anker ist ein Blatt und schweigt.** Weil „Fell Bats“ nur angeboten und nicht besetzt ist, entsteht **unter** ihm gar kein Knoten fuer sein Modell — nichts wertet es aus, also feuert dessen `min 3` nicht. Das ist der Gegensatz zu OCS-R7: dort wird die Grenze voll ausgewertet (und nur wegen der effektiven Verborgenheit nicht gemeldet, Issue 0088), hier schweigt sie, weil die Definition nur *waehlbar* ist. | `selectionEntry "Fell bats" 6dd9-c477-0549-37bb` in `a431-097d-4712-eb01`, constraint **`98c2-b213-2d60-6920`** `min 3 field=selections scope=parent`. Die aeussere Einheit `a431…` traegt selbst keine `min`-Grenze — sie ist damit Angebot, nicht Pflicht. |
 | **OCS-R9** | **Kategorie-Anker je `categoryLink` des Kontingents, mit Grenzen und Ist-Stand.** Der Slot gehoert dem `categoryLink` (dessen Id ist sein `defId`), die Kategorie ist sein `targetDefId`; Grenzen und Ist-Stand kommen aus der verlinkten Kategorie. „Heroes“ traegt genau eine, modifikator-freie Grenze `max -1` (Katalogwert fuer *unbegrenzt*) → `effectiveMax = null`; keine `min`-Grenze → `effectiveMin = null`, `headroom = null`; im Roster steht keine Heroes-Auswahl → `current = 0`. „Core“ traegt `min 2`. | `.gst` → `categoryEntry "Heroes" c16b-f319-2c62-2c12`, constraint **`7fca-63fb-63d2-9dad`** `max -1 scope=force`; `categoryEntry "Core" 64bf-efb4-9978-26df`, constraint **`35c2-d478-392a-aeb1`** `min 2 scope=force`. Verlinkt vom Kontingent ueber `categoryLink ca72-6035-08f9-e021` (Heroes) bzw. `f05a-5bc4-7d43-43d0` (Core) im `forceEntry 5e95-7d57-2b9c-d77d` (VC-`.cat` Zeilen 29364/29365), im `forceEntry f37a-a93e-fa22-61a8` ueber `7352-efeb-1090-e8d5` (Heroes, Zeile 29455). Weil dieselbe Kategorie in jedem Kontingent an einer **anderen** Link-Id haengt, benennt das Manifest diese Slots ueber `targetDefId` + `frameDefId`. |
 | **OCS-R10** | **`hidden` am Kategorie-Anker ist bedingt, nicht konstant.** Im `forceEntry` „Clan Blood Dragons (VC-AB)“ tragen die `categoryLink`s auf „Mercenaries“ und „Regiment of Renown“ je einen `modifier set hidden=true` unter derselben Bedingung: **mindestens eine** Auswahl von „Black Knights of Bretonnia“ im Kontingent. Haelt sie → `isHidden=true`; haelt sie nicht → `isHidden=false`. Dass der Modifikator am **Link** und nicht an der Kategorie haengt, ist genau der Grund, warum der Slot dem Link gehoert. | `forceEntry 5e95-7d57-2b9c-d77d` → `categoryLink "Mercenaries" 6b8f-90b1-38b5-6e1c → b640-7e9c-3054-c1ce` und `categoryLink "Regiment of Renown" 6948-84bc-be26-e39a → ee09-9a50-ad78-9c32`, beide mit `modifier type="set" field="hidden" value="true"` und `condition type="atLeast" value="1" field="selections" scope="force" childId="6afd-186f-15da-94e0" includeChildSelections="true"`. |
+| **OCS-R11** | **Ein Wurzel-`entryLink` des **eigenen** Armeebuchs verankert das Angebot sehr wohl — mitsamt den Grenzen seines Ziels.** „Toxote’s Hellmounts“ liegt wie „Manbiters“ als geteilte Definition in der Mercenaries-`.cat`, wird aber von der Vampirfuersten-`.cat` **selbst** verlinkt und bekommt darum unter „Clan Blood Dragons“ einen `offerAnchor`. Herleitung der gepinnten Zahlen: die Definition traegt genau **eine** eigene Grenze, `max 0` (`field=selections`, `scope=parent`) → `effectiveMax = 0`; der einzige Modifikator darauf (`set 1`) verlangt mindestens eine Auswahl von „Allow experimental rules?“ `8b76-92c4-23f9-54b1` im Kontingent, die in **keinem** Roster dieses Szenarios steht → er greift nicht. Keine `min`-Grenze → `effectiveMin = null` und `isMandatoryUnmet = false` (der Eintrag ist Angebot, nicht Pflicht — OCS-R7). Das Roster enthaelt die Einheit nicht → `current = 0`, und aus `effectiveMax 0 − current 0` folgt `headroom = 0`. Der Kategorie-Filter laesst sie durch: Basis-Kategorie *Regiment of Renown* (auch *Rare* und *Experimental rules*), und das `forceEntry` traegt `ee09…`, `e94b…` und `4fed…`. | VC-`.cat`, Wurzel-`<entryLinks>` (Zeilen 29513–29656) → `entryLink "Toxote's Hellmounts" d582-0c51-60be-ce82 → 1a52-2060-f39b-38ee` (`hidden="false"`, ohne eigene `categoryLinks`/`modifiers`). Ziel in Mercenaries-`.cat` (`<sharedSelectionEntries>`, Zeile 6362): `selectionEntry "Toxote's Hellmounts" 1a52-2060-f39b-38ee` mit `categoryLink 5c0c-5bad-37b3-1ca9 → e94b…` (Rare), `ebb3-e3a6-dbab-9d38 → ee09…` (Regiment of Renown, `primary`), `8e50-34f8-c560-74dc → 4fed…` (Experimental rules) und genau einer eigenen Grenze `constraint 9595-a908-74bc-94bc` `max 0 field=selections scope=parent`, dazu `modifier type="set" value="1" field="9595-a908-74bc-94bc"` mit `condition type="atLeast" value="1" … childId="8b76-92c4-23f9-54b1" scope="force"`. |
 
 ### Warum die Roster die beiden „Allow“-Schalter enthalten
 
@@ -157,12 +170,19 @@ Unterschied zwischen 01 und 02 die Bedingung aus **OCS-R10** — der Kontrast
   `5c4a-c8ea-073d-909c` `min 2 scope=parent`). Ob ein Pflicht-Anker — anders als
   ein Angebots-Anker — in seine Kinder hinein materialisiert, sagt OCS-R7 nicht;
   das Szenario behauptet darum weder, dass `5c4a…` feuert, noch dass es schweigt.
-- **Die Autor-Meldung an „Manbiters“.** Der Eintrag traegt einen
-  `modifier type="add" field="error"` („Please enable &quot;Allow experimental
-  rules?&quot;“). Autor-Meldungen sind Gegenstand des Szenarios
-  [`author-message-severity`](../author-message-severity/README.md); seit Issue
-  0159 hat dieses Szenario ohnehin keinen Manbiters-Slot mehr, an dem etwas zu
-  behaupten waere.
+- **Die Autor-Meldung an „Toxote’s Hellmounts“.** Der Eintrag traegt — wie
+  „Manbiters“ — einen `modifier type="add" field="error"` („Please enable
+  &quot;Allow experimental rules?&quot;“), dessen Bedingung hier haelt.
+  Autor-Meldungen sind Gegenstand von
+  [`author-message-severity`](../author-message-severity/README.md) und, fuer
+  diesen Slot, von
+  [`violation-classification`](../violation-classification/README.md) (VCC-R11);
+  dieses Szenario pinnt am Slot nur Grenzen und Ist-Stand.
+- **Das `hidden`-Flag von „Toxote’s Hellmounts“.** Die Definition traegt
+  `hidden="true"` und einen `set hidden=false`-Modifikator auf
+  `cc03-e8fe-c143-6863`; wie das mit dem `hidden="false"` des Verweises
+  zusammenwirkt, pinnt OCS-R5 an *Dire Wolves* und der Bretonnia-Aufwertung.
+  Am Toxote-Slot behauptet das Manifest darum kein `isHidden`.
 - **Die beiden Negativfaelle** (OCS-R2 und OCS-R4) stehen nur als Prosa: das
   Manifest kennt keine Ausdrucksform fuer „dieser Slot existiert nicht“. Sie sind
   unten je konkret benannt und aus dem XML nachpruefbar.
@@ -180,7 +200,7 @@ Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/).
 
 | # | Testtitel | Roster-Zustand | Erwartetes Ergebnis des Evaluators (nicht-technisch) | Fixture |
 |---|-----------|----------------|-------------------------------------------------------|---------|
-| 01 | Verborgene Kategorien + Angebot rundum | Kontingent „Clan Blood Dragons“, beide „Allow“-Schalter, eine Einheit *Black Knights* (5 Modelle, Heavy Armour, Shield, Handweapon, Lance) **mit** der Aufwertung *Black Knights of Bretonnia*. | Die Kategorie-Anker **Mercenaries** und **Regiment of Renown** sind **verborgen** (OCS-R10). **Heroes** ist sichtbar, ohne Ober- und Untergrenze, Ist-Stand 0; **Core** verlangt mindestens 2 (OCS-R9). Die gewaehlte Bretonnia-Aufwertung ist **gesperrt** (1 von 1, kein Spielraum, OCS-R6). *Musician* und *Standard Bearer* haengen als **Angebot an der Einheit** (OCS-R3). *Fell Bats* und *Dire Wolves* haengen als **Angebot am Kontingent** (OCS-R1/R5b) — *Dire Wolves* dabei verborgen. *Manbiters* haengt dort **nicht**: sein einziger Wurzel-`entryLink` steht in der O&G-`.cat` und liegt damit ausserhalb des Umfangs eines Vampirfuersten-Kontingents (OCS-R2, Issue 0159). *Army of Sylvania* ist **kein** Angebot, sondern ein **Pflicht-Anker** — effektiv versteckt, seine `min 1`-Grenzen melden darum nicht (OCS-R7, Issue 0088). Die Modell-Pflicht unter *Fell Bats* feuert ebenfalls nicht (OCS-R8). | [`01-blood-dragon-bretonnia-hidden-categories.ros`](rosters/01-blood-dragon-bretonnia-hidden-categories.ros) |
+| 01 | Verborgene Kategorien + Angebot rundum | Kontingent „Clan Blood Dragons“, beide „Allow“-Schalter, eine Einheit *Black Knights* (5 Modelle, Heavy Armour, Shield, Handweapon, Lance) **mit** der Aufwertung *Black Knights of Bretonnia*. | Die Kategorie-Anker **Mercenaries** und **Regiment of Renown** sind **verborgen** (OCS-R10). **Heroes** ist sichtbar, ohne Ober- und Untergrenze, Ist-Stand 0; **Core** verlangt mindestens 2 (OCS-R9). Die gewaehlte Bretonnia-Aufwertung ist **gesperrt** (1 von 1, kein Spielraum, OCS-R6). *Musician* und *Standard Bearer* haengen als **Angebot an der Einheit** (OCS-R3). *Fell Bats*, *Dire Wolves* und *Toxote’s Hellmounts* haengen als **Angebot am Kontingent** (OCS-R1/R5b/R11) — *Dire Wolves* dabei verborgen, *Toxote’s Hellmounts* mit aufgebrauchter Obergrenze (0 von 0, kein Spielraum, OCS-R11). *Manbiters* haengt dort **nicht**: sein einziger Wurzel-`entryLink` steht in der O&G-`.cat` und liegt damit ausserhalb des Umfangs eines Vampirfuersten-Kontingents (OCS-R2, Issue 0159). *Army of Sylvania* ist **kein** Angebot, sondern ein **Pflicht-Anker** — effektiv versteckt, seine `min 1`-Grenzen melden darum nicht (OCS-R7, Issue 0088). Die Modell-Pflicht unter *Fell Bats* feuert ebenfalls nicht (OCS-R8). | [`01-blood-dragon-bretonnia-hidden-categories.ros`](rosters/01-blood-dragon-bretonnia-hidden-categories.ros) |
 | 02 | Sichtbare Kategorien (Gegenprobe) | Wie 01, aber **ohne** die Aufwertung *Black Knights of Bretonnia*. | Dieselben Kategorie-Anker sind jetzt **sichtbar** — das `hidden`-Flag ist also bedingt, nicht konstant (OCS-R10). Die weggelassene Aufwertung erscheint als **Angebot an der Einheit**: 0 von 1 gewaehlt, ein Platz frei, sichtbar (OCS-R5a). *Standard Bearer* und der verborgene Wurzel-Eintrag *Dire Wolves* bleiben ebenfalls angeboten. *Army of Sylvania* bleibt Pflicht-Anker, effektiv versteckt und darum ohne Meldung (OCS-R7, Issue 0088). | [`02-blood-dragon-plain-visible-categories.ros`](rosters/02-blood-dragon-plain-visible-categories.ros) |
 | 03 | Kategorie-Filter des Angebots | Kontingent „Army of the Lichemaster“ (traegt **keine** Mercenaries-/Regiment-of-Renown-Kategorie), eine Einheit *Skeletons* mit 10 Modellen. | *Fell Bats* (Special) und *Dire Wolves* (Core, hier verborgen) werden weiterhin **angeboten**; *Manbiters* — dessen einzige Basis-Kategorie *Regiment of Renown* ist — **nicht** (OCS-R2, Prosa). Der Heroes-Kategorie-Anker existiert auch hier, sichtbar und ohne Ober-/Untergrenze. *Army of Sylvania* ist auch in diesem Kontingent Pflicht-Anker, effektiv versteckt und darum ohne Meldung (OCS-R7, Issue 0088); die Modell-Pflicht unter *Fell Bats* schweigt weiterhin (OCS-R8). | [`03-lichemaster-offer-category-filter.ros`](rosters/03-lichemaster-offer-category-filter.ros) |
 
@@ -247,4 +267,7 @@ auswerten koennte (OCS-R8).
 | Pflicht-Kind „Grave markers“ von „Army of Sylvania“ (bewusst nicht behauptet) | `f899-4fbd-db93-629e` — `5c4a-c8ea-073d-909c` (`min 2 parent`) | in `b48b…` |
 | „Manbiters“ (nur Kategorie *Regiment of Renown*, Grenze `max 0 parent`; seit Issue 0159 in keinem Slot dieses Szenarios) | `0efb-7f63-7932-0655` — `categoryLink dc60-fb87-cc94-ad35 → ee09…`, constraint `30f0-d417-2185-bf4a` | Mercenaries-`.cat` → `<sharedSelectionEntries>` (Zeile 6552; Abschnitt 88–9525, also **nicht** wurzelnah) |
 | Wurzel-`entryLink` auf „Manbiters“ (ohne eigene `categoryLinks`; **fremdes** Armeebuch, verankert kein Angebot im VC-Kontingent) | `e3c2-1778-d3d5-edd1` → `0efb-7f63-7932-0655` | O&G-`.cat` → `<entryLinks>` (Zeile 14896; Abschnitt 14643–14914) |
+| „Toxote’s Hellmounts“ (Kategorien *Rare* / *Regiment of Renown* (primaer) / *Experimental rules*, Grenze `max 0 parent`; `targetDefId` des Angebots-Ankers) | `1a52-2060-f39b-38ee` — `categoryLink`s `5c0c-5bad-37b3-1ca9 → e94b…`, `ebb3-e3a6-dbab-9d38 → ee09…`, `8e50-34f8-c560-74dc → 4fed…`, constraint `9595-a908-74bc-94bc` | Mercenaries-`.cat` → `<sharedSelectionEntries>` (Zeile 6362; Abschnitt 88–9525, also **nicht** wurzelnah) |
+| Wurzel-`entryLink` auf „Toxote’s Hellmounts“ (ohne eigene `categoryLinks`/`modifiers`; **eigenes** Armeebuch, verankert das Angebot; `defId` des Slots) | `d582-0c51-60be-ce82` → `1a52-2060-f39b-38ee` | VC-`.cat` → `<entryLinks>` (Zeile 29641; Abschnitt 29513–29656) |
+| Modifikator, der die `max 0` von „Toxote’s Hellmounts“ auf 1 hoebe (greift in keinem Roster) | `set 1` auf `9595-a908-74bc-94bc`, bedingt auf `8b76-92c4-23f9-54b1` („Allow experimental rules?“) | Mercenaries-`.cat` → in `1a52…` / `.gst` → `<sharedSelectionEntries>` |
 | Einheit „Skeletons“ + Modell (Roster 03) | `9ac2-f4c1-bcc3-3aee` / `eaa1-c6a6-9aae-ae9a` | VC-`.cat` → Wurzel-`<selectionEntries>` |
