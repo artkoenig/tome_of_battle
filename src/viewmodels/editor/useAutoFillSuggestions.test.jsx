@@ -140,12 +140,13 @@ describe('useAutoFillSuggestions — die Kandidaten', () => {
     expect(result.current.suggestions.map(s => s.name)).toEqual(['Eigenes']);
   });
 
-  it('ein Slot an einer Auswahl eines anderen Kontingents bleibt ein Vorschlag', () => {
-    // Der Rahmenfilter fragt den roster-weiten Auswahl-Index, nicht den Pfad:
-    // hängt ein Slot an einer bestehenden Auswahl, zählt er — auch wenn diese
-    // Auswahl in einem zweiten Kontingent steht (Verhalten vor Issue 0164).
+  it('ein Slot an einer Auswahl eines anderen Kontingents ist kein Vorschlag', () => {
+    // Zwei Kontingente in einer Liste: der Rahmen eines Slots im zweiten steht
+    // im roster-weiten Auswahl-Index, der Slot liegt aber außerhalb des eigenen
+    // Teilbaums — er gehört in das Panel des anderen Kontingents (Issue 0172).
     const { result } = renderPanel({
       capabilities: new Map([
+        ['0/0', offer({ name: 'Eigenes Angebot' })],
         ['1/0', offer({ name: 'Ally Unit', anchorKind: 'occupied', headroom: null, frame: { path: '1' } })],
         ['1/0/0', offer({ name: 'Foreign Upgrade', frame: { path: '1/0' } })],
       ]),
@@ -153,8 +154,7 @@ describe('useAutoFillSuggestions — die Kandidaten', () => {
       spent: 980,
     });
 
-    expect(result.current.suggestions.map(s => s.name)).toEqual(['Foreign Upgrade']);
-    expect(result.current.suggestions[0].unitName).toBe('Ally Unit');
+    expect(result.current.suggestions.map(s => s.name)).toEqual(['Eigenes Angebot']);
   });
 
   it('ein Slot an einer bestehenden Auswahl nennt seine Einheit und wächst über increaseCount', () => {

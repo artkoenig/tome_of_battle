@@ -21,7 +21,10 @@ import { useRosterReport, useRosterCommands } from '../rosterContexts';
  * — nie eine Kategorie: eine offene Pflicht erzeugt hier keinen Vorschlag, sie
  * steht im Meldungs-Panel. Dazu der **Herkunftsfilter** des Aushebe-Dialogs
  * ({@link foreignCatalogueIdsOf}): eine Einheit aus einem fremden Armeebuch
- * darf in dieser Liste gar nicht aufgestellt werden (ADR-0032).
+ * darf in dieser Liste gar nicht aufgestellt werden (ADR-0032). Und der
+ * **Kontingentschnitt**: vorgeschlagen wird nur, was im Teilbaum des eigenen
+ * Kontingents liegt — ein Slot an einer Auswahl eines anderen Kontingents
+ * derselben Liste gehört in dessen Panel (Issue 0172).
  *
  * Ein Vorschlag muss in der Limit-Kostenart etwas kosten und darf die Restsumme
  * nicht überschreiten; Verstecktes (`isHidden`) und Ausgeschöpftes (`isBlocked`)
@@ -85,6 +88,10 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     for (const [path, capability] of capabilities ?? []) {
       if (!isSelectableSlot(capability)) continue;
       if (capability.isHidden || capability.isBlocked) continue;
+      // Ein Panel füllt allein sein eigenes Kontingent auf: nur Slots aus dessen
+      // Teilbaum kommen in Frage (Issue 0172). Ein Slot an einer Auswahl in
+      // einem anderen Kontingent derselben Liste gehört in dessen Panel.
+      if (!isInForceSubtree(path, forcePath)) continue;
       // Nur zwei Standorte sind gemeint: unmittelbar unter dem Kontingent (eine
       // Einheit) oder unter einer bestehenden Auswahl (eine Option an ihr).
       const framePath = capability.frame?.path ?? null;
@@ -156,6 +163,15 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     costTypeLabel: resolveCostLimitLabel(roster, system),
     suggestions,
   };
+}
+
+/**
+ * True, wenn der Slot-Pfad im Teilbaum des Kontingents liegt: das Kontingent
+ * selbst oder alles unter ihm. Ohne `forcePath` gibt es keinen Teilbaum.
+ */
+function isInForceSubtree(path, forcePath) {
+  if (forcePath === null || forcePath === undefined) return false;
+  return path === forcePath || path.startsWith(`${forcePath}/`);
 }
 
 /**
