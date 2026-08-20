@@ -44,6 +44,14 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${OWN_CATALOGUE_ID}" name="Own Book" gameSystemId="${GAME_SYSTEM_ID}" library="false">
+    <!-- Since issue 0159 a library is only reached through an explicit
+         catalogueLink, and its ROOT entry is only offered with
+         importRootEntries="true". Without the link the library unit below
+         never becomes a slot, so the origin decision could not be observed. -->
+    <catalogueLinks>
+      <catalogueLink id="cl-own-to-library" name="Mercenaries" type="catalogue"
+                     targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <selectionEntries>
       <selectionEntry id="${CHARIOT_ID}" name="Chariot" type="unit">
         <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="50"/></costs>

@@ -83,6 +83,9 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${OWN_CATALOGUE_ID}" name="Vampire Counts" gameSystemId="${GAME_SYSTEM_ID}">
+    <catalogueLinks>
+      <catalogueLink id="cl-own-to-lib" name="Mercenaries" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <selectionEntries>
       <selectionEntry id="${OWN_ENTRY_ID}" name="Vampire" type="unit">
         <categoryLinks><categoryLink id="ol-1" name="Special" targetId="${CATEGORY_ID}" primary="true"/></categoryLinks>

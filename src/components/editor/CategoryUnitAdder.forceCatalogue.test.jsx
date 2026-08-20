@@ -89,6 +89,9 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const PRIMARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${PRIMARY_CATALOGUE_ID}" name="Vampire Counts" gameSystemId="${GAME_SYSTEM_ID}">
+    <catalogueLinks>
+      <catalogueLink id="cl-own-to-lib" name="Mercenaries" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <selectionEntries>
       <selectionEntry id="${PRIMARY_ENTRY_ID}" name="Vampire" type="unit">
         <categoryLinks><categoryLink id="ol-1" name="Special" targetId="${CATEGORY_ID}" primary="true"/></categoryLinks>
@@ -104,6 +107,9 @@ const PRIMARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const ALLIED_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${ALLIED_CATALOGUE_ID}" name="Ogre Kingdoms" gameSystemId="${GAME_SYSTEM_ID}">
+    <catalogueLinks>
+      <catalogueLink id="cl-ally-to-lib" name="Mercenaries" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <sharedSelectionEntries>
       <selectionEntry id="${ALLIED_SHARED_ENTRY_ID}" name="Ogre Bull" type="unit">
         <categoryLinks><categoryLink id="fs-1" name="Special" targetId="${CATEGORY_ID}" primary="true"/></categoryLinks>
