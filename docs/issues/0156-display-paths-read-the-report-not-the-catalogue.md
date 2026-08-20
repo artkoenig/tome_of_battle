@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/issues-156-157-158-pyrqfd
+pr: 249
 ---
 
 # Display paths read the report, not the catalogue
