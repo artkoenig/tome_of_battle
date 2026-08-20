@@ -278,11 +278,11 @@ describe('Kriterium 1, Rand: eine Armeebuch-Id, die der Datensatz nicht kennt, z
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('Bibliothekskatalog: nur in der Huelle des Armeebuchs, nie als pauschale Ausnahme', () => {
-  // **Widerrufen durch Issue 0156.** Dieses Issue (0140) nahm einen
+  // **Widerrufen durch Issue 0159.** Dieses Issue (0140) nahm einen
   // Bibliothekskatalog pauschal von der Filterung aus, wo das Armeebuch des
   // Kontingents aus der Angabe des Rosters stammte — mit der Begruendung, ein
   // Soeldner-/Bibliothekskatalog sei kein Armeebuch, das man einem Kontingent
-  // streitig machen koennte. Issue 0156 hebt das auf: der Auswertungsumfang
+  // streitig machen koennte. Issue 0159 hebt das auf: der Auswertungsumfang
   // eines Kontingents ist **genau** sein Armeebuch, dessen transitive
   // `catalogueLink`-Huelle und das Spielsystem — gleich, ob der Fremde eine
   // Bibliothek ist und gleich, ob Katalogdaten oder Roster das Armeebuch
@@ -323,7 +323,7 @@ describe('Bibliothekskatalog: nur in der Huelle des Armeebuchs, nie als pauschal
 
   it('Rand: dasselbe im Kontingent aus einer .cat — die Herkunft der Antwort aendert nichts', () => {
     // Hier hat **der Herkunftsindex** geantwortet (die Kontingent-Definition
-    // steht in Armeebuch B), das Roster nennt nichts. Seit Issue 0156 ist das
+    // steht in Armeebuch B), das Roster nennt nichts. Seit Issue 0159 ist das
     // fuer den Umfang gleichgueltig: es zaehlt allein, dass Armeebuch B die
     // Bibliothek in keinem `catalogueLink` fuehrt. Zuvor trug dieselbe Zeile die
     // Gegenprobe zur Bibliotheks-Ausnahme; nun ist sie die zweite Haelfte
@@ -341,7 +341,7 @@ describe('Bibliothekskatalog: nur in der Huelle des Armeebuchs, nie als pauschal
     // Wurzel-Angebot gehoert nicht zu meinem" (XSD-Vorgabe, ADR-0032; Issue
     // 0098, Kriterium 3). Die Huelle entscheidet, welche Definitionen das
     // Kontingent erreichen; `importRootEntries` entscheidet, wessen
-    // Wurzel-Eintraege es als eigenes Angebot fuehrt (Issue 0156).
+    // Wurzel-Eintraege es als eigenes Angebot fuehrt (Issue 0159).
     // Das Gegenstueck `importRootEntries="true"` haelt schon
     // `crossCatalog.rootEntryScope.test.js` (Issue 0098, Kriterium 3) fest.
     const report = evaluate(

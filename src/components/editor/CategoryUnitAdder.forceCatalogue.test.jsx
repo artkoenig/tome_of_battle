@@ -337,7 +337,7 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
   // Angebots-Anker. „Vampire" steht dem Dialog hier also nicht mehr zur
   // Auswahl, unabhaengig von jeder Prop.
   //
-  // **Was Issue 0156 zusaetzlich genommen hat:** „Hired Ogre" — der
+  // **Was Issue 0159 zusaetzlich genommen hat:** „Hired Ogre" — der
   // Wurzel-`entryLink` des PRIMAER-Buchs auf den geteilten Eintrag des
   // verbuendeten — stand hier frueher ebenfalls im Angebot, weil ein
   // Wurzel-`entryLink` von der Herkunftspruefung ausgenommen war. Diese Ausnahme

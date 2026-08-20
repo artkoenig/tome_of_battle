@@ -237,7 +237,7 @@ export function evaluate(prepared, roster, options) {
     gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
-  // Der Katalog-Bezugsrahmen (Issue 0098, Umfang nach Issue 0156): der
+  // Der Katalog-Bezugsrahmen (Issue 0098, Umfang nach Issue 0159): der
   // Auswertungsumfang eines Kontingents ist genau sein Armeebuch, dessen
   // transitive `catalogueLink`-Huelle und das Spielsystem. Er reicht bis in die
   // Baumphase 1 (Pflicht-Phantome und Umfangs-Diagnose, `evalTree.js`) und die

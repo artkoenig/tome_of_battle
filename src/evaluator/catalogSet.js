@@ -165,7 +165,7 @@ export function declaredCatalogueIdOf(instance, knownCatalogueIds) {
  * Pflicht-Phantom-Synthese (`evalTree.js`) und die Angebots-Schicht
  * (`offer.js`) als auch der Bezugsrahmen `primary-catalogue` (`query.js`)
  * stellen. Sie ist zugleich die **Wurzel des Auswertungsumfangs** dieses
- * Kontingents (Issue 0156): das Buch selbst, seine transitive
+ * Kontingents (Issue 0159): das Buch selbst, seine transitive
  * `catalogueLink`-Huelle ({@link buildCatalogueScopeClosure}) und das
  * Spielsystem — mehr erreicht dieses Kontingent nicht.
  *
@@ -189,7 +189,7 @@ export function declaredCatalogueIdOf(instance, knownCatalogueIds) {
  * gehoeren (Verbuendete).
  *
  * Woher die Antwort stammt, spielt fuer den Umfang keine Rolle mehr (Issue
- * 0156): der Umfang folgt allein dem Buch und seiner `catalogueLink`-Huelle,
+ * 0159): der Umfang folgt allein dem Buch und seiner `catalogueLink`-Huelle,
  * nicht der Frage, ob Katalogdaten oder Roster das Buch genannt haben.
  *
  * @param {{ declaredCatalogueId?: string|undefined, def?: { id?: string } }|null|undefined} forceNode
@@ -262,12 +262,12 @@ export function buildDefinitionSourceIndex(documents) {
 
 /**
  * Baut die **`catalogueLink`-Huelle** je Katalog (`Map<catalogueId,
- * Set<catalogueId>>`, Issue 0156): die Menge der Katalog-Ids, die zum
+ * Set<catalogueId>>`, Issue 0159): die Menge der Katalog-Ids, die zum
  * Auswertungsumfang eines Kontingents **dieses** Katalogs gehoeren — er
  * selbst, plus transitiv und zyklensicher jeder Katalog, den er per
  * `catalogueLink` benennt.
  *
- * `importRootEntries` steuert diese Huelle **nicht** (Issue 0156, ADR-0032
+ * `importRootEntries` steuert diese Huelle **nicht** (Issue 0159, ADR-0032
  * Nachtrag): ein `catalogueLink` ist die Umfangs- und Aufloesungsgrenze eines
  * Armeebuchs, nicht bloss eine Abhaengigkeits-Deklaration. Wer verlinkt ist,
  * ist im Umfang; wer nicht verlinkt ist, erreicht dieses Kontingent nicht —
@@ -343,7 +343,7 @@ function buildClosure(catalogueDocuments, followLink) {
 
 /**
  * True, wenn eine Definition zum **Auswertungsumfang** irgendeines der
- * gegebenen Referenz-Kataloge gehoert (Issue 0098, Umfang nach Issue 0156) —
+ * gegebenen Referenz-Kataloge gehoert (Issue 0098, Umfang nach Issue 0159) —
  * die **eine** Pruefung, die der Pflicht-Phantom-Synthese (`evalTree.js`, je
  * Kontingent ein Referenz-Katalog), der Angebots-Schicht (`offer.js`,
  * dasselbe) und der Umfangs-Diagnose belegter Auswahlen (`evalTree.js`)
@@ -354,7 +354,7 @@ function buildClosure(catalogueDocuments, followLink) {
  * Spielsystem. Ein fremdes Armeebuch desselben Datensatzes liegt ausserhalb —
  * es liefert weder Definition noch Angebot mehr hinein, gleich ob es eine
  * Bibliothek ist und gleich ob Katalogdaten oder Roster das Armeebuch des
- * Kontingents genannt haben (Issue 0156 hebt die Bibliotheks-Ausnahme aus
+ * Kontingents genannt haben (Issue 0159 hebt die Bibliotheks-Ausnahme aus
  * Issue 0140 auf: was ein Buch braucht, verlinkt es, und dann ist es in der
  * Huelle).
  *

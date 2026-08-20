@@ -1103,7 +1103,7 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
 
 /**
  * Meldet jede **belegte** Auswahl, deren Definition aus einem Katalog
- * ausserhalb des Auswertungsumfangs ihres Kontingents stammt (Issue 0156,
+ * ausserhalb des Auswertungsumfangs ihres Kontingents stammt (Issue 0159,
  * Kriterium 4) — `SELECTION_OUT_OF_CATALOGUE_SCOPE`.
  *
  * Der Umfang ist derselbe wie ueberall sonst ({@link isInCatalogueScope}): das

@@ -1,9 +1,9 @@
 /**
- * Issue 0156, Kriterium 4: **eine Auswahl ausserhalb des Umfangs ihres
+ * Issue 0159, Kriterium 4: **eine Auswahl ausserhalb des Umfangs ihres
  * Kontingents bleibt nicht still.**
  *
  * Der Auswertungsumfang eines Kontingents ist sein Armeebuch, dessen transitive
- * `catalogueLink`-Huelle und das Spielsystem (ADR-0032, Nachtrag zu Issue 0156).
+ * `catalogueLink`-Huelle und das Spielsystem (ADR-0032, Nachtrag zu Issue 0159).
  * Ein Roster darf trotzdem eine Auswahl enthalten, die von ausserhalb stammt —
  * eine von Hand gebaute oder eine aus einer aelteren Fassung importierte Liste.
  * Was der Auswerter dann **nicht** tun darf: abstuerzen oder sie stumm
@@ -22,16 +22,16 @@ import { DiagnosticKind } from './model.js';
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-const GAME_SYSTEM_ID = 'gs-0156-scope';
-const OWN_CATALOGUE_ID = 'cat-own-0156';
-const LINKED_CATALOGUE_ID = 'cat-linked-0156';
-const FOREIGN_CATALOGUE_ID = 'cat-foreign-0156';
+const GAME_SYSTEM_ID = 'gs-0159-scope';
+const OWN_CATALOGUE_ID = 'cat-own-0159';
+const LINKED_CATALOGUE_ID = 'cat-linked-0159';
+const FOREIGN_CATALOGUE_ID = 'cat-foreign-0159';
 
-const OWN_FORCE_ID = 'force-own-0156';
-const OWN_UNIT_ID = 'unit-own-0156';
-const LINKED_UNIT_ID = 'unit-linked-0156';
-const FOREIGN_UNIT_ID = 'unit-foreign-0156';
-const GST_SHARED_UNIT_ID = 'unit-gst-0156';
+const OWN_FORCE_ID = 'force-own-0159';
+const OWN_UNIT_ID = 'unit-own-0159';
+const LINKED_UNIT_ID = 'unit-linked-0159';
+const FOREIGN_UNIT_ID = 'unit-foreign-0159';
+const GST_SHARED_UNIT_ID = 'unit-gst-0159';
 
 const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
   <gameSystem id="${GAME_SYSTEM_ID}" name="Scope System">
@@ -90,7 +90,7 @@ function scopeDiagnosticsOf(report) {
   );
 }
 
-describe('Issue 0156, Kriterium 4: eine Auswahl ausserhalb des Umfangs wird gemeldet', () => {
+describe('Issue 0159, Kriterium 4: eine Auswahl ausserhalb des Umfangs wird gemeldet', () => {
   it('meldet SELECTION_OUT_OF_CATALOGUE_SCOPE fuer die Einheit eines fremden Armeebuchs', () => {
     const report = evaluate(prepareDataset(DATASET), rosterWith(FOREIGN_UNIT_ID));
 
@@ -122,7 +122,7 @@ describe('Issue 0156, Kriterium 4: eine Auswahl ausserhalb des Umfangs wird geme
   });
 
   it('Kontrast: ein Eintrag aus dem per catalogueLink verlinkten Katalog liegt im Umfang', () => {
-    // Der Unterschied, um den es Issue 0156 geht: verlinkt ist drinnen, nicht
+    // Der Unterschied, um den es Issue 0159 geht: verlinkt ist drinnen, nicht
     // verlinkt ist draussen — `importRootEntries` spielt dafuer keine Rolle, der
     // Link traegt es hier gar nicht.
     const report = evaluate(prepareDataset(DATASET), rosterWith(LINKED_UNIT_ID));

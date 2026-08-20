@@ -47,8 +47,8 @@ auf. `catalogueLink`/`.cat`→`.cat` ist damit real und für jede Armee zwingend
    die disjunkten GUIDs ausschließen (YAGNI). `catalogueLink` wird deshalb als
    **Abhängigkeits-Deklaration** behandelt, nicht als eigener
    Auflösungsmechanismus — ~~weil alle benötigten Kataloge gemeinsam als Quellen
-   übergeben werden~~. *(Diese Begründung ist mit Issue 0156 widerrufen — siehe
-   den [Nachtrag](#nachtrag-issue-0156--der-cataloguelink-ist-die-umfangsgrenze-eines-armeebuchs)
+   übergeben werden~~. *(Diese Begründung ist mit Issue 0159 widerrufen — siehe
+   den [Nachtrag](#nachtrag-issue-0159--der-cataloguelink-ist-die-umfangsgrenze-eines-armeebuchs)
    unten. Die globale Symboltabelle bleibt; was ein Kontingent aus ihr erreicht,
    ist es nicht mehr.)*
 
@@ -84,7 +84,7 @@ Datensatz die GUID-Disjunktheit verletzt.
   vollständige Kontext-Stack-Aufbau bleibt bewusst ungebaut, bis ein realer
   Datensatz ihn erzwingt.
 
-## Nachtrag (Issue 0156) — der `catalogueLink` ist die Umfangsgrenze eines Armeebuchs
+## Nachtrag (Issue 0159) — der `catalogueLink` ist die Umfangsgrenze eines Armeebuchs
 
 **Status des Nachtrags:** akzeptiert, 2026-08-20. Er ändert Entscheidung 2 nicht
 in ihrem Kern (die Auflösung bleibt global-by-ID über eine flache

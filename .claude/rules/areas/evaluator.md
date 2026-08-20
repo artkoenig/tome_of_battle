@@ -38,7 +38,7 @@ means; it outranks the ADRs where the two disagree.
   designing, not after the test run.
 - A contingent is evaluated against **exactly** its army book, that book's transitive
   `catalogueLink` hull and the game system (`buildCatalogueScopeClosure`/`isInCatalogueScope`,
-  Issue 0156, ADR-0032 addendum). No root `entryLink` exemption exists any more: a foreign book's
+  Issue 0159, ADR-0032 addendum). No root `entryLink` exemption exists any more: a foreign book's
   link anchors nothing. Alongside it runs the narrower `buildRootImportClosure`/
   `isInRootImportScope` — only `catalogueLink`s with `importRootEntries="true"` — and **that** one
   gates root-level offers (`offer.js`) and the root definitions' mandatory phantoms
@@ -52,7 +52,7 @@ means; it outranks the ADRs where the two disagree.
 - A synthetic multi-catalogue test fixture that expects a library entry to be offered must give
   the army book an explicit `catalogueLink` to that library (with `importRootEntries="true"` when
   the entry is a root entry). Merely passing the library as a source no longer reaches anything —
-  that was the pre-0156 rule, and several UI tests encoded it.
+  that was the pre-0159 rule, and several UI tests encoded it.
 - Effort has a budget: `node scripts/measure-evaluator.js` fails over 100 ms on real catalog data.
   A change that widens a traversal needs that number checked.
   `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser

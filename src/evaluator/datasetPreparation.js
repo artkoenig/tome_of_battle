@@ -139,7 +139,7 @@ export class PreparedDataset {
  * (`catalogueScopeClosureById`, {@link buildCatalogueScopeClosure}): welche
  * Katalog-Herkuenfte im Auswertungsumfang eines Kontingents dieses Katalogs
  * liegen — er selbst und, transitiv, jeder per `catalogueLink` benannte
- * Katalog (Issue 0156) — und daneben die engere **Wurzel-Import-Huelle**
+ * Katalog (Issue 0159) — und daneben die engere **Wurzel-Import-Huelle**
  * (`rootImportClosureById`, {@link buildRootImportClosure}), die nur
  * `catalogueLink`s mit `importRootEntries="true"` durchschreitet und damit
  * sagt, wessen Wurzel-Eintraege ein Katalog als eigenes Angebot fuehrt. Alle
@@ -208,7 +208,7 @@ function prepare(dataset) {
     sourceIdByDefId: buildDefinitionSourceIndex(documents),
     // Nur die Kataloge, wie beim Herkunftsindex der Kontingente: die
     // `catalogueLink`-Huelle eines Katalogs ist eine Eigenschaft von
-    // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0156).
+    // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0159).
     catalogueScopeClosureById: buildCatalogueScopeClosure(catalogueDocuments),
     // Dieselbe Quelle, die engere Frage: wessen WURZEL-Eintraege ein Katalog als
     // eigenes Angebot fuehrt — nur ueber `catalogueLink`s mit

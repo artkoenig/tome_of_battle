@@ -577,7 +577,7 @@ export const DiagnosticKind = Object.freeze({
   MISSING_CATALOGUE_DEPENDENCY: 'missingCatalogueDependency',
   // Das Roster enthaelt unter einem Kontingent eine belegte Auswahl, deren
   // Definition aus einem Katalog **ausserhalb des Auswertungsumfangs** dieses
-  // Kontingents stammt (Issue 0156): weder sein Armeebuch noch dessen transitive
+  // Kontingents stammt (Issue 0159): weder sein Armeebuch noch dessen transitive
   // `catalogueLink`-Huelle noch das Spielsystem fuehrt sie. Sie wird trotzdem
   // voll ausgewertet — gemeldet wird sie, damit der Umfangsbruch nicht still
   // bleibt (ADR-0032, Nachtrag zu Entscheidung 3). Die Diagnose traegt neben der

@@ -169,7 +169,7 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * Angebots: sie ist keine Auswahl, und das Armee-Angebot haengt am Kontingent.
  *
  * Fuer ein Kontingent gilt zusaetzlich der **Katalog-Bezugsrahmen** (Issue
- * 0098, Umfang nach Issue 0156): ein Wurzel-Angebot — ein eigenstaendiger
+ * 0098, Umfang nach Issue 0159): ein Wurzel-Angebot — ein eigenstaendiger
  * Eintrag (`ENTRY`) **wie** ein Wurzel-`entryLink` — wird nur angeboten, wenn
  * der es deklarierende Katalog im Auswertungsumfang **dieses** Kontingents
  * liegt ({@link isInRootImportScope}): sein Armeebuch, dessen transitive
@@ -179,7 +179,7 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * Katalogs bleiben sein eigenes Angebot (Issue 0098, Kriterium 3). Die frueher fuer einen
  * Wurzel-`entryLink` gemachte Ausnahme — er verankerte unabhaengig von seiner
  * Herkunft, weil geteilte Inhalte („Regiments of Renown“/Soeldner) so
- * angeboten wuerden — **entfaellt ersatzlos** (Issue 0156, Kriterium 2): ein
+ * angeboten wuerden — **entfaellt ersatzlos** (Issue 0159, Kriterium 2): ein
  * Buch, das solche Inhalte anbieten will, verlinkt ihren Katalog, und dann
  * liegt er in seiner Huelle. Welches Armeebuch das Kontingent hat, beantwortet
  * {@link forceCatalogueIdOf}: der Herkunftsindex aus den Katalogdaten, und nur
@@ -211,7 +211,7 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
     const inScope = carried.filter(isInScope);
     // Die Ziele, die das Buch DIESES Kontingents selbst per Wurzel-`entryLink`
     // fuehrt: sie gewinnen die Entdopplung gegen jedes andere Angebot desselben
-    // Ziels aus der Huelle (siehe oben, Issue 0155/0156).
+    // Ziels aus der Huelle (siehe oben, Issue 0155/0159).
     const ownDeclaredIn = def => catalogueScope?.sourceIdByDefId?.get(def.id) === forceCatalogueId;
     // Der Entdopplungs-Schluessel eines Wurzel-Angebots: bei einem Verweis sein
     // Ziel, bei einem eigenstaendigen Eintrag er selbst — so weicht auch der
