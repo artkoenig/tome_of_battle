@@ -24,6 +24,13 @@ paths:
   same rule since Issue 0164: no derivation in the render, one ViewModel each in
   `src/viewmodels/editor/`, both contexts instead of a flat prop set. Their tests take a harness
   from `src/test-utils/harnesses/`, one file per component.
+- "No derivation in the render" and "few props" are claims about the **source**, not the screen: a
+  filter or sort put back into a component renders the same DOM and passes every behaviour test.
+  Such a rule is pinned by a source-reading test next to the component
+  (`sectionPropCount.test.js`, `CategoryUnitAdder.noRenderDerivation.test.js` — read the `.jsx`
+  with `fs`, assert on the prop list, on the imports, and on the bindings between the ViewModel
+  call and the JSX). Dependency-cruiser only covers the module edges it names, never a local
+  derivation.
 - A test that renders one of those leaves goes through `src/test-utils/editorHarness.jsx`: the
   harnesses take the **old** flat prop set (`capabilities`, `pathBySelectionId`, `system`,
   `activeCatalogue`, the commands, a directly handed `capability`) and wire the providers, so a
