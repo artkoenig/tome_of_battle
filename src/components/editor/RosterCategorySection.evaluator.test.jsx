@@ -54,10 +54,9 @@ vi.mock('../../roster', async (importOriginal) => ({
   ...(await importOriginal()),
   getCategoryDisplayLimits: (...args) => getCategoryDisplayLimitsSpy(...args),
   formatConstraintLimit: (...args) => formatConstraintLimitSpy(...args),
-  // Nicht unter Test (Sichtbarkeit/Listenregeln): benigne Stubs wie im
-  // bestehenden RosterCategorySection.test.jsx.
-  isCategoryLinkHidden: () => false,
-  isEntryPrimaryInCategory: () => true,
+  // Nicht unter Test (Listenregeln): benigner Stub wie im bestehenden
+  // RosterCategorySection.test.jsx. Sichtbarkeit und Primär-Kategorie kommen
+  // seit Issue 0156 aus dem Bericht und sind nicht mehr stubbar.
   resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 
@@ -66,12 +65,16 @@ vi.mock('../../roster', async (importOriginal) => ({
 // Kontingent mit zwei Kategorie-Links: „Special" mit min 2 / max 5 und „Open"
 // ohne Grenzen. Warrior ×2 in „Special" → categoryAnchor Special:
 // current 2, effectiveMin 2, effectiveMax 5; Open: current 0, beide null.
+// „Scout" ist nicht ausgehoben, hat „Open" aber als Primär-Kategorie: der
+// Bericht führt dafür einen Angebots-Slot, und daran erkennt die Sektion, dass
+// „Open" ein bedienbarer Slot ist und kein bloßes Regel-Schlagwort (Issue 0156).
 
 const GAME_SYSTEM_ID = 'gs-main';
 const FORCE_DEF_ID = 'force-main';
 const CATEGORY_SPECIAL = 'cat-special';
 const CATEGORY_OPEN = 'cat-open';
 const WARRIOR_ID = 'entry-warrior';
+const SCOUT_ID = 'entry-scout';
 const COST_TYPE_ID = 'cost-pts';
 const FORCE_PATH = '0';
 
@@ -106,6 +109,12 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
         </categoryLinks>
         <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="10"/></costs>
       </selectionEntry>
+      <selectionEntry id="${SCOUT_ID}" name="Scout" type="unit">
+        <categoryLinks>
+          <categoryLink id="sl-1" name="Open" targetId="${CATEGORY_OPEN}" primary="true"/>
+        </categoryLinks>
+        <costs><cost name="pts" typeId="${COST_TYPE_ID}" value="10"/></costs>
+      </selectionEntry>
     </selectionEntries>
   </catalogue>`;
 
@@ -117,7 +126,7 @@ function appSystem() {
       { id: CATEGORY_SPECIAL, name: 'Special' },
       { id: CATEGORY_OPEN, name: 'Open' },
     ],
-    catalogues: [{ id: 'cat-main', name: 'Main Catalogue', selectionEntries: [{ id: WARRIOR_ID }] }],
+    catalogues: [{ id: 'cat-main', name: 'Main Catalogue', selectionEntries: [{ id: WARRIOR_ID }, { id: SCOUT_ID }] }],
     rawXmls: {
       gst: [{ name: 'test.gst', content: GAME_SYSTEM_XML }],
       cat: [{ name: 'main.cat', content: CATALOGUE_XML }],

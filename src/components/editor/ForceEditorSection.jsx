@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  computeRosterCounts,
   findForceEntryById,
   findEntryInSystem,
   childSelectionsOf
@@ -66,8 +65,6 @@ export default function ForceEditorSection({
   // Regel wie `useRoster.catalogueIdOfForce`. Der Aushebe-Dialog filtert damit
   // seine Kandidaten nach Herkunft (Issue 0121, Task 19).
   const forceCatalogueId = force.catalogueId || roster.catalogueId || null;
-  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const forceCategoryCounts = categoryCounts[force.id] || {};
 
   // Armeeweite Pflicht-Selektoren, die keine Kontingent-Kategorie anbietet (etwa
   // ein kontingent-gebundener Wurzeleintrag ohne passenden categoryLink), bekommen
@@ -122,8 +119,6 @@ export default function ForceEditorSection({
           violations={violations}
           capabilities={capabilities}
           pathBySelectionId={pathBySelectionId}
-          selectionCounts={selectionCounts}
-          forceCategoryCounts={forceCategoryCounts}
           costTypeLabel={costTypeLabel}
           addUnit={addUnitToThisForce}
           removeUnit={removeUnit}

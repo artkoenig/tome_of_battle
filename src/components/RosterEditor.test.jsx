@@ -224,17 +224,15 @@ describe('RosterEditor Component', () => {
   });
 
 
-  it('verifies that validator methods are called with the expected game system and catalog context', () => {
+  it('decides which category sections to surface from the report, without a second catalogue pass', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
 
-    // RosterEditor.jsx checks effective primary-category membership when deciding which
-    // category sections to surface. Ensure that check runs against our game system.
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalled();
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(String),
-      expect.objectContaining({ system: expect.objectContaining({ id: 'sys-1' }) })
-    );
+    // Whether a category is a usable slot comes from the slots of the report
+    // (`capability.primaryCategoryId`, Issue 0156) — the editor no longer walks
+    // the catalogue for it, nor collects profiles for the chip filter.
+    expect(mockIsEntryPrimaryInCategory).not.toHaveBeenCalled();
+    expect(mockCollectUnitProfilesAndRules).not.toHaveBeenCalled();
+    expect(screen.getByTestId('adder-cat-heroes')).toBeDefined();
   });
 
   it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRoster', () => {

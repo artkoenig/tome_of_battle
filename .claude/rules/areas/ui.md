@@ -25,11 +25,23 @@ paths:
   it offers the browser console log, a DOM dump and a headed browser.
 - A display question is answered by the report, never by a second catalogue walk (ADR-0034): the
   slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
-  `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`. Read them
+  `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`, plus
+  `isHidden`, `primaryCategoryId` and the info projection `infoElements`. Read them
   through `src/evaluation/slotLookups.js` (`slotOfSelection`, `isIndependentSubUnitSlot`,
-  `childSlotsOf`), or through the derivations next to it (`listRuleGroups.js`,
-  `armyWideSelectorSlots.js`). `resolveEntry`/`findEntryInSystem` stay only for detail texts and
+  `childSlotsOf`, `findCategoryAnchorSlot`, `hasUnitSlotsInCategory`), or through the derivations
+  next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`).
+  `resolveEntry`/`findEntryInSystem` stay only for detail texts and
   for the entry the **write** path hands to `addUnit`.
+- Whether a category section appears is two report answers, both on the force's slots: the
+  `categoryAnchor`'s `isHidden` (hidden plus nothing selected → no section) and whether any
+  `occupied`/`offerAnchor`/`mandatoryPhantom` slot names the category as its `primaryCategoryId`
+  (none and nothing selected → a rule keyword, no section). A hand-built `capabilities` fixture
+  that omits either makes the whole section vanish.
+- Profiles and rule texts of a card, its chips and the play view all come from one place —
+  `capability.infoElements` (`kind: 'profile' | 'rule'`) — so the chip filter ("this upgrade is
+  already in a table") matches the table by profile **id**. A component that resolves its slot
+  from `capabilities` + `pathBySelectionId` also accepts a directly handed `capability`; pass it
+  down to `UnitUpgradesChips`/`UnitRulesChips`, or the chips find no table and stop filtering.
 - A component test that hand-builds a `capabilities` Map must carry those fields too — a missing
   one reads as `false` and silently changes what renders (a sub-unit loses its card, a checklist
   becomes a unit list). Give every slot of the fixture the fields its screen reads.

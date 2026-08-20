@@ -323,7 +323,7 @@ export default function PlayUnitDetails({
               selection={selection}
               system={system}
               activeCatalogueId={roster.catalogueId}
-              roster={roster}
+              capability={slotCapability}
               capabilities={capabilities}
               pathBySelectionId={pathBySelectionId}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}

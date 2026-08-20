@@ -111,6 +111,34 @@ export function categoryAnchorSlotsOf(capabilities, forcePath) {
 }
 
 /**
+ * Die Ankerarten, deren Slots eine **aufstellbare Einheit** dieses Kontingents
+ * bezeichnen: belegt, angeboten oder als Pflicht-Phantom gefordert. Gruppen- und
+ * Kategorie-Anker sind Rahmen und zählen nicht.
+ */
+const UNIT_SLOT_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
+/**
+ * True, wenn das Kontingent überhaupt einen Slot führt, dessen **effektive
+ * Primärkategorie** (`capability.primaryCategoryId`, aus dem Bericht — nie aus
+ * rohen Katalog-Links) diese Kategorie ist.
+ *
+ * Das ist die Frage „ist diese Kategorie ein bedienbarer Slot oder bloß ein
+ * Regel-Schlagwort?" — dieselbe Menge, die auch der Kategorie-Hinzufüger
+ * anbietet (ADR 0003 §4), nur ohne dessen Sichtbarkeits- und Herkunftsfilter.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {string|null|undefined} forcePath
+ * @param {string|null|undefined} categoryId
+ * @returns {boolean}
+ */
+export function hasUnitSlotsInCategory(capabilities, forcePath, categoryId) {
+  if (categoryId === null || categoryId === undefined) return false;
+  return childSlotsOf(capabilities, forcePath).some(({ capability }) =>
+    UNIT_SLOT_ANCHOR_KINDS.has(capability.anchorKind)
+    && capability.primaryCategoryId === categoryId);
+}
+
+/**
  * Der Kategorie-Anker-Slot einer Kategorie unter einem Kontingent — gefunden
  * über die Kategorie-Id (eigene oder aufgelöste Ziel-Id des Ankers).
  * `undefined`, wenn das Kontingent keinen solchen Anker führt.

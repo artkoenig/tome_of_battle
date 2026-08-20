@@ -308,7 +308,7 @@ export default function UnitSelectionCard({
             selection={selection}
             system={system}
             activeCatalogueId={activeCatalogue?.id}
-            roster={roster}
+            capability={capability}
             capabilities={capabilities}
             pathBySelectionId={pathBySelectionId}
             handleMouseEnter={handleMouseEnter}

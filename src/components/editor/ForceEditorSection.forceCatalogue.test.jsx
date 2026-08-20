@@ -29,12 +29,9 @@ vi.mock('lucide-react', () => ({
 // Ein Stub-Satz fuer BEIDE Komponenten der Kette (`ForceEditorSection` und die
 // echte `RosterCategorySection` importieren aus demselben Modul).
 vi.mock('../../roster', () => ({
-  computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) ?? null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],
-  isCategoryLinkHidden: () => false,
-  isEntryPrimaryInCategory: () => true,
 }));
 
 /** Der Dialog als Beobachter: er meldet, welche Katalog-Id bei ihm ankommt. */
@@ -68,6 +65,20 @@ const system = {
 
 const roster = { catalogueId: PRIMARY_CATALOGUE_ID, costLimitType: 'cost-pts' };
 
+// Der Bericht dieses Kontingents: ein Angebots-Slot, dessen effektive
+// Primaer-Kategorie die Kategorie der Sektion ist. Daran erkennt die Sektion,
+// dass die Kategorie ein bedienbarer Slot ist und erscheint (Issue 0156).
+const capabilities = new Map([
+  ['0/0', {
+    anchorKind: 'offerAnchor',
+    defId: 'entry-own',
+    targetDefId: null,
+    name: 'Irgendwas',
+    primaryCategoryId: CATEGORY_ID,
+    isHidden: false,
+  }],
+]);
+
 const renderForce = (force) => render(
   <ForceEditorSection
     force={force}
@@ -77,7 +88,7 @@ const renderForce = (force) => render(
     activeCatalogue={{ id: PRIMARY_CATALOGUE_ID }}
     violations={[]}
     unresolvedSelections={[]}
-    capabilities={new Map()}
+    capabilities={capabilities}
     pathBySelectionId={new Map()}
     costTypeLabel="Pkt"
     addUnit={vi.fn()}

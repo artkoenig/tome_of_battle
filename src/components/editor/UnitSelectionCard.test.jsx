@@ -282,13 +282,10 @@ describe('UnitSelectionCard Component', () => {
   it('verifies that validator methods are called with the expected catalogue context', () => {
     render(<UnitSelectionCard {...defaultProps} />);
 
-    // Verify collectUnitProfilesAndRules is called with 'bret-cat' context
-    expect(mockCollectUnitProfilesAndRules).toHaveBeenCalledWith(
-      defaultProps.system,
-      defaultProps.selection,
-      'bret-cat',
-      defaultProps.roster
-    );
+    // The profile collection of the write model is no longer part of the display
+    // path: which profiles a card tabulates and which upgrades stay a chip comes
+    // from the report (`capability.infoElements`, Issue 0156).
+    expect(mockCollectUnitProfilesAndRules).not.toHaveBeenCalled();
 
     // Verify findEntryInSystem is called with 'bret-cat' context for the upgrade selection
     expect(mockFindEntryInSystem).toHaveBeenCalledWith(
