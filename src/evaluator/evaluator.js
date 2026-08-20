@@ -383,6 +383,12 @@ export function evaluate(prepared, roster, options) {
       sourceIdByDefId,
       categoryAnchorOccupancies: anchorOccupancies,
       raiseCostProjection,
+      // Der Katalog-Bezugsrahmen, so weit der Bericht ihn braucht: aus ihm
+      // entscheidet sich je Slot, ob seine Herkunft ein **fremdes** Armeebuch
+      // ist (`SlotCapability.isForeignCatalogue`, Issue 0156).
+      libraryCatalogueIds,
+      gameSystemId: catalogueScope.gameSystemId,
+      primaryCatalogueByForceDefId,
     });
   });
 

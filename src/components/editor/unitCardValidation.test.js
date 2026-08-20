@@ -1,34 +1,13 @@
 import { describe, test, expect, vi } from 'vitest';
 import {
-  isIndependentSubUnitSelection,
   collectCardSelectionIds,
   selectionViolationsForCard
 } from './unitCardValidation';
 
-// Das Modul spricht den Solver über die Fassade an. Die reinen Baum- und
-// Prädikat-Funktionen werden in ihrer echten Umsetzung durchgereicht; nur die
-// Katalog-Auflösung wird auf ein simples Nachschlagewerk gestubbt, damit die
-// Testbäume ohne vollständiges System auskommen.
-vi.mock('../../roster', async () => ({
-  childSelectionsOf: (await vi.importActual('../../roster/rosterTree.js')).childSelectionsOf,
-  isIndependentSubUnit: (await vi.importActual('../../roster/subUnit.js')).isIndependentSubUnit,
-  findEntryInSystem: (system, entryId) => system?.entriesById?.[entryId] ?? null,
-  resolveEntry: (system, entry) => entry
-}));
-
-// Kartenbaum: eine Einheit mit einer geschachtelten Option und einer
-// eigenständigen Untereinheit (Reittier), die ihre eigene Karte erhält.
-const system = {
-  entriesById: {
-    'entry-option': { id: 'entry-option', type: 'upgrade' },
-    'entry-mount': {
-      id: 'entry-mount',
-      type: 'model',
-      collective: false,
-      selectionEntries: [{ id: 'entry-mount-option' }]
-    }
-  }
-};
+// Nichts wird gestubbt: das Modul liest nur noch den **Bericht** (Issue 0156).
+// Welche Selection eine eigenständige Untereinheit ist, sagt ihr Slot
+// (`capability.isIndependentSubUnit`) — die Karte löst dafür keinen
+// Katalog-Eintrag mehr auf.
 
 const mountOption = { id: 'mount-opt-1', name: 'Lanze', selectionEntryId: 'entry-mount-option', selections: [] };
 const mount = { id: 'mount-1', name: 'Reittier', selectionEntryId: 'entry-mount', selections: [mountOption] };
@@ -36,54 +15,54 @@ const nestedOption = { id: 'opt-1-1', name: 'Schild', selectionEntryId: 'entry-o
 const option = { id: 'opt-1', name: 'Ausrüstung', selectionEntryId: 'entry-option', selections: [nestedOption] };
 const unit = { id: 'unit-1', name: 'Ritter', selectionEntryId: 'entry-unit', selections: [option, mount] };
 
-describe('isIndependentSubUnitSelection', () => {
-  test('erkennt die Selection einer eigenständigen Untereinheit', () => {
-    expect(isIndependentSubUnitSelection(mount, system, undefined)).toBe(true);
-  });
+// Slot-Pfade des Kartenbaums, wie sie `useEvaluation.pathBySelectionId`
+// liefert (Pfad-Schema des Berichts: `/`-verkettete Kind-Indizes).
+const pathBySelectionId = new Map([
+  ['unit-1', '0/0'],
+  ['opt-1', '0/0/0'],
+  ['opt-1-1', '0/0/0/0'],
+  ['mount-1', '0/0/1'],
+  ['mount-opt-1', '0/0/1/0'],
+]);
 
-  test('verneint eine gewöhnliche Options-Selection', () => {
-    expect(isIndependentSubUnitSelection(option, system, undefined)).toBe(false);
-  });
-
-  test('verneint eine Selection mit unauflösbarem Eintrag', () => {
-    const orphan = { id: 'orphan-1', selectionEntryId: 'entry-missing', selections: [] };
-    expect(isIndependentSubUnitSelection(orphan, system, undefined)).toBe(false);
-  });
-});
+// Der Bericht: das Reittier ist eine eigenständige Untereinheit, alles andere
+// nicht.
+const capabilities = new Map([
+  ['0/0', { anchorKind: 'occupied', isIndependentSubUnit: false }],
+  ['0/0/0', { anchorKind: 'occupied', isIndependentSubUnit: false }],
+  ['0/0/0/0', { anchorKind: 'occupied', isIndependentSubUnit: false }],
+  ['0/0/1', { anchorKind: 'occupied', isIndependentSubUnit: true }],
+  ['0/0/1/0', { anchorKind: 'occupied', isIndependentSubUnit: false }],
+]);
 
 describe('collectCardSelectionIds', () => {
   test('umfasst die Einheit und ihre geschachtelten Optionen', () => {
-    const ids = collectCardSelectionIds(unit, system, undefined);
+    const ids = collectCardSelectionIds(unit, capabilities, pathBySelectionId);
     expect(ids.has('unit-1')).toBe(true);
     expect(ids.has('opt-1')).toBe(true);
     expect(ids.has('opt-1-1')).toBe(true);
   });
 
   test('klammert den Teilbaum einer eigenständigen Untereinheit aus', () => {
-    const ids = collectCardSelectionIds(unit, system, undefined);
+    const ids = collectCardSelectionIds(unit, capabilities, pathBySelectionId);
     expect(ids.has('mount-1')).toBe(false);
     expect(ids.has('mount-opt-1')).toBe(false);
   });
 
   test('deckt für die Karte der Untereinheit deren eigenen Teilbaum ab', () => {
-    const ids = collectCardSelectionIds(mount, system, undefined);
+    const ids = collectCardSelectionIds(mount, capabilities, pathBySelectionId);
     expect(ids.has('mount-1')).toBe(true);
     expect(ids.has('mount-opt-1')).toBe(true);
     expect(ids.has('unit-1')).toBe(false);
   });
+
+  test('ohne Slot im Bericht bleibt ein Kind Teil der Karte', () => {
+    const ids = collectCardSelectionIds(unit, new Map(), new Map());
+    expect(ids.has('mount-1')).toBe(true);
+  });
 });
 
 describe('selectionViolationsForCard', () => {
-  // Slot-Pfade des Kartenbaums, wie sie `useEvaluation.pathBySelectionId`
-  // liefert (Pfad-Schema des Berichts: `/`-verkettete Kind-Indizes).
-  const pathBySelectionId = new Map([
-    ['unit-1', '0/0'],
-    ['opt-1', '0/0/0'],
-    ['opt-1-1', '0/0/0/0'],
-    ['mount-1', '0/0/1'],
-    ['mount-opt-1', '0/0/1/0'],
-  ]);
-
   const violationAt = (path, name) => ({
     origin: 'derivedLimit',
     severity: 'error',
@@ -99,7 +78,7 @@ describe('selectionViolationsForCard', () => {
   test('liefert die Verletzungen der Einheit samt geschachtelter Optionen', () => {
     const violations = selectionViolationsForCard(
       [violationAtUnit, violationAtNestedOption, violationAtMountOption, categoryViolation],
-      pathBySelectionId, unit, system, undefined
+      pathBySelectionId, unit, capabilities
     );
     expect(violations).toEqual([violationAtUnit, violationAtNestedOption]);
   });
@@ -107,14 +86,14 @@ describe('selectionViolationsForCard', () => {
   test('liefert für die Untereinheiten-Karte nur deren Teilbaum-Verletzungen', () => {
     const violations = selectionViolationsForCard(
       [violationAtUnit, violationAtNestedOption, violationAtMountOption],
-      pathBySelectionId, mount, system, undefined
+      pathBySelectionId, mount, capabilities
     );
     expect(violations).toEqual([violationAtMountOption]);
   });
 
   test('übersteht fehlende und missgebildete Verletzungslisten und fehlende Pfad-Zuordnung', () => {
-    expect(selectionViolationsForCard(null, pathBySelectionId, unit, system, undefined)).toEqual([]);
-    expect(selectionViolationsForCard([null, undefined, {}], pathBySelectionId, unit, system, undefined)).toEqual([]);
-    expect(selectionViolationsForCard([violationAtUnit], null, unit, system, undefined)).toEqual([]);
+    expect(selectionViolationsForCard(null, pathBySelectionId, unit, capabilities)).toEqual([]);
+    expect(selectionViolationsForCard([null, undefined, {}], pathBySelectionId, unit, capabilities)).toEqual([]);
+    expect(selectionViolationsForCard([violationAtUnit], null, unit, capabilities)).toEqual([]);
   });
 });

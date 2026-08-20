@@ -10,19 +10,35 @@ vi.mock('lucide-react', () => ({
 
 const mockIsCategoryLinkHidden = vi.fn();
 const mockIsEntryPrimaryInCategory = vi.fn();
-const mockResolveListRuleGroup = vi.fn();
 
 vi.mock('../../roster', () => ({
   isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
   isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
-  resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),
+  findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],
 }));
 
 // Der Zähl-Chip liest seit Issue 0121, Task 7 den categoryAnchor-Slot des
 // Evaluator-Berichts (current/effectiveMin/effectiveMax) statt der
 // Solver-Grenzenableitung (getCategoryDisplayLimits/formatConstraintLimit).
-const categoryAnchorCapabilities = new Map([
+//
+// Ob die Kategorie eine **Listenregel-Gruppe** ist, sagt seit Issue 0156
+// ebenfalls der Bericht: der Slot der Auswahl in dieser Kategorie trägt
+// `isListRule`. Ein zweiter Katalog-Durchlauf in der Komponente gibt es nicht
+// mehr, also gibt es hier auch nichts mehr zu stubben.
+const capabilitiesFor = ({ isListRule }) => new Map([
+  ['0/0', {
+    anchorKind: 'occupied',
+    defId: 'entry-1',
+    targetDefId: null,
+    name: 'Ritter',
+    primaryCategoryId: 'cat-core',
+    isHidden: false,
+    isListRule,
+    isMandatoryListRule: false,
+    effectiveMin: null,
+    effectiveMax: 1,
+  }],
   ['0/1', {
     anchorKind: 'categoryAnchor',
     defId: 'link-core',
@@ -32,6 +48,11 @@ const categoryAnchorCapabilities = new Map([
     effectiveMax: null,
   }],
 ]);
+
+const categoryAnchorCapabilities = capabilitiesFor({ isListRule: false });
+
+/** Die Slot-Pfade der Auswahlen des Kontingents (`useEvaluation`). */
+const pathBySelectionId = new Map([['sel-1', '0/0']]);
 
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryId }) => <button data-testid={`adder-${categoryId}`}>Hinzufügen</button>
@@ -62,6 +83,7 @@ const renderSection = (props = {}) => render(
     force={force}
     forcePath="0"
     capabilities={categoryAnchorCapabilities}
+    pathBySelectionId={pathBySelectionId}
     system={system}
     roster={{ costLimitType: 'pts' }}
     activeCatalogue={system.catalogues[0]}
@@ -85,7 +107,6 @@ describe('RosterCategorySection', () => {
     vi.clearAllMocks();
     mockIsCategoryLinkHidden.mockReturnValue(false);
     mockIsEntryPrimaryInCategory.mockReturnValue(true);
-    mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
   });
 
   it('rendert Kopfzeile, Zähl-Chip, Hinzufüger und die Einheitenkarten der Kategorie', () => {
@@ -175,12 +196,12 @@ describe('RosterCategorySection', () => {
   });
 
   describe('Listenregel-Gruppe', () => {
-    beforeEach(() => {
-      mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: true, states: [] });
-    });
+    // Dieselbe Sektion, nur dass der Bericht ihren einen Slot als Listenregel
+    // ausweist.
+    const listRuleCapabilities = capabilitiesFor({ isListRule: true });
 
     it('ersetzt Zähl-Chip und Hinzufüger durch die eingeklappte Ankreuzliste', () => {
-      const { container } = renderSection();
+      const { container } = renderSection({ capabilities: listRuleCapabilities });
 
       expect(container.querySelector('span.badge')).toBeNull();
       expect(screen.queryByTestId('adder-cat-core')).toBeNull();
@@ -189,7 +210,7 @@ describe('RosterCategorySection', () => {
     });
 
     it('zeigt die Ankreuzliste, sobald die Gruppe ausgeklappt ist', () => {
-      renderSection({ isRuleGroupExpanded: true });
+      renderSection({ capabilities: listRuleCapabilities, isRuleGroupExpanded: true });
 
       expect(screen.getByTestId('list-rule-checklist')).toBeDefined();
       expect(screen.getByTestId('icon-chevron-down')).toBeDefined();
@@ -197,7 +218,7 @@ describe('RosterCategorySection', () => {
 
     it('meldet den Klick auf die Kopfzeile als Umschalten', () => {
       const onToggleRuleGroup = vi.fn();
-      const { container } = renderSection({ onToggleRuleGroup });
+      const { container } = renderSection({ capabilities: listRuleCapabilities, onToggleRuleGroup });
 
       fireEvent.click(container.querySelector('.roster-category-title'));
 
@@ -205,7 +226,6 @@ describe('RosterCategorySection', () => {
     });
 
     it('macht eine gewöhnliche Kategorie-Kopfzeile nicht klickbar', () => {
-      mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
       const onToggleRuleGroup = vi.fn();
       const { container } = renderSection({ onToggleRuleGroup });
 

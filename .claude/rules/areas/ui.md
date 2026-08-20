@@ -23,5 +23,15 @@ paths:
   scripts/generate_screenshots.js` runs offline against the frozen fixture and needs no catalog
   data. For a one-off investigation build a throwaway script on `scripts/lib/e2e-harness.js` —
   it offers the browser console log, a DOM dump and a headed browser.
+- A display question is answered by the report, never by a second catalogue walk (ADR-0034): the
+  slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
+  `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`. Read them
+  through `src/evaluation/slotLookups.js` (`slotOfSelection`, `isIndependentSubUnitSlot`,
+  `childSlotsOf`), or through the derivations next to it (`listRuleGroups.js`,
+  `armyWideSelectorSlots.js`). `resolveEntry`/`findEntryInSystem` stay only for detail texts and
+  for the entry the **write** path hands to `addUnit`.
+- A component test that hand-builds a `capabilities` Map must carry those fields too — a missing
+  one reads as `false` and silently changes what renders (a sub-unit loses its card, a checklist
+  becomes a unit list). Give every slot of the fixture the fields its screen reads.
 - The repo language is mixed by intent: docs, issues and commit messages in German, code and
   identifiers in English.

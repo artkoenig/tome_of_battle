@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { findEntryInSystem, foreignCatalogueIdsOf } from '../../roster';
+import { findEntryInSystem } from '../../roster';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
@@ -20,15 +20,15 @@ import BottomSheet from './BottomSheet';
  * frühere Solver-Diff (Baseline-Validierung + hypothetisches Ausheben,
  * ADR-0022) ist ersatzlos entfallen (ADR-0035).
  *
- * Dazu der **Herkunftsfilter** (`capability.sourceId`, Task 13;
- * {@link foreignCatalogueIdsOf}, geteilt mit den Auffüll-Vorschlägen): angeboten wird
- * nur, was aus dem Armeebuch **dieses Kontingents** (`forceCatalogueId`), dem
- * Spielsystem oder einem Bibliothekskatalog stammt — eine Einheit eines fremden
- * Armeebuchs erscheint gar nicht. Maßgeblich ist der Katalog des Kontingents,
- * nicht der der ganzen Liste: ein verbündetes Kontingent bringt sein eigenes
- * Armeebuch mit (`force.catalogueId`, Task 19). Fehlt die Stütze oder ist sie
- * `null`, gilt der aktive Katalog der Liste. Ist eine explizite `entries`-Liste
- * vorgegeben, gilt der Filter gar nicht ({@link foreignCatalogueIdsOf}).
+ * Dazu die **Herkunfts-Entscheidung des Berichts**
+ * (`capability.isForeignCatalogue`, Issue 0156): angeboten wird nur, was aus dem
+ * Armeebuch **dieses Kontingents**, dem Spielsystem oder einem
+ * Bibliothekskatalog stammt — eine Einheit eines fremden Armeebuchs erscheint
+ * gar nicht. Welches Buch das eigene ist, entscheidet der Bericht am Kontingent
+ * des Slots (`force.catalogueId` bzw. der Katalog, der die Kontingent-Definition
+ * deklariert); die Komponente filtert nicht mehr selbst nach Katalog-Ids. Ist
+ * eine explizite `entries`-Liste vorgegeben, gilt die Herkunft gar nicht: eine
+ * solche Liste ist bereits vom Aufrufer kuratiert.
  *
  * `addUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; als Kandidat
  * wird der Katalogeintrag der Definition übergeben (Auflösung über die
@@ -44,7 +44,6 @@ export default function CategoryUnitAdder({
   categoryName,
   capabilities,
   forcePath = null,
-  forceCatalogueId = null,
   system,
   activeCatalogue,
   costTypeLabel,
@@ -64,18 +63,6 @@ export default function CategoryUnitAdder({
     ? null
     : new Set(entries.flatMap(entry => [entry.id, entry.targetId].filter(Boolean)));
 
-  // Das eigene Armeebuch ist das des Kontingents; ohne eigenes gilt der aktive
-  // Katalog der Liste (Altverhalten).
-  const ownCatalogueId = forceCatalogueId ?? activeCatalogue.id;
-
-  // Der Herkunftsfilter gilt nur ohne explizite Eintragsliste: eine solche Liste
-  // ist bereits vom Aufrufer kuratiert (armeeweite Selektoren), und ein
-  // Herkunftsfilter darüber nähme einen bewusst übergebenen katalogübergreifenden
-  // Eintrag weg.
-  const foreignCatalogueIds = allowedIds === null
-    ? foreignCatalogueIdsOf(system, ownCatalogueId)
-    : null;
-
   // Kandidaten: je Definition genau ein Slot unter dem Kontingent. Versteckte
   // Slots erscheinen nicht; die Kategorie-Zuordnung liest die **effektive**
   // Primärkategorie aus dem Bericht (§8: nie aus rohen Katalog-Links).
@@ -93,8 +80,9 @@ export default function CategoryUnitAdder({
       // Herkunft: eine Einheit eines fremden Armeebuchs darf in dieser Liste
       // nicht aufgestellt werden und erscheint deshalb gar nicht — nicht bloß
       // gesperrt (ADR-0032 löst global-by-Id auf, der Bericht verankert
-      // deshalb auch fremde Wurzel-Einträge als Angebot).
-      if (foreignCatalogueIds.has(capability.sourceId)) continue;
+      // deshalb auch fremde Wurzel-Einträge als Angebot). Die Entscheidung
+      // trifft der Bericht, nicht die Komponente (Issue 0156).
+      if (capability.isForeignCatalogue) continue;
     }
     seenDefIds.add(capability.defId);
     candidates.push({ path, capability });

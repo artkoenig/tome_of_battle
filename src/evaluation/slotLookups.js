@@ -61,6 +61,37 @@ export function findChildSlot(capabilities, parentPath, defId) {
   return undefined;
 }
 
+/**
+ * Der Fähigkeitsdatensatz einer App-Selektion: ihr Slot-Pfad steht in
+ * `pathBySelectionId` (`useEvaluation`), der Datensatz darunter im Bericht.
+ * `undefined`, solange der Bericht für diese Selektion keinen Slot führt.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {Map<string, string>|null|undefined} pathBySelectionId
+ * @param {{ id?: string }|null|undefined} selection
+ * @returns {object|undefined}
+ */
+export function slotOfSelection(capabilities, pathBySelectionId, selection) {
+  const path = selection?.id === undefined ? undefined : pathBySelectionId?.get(selection.id);
+  return path === undefined ? undefined : capabilities?.get(path);
+}
+
+/**
+ * True, wenn diese Selektion eine **eigenständige Untereinheit** ist — die
+ * Antwort des Berichts (`capability.isIndependentSubUnit`, Issue 0156), nicht
+ * mehr die eines zweiten Katalog-Durchlaufs in der Oberfläche. Ohne Slot im
+ * Bericht bleibt es bei `false`: dann gibt es auch nichts zu zeichnen, dem die
+ * Frage gälte.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {Map<string, string>|null|undefined} pathBySelectionId
+ * @param {{ id?: string }|null|undefined} selection
+ * @returns {boolean}
+ */
+export function isIndependentSubUnitSlot(capabilities, pathBySelectionId, selection) {
+  return slotOfSelection(capabilities, pathBySelectionId, selection)?.isIndependentSubUnit === true;
+}
+
 /** Die Ankerart der Kategorie-Slots im Bericht (`report.js`-Ankervertrag). */
 const CATEGORY_ANCHOR_KIND = 'categoryAnchor';
 

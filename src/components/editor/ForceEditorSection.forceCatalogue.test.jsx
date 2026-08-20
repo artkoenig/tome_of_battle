@@ -1,18 +1,15 @@
 /**
- * Issue 0121, Task 19 (Kriterium 5) — das Armeebuch **des Kontingents** kommt
- * auch wirklich bis zum Aushebe-Dialog.
+ * Issue 0156 — der Aushebe-Dialog bekommt die **Slots seines Kontingents**, und
+ * sonst nichts zur Herkunft.
  *
- * `CategoryUnitAdder.forceCatalogue.test.jsx` schreibt fest, wie der Dialog
- * filtert, **wenn** er die Katalog-Id seines Kontingents bekommt. Diese Datei
- * schliesst die Luecke davor: der Weg vom Kontingent zum Dialog. Ohne sie waere
- * ein Filter denkbar, der richtig rechnet und nie die richtige Eingabe sieht —
- * genau die Sorte Fehler, die F1 hervorgebracht hat (Korrektur am falschen
- * Rand).
- *
- * Beobachtet wird die Stuetze `forceCatalogueId` (Vertrag aus Task 19) an dem
- * Dialog, den die Kategorie-Sektion dieses Kontingents rendert.
- * `RosterCategorySection` laeuft dabei **echt** — welchen Weg die Id nimmt
- * (durchgereicht oder in der Sektion abgeleitet), legt der Test nicht fest.
+ * `CategoryUnitAdder.forceCatalogue.test.jsx` schreibt fest, wie der Dialog aus
+ * dem Bericht filtert. Diese Datei schliesst die Luecke davor: der Weg vom
+ * Kontingent zum Dialog. Frueher lief er ueber die Katalog-Id des Kontingents
+ * (`forceCatalogueId`); seit die Herkunfts-Entscheidung im Bericht steht
+ * (`capability.isForeignCatalogue`), laeuft er ueber den **Slot-Pfad** des
+ * Kontingents — bekaeme der Dialog den falschen Pfad, saehe er die Slots eines
+ * fremden Kontingents und damit dessen Herkunfts-Entscheidungen.
+ * `RosterCategorySection` laeuft dabei **echt**.
  *
  * Harness-Muster: `ForceEditorSection.test.jsx` und
  * `RosterCategorySection.test.jsx` (Schreibmodell `../../roster` gestubbt, damit
@@ -29,18 +26,15 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="icon-chevron-right" />,
 }));
 
-const mockCollectUnreachableArmyWideSelectors = vi.fn(() => []);
-
 // Ein Stub-Satz fuer BEIDE Komponenten der Kette (`ForceEditorSection` und die
 // echte `RosterCategorySection` importieren aus demselben Modul).
 vi.mock('../../roster', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) ?? null,
-  collectUnreachableArmyWideSelectors: (...args) => mockCollectUnreachableArmyWideSelectors(...args),
+  findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],
   isCategoryLinkHidden: () => false,
   isEntryPrimaryInCategory: () => true,
-  resolveListRuleGroup: () => ({ isListRuleGroup: false, states: [] }),
 }));
 
 /** Der Dialog als Beobachter: er meldet, welche Katalog-Id bei ihm ankommt. */
@@ -109,10 +103,9 @@ describe('ForceEditorSection: der Aushebe-Dialog kennt das Armeebuch seines Kont
   beforeEach(() => {
     vi.clearAllMocks();
     receivedProps.length = 0;
-    mockCollectUnreachableArmyWideSelectors.mockReturnValue([]);
   });
 
-  it('ein verbuendetes Kontingent gibt dem Dialog SEINEN Katalog, nicht den der Liste', () => {
+  it('ein verbuendetes Kontingent gibt dem Dialog den Slot-Pfad SEINES Kontingents', () => {
     renderForce({
       id: 'force-allied',
       forceEntryId: 'fe-1',
@@ -121,10 +114,11 @@ describe('ForceEditorSection: der Aushebe-Dialog kennt das Armeebuch seines Kont
     });
 
     expect(screen.getByTestId(`adder-${CATEGORY_ID}`)).toBeDefined();
-    expect(categoryAdderProps().forceCatalogueId).toBe(ALLIED_CATALOGUE_ID);
+    expect(categoryAdderProps().forcePath).toBe('0');
+    expect(categoryAdderProps().capabilities).toBeDefined();
   });
 
-  it('das Primaer-Kontingent gibt dem Dialog den Katalog der Liste', () => {
+  it('die Sektion entscheidet die Herkunft nicht mehr selbst — keine Katalog-Stuetze am Dialog', () => {
     renderForce({
       id: 'force-primary',
       forceEntryId: 'fe-1',
@@ -132,10 +126,10 @@ describe('ForceEditorSection: der Aushebe-Dialog kennt das Armeebuch seines Kont
       selections: [],
     });
 
-    expect(categoryAdderProps().forceCatalogueId).toBe(PRIMARY_CATALOGUE_ID);
+    expect(categoryAdderProps().forceCatalogueId).toBeUndefined();
   });
 
-  it('Rand: Kontingent ohne eigenen Katalog — der Dialog bekommt keinen FREMDEN Katalog', () => {
+  it('Rand: Kontingent ohne eigenen Katalog — der Dialog bekommt weiterhin seine Slots', () => {
     // Mit einer Auswahl in der Kategorie, damit die Sektion auch ohne
     // auffindbaren Kontingent-Katalog erscheint (sonst blendet sie sich aus —
     // bestehendes Verhalten, das dieser Fall nicht mitprueft).
@@ -146,9 +140,8 @@ describe('ForceEditorSection: der Aushebe-Dialog kennt das Armeebuch seines Kont
       selections: [{ id: 'sel-1', name: 'Irgendwas', category: CATEGORY_ID }],
     });
 
-    // Erlaubt sind nur „nichts" (der Dialog faellt selbst auf den aktiven
-    // Katalog zurueck) oder der Katalog der Liste — nie der eines anderen Buchs.
-    const received = categoryAdderProps().forceCatalogueId ?? null;
-    expect([null, PRIMARY_CATALOGUE_ID]).toContain(received);
+    // Ohne Armeebuch am Kontingent bleibt der Weg derselbe: der Dialog bekommt
+    // den Slot-Pfad dieses Kontingents und liest die Herkunft dort ab.
+    expect(categoryAdderProps().forcePath).toBe('0');
   });
 });

@@ -591,6 +591,11 @@ describe('PlayMode Component', () => {
         selection={mockSelection}
         system={mockSystem}
         roster={{ catalogueId: 'cat-1', costLimitType: 'pts' }}
+        // Dass die Unter-Auswahl eine eigenstaendige Untereinheit ist, sagt der
+        // Bericht (`capability.isIndependentSubUnit`, Issue 0156) — nicht mehr
+        // der aufgeloeste Katalog-Eintrag.
+        capabilities={new Map([['0/0/0', { anchorKind: 'occupied', isIndependentSubUnit: true }]])}
+        pathBySelectionId={new Map([['sel-parent', '0/0'], ['sub-unit-1', '0/0/0']])}
         getUnitCurrentWounds={createWoundsReader({ 'sel-parent': 5, 'sub-unit-1': 3 })}
         handleAdjustWound={vi.fn()}
         handleMouseEnter={vi.fn()}

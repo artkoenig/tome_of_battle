@@ -37,9 +37,10 @@ vi.mock('../hooks/useRoster', () => ({
     roster: mockRoster,
     costs: { pts: 420 },
     violations: [],
-    capabilities: new Map(),
+    capabilities: mockCapabilities,
     costTotals: {},
-    pathBySelectionId: new Map(),
+    pathBySelectionId: new Map([['sel-unit', '0/1']]),
+    pathByForceId: new Map([['force-1', '0']]),
     selectedRosterSelection: null,
     setSelectedRosterSelection: vi.fn(),
     addUnit: vi.fn(),
@@ -59,8 +60,10 @@ vi.mock('../db/database', () => ({
   saveRoster: vi.fn(),
 }));
 
-// A list rule is any selection sitting in the 'cat-rules' category here; this
-// stands in for the real type=upgrade classification the solver performs.
+// Welche Kategorie eine Listenregel-Gruppe ist, sagt seit Issue 0156 der
+// **Bericht**: die Slots unter dem Kontingent tragen ihre effektive
+// Primaerkategorie und das Merkmal `isListRule`. Die Kategorie `cat-rules`
+// bietet hier eine (noch nicht angehakte) Regel an, `cat-core` eine Einheit.
 // Only the rules engine is stubbed; the roster-tree primitives that the barrel
 // re-exports stay real, since they are pure traversal without any rules in them
 // (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/roster/).
@@ -84,11 +87,34 @@ vi.mock('../roster', async (importOriginal) => ({
   formatConstraintLimit: (value) => `${value}`,
   hasBlockingViolations: () => false,
   ValidationSeverity: { ERROR: 'error', WARNING: 'warning', INFO: 'info' },
-  resolveListRuleGroup: (_system, _catalogue, categoryId) => ({
-    isListRuleGroup: categoryId === 'cat-rules',
-    states: [],
-  }),
 }));
+
+const mockCapabilities = new Map([
+  ['0/0', {
+    anchorKind: 'offerAnchor',
+    defId: 'rule-entry-1',
+    targetDefId: null,
+    name: 'Allow experimental rules?',
+    primaryCategoryId: 'cat-rules',
+    isHidden: false,
+    isListRule: true,
+    isMandatoryListRule: false,
+    effectiveMin: null,
+    effectiveMax: 1,
+  }],
+  ['0/1', {
+    anchorKind: 'occupied',
+    defId: 'unit-entry-1',
+    targetDefId: null,
+    name: 'Knights Errant',
+    primaryCategoryId: 'cat-core',
+    isHidden: false,
+    isListRule: false,
+    isMandatoryListRule: false,
+    effectiveMin: null,
+    effectiveMax: null,
+  }],
+]);
 
 vi.mock('./editor/CategoryUnitAdder', () => ({
   default: ({ categoryName }) => <div data-testid="category-unit-adder">{categoryName}</div>,

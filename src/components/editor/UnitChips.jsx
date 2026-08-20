@@ -3,15 +3,22 @@ import {
   resolveEntry,
   findEntryInSystem,
   collectUnitProfilesAndRules,
-  isIndependentSubUnit,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS
 } from '../../roster';
+import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
-const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
+/**
+ * Die gewählten Unter-Auswahlen einer Einheit, die als Chip erscheinen: der
+ * Teilbaum ohne die **eigenständigen Untereinheiten** — die tragen ihre eigene
+ * Karte und ihre eigenen Chips. Ob eine Unter-Auswahl eine solche Untereinheit
+ * ist, sagt der Bericht (`capability.isIndependentSubUnit`, Issue 0156); die
+ * Katalog-Auflösung daneben bleibt reines Beiwerk für Detail-/Regeltexte.
+ */
+const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
   const list = [];
   const collect = (node) => {
     if (!node.selections) return;
@@ -20,7 +27,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
       const entry = findEntryInSystem(system, entryId, activeCatalogueId);
       const resolved = resolveEntry(system, entry, activeCatalogueId);
       
-      const isIndependent = isIndependentSubUnit(resolved);
+      const isIndependent = isIndependentSubUnitSlot(slots?.capabilities, slots?.pathBySelectionId, subSel);
       
       if (resolved && !isIndependent) {
         list.push({
@@ -37,7 +44,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   return list;
 };
 
-const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
+const getVisibleUpgrades = (sel, system, activeCatalogueId, roster, slots) => {
   const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogueId, roster);
   const tableProfiles = groupProfilesByType(profiles).filter(g => !g.isModel).flatMap(g => g.profiles);
   const tableSelectionIds = new Set(
@@ -87,7 +94,7 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
     return childCount > 0;
   };
 
-  return getSelectedUpgrades(sel, system, activeCatalogueId).filter(upgrade => {
+  return getSelectedUpgrades(sel, system, activeCatalogueId, slots).filter(upgrade => {
     const res = upgrade.resolved;
     if (isEmptyWrapper(res)) return false;
     const name = upgrade.name || res?.name;
@@ -150,6 +157,8 @@ export function UnitUpgradesChips({
   system,
   activeCatalogueId,
   roster,
+  capabilities = null,
+  pathBySelectionId = null,
   handleMouseEnter,
   handleMouseMove,
   handleMouseLeave,
@@ -157,7 +166,8 @@ export function UnitUpgradesChips({
   onShowRule
 }) {
   const resolveRuleUrl = useRuleUrl();
-  const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
+  const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster,
+    { capabilities, pathBySelectionId });
   if (selectedUpgrades.length === 0) return null;
 
   return (
@@ -229,7 +239,7 @@ export function UnitRulesChips({
 
   const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const upgradeChipNames = new Set(
-    getSelectedUpgrades(selection, system, activeCatalogueId)
+    getSelectedUpgrades(selection, system, activeCatalogueId, { capabilities, pathBySelectionId })
       .map(u => normalizeChipName(u.name || u.resolved?.name))
       .filter(Boolean)
   );

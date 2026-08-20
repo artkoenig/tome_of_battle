@@ -3,9 +3,10 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
   isCategoryLinkHidden,
   isEntryPrimaryInCategory,
-  resolveListRuleGroup,
+  findEntryInSystem,
   childSelectionsOf
 } from '../../roster';
+import { resolveListRuleGroupFromReport } from '../../evaluation/listRuleGroups';
 
 import { isBlockingViolation } from '../../evaluation/violationStats';
 import { findCategoryAnchorSlot } from '../../evaluation/slotLookups';
@@ -77,10 +78,22 @@ export default function RosterCategorySection({
   // Eine Listenregel-Gruppe (datengetrieben: Katalogtyp = upgrade, ADR 0003) ist
   // eine listenweite Einstellungsgruppe, kein Einheiten-Slot: ihre Karten haben
   // keine Einheiten-Aktionen und die Gruppe bietet keinen „Einheit hinzufügen“-
-  // Knopf. Ein Aufruf des Schreibmodells klassifiziert die Gruppe und liefert im selben
-  // Katalog-Durchlauf die Zustände je Regel für die ListRuleChecklist.
-  const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroup(
-    system, activeCatalogue, categoryId, { roster, force }
+  // Knopf. Klassifikation und Zustände je Regel liest der **Bericht** (Issue
+  // 0156): welche Definitionen die Kategorie anbietet, welche davon Listenregeln
+  // und welche Pflicht sind, und welche gerade belegt sind. Nur der
+  // Katalog-Eintrag hinter einer Regel kommt weiter aus dem Schreibmodell — ihn
+  // braucht das Anhaken, nicht die Anzeige.
+  const selectionByPath = new Map();
+  for (const selection of childSelectionsOf(force)) {
+    const path = pathBySelectionId?.get(selection.id);
+    if (path !== undefined) selectionByPath.set(path, selection);
+  }
+  const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroupFromReport(
+    capabilities, forcePath, categoryId, {
+      selectionByPath,
+      entryOf: (capability) => findEntryInSystem(system, capability.defId, activeCatalogue?.id)
+        ?? { id: capability.defId, name: capability.name },
+    }
   );
   const isRuleGroupCollapsed = isListRuleGroup && !isRuleGroupExpanded;
 
@@ -151,7 +164,6 @@ export default function RosterCategorySection({
             categoryName={categoryName}
             capabilities={capabilities}
             forcePath={forcePath}
-            forceCatalogueId={forceCatalogueId}
             system={system}
             activeCatalogue={activeCatalogue}
             costTypeLabel={costTypeLabel}

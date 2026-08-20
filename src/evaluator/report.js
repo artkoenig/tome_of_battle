@@ -57,6 +57,8 @@ import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
 import { createGroupBehavior } from './groupBehavior.js';
+import { isListRuleDef, isIndependentSubUnitDef, isMandatoryListRuleDef } from './entryClassification.js';
+import { forceCatalogueIdOf } from './catalogSet.js';
 
 /**
  * Ein Gruppen-Max von hoechstens diesem Wert bietet **eine** einander
@@ -87,6 +89,10 @@ const NO_DEFINITION_SOURCES = new Map();
 
 /** Ohne gezaehlte Belegungen faellt ein grenzenloser Kategorie-Anker auf 0 zurueck. */
 const NO_ANCHOR_OCCUPANCIES = new Map();
+
+/** Ohne Katalog-Bezugsrahmen ist keine Herkunft eine Bibliothek und kein Kontingent-Buch bekannt. */
+const NO_LIBRARY_CATALOGUES = Object.freeze(new Set());
+const NO_FORCE_CATALOGUES = Object.freeze(new Map());
 
 /**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
@@ -614,7 +620,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies, groupBehavior }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies, groupBehavior, catalogueOrigin }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   const effectiveMax = maxResult === null ? null : maxResult.bound;
@@ -663,6 +669,21 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     // trotz gedeckelter Gruppe kein Radiobutton.
     isRepeatableWithinGroup: repeatableIds.has(node.def.id)
       || (targetDefId !== null && repeatableIds.has(targetDefId)),
+    // Die **statischen Eintragsmerkmale** des Slots (`entryClassification.js`,
+    // Issue 0156): ob er eine Listenregel statt einer Einheit traegt, ob diese
+    // Listenregel eine eindeutige armeeweite Pflicht ist (§9.9), und ob er eine
+    // eigenstaendige Untereinheit ist. Jede Oberflaeche, die eine dieser drei
+    // Fragen stellt, liest sie hier ab, statt den Katalog ein zweites Mal
+    // auszuwerten (ADR-0034).
+    isListRule: isListRuleDef(node.def),
+    isMandatoryListRule: isMandatoryListRuleDef(node.def),
+    isIndependentSubUnit: isIndependentSubUnitDef(node.def),
+    // Die **Herkunft als Entscheidung** statt als blosse Id: dieser Slot stammt
+    // aus einem fremden Armeebuch — einem spielbaren Katalog, der nicht das Buch
+    // des Kontingents ist. Spielsystem und Bibliothek sind nie fremd, eine
+    // unbekannte Herkunft ebenfalls nicht. Der Aushebe-Dialog bietet einen so
+    // markierten Slot gar nicht erst an.
+    isForeignCatalogue: catalogueOrigin.isForeign(node, sourceIdByDefId.get(node.def.id) ?? null),
     costLimits: costLimitsOf(resultsByAnchor, node),
     // Wo eine Grenze ausgewertet wurde, ist deren Ist-Wert die berichtete Zahl —
     // zu ihm passen Hoechstmass, Restspielraum und Sperrung daneben. Erst ohne
@@ -691,6 +712,43 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
 }
 
 /**
+ * Die **Herkunfts-Entscheidung** je Slot, einmal je Bericht gebaut: gehoert die
+ * Definition eines Slots einem *fremden* Armeebuch, also einem spielbaren
+ * Katalog, der nicht das Buch des Kontingents ist, unter dem der Slot haengt?
+ *
+ * Das Kontingent-Buch ist dasselbe, das der Bezugsrahmen `primary-catalogue`
+ * liest ({@link forceCatalogueIdOf}); Bibliotheken und das Spielsystem sind nie
+ * fremd, und eine unbekannte Herkunft (`sourceId === null`) ebenfalls nicht —
+ * sonst verschwaende ein Slot ohne Herkunftsangabe still aus jedem Angebot.
+ *
+ * @param {object} root
+ * @param {{ libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string> }} scope
+ * @returns {{ isForeign: (node: object, sourceId: string|null) => boolean }}
+ */
+function createCatalogueOrigin(root, { libraryCatalogueIds, gameSystemId, primaryCatalogueByForceDefId }) {
+  const ownCatalogueIdByNode = new Map();
+
+  const visit = (node, ownCatalogueId) => {
+    const own = node.def?.kind === DefinitionKind.FORCE
+      ? forceCatalogueIdOf(node, primaryCatalogueByForceDefId) ?? ownCatalogueId
+      : ownCatalogueId;
+    ownCatalogueIdByNode.set(node, own ?? null);
+    for (const child of node.children ?? []) visit(child, own);
+  };
+  visit(root, null);
+
+  return {
+    isForeign: (node, sourceId) => {
+      if (sourceId === null) return false;
+      if (sourceId === gameSystemId) return false;
+      if (libraryCatalogueIds?.has(sourceId)) return false;
+      const ownCatalogueId = ownCatalogueIdByNode.get(node) ?? null;
+      return ownCatalogueId !== null && sourceId !== ownCatalogueId;
+    },
+  };
+}
+
+/**
  * Baut den Bericht aus dem Auswertungsbaum, dem effektiven Zustand, den
  * Constraint-Ergebnissen und den gesammelten Diagnosen. Je Slot — jeder Knoten
  * jeder Ankerart — entsteht ein Faehigkeitsdatensatz, abgelegt unter dem stabilen
@@ -700,7 +758,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number> } | null }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number> } | null, libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string> }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -741,6 +799,12 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     sourceIdByDefId = NO_DEFINITION_SOURCES,
     categoryAnchorOccupancies = NO_ANCHOR_OCCUPANCIES,
     raiseCostProjection = null,
+    // Der Katalog-Bezugsrahmen, soweit der Bericht ihn braucht: die reinen
+    // Bibliotheken, das Spielsystem und das Armeebuch je Kontingent-Definition.
+    // Aus ihnen entscheidet sich `isForeignCatalogue` je Slot.
+    libraryCatalogueIds = NO_LIBRARY_CATALOGUES,
+    gameSystemId = null,
+    primaryCatalogueByForceDefId = NO_FORCE_CATALOGUES,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -758,6 +822,11 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     // Ebenfalls einmal je Bericht: das Wahlverhalten der Gruppen (Einzelwahl,
     // wiederholbare Optionen) aus den Katalogdefinitionen (Issue 0156).
     groupBehavior: createGroupBehavior(root),
+    // Und ebenso einmal je Bericht: welches Armeebuch ueber jedem Slot steht
+    // (Issue 0156, `isForeignCatalogue`).
+    catalogueOrigin: createCatalogueOrigin(root, {
+      libraryCatalogueIds, gameSystemId, primaryCatalogueByForceDefId,
+    }),
   };
   // Der Knoten bleibt **engine-intern**: die Autor-Meldungen brauchen ihn, der
   // Bericht darf ihn nicht tragen (ADR-0034 — die Oberflaeche liest den Bericht

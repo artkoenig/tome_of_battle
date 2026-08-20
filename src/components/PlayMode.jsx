@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Swords, BookOpen } from 'lucide-react';
 import { saveRoster } from '../db/database';
-import { findForceEntryById, isListRuleSelection, childSelectionsOf } from '../roster';
+import { findForceEntryById, childSelectionsOf } from '../roster';
+import { slotOfSelection } from '../evaluation/slotLookups';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { costLimitTypeIdOf, extraResourceTotalsOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';
@@ -82,11 +83,12 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
     roster.forces.forEach(force => {
       const forceDef = findForceEntryById(system, force.forceEntryId);
       const categoryLinks = forceDef?.categoryLinks || [];
-      const catalogueId = force.catalogueId || roster.catalogueId;
-
       // List rules are list-wide settings, not battlefield units; the play view
-      // shows only fielded units, so they are excluded everywhere here.
-      const isBattlefieldSelection = (selection) => !isListRuleSelection(system, selection, catalogueId);
+      // shows only fielded units, so they are excluded everywhere here. Which
+      // selection is a list rule the report says (`capability.isListRule`,
+      // Issue 0156) -- the view resolves no catalogue entry for it.
+      const isBattlefieldSelection = (selection) =>
+        slotOfSelection(capabilities, pathBySelectionId, selection)?.isListRule !== true;
 
       // Process defined categories
       categoryLinks.forEach(link => {
