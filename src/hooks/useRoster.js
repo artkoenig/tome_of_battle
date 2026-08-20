@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
-  resolveEntry, syncRosterSelectionsWithSystem,
+  resolveEntry, findEntryInSystem, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
-  mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
-  buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
-  withAddedInstance, withoutInstance, withChangedOptionCount,
-  findMissingMandatoryListRuleSelections
+  mapSelectionTree, replaceSelectionById,
+  createSelectionFromDef as buildSelectionFromDef,
+  withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../roster';
+import { findMissingMandatoryListRules } from '../evaluation/mandatoryListRules';
+import { findChildSlot, findDescendantSlot } from '../evaluation/slotLookups';
 import { unresolvedSelectionsOf } from '../evaluation/datasetDiagnostics';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { useUndoableState } from './useUndoableState';
@@ -167,57 +168,69 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const catalogueIdContaining = (selectionId) =>
     catalogueIdOfForce(findForceContainingSelection(roster, selectionId));
 
+  // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert.
+  // **Welche** Pflicht-Mitglieder mitkommen, sagt seit Issue 0157 der Bericht
+  // (`capability.raiseMembers`, ADR-0034) — dieselbe Auskunft, aus der auch der vor
+  // dem Ausheben angezeigte Preis (`raiseCosts`) stammt, sodass Anzeige und
+  // angelegter Baum aus einem Durchlauf kommen. Der Katalog wird nur noch
+  // aufgelöst, nicht mehr ausgewertet.
   /**
-   * Bewertungskontext für die effektive `min`-Seite der Fabrik: damit ein bedingt
-   * erhöhtes Gruppen-/Options-`min` (eine erzwungene Pflichtwahl) beim Ausheben als
-   * solche bevölkert wird. Ohne geladenes System/Roster gibt es keinen Kontext — die
-   * Fabrik fällt dann auf das rohe `min` zurück (unverändertes Verhalten).
+   * @param {Object} entry
+   * @param {string|null} categoryId
+   * @param {string|null} catalogueId
+   * @param {ReadonlyArray<any>} [mandatoryMembers]
    */
-  const buildFactoryContext = (catalogueId) => {
-    if (!system || !roster) return null;
-    const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-    return buildModifierEvalContext({
-      roster,
-      system,
-      categorySlices: {
-        selectionCounts,
-        forceCategoryCounts: aggregateRosterCategoryCounts(categoryCounts)
-      },
-      parentCatalogueId: catalogueId
-    });
-  };
-
-  // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert,
-  // sodass Ausheben und Aushebe-Verfügbarkeit dieselbe Pflicht-Kind-Bevölkerung sehen.
-  const createSelectionFromDef = (entry, categoryId, catalogueId) =>
+  const createSelectionFromDef = (entry, categoryId, catalogueId, mandatoryMembers = []) =>
     buildSelectionFromDef({
-      system, resolveEntry, catalogueId, entry, categoryId,
-      evaluationContext: buildFactoryContext(catalogueId)
+      system, resolveEntry, catalogueId, entry, categoryId, mandatoryMembers
     });
+
+  /** Die Pflicht-Mitglieder, die der Bericht dem Angebot `defId` unter `forceId` gibt. */
+  const raiseMembersInForce = (forceId, defId) =>
+    findChildSlot(capabilities, pathByForceId?.get(forceId), defId)?.raiseMembers ?? [];
+
+  /** Dieselbe Frage unterhalb einer Einheit: eine Option hängt ggf. unter einem Gruppen-Anker. */
+  const raiseMembersUnderSelection = (selectionId, defId) =>
+    findDescendantSlot(capabilities, pathBySelectionId?.get(selectionId), defId)?.raiseMembers ?? [];
 
   // Automatisches Setzen eindeutiger Pflicht-Listenregeln (Issue 0138, §9.9):
   // gated auf `isFreshRoster`, damit ein bereits bestehendes Roster nie
   // rückwirkend verändert wird (AC4). Läuft — wie der Katalog-Sync-Effekt —
   // über `replaceRoster`, also ohne eigenen Undo-Schritt: der Nutzer hat
-  // diesen Eintrag nie selbst angeklickt (siehe Plan, "Nicht-offensichtliche
-  // Entscheidungen"). Kein Endlosschleifen-Risiko: ein einmal hinzugefügter
-  // Eintrag gilt im nächsten Durchlauf von `findMissingMandatoryListRuleSelections`
-  // nicht mehr als fehlend, wodurch der Effekt beim nächsten Aufruf keine
-  // Änderung mehr produziert. Läuft je Force erneut bei jeder Roster-Änderung
-  // in derselben Sitzung, sodass eine erst durch eine andere Wahl sichtbar
-  // gewordene Pflichtregel im selben Zug ergänzt wird (AC3).
+  // diesen Eintrag nie selbst angeklickt.
+  //
+  // **Welche** Regeln das sind, sagt seit Issue 0157 der Bericht
+  // (`findMissingMandatoryListRules`, ADR-0034): er zählt das Angebot des
+  // Kontingents auf und markiert je Slot Listenregel, armeeweite Pflicht,
+  // Sichtbarkeit und Belegung. Der Katalog wird nur noch für den **Eintrag**
+  // gelesen, aus dem die Selektion gebaut wird. Kein Endlosschleifen-Risiko:
+  // eine einmal hinzugefügte Regel steht im nächsten Bericht als `occupied`
+  // und fehlt damit nicht mehr. Läuft je Force erneut bei jeder
+  // Roster-Änderung in derselben Sitzung, sodass eine erst durch eine andere
+  // Wahl sichtbar gewordene Pflichtregel im selben Zug ergänzt wird.
   useEffect(() => {
     if (!roster || !system || !isFreshRoster) return;
 
     let anyAdded = false;
+    // Eine armeeweite Pflicht wird genau einmal gesetzt: was ein frueheres
+    // Kontingent dieses Durchlaufs uebernommen hat, faellt fuer die spaeteren
+    // heraus (der Bericht des naechsten Durchlaufs meldet sie dann als belegt).
+    const claimedResolvedIds = new Set();
     const updatedForces = (roster.forces || []).map(force => {
       const catalogueId = catalogueIdOfForce(force);
-      const catalogue = system.catalogues?.find(c => c.id === catalogueId);
-      const missing = findMissingMandatoryListRuleSelections(system, catalogue, force);
+      const carriedEntryIds = new Set(
+        childSelectionsOf(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
+      );
+      const missing = findMissingMandatoryListRules(capabilities, pathByForceId?.get(force.id), {
+        entryOf: (capability) => findEntryInSystem(system, capability.defId, catalogueId),
+        skipResolvedIds: claimedResolvedIds,
+      }).filter(({ entry, defId }) => entry && !carriedEntryIds.has(defId));
       if (missing.length === 0) return force;
 
+      missing.forEach(({ resolvedId }) => claimedResolvedIds.add(resolvedId));
       const newSelections = missing
-        .map(({ entry, categoryId }) => createSelectionFromDef(entry, categoryId, catalogueId))
+        .map(({ entry, categoryId, mandatoryMembers }) =>
+          createSelectionFromDef(entry, categoryId, catalogueId, mandatoryMembers))
         .filter(Boolean);
       if (newSelections.length === 0) return force;
 
@@ -228,7 +241,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     if (anyAdded) {
       replaceRoster({ ...roster, forces: updatedForces });
     }
-  }, [roster, system, isFreshRoster, replaceRoster]);
+  }, [roster, system, isFreshRoster, replaceRoster, capabilities, pathByForceId]);
 
   /**
    * Hebt `entry` in genau ein Kontingent aus.
@@ -238,8 +251,10 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
    *   das erste Kontingent des Rosters
    */
   const addUnit = (entry, categoryId, targetForceId = null) => {
+    const force = findTargetForce(roster?.forces, targetForceId);
     const newUnit = createSelectionFromDef(
-      entry, categoryId, catalogueIdOfForce(findTargetForce(roster?.forces, targetForceId))
+      entry, categoryId, catalogueIdOfForce(force),
+      raiseMembersInForce(force?.id, entry.id)
     );
     if (!newUnit) return;
 
@@ -346,7 +361,8 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
     updateUnitChildSelections(unitSelectionId, childSelections =>
       withAddedInstance(childSelections, createSelectionFromDef(
-        optionDefinition, null, catalogueIdContaining(unitSelectionId)
+        optionDefinition, null, catalogueIdContaining(unitSelectionId),
+        raiseMembersUnderSelection(unitSelectionId, optionDefinition.id)
       )));
 
   /** Entfernt eine einzeln geführte Instanz anhand ihrer Selection-Id. */
@@ -360,7 +376,10 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
         childSelections,
         optionDefinition.id,
         countDelta,
-        () => createSelectionFromDef(optionDefinition, null, catalogueIdContaining(unitSelectionId))
+        () => createSelectionFromDef(
+          optionDefinition, null, catalogueIdContaining(unitSelectionId),
+          raiseMembersUnderSelection(unitSelectionId, optionDefinition.id)
+        )
       ));
 
   /**

@@ -1,9 +1,35 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
-import { getEffectiveModifiers, getModifiedConstraintValue } from './modifierEvaluator.js';
-import { isSelectionEntryHidden } from './entryVisibility.js';
 import { isIndependentSubUnit } from './subUnit.js';
-import { ConstraintScope } from './battlescribeConstants.js';
-import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
+
+/**
+ * Die Modifikatoren einer Definition **flach**: die eigenen plus die aus jeder
+ * `modifierGroup`, in jeder Tiefe. Rein strukturell — hier wird nichts
+ * ausgewertet, sondern nur eingesammelt, was der Katalog an dieser Stelle
+ * deklariert; ob ein Modifikator greift, entscheidet allein der Bericht
+ * (ADR-0034). Die Struktur-Sammlung, die die Oberflaeche als `groupModifiers`
+ * weiterreicht, bleibt damit ohne Auswertungsschicht.
+ */
+const modifiersOfGroup = (group, inheritedConditions, inheritedConditionGroups) => {
+  const conditions = [...inheritedConditions, ...(group.conditions || [])];
+  const conditionGroups = [...inheritedConditionGroups, ...(group.conditionGroups || [])];
+
+  const own = (group.modifiers || []).map(mod => ({
+    ...mod,
+    conditions: [...conditions, ...(mod.conditions || [])],
+    conditionGroups: [...conditionGroups, ...(mod.conditionGroups || [])],
+    repeat: group.repeat && !mod.repeat ? group.repeat : mod.repeat,
+  }));
+  const nested = (group.modifierGroups || [])
+    .flatMap(inner => modifiersOfGroup(inner, conditions, conditionGroups));
+  return [...own, ...nested];
+};
+
+const flattenedModifiers = (source) => {
+  if (!source) return [];
+  const fromGroups = (source.modifierGroups || []).flatMap(group => modifiersOfGroup(group, [], []));
+  return [...(source.modifiers || []), ...fromGroups];
+};
 
 /**
  * Collects the options a unit exposes in the editor.
@@ -11,36 +37,19 @@ import { ConstraintKind, EntryLinkKind } from '../parser/schema/battlescribeSche
  * @param {Object} system
  * @param {string} activeCatalogueId
  * @param {Object} unitSelection - the roster selection whose options to collect.
- * @param {Object|null} [visibilityContext] - when provided, conditionally hidden
- *   entryLinks/groups/entries are evaluated against the current roster and omitted
- *   while their `hidden` flag resolves to true. Shape:
- *   `{ roster, selectionCounts, forceCategoryCounts, force }`. Omitting it keeps the
- *   raw, unfiltered collection callers such as roster synchronisation rely on, so
- *   filtering never silently prunes a stored selection.
  * @returns {Array<Object>} one item per offered option, carrying the option itself plus
  *   its group membership (`groupId`/`groupName`, that group's `groupConstraints`/
  *   `groupModifiers`), the chain of enclosing groups (`groupAncestors`, outermost first,
  *   each `{ id, name }` — the catalogue's group hierarchy) and the owning selection
  *   (`ownerSelectionId`).
  */
-export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibilityContext = null) => {
+export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   if (!activeCatalogueId) return [];
   const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
   const rawEntry = findEntryInSystem(system, entryId, activeCatalogueId);
   const resolved = resolveEntry(system, rawEntry, activeCatalogueId);
 
   if (!resolved) return [];
-
-  // A conditionally hidden entryLink/group/entry is only omitted when a visibility
-  // context is supplied; the same evaluation the category adder uses (hidden flag plus
-  // `set hidden` modifiers gated on their conditions) decides visibility here.
-  const isHiddenInContext = (linkOrEntry) => {
-    if (!visibilityContext) return false;
-    const { roster, selectionCounts, forceCategoryCounts, force } = visibilityContext;
-    return isSelectionEntryHidden(linkOrEntry, {
-      system, roster, selectionCounts, forceCategoryCounts, force, catalogueId: activeCatalogueId
-    });
-  };
 
   // Recursive helper to find all nested entry IDs for a group
   const collectGroupItemIds = (gDef, groupItemIds = new Set(), visited = new Set()) => {
@@ -135,7 +144,6 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
   const collectOptions = (def, context = ROOT_GROUP_CONTEXT) => {
     // 1. Process selection entries
     def.selectionEntries?.forEach(child => {
-      if (isHiddenInContext(child)) return;
       // A selectionEntry is always an option itself. We don't recurse into its children
       // until the user actually selects it (handled by collectFromActiveSelections).
       optionsList.push(itemOf(child, def, context));
@@ -145,17 +153,13 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
     def.entryLinks?.forEach(child => {
       const resolvedChild = resolveEntry(system, child, activeCatalogueId);
       if (!resolvedChild) return;
-      // A conditionally hidden link contributes nothing: for a group link this means the
-      // whole (possibly bloodline-specific) group is skipped, not merged with its
-      // same-named siblings; for an option link the single item is omitted.
-      if (isHiddenInContext(child)) return;
 
       // If the entry link points to a group, we recurse into it to extract its items
       if (child.type === EntryLinkKind.SELECTION_ENTRY_GROUP) {
         const combinedConstraints = prepareConstraints(resolvedChild);
         // Resolve the link's own modifiers through the same seam so its
         // modifierGroup-gated modifiers are kept rather than silently dropped.
-        const combinedModifiers = getEffectiveModifiers(resolvedChild).concat(getEffectiveModifiers(child));
+        const combinedModifiers = flattenedModifiers(resolvedChild).concat(flattenedModifiers(child));
         const nestedGroupId = resolvedChild.id || child.id;
         collectOptions(resolvedChild, {
           groupName: resolvedChild.name || child.name,
@@ -173,14 +177,13 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
 
     // 3. Process selection entry groups
     def.selectionEntryGroups?.forEach(group => {
-      if (isHiddenInContext(group)) return;
       const combinedGroupConstraints = prepareConstraints(group);
       const nestedGroupId = group.id || context.groupId;
       collectOptions(group, {
         groupName: group.name || context.groupName,
         groupId: nestedGroupId,
         groupConstraints: combinedGroupConstraints,
-        groupModifiers: getEffectiveModifiers(group),
+        groupModifiers: flattenedModifiers(group),
         groupAncestors: nestedAncestors(context, nestedGroupId),
         ownerSelectionId: context.ownerSelectionId,
       });
@@ -242,65 +245,3 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection, visibil
 
   return uniqueOptionsList;
 };
-
-export const isUniqueOptionTakenElsewhere = (targetRes, system, activeCatalogueId, selection, roster) => {
-  const targetIdToCheck = targetRes.targetId || targetRes.id;
-  let taken = false;
-  
-  const checkSelection = (sel, isUnderCurrent) => {
-    const underCurrent = isUnderCurrent || (sel.id === selection.id);
-    
-    if (!underCurrent) {
-      const selRaw = findEntryInSystem(system, sel.selectionEntryId || sel.entryLinkId, activeCatalogueId);
-      const selRes = resolveEntry(system, selRaw, activeCatalogueId);
-      const selUnderlyingId = selRes ? (selRes.targetId || selRes.id) : (sel.selectionEntryId || sel.entryLinkId);
-      
-      if (selUnderlyingId === targetIdToCheck) {
-        taken = true;
-        return;
-      }
-    }
-    
-    sel.selections?.forEach(sub => checkSelection(sub, underCurrent));
-  };
-
-  roster.forces?.forEach(force => {
-    force.selections?.forEach(sel => checkSelection(sel, false));
-  });
-
-  return taken;
-};
-
-// "Roster-unique" means an entry (or its category) is capped at exactly one across the
-// roster/force. The cap is read as its EFFECTIVE value — modifiers on the max constraint
-// apply — so a modifier that lifts or lowers the cap is honoured rather than the raw
-// catalogue number. No roster context is available on this static-uniqueness path, so an
-// unconditional modifier decides; a purely conditional one falls through to the raw value.
-const ROSTER_UNIQUE_MAX = 1;
-
-const isEffectiveMaxRosterUnique = (constraint, modifierSource) =>
-  constraint.type === ConstraintKind.MAX &&
-  getModifiedConstraintValue(constraint, getEffectiveModifiers(modifierSource), {}) === ROSTER_UNIQUE_MAX;
-
-export const isOptionRosterUnique = (res, system) => {
-  if (!res) return false;
-
-  // 1. Check constraints on the entry itself
-  const hasDirectConstraint = res.constraints?.some(c =>
-    (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE) &&
-    isEffectiveMaxRosterUnique(c, res)
-  );
-  if (hasDirectConstraint) return true;
-
-  // 2. Check constraints on the categories it links to
-  const hasCategoryConstraint = res.categoryLinks?.some(cl => {
-    const catDef = system.categoryEntries?.find(ce => ce.id === cl.targetId);
-    return catDef?.constraints?.some(c =>
-      (c.scope === ConstraintScope.ROSTER || c.scope === ConstraintScope.FORCE || !c.scope) &&
-      isEffectiveMaxRosterUnique(c, catDef)
-    );
-  });
-
-  return !!hasCategoryConstraint;
-};
-

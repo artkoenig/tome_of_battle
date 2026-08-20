@@ -80,8 +80,10 @@ aus diesen echten Auszügen und prüft, dass die Quirk-Funktionen sie korrekt
 verdrahten. Driften die hartkodierten IDs von den realen Katalog-IDs ab, schlägt
 der Test fehl.
 
-`vampire-selfscope-bloodline.cat.xml` verankert
-`src/roster/modifierEvaluator.selfScope.test.js`: Die Engine muss eine
+`vampire-selfscope-bloodline.cat.xml` hielt den Selbst-Scope-Fall fuer
+`src/roster/modifierEvaluator.selfScope.test.js` fest — mit Issue 0157 ist jene
+zweite Auswertung samt Test entfallen; die Regel gilt unveraendert fuer den
+Evaluator (`src/evaluator/query.js`), und der Auszug bleibt als Beleg: Die Engine muss eine
 `instanceOf`-Bedingung, deren `scope` die eigene Entry-ID ist, als Suche im
 eigenen (Effektiv-Kategorie-)Teilbaum auswerten. Ohne diese Auswertung greift
 der Blutlinien-Charakteristik-Modifier nie. Von den **422** `instanceOf`-

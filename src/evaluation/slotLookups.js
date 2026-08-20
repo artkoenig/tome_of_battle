@@ -62,6 +62,32 @@ export function findChildSlot(capabilities, parentPath, defId) {
 }
 
 /**
+ * Der Slot **irgendwo unterhalb** eines Rahmens, der die Definition `defId`
+ * trägt — über die eigene (`defId`, bei Verweisen die Link-Id) oder die
+ * aufgelöste Ziel-Id (`targetDefId`).
+ *
+ * Anders als {@link findChildSlot} steigt diese Suche in jede Tiefe: eine Option
+ * innerhalb einer Gruppe hängt im Bericht unter dem **Gruppen-Anker**, nicht
+ * direkt unter der Einheit. Wer den Slot einer Option zu ihrer Einheit sucht,
+ * fragt deshalb hier. Gefunden wird der erste in Slot-Reihenfolge des Berichts,
+ * also derselbe, den auch die Anzeige an dieser Stelle zeichnet.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {string|null|undefined} parentPath
+ * @param {string|null|undefined} defId
+ * @returns {object|undefined}
+ */
+export function findDescendantSlot(capabilities, parentPath, defId) {
+  if (!capabilities || !parentPath || defId === null || defId === undefined) return undefined;
+  const prefix = `${parentPath}/`;
+  for (const [path, capability] of capabilities) {
+    if (!path.startsWith(prefix)) continue;
+    if (capability.defId === defId || capability.targetDefId === defId) return capability;
+  }
+  return undefined;
+}
+
+/**
  * Der Fähigkeitsdatensatz einer App-Selektion: ihr Slot-Pfad steht in
  * `pathBySelectionId` (`useEvaluation`), der Datensatz darunter im Bericht.
  * `undefined`, solange der Bericht für diese Selektion keinen Slot führt.

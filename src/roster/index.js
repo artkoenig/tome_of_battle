@@ -20,20 +20,14 @@ export {
   findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
 export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
-export { findMissingMandatoryListRuleSelections } from './listRules.js';
-export { canGroupMaxBeRaisedAboveSingleChoice, getEffectiveModifiers } from './modifierEvaluator.js';
-export { buildModifierEvalContext } from './modifierContext.js';
 export {
-  aggregateRosterCategoryCounts, computeRosterCounts,
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
-} from './rosterCounter.js';
+} from './costTypeLabels.js';
 export {
   classifyGroupItem, classifyStandaloneOption, isGroupSingleChoice, isItemRepeatableWithinGroup
 } from './selectionBehavior.js';
-export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { reconcileImportedSelectionIds, syncRosterSelectionsWithSystem } from './rosterSync.js';
 export { findForceEntryById } from './forceEntries.js';
-export { isCategoryLinkHidden, isEntryPrimaryInCategory } from './entryVisibility.js';
 export { isIndependentSubUnit } from './subUnit.js';
 export { getUnitOptions } from './optionsCollector.js';
 export { groupProfilesByType } from './rulesEvaluator.js';

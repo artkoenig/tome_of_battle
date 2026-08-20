@@ -1,12 +1,12 @@
 /**
- * Die Mitglieder einer Katalog-Definition bzw. einer Auswahlgruppe und die
- * Frage, welches Mitglied beim Ausheben aus einer Pflichtgruppe mitkommt.
+ * Die Mitglieder einer Katalog-Definition bzw. einer Auswahlgruppe — und der
+ * Weg von einer Definitions-Id zurück zu dem Mitglied, das sie bezeichnet.
  *
- * Diese Ermittlung ist Single Source of Truth (ADR-0022): sowohl die Fabrik,
- * die die Auswahl tatsächlich anlegt (`selectionFactory`), als auch die
- * Kostenschätzung, die den Preis vor dem Ausheben anzeigt (`rosterCounter`),
- * müssen dieselbe Option meinen — sonst weicht der angezeigte Preis vom
- * tatsächlich anfallenden ab.
+ * **Welche** Mitglieder beim Ausheben mitkommen, entscheidet diese Schicht seit
+ * Issue 0157 nicht mehr: das sagt der Bericht (`capability.raiseMembers`,
+ * ADR-0034), aus demselben Durchlauf, aus dem auch der angezeigte Aushebe-Preis
+ * stammt. Hier bleibt allein die **Auflösung**: welches Katalog-Objekt die vom
+ * Bericht genannte Id ist — Gruppen sind dabei durchlässig, wie überall.
  */
 
 /**
@@ -20,90 +20,41 @@ export function memberDefsOf(defOrGroup) {
 }
 
 /**
- * Die Option, die eine Pflicht-Auswahlgruppe beim Ausheben beisteuert: die im
- * Katalog vorgegebene (`selectionEntryGroup@defaultSelectionEntryId`), sonst —
- * ohne oder mit unauflösbarer Vorgabe — das erste Mitglied.
+ * Das Mitglied unter `def`, das die Id `defId` trägt — in **jeder** Tiefe, durch
+ * geschachtelte Gruppen und Gruppen-Verweise hindurch.
  *
- * Die Vorgabe referenziert die `id` des Mitglieds selbst; bei einem Link ist
- * das dessen Link-Id, nicht die `targetId` des Ziel-Eintrags.
+ * Gesucht wird über die **eigene** Id des Mitglieds (bei einem Verweis dessen
+ * Link-Id), genau wie der Bericht sie meldet; erst wenn keine passt, entscheidet
+ * die aufgelöste Ziel-Id. Auf jeder Ebene gehen die direkten Mitglieder den
+ * Gruppen darunter vor, sodass eine Id, die zweimal vorkommt, dieselbe Stelle
+ * trifft wie beim Bericht (Dokumentreihenfolge).
  *
- * @param {{ defaultSelectionEntryId?: string|null, selectionEntries?: Array<object>, entryLinks?: Array<object> }} [group]
- * @returns {object|null} das Mitglied, oder null bei leerer Gruppe.
+ * @param {object} def die (aufgelöste) Definition oder Gruppe, die begangen wird.
+ * @param {string} defId die vom Bericht genannte Id des Pflicht-Mitglieds.
+ * @param {(member: object) => object|null} resolveGroupDef  liefert die
+ *   Gruppendefinition hinter einem Gruppen-Verweis, sonst `null`.
+ * @param {string|null} [targetDefId] die aufgelöste Ziel-Id, als zweite Chance.
+ * @returns {object|null} das (unaufgelöste) Mitglied, oder null.
  */
-export function resolveGroupDefaultMember(group) {
-  const members = memberDefsOf(group);
-  const configuredDefault = group?.defaultSelectionEntryId
-    ? members.find(member => member.id === group.defaultSelectionEntryId)
-    : null;
-  return configuredDefault || members[0] || null;
-}
+export function findMemberDefById(def, defId, resolveGroupDef, targetDefId = null) {
+  if (!def || defId === null || defId === undefined) return null;
 
-/**
- * What a single selection-entry group contributes, plus the contributions of the
- * groups nested inside it. Descent into nested groups is unconditional — a group
- * without a `min` of its own contributes nothing itself but may still contain a
- * mandatory group (the real shape of `Wizard Level` inside `Magic`).
- *
- * @param {object} group the (unresolved) selection-entry group.
- * @param {(defOrGroup: object) => number} minOf the caller's reading of a min constraint.
- * @returns {Array<{ def: object, count: number }>} in creation order.
- */
-function mandatoryChildrenOfGroup(group, minOf) {
-  const children = [];
-  const members = memberDefsOf(group);
-  const groupMin = minOf(group);
+  const members = memberDefsOf(def);
+  const own = members.find(member => member.id === defId);
+  if (own) return own;
 
-  if (groupMin > 0 && members.length > 0) {
-    const itemized = members
-      .map(member => ({ def: member, count: minOf(member) }))
-      .filter(member => member.count > 0);
-    if (itemized.length > 0) {
-      children.push(...itemized);
-    } else {
-      const chosenOption = resolveGroupDefaultMember(group);
-      if (chosenOption) children.push({ def: chosenOption, count: groupMin });
-    }
+  const groups = [
+    ...(def.selectionEntryGroups || []),
+    ...members.map(member => resolveGroupDef(member)).filter(Boolean),
+  ];
+  for (const group of groups) {
+    const found = findMemberDefById(group, defId, resolveGroupDef, targetDefId);
+    if (found) return found;
   }
 
-  group?.selectionEntryGroups?.forEach(nested => {
-    children.push(...mandatoryChildrenOfGroup(nested, minOf));
-  });
-  return children;
-}
-
-/**
- * Die Pflicht-Kinder, die eine aufgelöste Definition beim Ausheben beisteuert:
- * direkte Mitglieder mit eigenem `min`, dazu der Beitrag jeder Auswahlgruppe
- * darunter — in **jeder** Tiefe.
- *
- * Für eine Pflichtgruppe (`min > 0`) gibt es zwei Muster:
- * - **Itemisiert („nimm all diese")**: die Mitglieder tragen eigene `min`-Constraints;
- *   dann steuert jedes solche Mitglied genau sein eigenes `min` bei.
- * - **Wähle-eine („aus einem Topf")**: kein Mitglied ist selbst pflichtig; dann füllt
- *   die Default- bzw. Erst-Option (`resolveGroupDefaultMember`) das Gruppen-`min`.
- *
- * Das eigene `min` einer Gruppe entscheidet nur darüber, was diese Gruppe selbst
- * beisteuert — nie darüber, ob in sie hinabgestiegen wird. Eine Gruppe steuert
- * ausschließlich ihre direkten Mitglieder bei; die Mitglieder einer verschachtelten
- * Gruppe sind deren Sache.
- *
- * @param {object} def die aufgelöste Definition (oder Gruppe), die begangen wird.
- * @param {(defOrGroup: object) => number} minOf die Lesart des `min`-Constraints des
- *   Aufrufers (roh oder effektiv); 0, wenn kein `min` vorliegt.
- * @returns {Array<{ def: object, count: number }>} in Anlege-Reihenfolge: erst die
- *   direkten Mitglieder, dann die Gruppen in Dokumentreihenfolge, jede Gruppe vor
- *   den in ihr verschachtelten Gruppen.
- */
-export function mandatoryChildrenOf(def, minOf) {
-  const children = [];
-
-  memberDefsOf(def).forEach(member => {
-    const count = minOf(member);
-    if (count > 0) children.push({ def: member, count });
-  });
-
-  def?.selectionEntryGroups?.forEach(group => {
-    children.push(...mandatoryChildrenOfGroup(group, minOf));
-  });
-  return children;
+  if (targetDefId) {
+    const byTarget = members.find(member => member.targetId === targetDefId);
+    if (byTarget) return byTarget;
+  }
+  return null;
 }

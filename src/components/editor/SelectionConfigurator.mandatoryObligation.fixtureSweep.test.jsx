@@ -11,6 +11,7 @@ import { createSelectionFromDef } from '../../roster/selectionFactory.js';
 import { rootSelectionsOf } from '../../roster/rosterTree.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
+import { findChildSlot } from '../../evaluation/slotLookups.js';
 
 /**
  * Issue 0145, increment 2, Kriterien 3, 4 und 6 — über ALLE Einheiten der
@@ -231,8 +232,22 @@ beforeAll(() => {
     const { system, catalogue, prepared, forceEntryId } = loadCatalogue(spec);
     expect(forceEntryId, `Kontingent fuer ${spec.cat}`).toBeTruthy();
 
+    // Das Angebot des leeren Kontingents: es traegt je Einheit die
+    // Pflicht-Mitglieder, die das Ausheben anlegt (`raiseMembers`, Issue 0157)
+    // — dieselbe Auskunft, aus der `useRoster.addUnit` seine Selektion baut.
+    const emptyForceRoster = {
+      catalogueId: catalogue.id, name: 'test', costLimit: 3000, costLimitType: PTS,
+      forces: [{ id: 'force-1', forceEntryId, catalogueId: catalogue.id, selections: [] }],
+    };
+    const emptyAdapted = toEvaluatorRoster(emptyForceRoster);
+    const offer = evaluate(prepared, emptyAdapted.evalRoster).capabilities;
+    const offerForcePath = emptyAdapted.pathByForceId.get('force-1');
+
     for (const entry of (catalogue.selectionEntries || []).filter(e => e.type === 'unit')) {
-      const unit = createSelectionFromDef({ system, resolveEntry, catalogueId: catalogue.id, entry });
+      const unit = createSelectionFromDef({
+        system, resolveEntry, catalogueId: catalogue.id, entry,
+        mandatoryMembers: findChildSlot(offer, offerForcePath, entry.id)?.raiseMembers ?? [],
+      });
       const roster = {
         catalogueId: catalogue.id,
         name: 'test',
@@ -405,6 +420,9 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
     // die Lores-of-Magic-Zeilen versteckt, inc-1 hat zwei weitere erfuellt.
     // Die Schwelle steht bewusst als Untergrenze, nicht als exakte Zahl — ein
     // exakter Treffer waere Geisel jeder kuenftigen Evaluator-Aenderung.
+    // Issue 0157 bewegt diese Zahl NICHT: die Pflicht-Mitglieder kommen jetzt
+    // aus dem Bericht statt aus einem zweiten Lesen der Constraints, legen aber
+    // denselben Baum an (siehe `recruitTree.frozenCorpus.test.js`).
     const unmet = rows.filter(r => r.isMandatoryUnmet === true);
     expect(unmet.length, 'Zeilen mit isMandatoryUnmet').toBeGreaterThanOrEqual(50);
     expect(new Set(unmet.map(r => r.where)).size, 'Karten mit mindestens einer offenen Pflicht').toBeGreaterThan(0);

@@ -33,13 +33,22 @@ const WHEELS_ID = 'entry-wheels';
 const EXPERIMENTAL_RULES_ID = 'entry-experimental';
 const OATH_ID = 'entry-oath';
 const CAMPAIGN_ID = 'entry-campaign';
+const CATEGORISED_OATH_ID = 'entry-oath-categorised';
+const RULES_CATEGORY_ID = 'cat-rules';
 const ALLIED_UNIT_ID = 'entry-allied-unit';
 const LIBRARY_UNIT_ID = 'entry-library-unit';
 
 const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
   <gameSystem id="${GAME_SYSTEM_ID}" name="Classification System">
     <costTypes><costType id="${COST_TYPE_ID}" name="pts" defaultCostLimit="-1"/></costTypes>
-    <forceEntries><forceEntry id="${FORCE_DEF_ID}" name="Main Force"/></forceEntries>
+    <categoryEntries><categoryEntry id="${RULES_CATEGORY_ID}" name="Rules"/></categoryEntries>
+    <forceEntries>
+      <forceEntry id="${FORCE_DEF_ID}" name="Main Force">
+        <categoryLinks>
+          <categoryLink id="fcl-rules" name="Rules" targetId="${RULES_CATEGORY_ID}" primary="false"/>
+        </categoryLinks>
+      </forceEntry>
+    </forceEntries>
   </gameSystem>`;
 
 const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -82,6 +91,17 @@ const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
         <constraints>
           <constraint id="con-oath-min" type="min" field="selections" scope="force" value="1"/>
         </constraints>
+      </selectionEntry>
+      <!-- Dieselbe Pflicht, aber mit einem categoryLink: der steht in
+           def.children und darf nicht als eigene Unterauswahl zaehlen
+           (Issue 0157). -->
+      <selectionEntry id="${CATEGORISED_OATH_ID}" name="Oath of Allegiance" type="upgrade">
+        <constraints>
+          <constraint id="con-oath-cat-min" type="min" field="selections" scope="roster" value="1"/>
+        </constraints>
+        <categoryLinks>
+          <categoryLink id="cl-oath-cat" name="Rules" targetId="${RULES_CATEGORY_ID}" primary="true"/>
+        </categoryLinks>
       </selectionEntry>
       <!-- Gleiche Bauart, aber der min-Constraint meint die eigene
            Instanzgrenze (scope="parent") — keine armeeweite Pflicht. -->
@@ -162,6 +182,13 @@ describe('SlotCapability: Listenregel-Merkmale (Issue 0156)', () => {
     const built = report();
 
     expect(slotOf(built, CAMPAIGN_ID)).toMatchObject({ isListRule: true, isMandatoryListRule: false });
+  });
+
+  it('ein blosser categoryLink macht die Regel nicht zum Behaelter (Issue 0157)', () => {
+    const built = report();
+
+    expect(slotOf(built, CATEGORISED_OATH_ID))
+      .toMatchObject({ isListRule: true, isMandatoryListRule: true });
   });
 
   it('eine Regel ohne min-Constraint ist keine Pflicht', () => {

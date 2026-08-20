@@ -2,8 +2,10 @@
 
 Unit tests for the app's write model (ADR 0022/0023): the selection factory,
 sub-selection editing, the tree helpers, catalogue resolution (`resolveEntry`/
-`findEntryInSystem`), catalogue sync, and the display-cost helpers in
-`rosterCounter.js`. Framework: vitest, plain `describe`/`it`. Run the whole
+`findEntryInSystem`), catalogue sync, and the cost-type labels in `costTypeLabels.js`. Anything the
+report answers (costs, visibility, profiles, list rules, entry classification
+and **which members a raise creates**) is **not** tested here — it lives in `src/evaluation/`
+and `src/evaluator/`. Framework: vitest, plain `describe`/`it`. Run the whole
 directory: `forge-test --run src/roster`; a single file: `forge-test --run src/roster/<file>.test.js`.
 
 ## Conventions
@@ -13,7 +15,7 @@ directory: `forge-test --run src/roster`; a single file: `forge-test --run src/r
   English).
 - Nothing is mocked here beyond a stub `resolveEntry` a file builds itself
   (see `makeResolver` in `selectionFactory.test.js`, `createSystem` +
-  `resolveEntry` from `catalogResolver.js` in `rosterCounter.mandatoryGroupDefault.test.js`)
+  `resolveEntry` from `catalogResolver.js`)
   — resolving links/entries by id against an inline fixture, never a mock of
   the module under test or of a sibling module.
 - A catalogue fixture is a generic, schema-shaped object literal built inline
@@ -31,19 +33,21 @@ directory: `forge-test --run src/roster`; a single file: `forge-test --run src/r
   `Zacharias the Everliving`. A case that pins depth-independent behaviour
   builds that nesting explicitly rather than flattening it, and names the real
   entry it mirrors in a comment where it does.
-- `createSelectionFromDef` (`selectionFactory.js`) and `getOptionDisplayCost`
-  (`rosterCounter.js`) share one rule for which option a mandatory group
-  contributes (SSOT, ADR-0022, `selectionMembers.js`'s `resolveGroupDefaultMember`):
-  a test that pins a group's mandatory-population shape belongs in
-  `selectionFactory.test.js`; a test that pins the estimate shown before
-  recruiting belongs in `rosterCounter.mandatoryGroupDefault.test.js`, and
-  where a case is about the two staying in agreement, it recruits through
-  `createSelectionFromDef` and compares against `getSelectionTotalCost` of the
-  result, not against a hand-computed number.
+- Which members a mandatory group contributes is no longer decided here: the
+  report answers it (`capability.raiseMembers`), and the rule is pinned in
+  `src/evaluator/costProjection.raiseMembers.test.js` (Issue 0157). What
+  belongs in `selectionFactory.test.js` is the other half — that a reported id
+  finds its catalogue object, through groups and group links, in any depth.
+  The estimate a user sees before recruiting is the report's `raiseCosts` from
+  the same walk; that it agrees with the recruited selection's `totalCosts` is
+  pinned in `src/hooks/useRoster.recruitCostAgreement.test.js`.
+- A case that needs a cost total reads `evaluateAppRoster(system, roster)` —
+  `costTotals` roster-wide, `totalCosts`/`raiseCosts` per slot. There is no
+  cost arithmetic left in this directory to call.
 - Naming: `<module>.test.js` for a module's own unit tests;
   `<module>.<topic>.test.js` for a case that isolates one topic (e.g.
-  `rosterCounter.mandatoryGroupDefault.test.js`,
-  `selectionFactory.effectiveMin.test.js`). A case belongs in the file whose
+  `costTypeLabels.costTypeSelection.test.js`,
+  `selectionMembers.test.js`). A case belongs in the file whose
   module owns the rule it pins.
 - A case that pins existing, already-correct behaviour as a regression guard
   reads as a plain assertion beside the new cases — no `KONTROLLE:` marker is

@@ -9,7 +9,7 @@ import {
   decompressRoszToXml,
   MissingSystemError
 } from './rosterSerialization.js';
-import { calculateRosterCosts } from '../roster/rosterCounter.js';
+import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 
 // Setup DOMParser and Crypto for the test Node environment
 beforeAll(() => {
@@ -543,7 +543,7 @@ describe('Export derives cost and type from the catalogue', () => {
   test('per-selection cost flat-sum equals the computed roster total (no stored costs)', () => {
     const xml = exportRosterToXml(roster, catSystem);
     // 5 (unit) + (2 + 1 modifier) * 3 = 5 + 9 = 14
-    expect(calculateRosterCosts(roster, catSystem).pts).toBe(14);
+    expect(evaluateAppRoster(catSystem, roster).costTotals.pts).toBe(14);
     expect(flatSelectionPts(xml)).toBe(14);
   });
 

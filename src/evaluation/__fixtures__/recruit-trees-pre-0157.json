@@ -1,0 +1,3395 @@
+{
+ "Vampire Counts (6th definitive edition).cat / Skeletons": {
+  "name": "Skeletons",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Skeletons",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Zombies": {
+  "name": "Zombies",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Spears",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Zombie",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Ghouls": {
+  "name": "Ghouls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ghouls",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Bat Swarm": {
+  "name": "0-1 Bat Swarm",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bat Swarm",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Dire Wolves": {
+  "name": "Dire Wolves",
+  "number": 1,
+  "children": [
+   {
+    "name": "Dire Wolf",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Grave Guard": {
+  "name": "Grave Guard",
+  "number": 1,
+  "children": [
+   {
+    "name": "Grave Guard",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Black Knights": {
+  "name": "Black Knights",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Knights",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Lance",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Shield",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Fell Bats": {
+  "name": "Fell Bats",
+  "number": 1,
+  "children": [
+   {
+    "name": "Fell bats",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Spirit Host": {
+  "name": "0-1 Spirit Host",
+  "number": 1,
+  "children": [
+   {
+    "name": "Spirit Host",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Banshee": {
+  "name": "Banshee",
+  "number": 1,
+  "children": [
+   {
+    "name": "Banshee",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Black Coach": {
+  "name": "0-1 Black Coach",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Coach",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Nightmares",
+    "number": 2,
+    "children": []
+   },
+   {
+    "name": "Wraith",
+    "number": 1,
+    "children": [
+     {
+      "name": "Great Weapon",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Master Necromancer": {
+  "name": "Master Necromancer",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 3",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Wight Lord": {
+  "name": "Wight Lord",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Wraith": {
+  "name": "Wraith",
+  "number": 1,
+  "children": [
+   {
+    "name": "Great Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Necromancer": {
+  "name": "Necromancer",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 2",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Vampire Lord": {
+  "name": "0-1 Vampire Lord",
+  "number": 1,
+  "children": [
+   {
+    "name": "Lord hero choice extra cost",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 3",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Vampire Count": {
+  "name": "Vampire Count",
+  "number": 1,
+  "children": [
+   {
+    "name": "Magic Level 2",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Vampire Thrall": {
+  "name": "Vampire Thrall",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Manfred von Carstein": {
+  "name": "Manfred von Carstein",
+  "number": 1,
+  "children": [
+   {
+    "name": "Cloak of Darkness",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ebony Staff",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Extra hero choice 2",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Extra hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 4",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Nightmare with Barding",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sword of Unholy Power",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Konrad von Carstein": {
+  "name": "Konrad von Carstein",
+  "number": 1,
+  "children": [
+   {
+    "name": "Extra hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 1",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Archers": {
+  "name": "Archers",
+  "number": 1,
+  "children": [
+   {
+    "name": "Archer",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Bow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Huntsmen": {
+  "name": "0-1 Huntsmen",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Huntsman",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Long Bow",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Free Company": {
+  "name": "Free Company",
+  "number": 1,
+  "children": [
+   {
+    "name": "Fighter",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Crossbowmen": {
+  "name": "Crossbowmen",
+  "number": 1,
+  "children": [
+   {
+    "name": "Crossbow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Crossbowmen",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Charnel Guard": {
+  "name": "0-1 Charnel Guard",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ghouls",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Zacharias the Everliving": {
+  "name": "Zacharias the Everliving",
+  "number": 1,
+  "children": [
+   {
+    "name": "Dark Acolyte",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Forbidden Lore",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 4",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Master of the Black Arts",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Nehekhara’s Noble Blood",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "The Awakening",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Unholy Cynosure",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Zombie Dragon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Swain": {
+  "name": "Swain",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / Drakenhof Guard": {
+  "name": "Drakenhof Guard",
+  "number": 1,
+  "children": [
+   {
+    "name": "Full Plate Armour [THE EMPIRE]",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Grave Guard",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Great Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Sethep, the Merciless": {
+  "name": "Sethep, the Merciless",
+  "number": 1,
+  "children": [
+   {
+    "name": "Extra hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 4",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 1",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Unquiet Horsemen": {
+  "name": "Unquiet Horsemen",
+  "number": 1,
+  "children": [
+   {
+    "name": "Skeleton Ligh Horsemen",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Embalmed ones": {
+  "name": "Embalmed ones",
+  "number": 1,
+  "children": [
+   {
+    "name": "Tomb Guard",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Tomb stalker": {
+  "name": "Tomb stalker",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / Tomb Prince [KHEMRI]": {
+  "name": "Tomb Prince [KHEMRI]",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / Simulacra": {
+  "name": "Simulacra",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Simulacrum",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Ghosts": {
+  "name": "Ghosts",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ghost",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Skeleton Bowmen": {
+  "name": "Skeleton Bowmen",
+  "number": 1,
+  "children": [
+   {
+    "name": "Skeletons",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Luthor Harkon, Arch Grand Commodore": {
+  "name": "Luthor Harkon, Arch Grand Commodore",
+  "number": 1,
+  "children": [
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Vampire Fleet Captain": {
+  "name": "Vampire Fleet Captain",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / Zombie Pirate Gunnery Mob": {
+  "name": "Zombie Pirate Gunnery Mob",
+  "number": 1,
+  "children": [
+   {
+    "name": "Zombie",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Luthor Harkonen (Web-GW)": {
+  "name": "Luthor Harkonen (Web-GW)",
+  "number": 1,
+  "children": [
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 3",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sword of Eigil Johannesen",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Bloated Corpse": {
+  "name": "Bloated Corpse",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / Razortooth Rats": {
+  "name": "Razortooth Rats",
+  "number": 1,
+  "children": [
+   {
+    "name": "Rat Swarm",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Deck Droppers": {
+  "name": "Deck Droppers",
+  "number": 1,
+  "children": [
+   {
+    "name": "Deck Dropper",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Carronade": {
+  "name": "Carronade",
+  "number": 1,
+  "children": [
+   {
+    "name": "Crew",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Deck Gunners": {
+  "name": "Deck Gunners",
+  "number": 1,
+  "children": [
+   {
+    "name": "Deck Gunners",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Animated Hulks": {
+  "name": "Animated Hulks",
+  "number": 1,
+  "children": [
+   {
+    "name": "Animated Hulk",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts (6th definitive edition).cat / Rotting Leviathan": {
+  "name": "Rotting Leviathan",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts (6th definitive edition).cat / 0-1 Queen Bess": {
+  "name": "0-1 Queen Bess",
+  "number": 1,
+  "children": [
+   {
+    "name": "Crew",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Warboss": {
+  "name": "Savage Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Great Shaman": {
+  "name": "Orc Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Great Shaman": {
+  "name": "Savage Orc Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Warboss": {
+  "name": "Goblin Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblin Warboss": {
+  "name": "Night Goblin Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Great Shaman": {
+  "name": "Goblin Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblin Great Shaman": {
+  "name": "Night Goblin Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Black Orc Bigboss": {
+  "name": "Black Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Bigboss": {
+  "name": "Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Bigboss": {
+  "name": "Savage Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc  Shaman": {
+  "name": "Orc  Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc  Shaman": {
+  "name": "Savage Orc  Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Bigboss": {
+  "name": "Goblin Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblin Bigboss": {
+  "name": "Night Goblin Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Shaman": {
+  "name": "Goblin Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblin Shaman": {
+  "name": "Night Goblin Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Boyz": {
+  "name": "Orc Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Arrer Boyz": {
+  "name": "Orc Arrer Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Arrer Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Boyz": {
+  "name": "Savage Orc Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblins": {
+  "name": "Goblins",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin",
+    "number": 20,
+    "children": []
+   },
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Wolf Riders": {
+  "name": "Goblin Wolf Riders",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Wolf rider",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Short Bows",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Snotlings": {
+  "name": "Snotlings",
+  "number": 1,
+  "children": [
+   {
+    "name": "Snotling base",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Black Orcs": {
+  "name": "Black Orcs",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Orcs",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Boar Boyz": {
+  "name": "Orc Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Spears",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Boar Boyz": {
+  "name": "Savage Orc Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblin Squig Herd": {
+  "name": "Night Goblin Squig Herd",
+  "number": 1,
+  "children": [
+   {
+    "name": "Night Goblin",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Boar Chariot": {
+  "name": "Orc Boar Chariot",
+  "number": 1,
+  "children": [
+   {
+    "name": "Orc Chariot",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Rock Lobba": {
+  "name": "Goblin Rock Lobba",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Crew",
+    "number": 3,
+    "children": []
+   },
+   {
+    "name": "Rock Lobba",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Trolls": {
+  "name": "Trolls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Trolls",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Snotling Pump Wagon": {
+  "name": "Snotling Pump Wagon",
+  "number": 1,
+  "children": [
+   {
+    "name": "Pump Wagon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Snotling crew",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Doom Diver Catapult": {
+  "name": "Goblin Doom Diver Catapult",
+  "number": 1,
+  "children": [
+   {
+    "name": "Doom Diver Catapult",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Goblin Crew",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Spear Chukka": {
+  "name": "Goblin Spear Chukka",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Spear Chukka",
+    "number": 1,
+    "children": [
+     {
+      "name": "Goblin Crew",
+      "number": 3,
+      "children": []
+     },
+     {
+      "name": "Spear Chukka",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Wolf Chariots": {
+  "name": "Goblin Wolf Chariots",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Wolf chariot",
+    "number": 1,
+    "children": [
+     {
+      "name": "Goblin crew",
+      "number": 3,
+      "children": []
+     },
+     {
+      "name": "Scythed wheels",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Extra Goblin Hero": {
+  "name": "Extra Goblin Hero",
+  "number": 1,
+  "children": [
+   {
+    "name": "Night Goblin Bigboss",
+    "number": 1,
+    "children": [
+     {
+      "name": "Hand Weapon",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Big 'uns Boar Boyz": {
+  "name": "Orc Big 'uns Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Spears",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Big 'Uns": {
+  "name": "Orc Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Big 'Uns",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Boar Big 'Uns": {
+  "name": "Savage Orc Boar Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Big 'Un  Boar Boyz",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Big 'Uns": {
+  "name": "Savage Orc Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Big 'Uns",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Stone Trolls": {
+  "name": "Stone Trolls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Trolls",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Goblin Spider Riders": {
+  "name": "Goblin Spider Riders",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Spider rider",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Short Bows",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Spider Swarms": {
+  "name": "Spider Swarms",
+  "number": 1,
+  "children": [
+   {
+    "name": "Swarm base",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Savage Orc Boar Chariot": {
+  "name": "Savage Orc Boar Chariot",
+  "number": 1,
+  "children": [
+   {
+    "name": "Savage Orc Chariot",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Snotling Warboss": {
+  "name": "Snotling Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Black Orc Warboss": {
+  "name": "Black Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Grimgor Ironhide": {
+  "name": "Grimgor Ironhide",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bodyguards",
+    "number": 1,
+    "children": [
+     {
+      "name": "Bodyguard",
+      "number": 9,
+      "children": []
+     },
+     {
+      "name": "Choppa",
+      "number": 1,
+      "children": []
+     },
+     {
+      "name": "Heavy Armour",
+      "number": 1,
+      "children": []
+     },
+     {
+      "name": "Shield",
+      "number": 1,
+      "children": []
+     }
+    ]
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Wurrzag Ud Ura Zahubu": {
+  "name": "Wurrzag Ud Ura Zahubu",
+  "number": 1,
+  "children": [
+   {
+    "name": "Baleful Mask (Talisman)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Bonewood Staff (Enchanted Item)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 4 Shaman",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sleenrippa the Boar (Mount)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Warpaint",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizzbang the Power Squig (Arcane Item)",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Borgut Facebeater": {
+  "name": "Borgut Facebeater",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Grom the Paunch of Misty Mountain": {
+  "name": "Grom the Paunch of Misty Mountain",
+  "number": 1,
+  "children": [
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Grom's Chariot",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Niblit (SB)",
+    "number": 1,
+    "children": [
+     {
+      "name": "Light Armour",
+      "number": 1,
+      "children": []
+     },
+     {
+      "name": "Lucky Banner (Magic Banner)",
+      "number": 1,
+      "children": [
+       {
+        "name": "Battle Standard Bearer",
+        "number": 1,
+        "children": []
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "name": "The Axe of Grom: Elf-Biter",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblins": {
+  "name": "Night Goblins",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Night Goblin",
+    "number": 20,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Orc Warboss": {
+  "name": "Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Azhag the Slaughterer": {
+  "name": "Azhag the Slaughterer",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Azhag's 'Ard Armour (Magic Armour)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Daemon Staff",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Mounts",
+    "number": 1,
+    "children": [
+     {
+      "name": "Wyvern",
+      "number": 1,
+      "children": []
+     }
+    ]
+   },
+   {
+    "name": "Slagga's Sword of Slashin' (Magic Weapon)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "The Crown of Sorcery",
+    "number": 1,
+    "children": [
+     {
+      "name": "Level 2 Shaman",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Morglum Necksnapper": {
+  "name": "Morglum Necksnapper",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Boar",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Bulak's Bloody Armour (Magic Armour)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Two Hand Weapons",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Gorfang Rotgut": {
+  "name": "Gorfang Rotgut",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Evil Sun Armour (Magic Armour)",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "The Red Fang (Magic Weapon)",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Night Goblins Stickas": {
+  "name": "Night Goblins Stickas",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Night Goblin",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Short Bows",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Skarsnik, Warlord of Karak Eight Peaks": {
+  "name": "Skarsnik, Warlord of Karak Eight Peaks",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Gobbla",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Skarsnik's Prodder",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Badruk 'Eadsplitta": {
+  "name": "Badruk 'Eadsplitta",
+  "number": 1,
+  "children": [
+   {
+    "name": "Additional Hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Dwarf Trinket",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Great Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Grotsnag, Scourge of da Black Mountins": {
+  "name": "Grotsnag, Scourge of da Black Mountins",
+  "number": 1,
+  "children": []
+ },
+ "Orcs and goblins (6th definitive edition).cat / Grabnatz & Gulag": {
+  "name": "Grabnatz & Gulag",
+  "number": 1,
+  "children": [
+   {
+    "name": "Grabnatz Sourbelly, Gratist Goblin Mind of Iz Time",
+    "number": 1,
+    "children": [
+     {
+      "name": "Magic Level 2",
+      "number": 1,
+      "children": []
+     }
+    ]
+   },
+   {
+    "name": "Gulag the Bodyguard",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / 0-1 Fungas Loons": {
+  "name": "0-1 Fungas Loons",
+  "number": 1,
+  "children": [
+   {
+    "name": "Fungas Loons",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Kap'n Skabend & Slygit": {
+  "name": "Kap'n Skabend & Slygit",
+  "number": 1,
+  "children": [
+   {
+    "name": "Kap'n Skabend",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Slygit",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Git Guzzler, the Goblin King": {
+  "name": "Git Guzzler, the Goblin King",
+  "number": 1,
+  "children": []
+ },
+ "Orcs and goblins (6th definitive edition).cat / Fire Kobold": {
+  "name": "Fire Kobold",
+  "number": 1,
+  "children": [
+   {
+    "name": "Fire Kobold",
+    "number": 20,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Dust Goblins": {
+  "name": "Dust Goblins",
+  "number": 1,
+  "children": [
+   {
+    "name": "Dust Goblin",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / 0-1 Hill Goblins": {
+  "name": "0-1 Hill Goblins",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Hill Goblin",
+    "number": 20,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and goblins (6th definitive edition).cat / Troglagob": {
+  "name": "Troglagob",
+  "number": 1,
+  "children": [
+   {
+    "name": "Troglagob",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Gnoblars": {
+  "name": "Gnoblars",
+  "number": 1,
+  "children": [
+   {
+    "name": "Gnoblars",
+    "number": 20,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sharp Stuff",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Gnoblar Trappers": {
+  "name": "Gnoblar Trappers",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sharp Stuff",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Trappers",
+    "number": 8,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Slave Giant": {
+  "name": "Slave Giant",
+  "number": 1,
+  "children": [
+   {
+    "name": "Manacles, chains and bad Attitude",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Tyrant": {
+  "name": "Tyrant",
+  "number": 1,
+  "children": [
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Yhetees": {
+  "name": "Yhetees",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ice Weapons",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Yhetee",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Slaughtermaster": {
+  "name": "Slaughtermaster",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Bruiser": {
+  "name": "Bruiser",
+  "number": 1,
+  "children": [
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Hunter": {
+  "name": "Hunter",
+  "number": 1,
+  "children": [
+   {
+    "name": "Harpoon Crossbow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Butcher": {
+  "name": "Butcher",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Gnoblar Scraplauncher": {
+  "name": "Gnoblar Scraplauncher",
+  "number": 1,
+  "children": [
+   {
+    "name": "Armour Save 5+",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Gorger": {
+  "name": "Gorger",
+  "number": 1,
+  "children": []
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Skrag the Slaughterer, Prohet of the Great Maw": {
+  "name": "Skrag the Slaughterer, Prohet of the Great Maw",
+  "number": 1,
+  "children": [
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Two Hand Weapons",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Greasus Goldtooth, Overtyrant of the Ogre Kingdoms": {
+  "name": "Greasus Goldtooth, Overtyrant of the Ogre Kingdoms",
+  "number": 1,
+  "children": [
+   {
+    "name": "Battle Standard Bearer",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / Braugh the Slavelord": {
+  "name": "Braugh the Slavelord",
+  "number": 1,
+  "children": [
+   {
+    "name": "Braugh",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Slaves",
+    "number": 12,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms (6th definitive edition).cat / 'Kathleen' Halftank": {
+  "name": "'Kathleen' Halftank",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts.cat / Skeletons": {
+  "name": "Skeletons",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Shield",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Skeletons",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Zombies": {
+  "name": "Zombies",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Zombie",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Ghouls": {
+  "name": "Ghouls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ghouls",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Bat Swarm": {
+  "name": "Bat Swarm",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bat Swarm",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Dire Wolves": {
+  "name": "Dire Wolves",
+  "number": 1,
+  "children": [
+   {
+    "name": "Dire Wolf",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Grave Guard": {
+  "name": "Grave Guard",
+  "number": 1,
+  "children": [
+   {
+    "name": "Grave Guard",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Black Knights": {
+  "name": "Black Knights",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Knights",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Lance",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Shield",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Fell Bats": {
+  "name": "Fell Bats",
+  "number": 1,
+  "children": [
+   {
+    "name": "Fell bats",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Spirit Host": {
+  "name": "Spirit Host",
+  "number": 1,
+  "children": [
+   {
+    "name": "Spirit Host",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Banshee": {
+  "name": "Banshee",
+  "number": 1,
+  "children": [
+   {
+    "name": "Banshee",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Black Coach": {
+  "name": "Black Coach",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Coach",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Nightmares",
+    "number": 2,
+    "children": []
+   },
+   {
+    "name": "Wraith",
+    "number": 1,
+    "children": [
+     {
+      "name": "Great Weapon",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Vampire Counts.cat / Dogs of War": {
+  "name": "Dogs of War",
+  "number": 1,
+  "children": []
+ },
+ "Vampire Counts.cat / Master Necromancer": {
+  "name": "Master Necromancer",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 3",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Wight Lord": {
+  "name": "Wight Lord",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Wraith": {
+  "name": "Wraith",
+  "number": 1,
+  "children": [
+   {
+    "name": "Great Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Necromancer": {
+  "name": "Necromancer",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 1",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Vampire Lord": {
+  "name": "Vampire Lord",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Lord hero choice extra cost",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Von Carstein",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 2",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Vampire Count": {
+  "name": "Vampire Count",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Von Carstein",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Wizard level 1",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Vampire Thrall": {
+  "name": "Vampire Thrall",
+  "number": 1,
+  "children": [
+   {
+    "name": "Handweapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Von Carstein",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Vampire Counts.cat / Manfred von Carstein": {
+  "name": "Manfred von Carstein",
+  "number": 1,
+  "children": [
+   {
+    "name": "Cloak of Darkness",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ebony Staff",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Extra hero choice 2",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Extra hero choice",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "General",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Magic Level 4",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Nightmare with Barding",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sword of Unholy Power",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin": {
+  "name": "Night Goblin",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Night Goblin",
+    "number": 20,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Black Orc Warboss": {
+  "name": "Black Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Orc hero extra cost",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Warboss": {
+  "name": "Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Warboss": {
+  "name": "Savage Orc Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Great Shaman": {
+  "name": "Orc Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Great Shaman": {
+  "name": "Savage Orc Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Warboss": {
+  "name": "Goblin Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin Warboss": {
+  "name": "Night Goblin Warboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Great Shaman": {
+  "name": "Goblin Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin Great Shaman": {
+  "name": "Night Goblin Great Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 3 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Black Orc Bigboss": {
+  "name": "Black Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Orc hero extra cost",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Bigboss": {
+  "name": "Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Bigboss": {
+  "name": "Savage Orc Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc  Shaman": {
+  "name": "Orc  Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc  Shaman": {
+  "name": "Savage Orc  Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Bigboss": {
+  "name": "Goblin Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin Bigboss": {
+  "name": "Night Goblin Bigboss",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Shaman": {
+  "name": "Goblin Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin Shaman": {
+  "name": "Night Goblin Shaman",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Level 1 Shaman",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Boyz": {
+  "name": "Orc Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Arrer Boyz": {
+  "name": "Orc Arrer Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Arrer Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Boyz": {
+  "name": "Savage Orc Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Boyz",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblins": {
+  "name": "Goblins",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin",
+    "number": 20,
+    "children": []
+   },
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Wolf Riders": {
+  "name": "Goblin Wolf Riders",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Wolf rider",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Short Bows",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Snotlings": {
+  "name": "Snotlings",
+  "number": 1,
+  "children": [
+   {
+    "name": "Snotling base",
+    "number": 2,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Black Orcs": {
+  "name": "Black Orcs",
+  "number": 1,
+  "children": [
+   {
+    "name": "Black Orcs",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Boar Boyz": {
+  "name": "Orc Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Spears",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Boar Boyz": {
+  "name": "Savage Orc Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Night Goblin Squig Herd": {
+  "name": "Night Goblin Squig Herd",
+  "number": 1,
+  "children": [
+   {
+    "name": "Night Goblin",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Boar Chariot": {
+  "name": "Orc Boar Chariot",
+  "number": 1,
+  "children": [
+   {
+    "name": "Armour Save +4Sv",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Chariot",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Rock Lobba": {
+  "name": "Goblin Rock Lobba",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Crew",
+    "number": 3,
+    "children": []
+   },
+   {
+    "name": "Rock Lobba",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Trolls": {
+  "name": "Trolls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Trolls",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Snotling Pump Wagon": {
+  "name": "Snotling Pump Wagon",
+  "number": 1,
+  "children": [
+   {
+    "name": "Pump Wagon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Snotling crew",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Giant": {
+  "name": "Giant",
+  "number": 1,
+  "children": []
+ },
+ "Orcs and Goblins.cat / Dogs of War": {
+  "name": "Dogs of War",
+  "number": 1,
+  "children": []
+ },
+ "Orcs and Goblins.cat / Goblin Doom Diver Catapult": {
+  "name": "Goblin Doom Diver Catapult",
+  "number": 1,
+  "children": [
+   {
+    "name": "Doom Diver Catapult",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Goblin Crew",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Spear Chukka": {
+  "name": "Goblin Spear Chukka",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Spear Chukka",
+    "number": 1,
+    "children": [
+     {
+      "name": "Goblin Crew",
+      "number": 3,
+      "children": []
+     },
+     {
+      "name": "Spear Chukka",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Goblin Wolf Chariots": {
+  "name": "Goblin Wolf Chariots",
+  "number": 1,
+  "children": [
+   {
+    "name": "Goblin Wolf chariot",
+    "number": 1,
+    "children": [
+     {
+      "name": "Armour Save +5Sv",
+      "number": 1,
+      "children": []
+     },
+     {
+      "name": "Goblin crew",
+      "number": 3,
+      "children": []
+     },
+     {
+      "name": "Scythed wheels",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Extra Goblin Hero": {
+  "name": "Extra Goblin Hero",
+  "number": 1,
+  "children": [
+   {
+    "name": "Night Goblin Bigboss",
+    "number": 1,
+    "children": [
+     {
+      "name": "Hand Weapon",
+      "number": 1,
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Big 'uns Boar Boyz": {
+  "name": "Orc Big 'uns Boar Boyz",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Orc Boar Boyz",
+    "number": 5,
+    "children": []
+   },
+   {
+    "name": "Spears",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Orc Big 'Uns": {
+  "name": "Orc Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Big 'Uns",
+    "number": 10,
+    "children": []
+   },
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Boar Big 'Uns": {
+  "name": "Savage Orc Boar Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapons and Shields",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Big 'Un  Boar Boyz",
+    "number": 5,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Savage Orc Big 'Uns": {
+  "name": "Savage Orc Big 'Uns",
+  "number": 1,
+  "children": [
+   {
+    "name": "Choppa",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Savage Orc Big 'Uns",
+    "number": 10,
+    "children": []
+   }
+  ]
+ },
+ "Orcs and Goblins.cat / Stone Trolls": {
+  "name": "Stone Trolls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Trolls",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Bulls": {
+  "name": "Bulls",
+  "number": 1,
+  "children": [
+   {
+    "name": "Bulls",
+    "number": 3,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Ironguts": {
+  "name": "Ironguts",
+  "number": 1,
+  "children": [
+   {
+    "name": "Great Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Heavy Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ironguts",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Gnoblars": {
+  "name": "Gnoblars",
+  "number": 1,
+  "children": [
+   {
+    "name": "Gnoblars",
+    "number": 20,
+    "children": []
+   },
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sharp Stuff",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Gnoblar Trappers": {
+  "name": "Gnoblar Trappers",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Sharp Stuff",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Trappers",
+    "number": 8,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Slave Giant": {
+  "name": "Slave Giant",
+  "number": 1,
+  "children": [
+   {
+    "name": "Manacles, chains and bad Attitude",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Tyrant": {
+  "name": "Tyrant",
+  "number": 1,
+  "children": [
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Yhetees": {
+  "name": "Yhetees",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ice Weapons",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Yhetee",
+    "number": 3,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Slaughtermaster": {
+  "name": "Slaughtermaster",
+  "number": 1,
+  "children": [
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Bruiser": {
+  "name": "Bruiser",
+  "number": 1,
+  "children": [
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Hunter": {
+  "name": "Hunter",
+  "number": 1,
+  "children": [
+   {
+    "name": "Harpoon Crossbow",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Butcher": {
+  "name": "Butcher",
+  "number": 1,
+  "children": [
+   {
+    "name": "Hand Weapon",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Leadbelchers": {
+  "name": "Leadbelchers",
+  "number": 1,
+  "children": [
+   {
+    "name": "Leadbelcher Cannon",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Leadbelchers",
+    "number": 2,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Gnoblar Scraplauncher": {
+  "name": "Gnoblar Scraplauncher",
+  "number": 1,
+  "children": [
+   {
+    "name": "Armour Save 5+",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Maneaters": {
+  "name": "Maneaters",
+  "number": 1,
+  "children": [
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Maneaters",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   }
+  ]
+ },
+ "Ogre Kingdoms.cat / Gorger": {
+  "name": "Gorger",
+  "number": 1,
+  "children": []
+ },
+ "Ogre Kingdoms.cat / Rhinox Riders": {
+  "name": "Rhinox Riders",
+  "number": 1,
+  "children": [
+   {
+    "name": "Armour Save 4+",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Light Armour",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Ogre Club",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Rhinox Riders",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Special Slot",
+    "number": 1,
+    "children": []
+   },
+   {
+    "name": "Unit Strength 6",
+    "number": 1,
+    "children": []
+   }
+  ]
+ }
+}

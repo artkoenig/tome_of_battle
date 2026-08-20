@@ -16,8 +16,8 @@ const mockGroupProfilesByType = vi.fn(() => []);
 vi.mock('../../roster', async () => ({
   // Reine Ableitung aus Roster und System — die echte Implementierung durchreichen,
   // damit der Test die tatsächlich verwendete Kostenart-id sieht.
-  resolveCostLimitTypeId: (await vi.importActual('../../roster/rosterCounter')).resolveCostLimitTypeId,
-  resolveCostLimitLabel: (await vi.importActual('../../roster/rosterCounter')).resolveCostLimitLabel,
+  resolveCostLimitTypeId: (await vi.importActual('../../roster/costTypeLabels')).resolveCostLimitTypeId,
+  resolveCostLimitLabel: (await vi.importActual('../../roster/costTypeLabels')).resolveCostLimitLabel,
   findEntryInSystem: vi.fn(() => null),
   resolveEntry: vi.fn(() => null),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),

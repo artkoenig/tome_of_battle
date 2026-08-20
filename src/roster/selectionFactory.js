@@ -1,67 +1,20 @@
-import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { mandatoryChildrenOf } from './selectionMembers.js';
-import { getModifiedConstraintValue, getEffectiveModifiers } from './modifierEvaluator.js';
+import { EntryLinkKind } from '../parser/schema/battlescribeSchema.generated.js';
+import { findMemberDefById } from './selectionMembers.js';
 import '../types.js';
 
 /**
- * Wert des `min`-Constraints einer Definition (0, falls keiner vorhanden).
- * Ein positiver Wert macht das Kind zur Pflichtauswahl.
- *
- * Ohne `evaluationContext` wird der rohe Katalog-`min` verwendet — das langjährige
- * Verhalten. Wird ein Kontext durchgereicht (Geschwister-Issue 02), so fließt ein
- * bedingter Modifier, der das `min` anhebt (eine bedingt erzwungene Pflichtwahl),
- * über den kanonischen Helfer `getModifiedConstraintValue` mit ein. Der Kontext ist
- * die einzige Stelle, an der diese Fabrik effektive statt rohe Werte betrachtet.
- *
- * @param {Object} def der (aufgelöste) Katalog-Eintrag/-Gruppe.
- * @param {Object|null} [evaluationContext] Bewertungskontext für Modifier-Bedingungen.
- */
-function getMinConstraintValue(def, evaluationContext = null) {
-  const minConstraint = def.constraints?.find(constraint => constraint.type === ConstraintKind.MIN);
-  if (!minConstraint) return 0;
-  if (!evaluationContext) return minConstraint.value || 0;
-
-  const effectiveMin = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(def), evaluationContext);
-  return effectiveMin > 0 ? effectiveMin : 0;
-}
-
-/**
- * Fügt ein Pflicht-Kind (aufgelöst über dieselbe Fabrik) mit der geforderten Mindestanzahl
- * unter die Elternselektion. Ein nicht auflösbares Kind wird übersprungen.
- */
-function addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count, evaluationContext }) {
-  const childSelection = createSelectionFromDef({ system, resolveEntry, catalogueId, entry: childDef, evaluationContext });
-  if (childSelection) {
-    childSelection.number = count;
-    parentSelection.selections.push(childSelection);
-  }
-}
-
-/**
- * Bevölkert die Pflicht-Kinder (`min > 0`) einer aufgelösten Definition rekursiv.
- * Welche Kinder das sind, entscheidet die geteilte Ermittlung `mandatoryChildrenOf`
- * — dieselbe, aus der die Kostenschätzung ihren Preis rechnet.
- *
- * Selection-entry groups are walked at any depth: a group's own `min` gates only
- * what that group itself contributes, never whether the walk descends into it.
- *
- * Optionale (min = 0) Kinder bleiben ungewählt — genau das Verhalten des echten Aushebens.
- */
-function populateChildren({ system, resolveEntry, catalogueId, def, parentSelection, evaluationContext }) {
-  const mandatoryChildren = mandatoryChildrenOf(def, member => getMinConstraintValue(member, evaluationContext));
-  mandatoryChildren.forEach(({ def: childDef, count }) => {
-    addMandatoryChild({ system, resolveEntry, catalogueId, parentSelection, childDef, count, evaluationContext });
-  });
-}
-
-/**
  * Reine, geteilte Selektions-Fabrik: erzeugt aus einem Katalog-Eintrag/-Link einen
- * vollständigen Selektions-Knoten und bevölkert **alle** Pflicht-Kinder (`min > 0`,
- * inkl. Default-Gruppenwahl) rekursiv — identisch zum echten Ausheben. Einziger
- * Aufrufer ist heute `useRoster.addUnit`: seit Issue 0121 liest die Oberfläche die
- * Aushebe-Verfügbarkeit aus dem Bericht (ADR-0035), statt sie durch ein
- * hypothetisches Ausheben zu erproben — das dafür gebaute `entryAvailability`
- * (ADR-0022) ist mit dem Solver gelöscht.
+ * vollständigen Selektions-Knoten und legt die **Pflicht-Mitglieder** darunter an,
+ * rekursiv — identisch zum echten Ausheben.
+ *
+ * Welche Mitglieder das sind, sagt seit Issue 0157 der **Bericht**
+ * (`capability.raiseMembers`, ADR-0034), nicht ein zweites Lesen der
+ * Katalog-Constraints: je Pflicht-Kind seine Id, seine effektive Anzahl (nach
+ * allen Modifikatoren, im Rahmen des Kontingents, in dem ausgehoben wird) und
+ * dessen eigene Pflicht-Mitglieder. Diese Schicht **löst** die genannten Ids nur
+ * noch gegen den Katalog auf; sie entscheidet nichts mehr über die Verpflichtung.
+ * Preis und angelegter Baum stammen damit aus einer Quelle (AC3): der Bericht
+ * rechnet beide in einem Durchlauf (`costProjection.js`).
  *
  * Abhängigkeiten werden injiziert (Dependency Injection, kein Closure über Hook-State):
  * @param {Object} args
@@ -73,14 +26,13 @@ function populateChildren({ system, resolveEntry, catalogueId, def, parentSelect
  *   Kontext: bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine Eintrags-Id
  *   nur innerhalb ihres Katalogs eindeutig.
  * @param {string|null} [args.categoryId]           Kategorie der Top-Selektion (Kinder erben keine).
- * @param {Object|null} [args.evaluationContext]     Optionaler Bewertungskontext für Modifier-
- *   Bedingungen. Ohne ihn werden rohe `min`-Werte bevölkert (unverändertes Verhalten); mit ihm
- *   werden **effektive** (modifier-angepasste) `min`-Werte herangezogen, sodass ein bedingt
- *   erhöhtes `min` als Pflichtwahl bevölkert wird. Wird rekursiv an die Pflicht-Kinder
- *   durchgereicht.
+ * @param {ReadonlyArray<{ defId: string, targetDefId?: string|null, count: number, members?: ReadonlyArray<object> }>} [args.mandatoryMembers]
+ *   die Pflicht-Mitglieder dieses Slots aus dem Bericht. Ohne sie entsteht der
+ *   Knoten allein — der Bericht kennt dann keinen Slot für diese Stelle, und wo
+ *   er keine Pflicht sieht, legt die Fabrik auch keine an.
  * @returns {import('../types.js').Selection|null}  der Knoten, oder null bei unauflösbarem Eintrag.
  */
-export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null, evaluationContext = null }) {
+export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null, mandatoryMembers = [] }) {
   const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return null;
 
@@ -95,6 +47,25 @@ export function createSelectionFromDef({ system, resolveEntry, catalogueId, entr
     selections: []
   };
 
-  populateChildren({ system, resolveEntry, catalogueId, def: resolved, parentSelection: selection, evaluationContext });
+  /** Die Gruppe hinter einem Gruppen-Verweis — für sie ist der Verweis durchlässig. */
+  const resolveGroupDef = (member) =>
+    member?.type === EntryLinkKind.SELECTION_ENTRY_GROUP
+      ? resolveEntry(system, member, catalogueId)
+      : null;
+
+  (mandatoryMembers || []).forEach(member => {
+    const childEntry = findMemberDefById(resolved, member.defId, resolveGroupDef, member.targetDefId ?? null)
+      ?? findMemberDefById(entry, member.defId, resolveGroupDef, member.targetDefId ?? null);
+    if (!childEntry) return;
+
+    const childSelection = createSelectionFromDef({
+      system, resolveEntry, catalogueId, entry: childEntry, mandatoryMembers: member.members
+    });
+    if (!childSelection) return;
+
+    childSelection.number = member.count;
+    selection.selections.push(childSelection);
+  });
+
   return selection;
 }

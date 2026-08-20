@@ -27,6 +27,13 @@ function loadCatalogue(catFile) {
     [{ name: DEFINITIVE_GST, content: gstContent }],
     [{ name: catFile, content: catContent }],
   );
+  // Der Bericht ist die Quelle der Pflicht-Mitgliedschaft (Issue 0157), und er
+  // haengt an den Rohdaten des Systems: ohne `rawXmls` wertet `evaluateAppRoster`
+  // gar nicht aus, und das Ausheben legt dann nichts an.
+  system.rawXmls = {
+    gst: [{ name: DEFINITIVE_GST, content: gstContent }],
+    cat: [{ name: catFile, content: catContent }],
+  };
   const catalogue = system.catalogues[0];
   // The definitive edition carries its contingent on the catalogue, not the game system.
   const forceEntryId = (catalogue.forceEntries?.[0] ?? system.forceEntries?.[0])?.id;
@@ -91,6 +98,10 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
   });
 
   it('does not create any of the five Equipment members — their group carries no constraints at all', () => {
+    // Issue 0157 moved the obligation from a second reading of the constraints
+    // into the report (`raiseMembers`), and left this answer untouched: a group
+    // without a minimum of its own obliges nothing, whatever its members
+    // declare. What a recruit puts on the table is unchanged (AC1).
     const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 

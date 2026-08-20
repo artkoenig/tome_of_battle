@@ -40,6 +40,10 @@ means; it outranks the ADRs where the two disagree.
   per slot, and never left to a component (ADR-0034). The same holds for an entry's own kind
   (`entryClassification.js`: `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`) — read
   it through link **and** target (`def.resolved`), since a link carries no `type` of its own.
+- A definition's `children` also holds its `categoryLink`s (`catalogReader.js`,
+  `readSelectionChildren`). "Has its own sub-choices" therefore has to filter
+  `DefinitionKind.CATEGORY_LINK` out — an entry that merely declares a category otherwise counts
+  as a container and silently loses `isMandatoryListRule`/`isIndependentSubUnit` (Issue 0157).
 - A slot's origin decision (`isForeignCatalogue`) needs three things `buildReport` has no other
   way to know, and they travel as `extras`: `libraryCatalogueIds`, `gameSystemId` and
   `primaryCatalogueByForceDefId`. The force book of a slot is the one `forceCatalogueIdOf`
@@ -47,6 +51,19 @@ means; it outranks the ADRs where the two disagree.
   normally filtered out of the tree already (Issue 0140); the report field is the second line for
   the shared-target competition of ADR-0032, so a fixture that wants a `true` here must build
   that case, not two plain books.
+- `raiseCosts` and `raiseMembers` are **one** walk (`costProjection.js`,
+  `mandatoryMemberDefsOf` in `evalTree.js`): the price of raising a slot and the children raising
+  it creates. Two shapes make a child mandatory and they are exclusive per group — an itemised
+  member (its **own** parent-scoped MIN, and only inside a group that carries one too) and, where
+  no member of the group is obliged itemised, the group's own MIN filled by
+  `defaultSelectionEntryId` (else the first member). A group without a MIN obliges nothing at all,
+  a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
+  `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
+  engine taste: they are the reading a recruit has always followed, and
+  `src/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
+  (`src/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
+  and that sweep fails first.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
   entry is no root offer and synthesises no mandatory phantom from its own `min` (ADR-0032), and a

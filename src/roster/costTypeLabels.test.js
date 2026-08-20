@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { resolveCostTypeLabel, resolveCostLimitLabel } from './rosterCounter.js';
+import { resolveCostTypeLabel, resolveCostLimitLabel } from './costTypeLabels.js';
 import {
   POINTS,
   CASTING_DICE,
