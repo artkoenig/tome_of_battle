@@ -24,7 +24,7 @@ export {
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
 } from './costTypeLabels.js';
 export {
-  classifyGroupItem, classifyStandaloneOption, isGroupSingleChoice, isItemRepeatableWithinGroup
+  classifyGroupItem, classifyStandaloneOption
 } from './selectionBehavior.js';
 export { reconcileImportedSelectionIds, syncRosterSelectionsWithSystem } from './rosterSync.js';
 export { findForceEntryById } from './forceEntries.js';

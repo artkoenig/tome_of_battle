@@ -50,9 +50,23 @@ const EVALUATION_LAYER = '^src/evaluation/';
 // Darstellung und Interaktion. src/hooks/ steht in der ADR-Tabelle nicht
 // eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/db/
 // laufen ueber useAppData und useRosterList.
+const VIEWMODEL_LAYER = '^src/viewmodels/';
+
+// Die drei ViewModels der Huellen, die heute noch selbst nach src/db/ und
+// src/parser/ greifen (Bestand aus Issue 0165). Sie sind die benannte und
+// abschliessende Ausnahme von "viewmodel-keine-datenschicht": jedes weitere
+// ViewModel, das die Datenschicht direkt anspricht, laesst forge-lint
+// fehlschlagen. Issue 0167 lenkt diese drei auf src/services/ um und streicht
+// die Ausnahme dann ersatzlos.
+const VIEWMODEL_DATA_LEGACY = [
+  '^src/viewmodels/useRosterEditor\\.js$',
+  '^src/viewmodels/usePlayRoster\\.js$',
+  '^src/viewmodels/useImporter\\.js$',
+];
+
 const UI_LAYER = [
   COMPONENTS_LAYER,
-  '^src/viewmodels/',
+  VIEWMODEL_LAYER,
   '^src/contexts/',
   '^src/hooks/',
   '^src/styles/',
@@ -111,6 +125,39 @@ module.exports = {
           '^src/evaluation/violationStats\\.js$',
         ],
       },
+    },
+    {
+      name: 'viewmodel-kein-jsx',
+      comment:
+        'ADR-0038: src/viewmodels/ liegt in der UI-Schicht ueber ' +
+        'src/components/. Ein ViewModel gibt Anzeigewerte heraus und kennt ' +
+        'kein Markup -- importiert es eine Komponente, ist die Richtung ' +
+        'gedreht und das Modell nur noch ueber das DOM pruefbar.',
+      severity: 'error',
+      from: { path: VIEWMODEL_LAYER, pathNot: TEST_FILE },
+      to: { path: COMPONENTS_LAYER },
+    },
+    {
+      name: 'komponente-kein-bericht',
+      comment:
+        'ADR-0038: eine Komponente ist JSX. Den Auswertungsbericht liest ihr ' +
+        'ViewModel unter src/viewmodels/ und reicht fertige Anzeigewerte als ' +
+        'Props herein. Wer src/evaluation/ oder src/evaluator/ in der ' +
+        'Komponente anfasst, rechnet wieder im Render.',
+      severity: 'error',
+      from: { path: COMPONENTS_LAYER, pathNot: TEST_FILE },
+      to: { path: [EVALUATION_LAYER, EVALUATOR_LAYER] },
+    },
+    {
+      name: 'viewmodel-keine-datenschicht',
+      comment:
+        'ADR-0037/0038: ein ViewModel erreicht Daten ueber src/services/, nie ' +
+        'direkt ueber src/db/ oder src/parser/. Ausgenommen sind die drei ' +
+        'Huellen-ViewModels aus Issue 0165, deren Direktkanten Issue 0167 auf ' +
+        'die Fassade umlenkt.',
+      severity: 'error',
+      from: { path: VIEWMODEL_LAYER, pathNot: [TEST_FILE, ...VIEWMODEL_DATA_LEGACY] },
+      to: { path: [DB_LAYER, PARSER_LAYER] },
     },
     {
       name: 'ui-nicht-auf-daten',

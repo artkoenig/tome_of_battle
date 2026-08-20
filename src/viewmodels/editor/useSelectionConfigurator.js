@@ -90,7 +90,7 @@ const ROLE_GROUP_NAMES = new Set(['rolle', 'rollen', 'role', 'roles']);
  * @param {string|null} targetId gesuchte Selektions-Id
  * @returns {Object|null}
  */
-export const findSelectionById = (rootSelection, targetId) => {
+const findSelectionById = (rootSelection, targetId) => {
   if (!rootSelection || !targetId) return null;
   if (rootSelection.id === targetId) return rootSelection;
   for (const child of rootSelection.selections || []) {

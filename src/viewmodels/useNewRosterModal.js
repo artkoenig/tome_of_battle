@@ -12,13 +12,13 @@ import { DEFAULT_ROSTER_COST_LIMIT } from '../utils/rosterDefaults';
  * (`describeSystem`, Issue 0121, Task 7).
  */
 
-export const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
+const COST_LIMIT_PRESETS = [1000, 1500, 2000, 2500];
 
 /**
  * Die spielbaren Kataloge eines Systems aus der Datensatz-Beschreibung:
  * spielbar ist jeder Katalog, der keine reine Bibliothek ist (ADR-0034).
  */
-export const playableCataloguesOf = (description) =>
+const playableCataloguesOf = (description) =>
   (description?.catalogues ?? []).filter(catalogue => catalogue.isLibrary !== true);
 
 /**
@@ -27,7 +27,7 @@ export const playableCataloguesOf = (description) =>
  * Spielsystems (Quelle ist kein Katalog) und die des gewählten Katalogs —
  * Kontingente fremder Armeebücher gehören nicht in diese Auswahl.
  */
-export function creatableForcesOf(description, catalogueId) {
+function creatableForcesOf(description, catalogueId) {
   if (!description) return [];
   const catalogueIds = new Set(description.catalogues.map(catalogue => catalogue.id));
   return description.creatableForces.filter(force =>
@@ -41,7 +41,7 @@ export function creatableForcesOf(description, catalogueId) {
  * Ohne deklarierte Grenze (fehlend oder Sentinel −1 → `defaultLimit: null`)
  * bleibt der bisherige Vorgabewert.
  */
-export const defaultLimitOf = (description) =>
+const defaultLimitOf = (description) =>
   description?.costTypes?.[0]?.defaultLimit ?? DEFAULT_ROSTER_COST_LIMIT;
 
 const defaultForceEntryIdOf = (description, catalogueId) =>

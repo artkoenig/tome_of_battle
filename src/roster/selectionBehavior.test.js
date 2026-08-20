@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   filterEntryScopedConstraints,
-  isItemRepeatableWithinGroup,
-  isGroupSingleChoice,
   classifyGroupItem,
   classifyStandaloneOption,
   exceedsGroupCountMax,
@@ -52,68 +50,6 @@ describe('filterEntryScopedConstraints', () => {
   it('returns an empty array for missing constraints', () => {
     expect(filterEntryScopedConstraints(undefined, unit)).toEqual([]);
     expect(filterEntryScopedConstraints(null, unit)).toEqual([]);
-  });
-});
-
-describe('isItemRepeatableWithinGroup', () => {
-  const option = { id: 'opt-scroll' };
-  const resolved = { id: 'opt-scroll', targetId: 'scroll-target' };
-  const group = { constraints: [{ id: 'grp-max', type: 'max', value: 1 }] };
-
-  it('is true when an increment+repeat modifier raises the group max for this item', () => {
-    const groupModifiers = [
-      { type: 'increment', field: 'grp-max', repeat: { childId: 'opt-scroll' } }
-    ];
-    expect(isItemRepeatableWithinGroup(option, resolved, group, groupModifiers)).toBe(true);
-  });
-
-  it('matches the repeat target against the resolved target id too', () => {
-    const groupModifiers = [
-      { type: 'increment', field: 'grp-max', repeat: { field: 'scroll-target' } }
-    ];
-    expect(isItemRepeatableWithinGroup(option, resolved, group, groupModifiers)).toBe(true);
-  });
-
-  it('is false when the modifier does not raise a group max constraint', () => {
-    const groupModifiers = [
-      { type: 'increment', field: 'unrelated', repeat: { childId: 'opt-scroll' } }
-    ];
-    expect(isItemRepeatableWithinGroup(option, resolved, group, groupModifiers)).toBe(false);
-  });
-
-  it('is false for a non-increment modifier or one without a repeat', () => {
-    expect(isItemRepeatableWithinGroup(option, resolved, group, [
-      { type: 'set', field: 'grp-max', repeat: { childId: 'opt-scroll' } }
-    ])).toBe(false);
-    expect(isItemRepeatableWithinGroup(option, resolved, group, [
-      { type: 'increment', field: 'grp-max' }
-    ])).toBe(false);
-  });
-
-  it('is false when the repeat targets a different item', () => {
-    const groupModifiers = [
-      { type: 'increment', field: 'grp-max', repeat: { childId: 'other-item' } }
-    ];
-    expect(isItemRepeatableWithinGroup(option, resolved, group, groupModifiers)).toBe(false);
-  });
-
-  it('is false when the option is unresolved', () => {
-    expect(isItemRepeatableWithinGroup(option, null, group, [])).toBe(false);
-  });
-});
-
-describe('isGroupSingleChoice', () => {
-  it('is true for an effective max of 1 that no modifier can raise', () => {
-    expect(isGroupSingleChoice(1, false)).toBe(true);
-  });
-
-  it('is false when a modifier can raise the max above 1 (armour+shield)', () => {
-    expect(isGroupSingleChoice(1, true)).toBe(false);
-  });
-
-  it('is false for an unbounded group and for an effective max above 1', () => {
-    expect(isGroupSingleChoice(Infinity, false)).toBe(false);
-    expect(isGroupSingleChoice(2, false)).toBe(false);
   });
 });
 

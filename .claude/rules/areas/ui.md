@@ -14,6 +14,28 @@ paths:
   while the 14 existing edges are being removed, `error` afterwards.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
   pair is an incomplete change.
+- **The ViewModel pattern (ADR-0038), and it is blocking since Issue 0166.** Every UI building
+  block is two files: the component here, JSX only, and its ViewModel next to it in
+  `src/viewmodels/` (leaves and sections under `src/viewmodels/editor/`, mirroring the component
+  tree). The ViewModel holds the state, reads the report and hands down finished display values;
+  the component takes them as props and renders markup. A new component **without** its ViewModel
+  pair is an incomplete change, the same way a missing `.test.jsx` is — the 22-prop signature and
+  the derivations in the render came back every time the pattern was only a recommendation.
+  - Which hook belongs where: `useState`, `useRef` and `useCallback` stay allowed in a component
+    — an expanded sheet, a focus ref and a stable handler are presentation state. `useEffect`,
+    `useLayoutEffect` and `useMemo` are **forbidden** here and belong in the ViewModel; that is
+    where every effect, every derivation and every subscription lives. In `src/viewmodels/` all
+    of them are allowed.
+  - Four rules keep it, all `error`, all failing `forge-lint`: the oxlint
+    `no-restricted-imports` override on `src/components/**` (the hook ban), and in
+    `.dependency-cruiser.cjs` `viewmodel-kein-jsx` (`src/viewmodels/` → `src/components/`),
+    `komponente-kein-bericht` (`src/components/` → `src/evaluation/`, `src/evaluator/`) and
+    `viewmodel-keine-datenschicht` (`src/viewmodels/` → `src/db/`, `src/parser/`). The last one
+    carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
+    `usePlayRoster` and `useImporter`, whose direct data edges Issue 0167 moves onto
+    `src/services/`.
+  - So a component never imports the report itself. It gets it through its ViewModel, which reads
+    the two roster contexts.
 - The four editor leaves (`UnitSelectionCard`, `SelectionConfigurator`, `OptionGroup`, `UnitChips`)
   are JSX only (ADR-0038): their derivations live in `src/viewmodels/editor/`, and they read the
   report through the two roster contexts instead of `capabilities`/`pathBySelectionId` props. A
@@ -26,10 +48,8 @@ paths:
   from `src/test-utils/harnesses/`, one file per component.
 - Since Issue 0165 the five screen shells (`RosterEditor`, `PlayMode`/`play/PlayUnitDetails`,
   `RosterDashboard`, `Importer`, `editor/NewRosterModal`) and the two overlays
-  (`editor/BottomSheet`, `RulesIndexDialog`) do too. `useEffect` and `useMemo` are **lint errors**
-  in any `.jsx` here (oxlint `no-restricted-imports` override on `src/components/**/*.jsx`, so
-  `forge-lint` fails): put the effect or the memo in the screen's ViewModel under
-  `src/viewmodels/`. Timer, DOM-listener and body-scroll effects count too.
+  (`editor/BottomSheet`, `RulesIndexDialog`) do too. Timer, DOM-listener and body-scroll effects
+  count as effects too, and go into the screen's ViewModel like any other.
 - `Importer` takes the installed systems as a `systems` prop from `App` — the one list of
   `useAppData`. It must never read `getAllSystems` itself; a second list drifted from the first
   and a fresh import stayed invisible in the editor. Its test file therefore hands the list in

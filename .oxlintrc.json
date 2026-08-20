@@ -27,7 +27,7 @@
       // gehoeren in ihr ViewModel unter src/viewmodels/ -- ein `useEffect` oder
       // `useMemo` in einer Komponente ist genau die Ableitung im Render, die
       // die Schicht abschaffen soll.
-      "files": ["src/components/**/*.jsx"],
+      "files": ["src/components/**/*.js", "src/components/**/*.jsx"],
       "rules": {
         "no-restricted-imports": [
           "error",

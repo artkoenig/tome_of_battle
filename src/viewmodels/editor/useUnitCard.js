@@ -39,7 +39,7 @@ const numericValueOf = (value) => {
  * @param {{ value?: string, originalValue?: string }|null|undefined} characteristic
  * @returns {'positive'|'negative'|'modified'|null}
  */
-export function modificationStateOf(characteristic) {
+function modificationStateOf(characteristic) {
   if (!characteristic || characteristic.originalValue === undefined) return null;
   if (characteristic.value === characteristic.originalValue) return null;
 

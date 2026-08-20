@@ -27,12 +27,17 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - Since Issue 0165 each **screen shell** has its own ViewModel here too: `useRosterEditor`,
   `usePlayRoster`, `usePlayUnit`, `useRosterDashboard`, `useImporter`, `useNewRosterModal`, plus
   `useBottomSheet` and `useRulesIndexDialog` for the two overlays. `useEffect`/`useMemo` are
-  banned in `src/components/**/*.jsx` by an oxlint `no-restricted-imports` override (severity
-  `error`, so it fails `forge-lint`) — every effect and every memo of a screen lives here.
+  banned in `src/components/**` by an oxlint `no-restricted-imports` override (severity `error`,
+  so it fails `forge-lint`) — every effect and every memo of a screen lives here.
   Adding an override for a components path there means repeating the evaluator-facade `patterns`
   block: oxlint replaces a rule's config per override rather than merging it.
-- A ViewModel may import `src/db/` directly (`ui-nicht-auf-daten` is `warn`); that is where the
-  edges were parked until the data facade of Issue 0167 cuts them.
+- A ViewModel may **not** import `src/db/` or `src/parser/`: since Issue 0166
+  `viewmodel-keine-datenschicht` is an `error` and fails `forge-lint`. The only exception is
+  named and closing — `useRosterEditor.js`, `usePlayRoster.js` and `useImporter.js`, listed as
+  `VIEWMODEL_DATA_LEGACY` in `.dependency-cruiser.cjs`, where the edges were parked until the
+  data facade of Issue 0167 cuts them. A new ViewModel goes through the facade.
+- `viewmodel-kein-jsx` (`src/viewmodels/` → `src/components/`) is an `error` too, so the "never
+  import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
   formats a label needs `language` in its dependency list, or a language switch leaves the
   derived text stale. Where a derivation is also exported as a plain function, give it a
@@ -43,8 +48,8 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - Resetting a form when a modal opens is done by comparing against a `wasOpen` state **in the
   render**, not in an effect (`useNewRosterModal`): an effect with `systems` in its dependency
   list discards the user's typing whenever the list gets a new identity.
-- `profileCellDisplayOf`/`modificationStateOf` live in `editor/useUnitCard.js` and are read from
-  `usePlayUnit.js` as well — one profile-cell presentation for the editor table and the play
+- `profileCellDisplayOf` lives in `editor/useUnitCard.js` and is read from `usePlayUnit.js` as
+  well (`modificationStateOf` next to it is module-private since Issue 0166) — one profile-cell presentation for the editor table and the play
   table; the former `components/profileCellClasses.js` is gone. The same move absorbed
   `components/importer/importMessages.js` and `revisionDisplay.js` into `useImporter.js`.
 - A hook test that reaches `useRuleUrl` (every shell with a rule channel) must mock

@@ -1,5 +1,4 @@
 import { isEntryScope } from './battlescribeConstants.js';
-import { ConstraintKind, ModifierKind } from '../parser/schema/battlescribeSchema.generated.js';
 import '../types.js';
 
 /**
@@ -45,47 +44,6 @@ export function filterEntryScopedConstraints(constraints, unitResolved) {
 }
 
 /**
- * Wahr, wenn eine Option innerhalb einer nominell auf max=1 gedeckelten Gruppe
- * **wiederholbar** ist: die Gruppe trägt einen `increment`-Modifier mit `<repeat>`,
- * der ihr eigenes `max` je gewählter Kopie genau dieser Option anhebt. Das ist
- * BattleScribes Kodierung für Magiegegenstände, von denen man mehrere nehmen darf
- * (z. B. Dispel Scroll, Power Stone) — sie zählen nicht gegen das „ein Gegenstand
- * pro Kategorie"-Limit und rendern als Mengensteller statt als Radiobutton.
- *
- * @param {Object} option           der (unaufgelöste) Options-Link/-Eintrag.
- * @param {Object|null} resolvedOption  die aufgelöste Option.
- * @param {Object} group             die SelectionEntryGroup (Grenzen).
- * @param {Object[]} groupModifiers  die effektiven Modifier der Gruppe.
- * @returns {boolean}
- */
-export function isItemRepeatableWithinGroup(option, resolvedOption, group, groupModifiers) {
-  if (!resolvedOption) return false;
-  return (groupModifiers || []).some(mod => {
-    if (mod.type !== ModifierKind.INCREMENT || !mod.repeat) return false;
-    const raisesGroupMax = (group.constraints || []).some(
-      c => c.type === ConstraintKind.MAX && c.id === mod.field
-    );
-    if (!raisesGroupMax) return false;
-    const repeatTarget = mod.repeat.childId || mod.repeat.field;
-    return repeatTarget === option.id || repeatTarget === resolvedOption.id || repeatTarget === resolvedOption.targetId;
-  });
-}
-
-/**
- * Eine Gruppe ist echte Einzelwahl (Radiobutton), sobald ihr effektives Max ≤ 1 ist
- * UND kein Modifier dieses Max über 1 heben kann. Der „max-hebbar ⇒ Mehrfachauswahl"-
- * Fall löst den Rüstung+Schild-Teufelskreis: ohne Schild wäre das aktuelle Max 1,
- * aber gerade das Hinzufügen des Schilds hebt es.
- *
- * @param {number} maxLimit             das effektive Gruppen-Max (`Infinity`, wenn keins).
- * @param {boolean} isGroupMaxRaisable  ob ein Modifier das Max über 1 heben kann.
- * @returns {boolean}
- */
-export function isGroupSingleChoice(maxLimit, isGroupMaxRaisable) {
-  return maxLimit !== Infinity && maxLimit <= 1 && !isGroupMaxRaisable;
-}
-
-/**
  * Verhaltensklasse einer Options-Zeile innerhalb einer Gruppe: Pflicht, Einzelwahl
  * (Radiobutton), binär (Checkbox) oder Mehrfachauswahl (Mengensteller).
  *
@@ -109,8 +67,8 @@ export function isGroupSingleChoice(maxLimit, isGroupMaxRaisable) {
  * @param {number} args.maxLimit                    effektives Options-Max (`Infinity`, wenn keins).
  * @param {boolean} args.hasMaxConstraint           ob überhaupt ein Options-Max existiert.
  * @param {boolean} args.isCollective               kollektive (pro-Modell-)Ausrüstung.
- * @param {boolean} args.isRepeatableByGroupModifier siehe {@link isItemRepeatableWithinGroup}.
- * @param {boolean} args.groupSingleChoice          siehe {@link isGroupSingleChoice}.
+ * @param {boolean} args.isRepeatableByGroupModifier ob ein Gruppen-Modifier diese Zeile wiederholbar macht.
+ * @param {boolean} args.groupSingleChoice          ob die Gruppe echte Einzelwahl ist (Max ≤ 1, nicht hebbar).
  * @param {boolean} [args.isMandatoryUnmet]         ob der Bericht die Pflicht als offen meldet.
  * @returns {{isMandatory: boolean, isMandatoryMet: boolean, isRadio: boolean, hasQuantitySignal: boolean, isExplicitlyMulti: boolean, isBinary: boolean}}
  */
