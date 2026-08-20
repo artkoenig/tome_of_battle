@@ -42,6 +42,37 @@ const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 const ROSTER_LAYER = '^src/roster/';
 const EVALUATION_LAYER = '^src/evaluation/';
 
+// Die drei Schichten aus ADR-0037: UI -> Fachlogik -> Daten. Der Pfeil ist die
+// erlaubte Richtung; jeder Rueckgriff von tief nach hoch ist verboten. Die
+// Regeln entstehen als "warn" und werden auf "error" gezogen, sobald die Phase
+// gemergt ist, die ihre Verstoesse abbaut (Issues 0161-0171).
+
+// Darstellung und Interaktion. src/hooks/ steht in der ADR-Tabelle nicht
+// eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/db/
+// laufen ueber useAppData und useRosterList.
+const UI_LAYER = [
+  COMPONENTS_LAYER,
+  '^src/viewmodels/',
+  '^src/contexts/',
+  '^src/hooks/',
+  '^src/styles/',
+];
+
+// Uebersetzte Texte. Teil der UI-Schicht, aber eigener Praefix: nur so laesst
+// sich der Griff einer tieferen Schicht danach als eigene Regel melden.
+const I18N_LAYER = '^src/i18n/';
+
+// Auswertung, Schreibmodell und die Bruecke zwischen beiden. Die
+// Reinraum-Regeln oben gelten unveraendert innerhalb dieser Schicht.
+const DOMAIN_LAYER = [EVALUATOR_LAYER, EVALUATION_LAYER, ROSTER_LAYER];
+
+// Persistenz, Import und Katalog-Zerlegung. src/services/ ist die einzige
+// Adresse, ueber die die UI Daten erreichen darf, und deshalb aus
+// "ui-nicht-auf-daten" ausgenommen.
+const DB_LAYER = '^src/db/';
+const SERVICES_LAYER = '^src/services/';
+const DATA_LAYER = [SERVICES_LAYER, DB_LAYER, PARSER_LAYER];
+
 module.exports = {
   forbidden: [
     {
@@ -61,6 +92,47 @@ module.exports = {
       severity: 'warn',
       from: { path: PARSER_LAYER, pathNot: TEST_FILE },
       to: { path: COMPONENTS_LAYER },
+    },
+    {
+      name: 'ui-nicht-auf-daten',
+      comment:
+        'ADR-0037: die Oberflaeche erreicht Daten ausschliesslich ueber ' +
+        'src/services/. Ein direkter Griff nach src/db/ oder src/parser/ laesst ' +
+        'sich weder austauschen noch instrumentieren. Bestand beim Aufstellen ' +
+        'der Regel: 14 Kanten (ADR-0037, Befund 1). Jede Zahl darueber ist neu ' +
+        'und gehoert nicht dazu.',
+      severity: 'warn',
+      from: { path: [...UI_LAYER, I18N_LAYER], pathNot: TEST_FILE },
+      to: { path: [DB_LAYER, PARSER_LAYER] },
+    },
+    {
+      name: 'daten-kein-rueckgriff',
+      comment:
+        'ADR-0037: die Datenschicht ist die unterste. Sie kennt weder die ' +
+        'Oberflaeche noch die Fachlogik -- ein Rueckgriff dorthin dreht die ' +
+        'erlaubte Richtung um.',
+      severity: 'warn',
+      from: { path: DATA_LAYER, pathNot: TEST_FILE },
+      to: { path: [...UI_LAYER, I18N_LAYER, ...DOMAIN_LAYER] },
+    },
+    {
+      name: 'fachlogik-kein-rueckgriff',
+      comment:
+        'ADR-0037: die Fachlogik traegt keine Darstellung. Sie darf die ' +
+        'Datenschicht nutzen, aber nie zurueck in die Oberflaeche greifen.',
+      severity: 'warn',
+      from: { path: DOMAIN_LAYER, pathNot: TEST_FILE },
+      to: { path: UI_LAYER },
+    },
+    {
+      name: 'keine-i18n-unter-ui',
+      comment:
+        'ADR-0037: uebersetzte Texte entstehen in der Oberflaeche. Wer in ' +
+        'Fachlogik oder Datenschicht src/i18n/ importiert, formuliert dort eine ' +
+        'Anzeige und bindet die Schicht an eine Sprache.',
+      severity: 'warn',
+      from: { path: [...DOMAIN_LAYER, ...DATA_LAYER], pathNot: TEST_FILE },
+      to: { path: I18N_LAYER },
     },
     {
       name: 'evaluator-keine-roster-abhaengigkeit',

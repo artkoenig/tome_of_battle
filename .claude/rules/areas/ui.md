@@ -8,6 +8,10 @@ paths:
 
 # UI, hooks, styles, i18n
 
+- This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
+  allowed direction). It reaches data only through `src/services/`; a direct import of `src/db/`
+  or `src/parser/` is reported by the dependency-cruiser rule `ui-nicht-auf-daten` — still `warn`
+  while the 14 existing edges are being removed, `error` afterwards.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
   pair is an incomplete change.
 - Styling is 33 numbered CSS layer files under `src/styles/`, loaded in cascade order (ADR 0004

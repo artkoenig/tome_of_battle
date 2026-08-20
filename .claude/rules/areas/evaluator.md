@@ -15,6 +15,10 @@ means; it outranks the ADRs where the two disagree.
   oxlint `no-restricted-imports`) — an `error`, not a warning.
 - The folder must not import `src/roster/**`, and `src/roster/**` must not import it. Both
   directions are blocking rules. The bridge is `src/evaluation/rosterAdapter.js`.
+- The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
+  reaches back into the UI and never imports `src/i18n/` — the report carries ids, the UI
+  translates them (dependency-cruiser `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`). The
+  Reinraum rules above are unaffected by that layering and stay stricter.
 - `catalogReader.js` is the evaluator's own XML reader, deliberately separate from
   `src/parser/xmlParser.js`. Changing one never implies changing the other.
 - A change confined to this folder only needs `forge-test --run src/evaluator` — that covers the
