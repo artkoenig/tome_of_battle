@@ -89,11 +89,14 @@ const groupSelection = () => ({
   ],
 });
 
+// `isIndependentSubUnit` ist die Antwort des BERICHTS (Issue 0156): die Karte
+// fragt sie am Slot ab, statt den Katalog-Eintrag ein zweites Mal aufzuloesen.
+// Beide Streitwagen sind eigenstaendige Untereinheiten, ihre Gruppe ist keine.
 const capabilities = () =>
   new Map([
-    ['0/0', { anchorKind: 'occupied', totalCosts: { pts: 134 }, infoElements: [{ kind: 'profile', ...CHARIOT_PROFILE }] }],
-    ['0/0/0', { anchorKind: 'occupied', totalCosts: { pts: 74 }, infoElements: [] }],
-    ['0/0/1', { anchorKind: 'occupied', totalCosts: { pts: 60 }, infoElements: [] }],
+    ['0/0', { anchorKind: 'occupied', totalCosts: { pts: 134 }, isIndependentSubUnit: false, infoElements: [{ kind: 'profile', ...CHARIOT_PROFILE }] }],
+    ['0/0/0', { anchorKind: 'occupied', totalCosts: { pts: 74 }, isIndependentSubUnit: true, infoElements: [] }],
+    ['0/0/1', { anchorKind: 'occupied', totalCosts: { pts: 60 }, isIndependentSubUnit: true, infoElements: [] }],
   ]);
 
 function renderGroupCard() {

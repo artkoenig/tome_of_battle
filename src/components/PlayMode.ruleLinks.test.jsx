@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from './PlayMode';
 
@@ -55,8 +55,37 @@ vi.mock('../roster', async (importOriginal) => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
   calculateRosterCosts: () => ({}),
   getExtraResourceTotals: () => [],
-  isListRuleSelection: (_system, selection) => selection.category === 'cat-rules',
 }));
+
+// Die Spielansicht liest aus dem **Bericht**, welche Auswahl eine Listenregel
+// ist (`capability.isListRule`, Issue 0156). Der Auswertungs-Haken wird deshalb
+// gestellt: er liefert je Selektion ihren Slot; die Regel-Selektionen tragen
+// dort `isListRule: true`.
+const { evaluationStub } = vi.hoisted(() => ({
+  evaluationStub: { current: null },
+}));
+
+vi.mock('../evaluation/useEvaluation', () => ({
+  useEvaluation: () => evaluationStub.current ?? {
+    capabilities: new Map(),
+    pathBySelectionId: new Map(),
+    costTotals: {},
+    description: null,
+    violations: [],
+  },
+}));
+
+/** Ein Bericht, der die genannten Selektionen als Listenregeln ausweist. */
+const reportMarkingListRules = (selectionIds, listRuleIds) => ({
+  capabilities: new Map(selectionIds.map((id, index) => [
+    `0/${index}`,
+    { anchorKind: 'occupied', isListRule: listRuleIds.includes(id), totalCosts: {}, infoElements: [] },
+  ])),
+  pathBySelectionId: new Map(selectionIds.map((id, index) => [id, `0/${index}`])),
+  costTotals: {},
+  description: null,
+  violations: [],
+});
 
 // PlayUnitDetails is the component that renders the three chip groups. Here it is
 // reduced to a single button that triggers the `onShowRule` callback PlayMode
@@ -216,7 +245,12 @@ describe('PlayMode hides list rules', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
   });
 
+  afterEach(() => {
+    evaluationStub.current = null;
+  });
+
   it('does not render the list-rule group and renders only the battlefield unit', () => {
+    evaluationStub.current = reportMarkingListRules(['sel-rule', 'sel-unit'], ['sel-rule']);
     render(<PlayMode system={systemWithRules} roster={rosterWithRules} onBack={vi.fn()} />);
 
     // The list-rule category collapses to empty and is not shown; the unit
@@ -253,6 +287,7 @@ describe('PlayMode hides list rules', () => {
       ],
     };
 
+    evaluationStub.current = reportMarkingListRules(['sel-unit', 'sel-rule'], ['sel-rule']);
     render(<PlayMode system={systemCoreOnly} roster={rosterWithOrphanRule} onBack={vi.fn()} />);
 
     expect(screen.queryByText('Allow experimental rules?')).toBeNull();

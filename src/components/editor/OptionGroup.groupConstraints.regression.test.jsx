@@ -10,16 +10,16 @@ import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionO
 //
 // Diese Datei bündelt die Verhaltensklassen des Rüstung+Schild-Bugs zu EINER
 // zusammenhängenden Aussage entlang des Render-Entscheids: die reale
-// `OptionGroup` rendert gegen die **Fähigkeitsdatensätze des Berichts**
-// (effektive Gruppen-/Options-Grenzen je Slot) und gegen die reale statische
-// „Max-hebbar"-/„wiederholbar"-Erkennung des Solvers
-// (`canGroupMaxBeRaisedAboveSingleChoice`, `isItemRepeatableWithinGroup` —
-// beide lesen reine Katalogstruktur und ziehen mit dem Schreibmodell um).
+// `OptionGroup` rendert gegen die **Fähigkeitsdatensätze des Berichts** —
+// effektive Gruppen-/Options-Grenzen je Slot UND, seit Issue 0156, auch das
+// **Wahlverhalten**: `isSingleChoice`/`isMaxRaisable` am Gruppen-Anker,
+// `isRepeatableWithinGroup` am Options-Slot. Die statische Erkennung liegt
+// damit im Evaluator (`groupBehavior.js`), nicht mehr in der Komponente.
 //
 // Der historische Bug (roher statt effektiver Constraint-Wert) ist im neuen
 // Schnitt strukturell ausgeschlossen — die Komponente rechnet keine effektiven
 // Werte mehr, sie liest sie ab. Geprüft wird hier die verbleibende Naht: dass
-// die abgelesenen Werte plus die statische Erkennung weiterhin dieselben
+// die abgelesenen Werte weiterhin dieselben
 // Radio-/Checkbox-/Stepper-/Deaktivierungs-Entscheidungen treiben. Wie die
 // Engine die effektiven Werte errechnet (bedingte increments, decrements,
 // sets), ist in den Evaluator-Tests (`src/evaluator/`) eigens abgedeckt; die
@@ -75,6 +75,7 @@ const capabilityMapOf = (records) => new Map(records.map((record, index) => [
     targetDefId: null, frame: { path: SELECTION_PATH, defId: 'unit-link' },
     costs: {}, effectiveMin: null, effectiveMax: null, current: 0, headroom: null,
     isMandatoryUnmet: false, isBlocked: false, isHidden: false,
+    isSingleChoice: false, isMaxRaisable: false, isRepeatableWithinGroup: false,
     ...record,
   },
 ]));
@@ -135,7 +136,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // (Teufelskreis). Da ein Modifier das Max über 1 heben KANN, muss die
     // Gruppe dennoch als Checkboxen rendern.
     const emptyCapabilities = capabilityMapOf([
-      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 0 },
+      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 0, isMaxRaisable: true },
       { defId: 'opt-fullplate', anchorKind: 'offerAnchor', name: 'Volle Rüstung' },
       { defId: 'opt-shield', anchorKind: 'offerAnchor', name: 'Schild' },
     ]);
@@ -149,7 +150,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // darf sie NICHT verdrängen (die alte Radio-Logik hätte genau das getan).
     counts = { 'opt-fullplate': 1 };
     const occupiedCapabilities = capabilityMapOf([
-      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 1, isBlocked: true },
+      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 1, isBlocked: true, isMaxRaisable: true },
       { defId: 'opt-fullplate', anchorKind: 'occupied', name: 'Volle Rüstung', current: 1 },
       { defId: 'opt-shield', anchorKind: 'offerAnchor', name: 'Schild' },
     ]);
@@ -172,7 +173,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-sword', 'Schwert'), option('opt-axe', 'Axt')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0 },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
       { defId: 'opt-sword', anchorKind: 'offerAnchor', name: 'Schwert' },
       { defId: 'opt-axe', anchorKind: 'offerAnchor', name: 'Axt' },
     ]);
@@ -192,7 +193,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-barding', 'Rossharnisch')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-mount', anchorKind: 'groupAnchor', name: 'Reittier-Panzerung', effectiveMax: 0, current: 0, isBlocked: true },
+      { defId: 'grp-mount', anchorKind: 'groupAnchor', name: 'Reittier-Panzerung', effectiveMax: 0, current: 0, isBlocked: true, isSingleChoice: true },
       { defId: 'opt-barding', anchorKind: 'offerAnchor', name: 'Rossharnisch' },
     ]);
 
@@ -214,7 +215,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-flail', 'Flegel'), option('opt-lance', 'Lanze')],
     };
     const emptyCapabilities = capabilityMapOf([
-      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 0 },
+      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
       { defId: 'opt-flail', anchorKind: 'offerAnchor', name: 'Flegel' },
       { defId: 'opt-lance', anchorKind: 'offerAnchor', name: 'Lanze' },
     ]);
@@ -229,7 +230,7 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // Flegel ist gewählt; das Anwählen der Lanze verdrängt ihn (Ausschluss).
     counts = { 'opt-flail': 1 };
     const occupiedCapabilities = capabilityMapOf([
-      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 1, isBlocked: true },
+      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 1, isBlocked: true, isSingleChoice: true },
       { defId: 'opt-flail', anchorKind: 'occupied', name: 'Flegel', current: 1 },
       { defId: 'opt-lance', anchorKind: 'offerAnchor', name: 'Lanze' },
     ]);
@@ -253,8 +254,8 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-scroll', 'Bannrolle'), option('opt-wand', 'Grauer Stab')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-arcane', anchorKind: 'groupAnchor', name: 'Arkane Gegenstände', effectiveMax: 1, current: 0 },
-      { defId: 'opt-scroll', anchorKind: 'offerAnchor', name: 'Bannrolle' },
+      { defId: 'grp-arcane', anchorKind: 'groupAnchor', name: 'Arkane Gegenstände', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'opt-scroll', anchorKind: 'offerAnchor', name: 'Bannrolle', isRepeatableWithinGroup: true },
       { defId: 'opt-wand', anchorKind: 'offerAnchor', name: 'Grauer Stab' },
     ]);
 

@@ -61,6 +61,37 @@ export function findChildSlot(capabilities, parentPath, defId) {
   return undefined;
 }
 
+/**
+ * Der Fähigkeitsdatensatz einer App-Selektion: ihr Slot-Pfad steht in
+ * `pathBySelectionId` (`useEvaluation`), der Datensatz darunter im Bericht.
+ * `undefined`, solange der Bericht für diese Selektion keinen Slot führt.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {Map<string, string>|null|undefined} pathBySelectionId
+ * @param {{ id?: string }|null|undefined} selection
+ * @returns {object|undefined}
+ */
+export function slotOfSelection(capabilities, pathBySelectionId, selection) {
+  const path = selection?.id === undefined ? undefined : pathBySelectionId?.get(selection.id);
+  return path === undefined ? undefined : capabilities?.get(path);
+}
+
+/**
+ * True, wenn diese Selektion eine **eigenständige Untereinheit** ist — die
+ * Antwort des Berichts (`capability.isIndependentSubUnit`, Issue 0156), nicht
+ * mehr die eines zweiten Katalog-Durchlaufs in der Oberfläche. Ohne Slot im
+ * Bericht bleibt es bei `false`: dann gibt es auch nichts zu zeichnen, dem die
+ * Frage gälte.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {Map<string, string>|null|undefined} pathBySelectionId
+ * @param {{ id?: string }|null|undefined} selection
+ * @returns {boolean}
+ */
+export function isIndependentSubUnitSlot(capabilities, pathBySelectionId, selection) {
+  return slotOfSelection(capabilities, pathBySelectionId, selection)?.isIndependentSubUnit === true;
+}
+
 /** Die Ankerart der Kategorie-Slots im Bericht (`report.js`-Ankervertrag). */
 const CATEGORY_ANCHOR_KIND = 'categoryAnchor';
 
@@ -77,6 +108,34 @@ const CATEGORY_ANCHOR_KIND = 'categoryAnchor';
 export function categoryAnchorSlotsOf(capabilities, forcePath) {
   return childSlotsOf(capabilities, forcePath)
     .filter(({ capability }) => capability.anchorKind === CATEGORY_ANCHOR_KIND);
+}
+
+/**
+ * Die Ankerarten, deren Slots eine **aufstellbare Einheit** dieses Kontingents
+ * bezeichnen: belegt, angeboten oder als Pflicht-Phantom gefordert. Gruppen- und
+ * Kategorie-Anker sind Rahmen und zählen nicht.
+ */
+const UNIT_SLOT_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
+/**
+ * True, wenn das Kontingent überhaupt einen Slot führt, dessen **effektive
+ * Primärkategorie** (`capability.primaryCategoryId`, aus dem Bericht — nie aus
+ * rohen Katalog-Links) diese Kategorie ist.
+ *
+ * Das ist die Frage „ist diese Kategorie ein bedienbarer Slot oder bloß ein
+ * Regel-Schlagwort?" — dieselbe Menge, die auch der Kategorie-Hinzufüger
+ * anbietet (ADR 0003 §4), nur ohne dessen Sichtbarkeits- und Herkunftsfilter.
+ *
+ * @param {Map<string, object>|null|undefined} capabilities
+ * @param {string|null|undefined} forcePath
+ * @param {string|null|undefined} categoryId
+ * @returns {boolean}
+ */
+export function hasUnitSlotsInCategory(capabilities, forcePath, categoryId) {
+  if (categoryId === null || categoryId === undefined) return false;
+  return childSlotsOf(capabilities, forcePath).some(({ capability }) =>
+    UNIT_SLOT_ANCHOR_KINDS.has(capability.anchorKind)
+    && capability.primaryCategoryId === categoryId);
 }
 
 /**

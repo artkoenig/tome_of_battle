@@ -8,21 +8,35 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="icon-chevron-right" />
 }));
 
-const mockIsCategoryLinkHidden = vi.fn();
-const mockIsEntryPrimaryInCategory = vi.fn();
-const mockResolveListRuleGroup = vi.fn();
-
+// Sichtbarkeit und Primär-Kategorie kommen seit Issue 0156 aus dem Bericht
+// (`categoryAnchor.isHidden`, `capability.primaryCategoryId`) — die Komponente
+// wertet den Katalog dafür nicht mehr aus, also gibt es dafür nichts zu stubben.
 vi.mock('../../roster', () => ({
-  isCategoryLinkHidden: (...args) => mockIsCategoryLinkHidden(...args),
-  isEntryPrimaryInCategory: (...args) => mockIsEntryPrimaryInCategory(...args),
-  resolveListRuleGroup: (...args) => mockResolveListRuleGroup(...args),
+  findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],
 }));
 
 // Der Zähl-Chip liest seit Issue 0121, Task 7 den categoryAnchor-Slot des
 // Evaluator-Berichts (current/effectiveMin/effectiveMax) statt der
 // Solver-Grenzenableitung (getCategoryDisplayLimits/formatConstraintLimit).
-const categoryAnchorCapabilities = new Map([
+//
+// Ob die Kategorie eine **Listenregel-Gruppe** ist, sagt seit Issue 0156
+// ebenfalls der Bericht: der Slot der Auswahl in dieser Kategorie trägt
+// `isListRule`. Ein zweiter Katalog-Durchlauf in der Komponente gibt es nicht
+// mehr, also gibt es hier auch nichts mehr zu stubben.
+const capabilitiesFor = ({ isListRule }) => new Map([
+  ['0/0', {
+    anchorKind: 'occupied',
+    defId: 'entry-1',
+    targetDefId: null,
+    name: 'Ritter',
+    primaryCategoryId: 'cat-core',
+    isHidden: false,
+    isListRule,
+    isMandatoryListRule: false,
+    effectiveMin: null,
+    effectiveMax: 1,
+  }],
   ['0/1', {
     anchorKind: 'categoryAnchor',
     defId: 'link-core',
@@ -32,6 +46,23 @@ const categoryAnchorCapabilities = new Map([
     effectiveMax: null,
   }],
 ]);
+
+const categoryAnchorCapabilities = capabilitiesFor({ isListRule: false });
+
+/** Derselbe Bericht, nur dass sein Kategorie-Anker die Kategorie ausblendet. */
+const hiddenCategoryCapabilities = new Map(
+  [...capabilitiesFor({ isListRule: false })].map(([path, capability]) =>
+    [path, capability.anchorKind === 'categoryAnchor' ? { ...capability, isHidden: true } : capability])
+);
+
+/** Ein Bericht, dessen einziger Einheiten-Slot eine ANDERE Primär-Kategorie trägt. */
+const foreignPrimaryCapabilities = new Map(
+  [...capabilitiesFor({ isListRule: false })].map(([path, capability]) =>
+    [path, capability.anchorKind === 'occupied' ? { ...capability, primaryCategoryId: 'cat-other' } : capability])
+);
+
+/** Die Slot-Pfade der Auswahlen des Kontingents (`useEvaluation`). */
+const pathBySelectionId = new Map([['sel-1', '0/0']]);
 
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryId }) => <button data-testid={`adder-${categoryId}`}>Hinzufügen</button>
@@ -62,6 +93,7 @@ const renderSection = (props = {}) => render(
     force={force}
     forcePath="0"
     capabilities={categoryAnchorCapabilities}
+    pathBySelectionId={pathBySelectionId}
     system={system}
     roster={{ costLimitType: 'pts' }}
     activeCatalogue={system.catalogues[0]}
@@ -83,9 +115,6 @@ const renderSection = (props = {}) => render(
 describe('RosterCategorySection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsCategoryLinkHidden.mockReturnValue(false);
-    mockIsEntryPrimaryInCategory.mockReturnValue(true);
-    mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
   });
 
   it('rendert Kopfzeile, Zähl-Chip, Hinzufüger und die Einheitenkarten der Kategorie', () => {
@@ -120,23 +149,26 @@ describe('RosterCategorySection', () => {
     expect(screen.getByText('Core')).toBeDefined();
   });
 
-  it('bleibt verborgen, wenn der Solver die Kategorie ausblendet und nichts ausgewählt ist', () => {
-    mockIsCategoryLinkHidden.mockReturnValue(true);
-    const { container } = renderSection({ force: { ...force, selections: [] } });
+  it('bleibt verborgen, wenn der Bericht die Kategorie ausblendet und nichts ausgewählt ist', () => {
+    const { container } = renderSection({
+      capabilities: hiddenCategoryCapabilities,
+      force: { ...force, selections: [] }
+    });
 
     expect(container.querySelector('.roster-category-group')).toBeNull();
   });
 
   it('rendert eine ausgeblendete Kategorie dennoch, solange sie Auswahlen enthält', () => {
-    mockIsCategoryLinkHidden.mockReturnValue(true);
-    const { container } = renderSection();
+    const { container } = renderSection({ capabilities: hiddenCategoryCapabilities });
 
     expect(container.querySelector('.roster-category-group')).not.toBeNull();
   });
 
-  it('bleibt verborgen, wenn die leere Kategorie für keinen Eintrag Primär-Kategorie ist', () => {
-    mockIsEntryPrimaryInCategory.mockReturnValue(false);
-    const { container } = renderSection({ force: { ...force, selections: [] } });
+  it('bleibt verborgen, wenn die leere Kategorie für keinen Slot des Berichts Primär-Kategorie ist', () => {
+    const { container } = renderSection({
+      capabilities: foreignPrimaryCapabilities,
+      force: { ...force, selections: [] }
+    });
 
     expect(container.querySelector('.roster-category-group')).toBeNull();
   });
@@ -148,18 +180,17 @@ describe('RosterCategorySection', () => {
     expect(screen.getByTestId('adder-cat-core')).toBeDefined();
   });
 
-  it('prüft die Primär-Kategorie im Katalog des Kontingents, nicht im aktiven Katalog des Editors', () => {
+  it('liest die Primär-Kategorie aus dem Bericht — der aktive Katalog des Editors ändert nichts', () => {
     const foreignCatalogue = { id: 'fremd-cat', selectionEntries: [{ id: 'fremd-entry' }] };
-    renderSection({
+    const { container } = renderSection({
+      force: { ...force, selections: [] },
       system: { ...system, catalogues: [...system.catalogues, foreignCatalogue] },
       activeCatalogue: foreignCatalogue
     });
 
-    expect(mockIsEntryPrimaryInCategory).toHaveBeenCalledWith(
-      { id: 'entry-1' },
-      'cat-core',
-      expect.objectContaining({ force })
-    );
+    // Der Slot des Berichts nennt `cat-core` als Primär-Kategorie; die leere
+    // Sektion erscheint deshalb, gleich welchen Katalog der Editor gerade zeigt.
+    expect(container.querySelector('.roster-category-group')).not.toBeNull();
   });
 
   it('färbt den Zähl-Chip, wenn die Kategorie blockierende Verletzungen trägt', () => {
@@ -175,12 +206,12 @@ describe('RosterCategorySection', () => {
   });
 
   describe('Listenregel-Gruppe', () => {
-    beforeEach(() => {
-      mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: true, states: [] });
-    });
+    // Dieselbe Sektion, nur dass der Bericht ihren einen Slot als Listenregel
+    // ausweist.
+    const listRuleCapabilities = capabilitiesFor({ isListRule: true });
 
     it('ersetzt Zähl-Chip und Hinzufüger durch die eingeklappte Ankreuzliste', () => {
-      const { container } = renderSection();
+      const { container } = renderSection({ capabilities: listRuleCapabilities });
 
       expect(container.querySelector('span.badge')).toBeNull();
       expect(screen.queryByTestId('adder-cat-core')).toBeNull();
@@ -189,7 +220,7 @@ describe('RosterCategorySection', () => {
     });
 
     it('zeigt die Ankreuzliste, sobald die Gruppe ausgeklappt ist', () => {
-      renderSection({ isRuleGroupExpanded: true });
+      renderSection({ capabilities: listRuleCapabilities, isRuleGroupExpanded: true });
 
       expect(screen.getByTestId('list-rule-checklist')).toBeDefined();
       expect(screen.getByTestId('icon-chevron-down')).toBeDefined();
@@ -197,7 +228,7 @@ describe('RosterCategorySection', () => {
 
     it('meldet den Klick auf die Kopfzeile als Umschalten', () => {
       const onToggleRuleGroup = vi.fn();
-      const { container } = renderSection({ onToggleRuleGroup });
+      const { container } = renderSection({ capabilities: listRuleCapabilities, onToggleRuleGroup });
 
       fireEvent.click(container.querySelector('.roster-category-title'));
 
@@ -205,7 +236,6 @@ describe('RosterCategorySection', () => {
     });
 
     it('macht eine gewöhnliche Kategorie-Kopfzeile nicht klickbar', () => {
-      mockResolveListRuleGroup.mockReturnValue({ isListRuleGroup: false, states: [] });
       const onToggleRuleGroup = vi.fn();
       const { container } = renderSection({ onToggleRuleGroup });
 

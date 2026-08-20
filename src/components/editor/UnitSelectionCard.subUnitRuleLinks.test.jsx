@@ -94,7 +94,14 @@ const baseProps = {
   roster: { costLimitType: 'pts' },
   system: {},
   violations: [],
-  capabilities: new Map([['0/0', { anchorKind: 'occupied', totalCosts: { pts: 60 }, infoElements: [] }]]),
+  // Die Karte liest am Slot ab, welches Kind eine eigene Karte bekommt
+  // (`isIndependentSubUnit`, Issue 0156) — die Crew ist eine eigenstaendige
+  // Untereinheit, das Upgrade darunter nicht.
+  capabilities: new Map([
+    ['0/0', { anchorKind: 'occupied', totalCosts: { pts: 60 }, isIndependentSubUnit: false, infoElements: [] }],
+    ['0/0/0', { anchorKind: 'occupied', totalCosts: { pts: 30 }, isIndependentSubUnit: true, infoElements: [] }],
+    ['0/0/0/0', { anchorKind: 'occupied', totalCosts: { pts: 5 }, isIndependentSubUnit: false, infoElements: [] }],
+  ]),
   pathBySelectionId: new Map([['sel-chariot', '0/0'], ['sel-crew', '0/0/0'], ['sel-upgrade', '0/0/0/0']]),
   costTypeLabel: 'Pkt.',
   removeUnit: vi.fn(),

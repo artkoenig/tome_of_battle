@@ -3,14 +3,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ForceEditorSection from './ForceEditorSection';
 
-const mockCollectUnreachableArmyWideSelectors = vi.fn();
 
 vi.mock('../../roster', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
-  collectUnreachableArmyWideSelectors: (...args) => mockCollectUnreachableArmyWideSelectors(...args),
+  findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || []
 }));
+
+// Welche Pflicht keine Kategorie des Kontingents anbietet, sagt seit Issue 0156
+// der **Bericht**: ein sichtbarer Slot des Kontingents mit wirksamem Minimum,
+// dessen effektive Kategorien keine der Kontingent-Kategorien treffen.
+const ARMY_WIDE_CAPABILITIES = new Map([
+  ['0/0', {
+    anchorKind: 'occupied',
+    defId: 'entry-army',
+    targetDefId: null,
+    name: 'Blutlinie',
+    isHidden: false,
+    effectiveMin: 1,
+    effectiveMax: 1,
+    categoryIds: ['cat-bloodline'],
+  }],
+]);
 
 vi.mock('./CategoryUnitAdder', () => ({
   default: ({ categoryName }) => <button data-testid={`adder-${categoryName}`}>Hinzufügen</button>
@@ -85,7 +100,6 @@ const renderForce = (props = {}) => render(
 describe('ForceEditorSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCollectUnreachableArmyWideSelectors.mockReturnValue([]);
   });
 
   it('rendert je Kategorie-Verknüpfung des Kontingents eine Sektion und den Lagerbericht', () => {
@@ -112,8 +126,8 @@ describe('ForceEditorSection', () => {
   });
 
   it('gibt unerreichbaren armeeweiten Selektoren eine eigene Sektion mit ihren Karten', () => {
-    mockCollectUnreachableArmyWideSelectors.mockReturnValue([{ id: 'entry-army' }]);
     renderForce({
+      capabilities: ARMY_WIDE_CAPABILITIES,
       force: {
         ...force,
         selections: [

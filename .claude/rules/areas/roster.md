@@ -29,5 +29,10 @@ evaluator. `src/db/` persists it in IndexedDB.
 - The only automatic, choice-free write into a roster is `useRoster.js`'s fresh-roster effect over
   `findMissingMandatoryListRuleSelections` — gated on `isFreshRoster`, ohne Undo-Schritt. Alles,
   was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf Kontingent-Ebene.
+- Anzeige-Felder, die `src/evaluation/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
+  die Evaluator-E2E prueft den Bericht, nicht seine Uebersetzung. `listRuleGroups.js` (`checked`,
+  `mandatory`, `isContainer`, `isBinary` fuer `ListRuleChecklist.jsx`) haengt allein an
+  `listRuleGroups.test.js` mit handgebauter `capabilities`-Map. Wer hier ein Feld ergaenzt,
+  behauptet es dort - sonst faellt es in der Oberflaeche lautlos aus, bei gruener Suite.
 - `src/roster/` still holds a legacy `no-circular` warning (`modifierEvaluator → queryEngine →
   rosterCounter`). It is a warning by design; do not add a second one.

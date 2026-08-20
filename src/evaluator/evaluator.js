@@ -252,6 +252,15 @@ export function evaluate(prepared, roster, options) {
     gameSystemId: gameSystemDocument?.id ?? null,
   };
 
+  // Die Bibliothekskataloge, aus dem `library`-Kennzeichen der `.cat`-Wurzel:
+  // eine Bibliothek ist ein geteilter Vorrat, kein Armeebuch, und darum nie eine
+  // *fremde* Herkunft (`SlotCapability.isForeignCatalogue`, Issue 0156).
+  const libraryCatalogueIds = new Set(
+    contents.catalogueDocuments
+      .filter(document => document.isLibrary === true && document.id !== null && document.id !== undefined)
+      .map(document => document.id),
+  );
+
   // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────
   // Baumphase 1, Fixpunktrunden ueber die realen Knoten, finaler Zaehlindex.
   const { root, joinDiagnostics, effective, fixpointResult, index } =
@@ -380,6 +389,12 @@ export function evaluate(prepared, roster, options) {
       sourceIdByDefId,
       categoryAnchorOccupancies: anchorOccupancies,
       raiseCostProjection,
+      // Der Katalog-Bezugsrahmen, so weit der Bericht ihn braucht: aus ihm
+      // entscheidet sich je Slot, ob seine Herkunft ein **fremdes** Armeebuch
+      // ist (`SlotCapability.isForeignCatalogue`, Issue 0156).
+      libraryCatalogueIds,
+      gameSystemId: catalogueScope.gameSystemId,
+      primaryCatalogueByForceDefId,
     });
   });
 

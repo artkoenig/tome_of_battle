@@ -11,9 +11,10 @@
  * verbuendetem Kontingent bekommt dort deshalb die Einheiten des **falschen**
  * Armeebuchs angeboten und die eigenen weggefiltert.
  *
- * **Vertrag (im Auftrag festgelegt, nicht hier erfunden):** der Dialog bekommt
- * die Katalog-Id seines Kontingents als Prop `forceCatalogueId`; fehlt sie oder
- * ist sie `null`, gilt `activeCatalogue.id` (Altverhalten).
+ * **Vertrag seit Issue 0156:** der Dialog bekommt gar keine Katalog-Id mehr. Die
+ * Herkunfts-Entscheidung steht im **Bericht** (`capability.isForeignCatalogue`):
+ * fremd ist ein spielbarer Katalog, der nicht das Buch des Kontingents ist,
+ * unter dem der Slot haengt. Der Dialog liest sie ab, statt selbst zu filtern.
  *
  * Sollverhalten am gerenderten Dialog:
  * 1. Im Kontingent eines verbuendeten Armeebuchs erscheinen dessen **eigene**
@@ -220,10 +221,11 @@ function capabilityOf(capabilities, forcePath, defId) {
 
 /**
  * Rendert den Dialog eines Kontingents. `activeCatalogue` ist roster-weit (so
- * wie `RosterEditor` es fuehrt) und bleibt in jedem Fall der Primaer-Katalog;
- * `forceCatalogueId` ist das Armeebuch **dieses** Kontingents.
+ * wie `RosterEditor` es fuehrt) und bleibt in jedem Fall der Primaer-Katalog —
+ * welches Buch fuer die Herkunft gilt, entscheidet der Bericht am Slot-Pfad des
+ * Kontingents, nicht diese Stuetze.
  */
-function renderAdder({ capabilities, forcePath, forceCatalogueId, entries = null, addUnit = vi.fn() }) {
+function renderAdder({ capabilities, forcePath, entries = null, addUnit = vi.fn() }) {
   const props = {
     categoryId: CATEGORY_ID,
     categoryName: 'Special',
@@ -236,7 +238,6 @@ function renderAdder({ capabilities, forcePath, forceCatalogueId, entries = null
     addUnit,
     entries,
   };
-  if (forceCatalogueId !== undefined) props.forceCatalogueId = forceCatalogueId;
   render(<CategoryUnitAdder {...props} />);
 }
 
@@ -265,7 +266,6 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
     renderAdder({
       capabilities,
       forcePath: ALLIED_FORCE_PATH,
-      forceCatalogueId: ALLIED_CATALOGUE_ID,
     });
     openDialog();
 
@@ -276,7 +276,6 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
     renderAdder({
       capabilities: capabilitiesOfDataset(),
       forcePath: ALLIED_FORCE_PATH,
-      forceCatalogueId: ALLIED_CATALOGUE_ID,
     });
     openDialog();
 
@@ -290,7 +289,6 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
     renderAdder({
       capabilities: capabilitiesOfDataset(),
       forcePath: ALLIED_FORCE_PATH,
-      forceCatalogueId: ALLIED_CATALOGUE_ID,
     });
     openDialog();
 
@@ -302,7 +300,6 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
     renderAdder({
       capabilities: capabilitiesOfDataset(),
       forcePath: ALLIED_FORCE_PATH,
-      forceCatalogueId: ALLIED_CATALOGUE_ID,
     });
     openDialog();
 
@@ -313,7 +310,6 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
     renderAdder({
       capabilities: capabilitiesOfDataset(),
       forcePath: PRIMARY_FORCE_PATH,
-      forceCatalogueId: PRIMARY_CATALOGUE_ID,
     });
     openDialog();
 
@@ -323,62 +319,40 @@ describe('CategoryUnitAdder: Herkunftsfilter je Kontingent (Issue 0121, Task 19,
   });
 });
 
-describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121, Task 19)', () => {
-  // Beide Faelle pinnen dieselbe Regel wie zuvor — nur an der Beobachtung, die
-  // seit Issue 0140 noch zur Verfuegung steht.
-  //
-  // **Was sich umgekehrt hat:** Frueher belegte diese Zusage, dass der Dialog im
-  // verbuendeten Kontingent die Einheit des PRIMAER-Armeebuchs („Vampire")
-  // *zeigt*, sobald der Rueckfall greift. Diese Voraussetzung ist entfallen:
-  // Issue 0140 hat den Herkunftsfilter je Kontingent in die **Engine** verlegt —
-  // die App reicht ihr das Armeebuch des Kontingents durch
-  // (`force.catalogueId`), und ein Kontingent, das dem verbuendeten Buch
-  // gehoert, bekommt die Einheiten des Primaer-Buchs gar nicht mehr als
-  // Angebots-Anker. „Vampire" steht dem Dialog hier also nicht mehr zur
-  // Auswahl, unabhaengig von jeder Prop.
-  //
-  // **Was Issue 0159 zusaetzlich genommen hat:** „Hired Ogre" — der
-  // Wurzel-`entryLink` des PRIMAER-Buchs auf den geteilten Eintrag des
-  // verbuendeten — stand hier frueher ebenfalls im Angebot, weil ein
-  // Wurzel-`entryLink` von der Herkunftspruefung ausgenommen war. Diese Ausnahme
-  // ist ersatzlos entfallen: unter dem verbuendeten Kontingent verankert ein
-  // fremdes Armeebuch kein Angebot mehr. Uebrig bleiben der Spielsystem-Eintrag
-  // und der Bibliothekseintrag (die Bibliothek liegt per `catalogueLink` in der
-  // Huelle beider Buecher).
-  //
-  // **Was unveraendert gilt:** die Regel selbst — fehlt `forceCatalogueId` oder
-  // ist sie `null`, filtert `activeCatalogue.id`. Gepinnt wird sie jetzt
-  // negativ: unter dem verbuendeten Kontingent zeigt der Dialog dessen eigene
-  // Einheit „Gorger" **nur**, wenn `forceCatalogueId` das verbuendete Buch nennt
-  // (der Test „im verbuendeten Kontingent erscheint dessen EIGENE Einheit"
-  // oben). Greift der Rueckfall, gilt der Primaer-Katalog der Liste — und
-  // „Gorger" verschwindet. Dieselbe Unterscheidung, andere Richtung.
-  it('forceCatalogueId null → der aktive Katalog der Liste filtert (Altverhalten)', () => {
-    renderAdder({
-      capabilities: capabilitiesOfDataset(),
-      forcePath: ALLIED_FORCE_PATH,
-      forceCatalogueId: null,
+describe('CategoryUnitAdder: die Herkunft entscheidet der Bericht, nicht der aktive Katalog (Issue 0156)', () => {
+  // Frueher filterte der Dialog selbst, gegen `forceCatalogueId` mit Rueckfall
+  // auf `activeCatalogue.id` — und ohne die Stuetze fiel die eigene Einheit des
+  // verbuendeten Kontingents heraus. Diese Stuetze gibt es nicht mehr: der
+  // roster-weite `activeCatalogue` (hier immer das Primaer-Buch) hat auf das
+  // Angebot keinen Einfluss, weil der Bericht die Herkunft je Slot unter dem
+  // Kontingent entscheidet.
+  it('das verbuendete Kontingent zeigt seine eigene Einheit, obwohl der aktive Katalog das Primaer-Buch ist', () => {
+    const capabilities = capabilitiesOfDataset();
+    // Vorbedingung gegen den echten Bericht: der Slot ist nicht fremd — er
+    // gehoert dem Buch DIESES Kontingents.
+    expect(capabilityOf(capabilities, ALLIED_FORCE_PATH, ALLIED_ENTRY_ID)).toMatchObject({
+      sourceId: ALLIED_CATALOGUE_ID,
+      isForeignCatalogue: false,
     });
+
+    renderAdder({ capabilities, forcePath: ALLIED_FORCE_PATH });
     openDialog();
 
-    // Der Rueckfall greift: gefiltert wird nach dem Primaer-Katalog, also faellt
-    // die Einheit des verbuendeten Buchs heraus.
-    expect(screen.queryByText('Gorger')).toBeNull();
-    expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Mercenary Captain'].sort(),
-    );
+    expect(screen.getByText('Gorger')).toBeTruthy();
   });
 
-  it('fehlende forceCatalogueId-Stuetze → der aktive Katalog der Liste filtert (Altverhalten)', () => {
-    renderAdder({
-      capabilities: capabilitiesOfDataset(),
-      forcePath: ALLIED_FORCE_PATH,
-    });
+  it('der Bericht weist die Einheit des Primaer-Buchs unter dem verbuendeten Kontingent als fremd aus', () => {
+    const capabilities = capabilitiesOfDataset();
+    const foreignSlot = capabilityOf(capabilities, ALLIED_FORCE_PATH, PRIMARY_ENTRY_ID);
+
+    // Entweder fuehrt der Bericht den Slot gar nicht (die Engine bietet ihn hier
+    // nicht an) oder er weist ihn als fremd aus — angeboten wird er in keinem
+    // Fall.
+    if (foreignSlot !== undefined) expect(foreignSlot.isForeignCatalogue).toBe(true);
+
+    renderAdder({ capabilities, forcePath: ALLIED_FORCE_PATH });
     openDialog();
 
-    expect(screen.queryByText('Gorger')).toBeNull();
-    expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Mercenary Captain'].sort(),
-    );
+    expect(screen.queryByText('Vampire')).toBeNull();
   });
 });

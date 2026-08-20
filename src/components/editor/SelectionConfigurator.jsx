@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
 import {
-  resolveEntry, isIndependentSubUnit,
+  resolveEntry,
   getUnitOptions,
   resolveCostLimitTypeId, resolveCostLimitLabel,
   countSelections, classifyStandaloneOption,
@@ -407,7 +407,10 @@ export default function SelectionConfigurator({
     // Auflösung nur noch als Beiwerk (Detail-/Regeltexte, Untereinheiten-Form) —
     // Zustand, Grenzen und Namen kommen aus dem Bericht.
     const res = resolveEntry(system, option, activeCatalogue?.id);
-    const isSubUnitWithOwnOptions = isIndependentSubUnit(res);
+    // Ob die Zeile eine eigenständige Untereinheit trägt, sagt der Bericht
+    // (`capability.isIndependentSubUnit`, Issue 0156) — dieselbe Antwort, die
+    // Karte, Chips und Spielansicht lesen, statt einer zweiten Katalog-Auswertung.
+    const isSubUnitWithOwnOptions = capability.isIndependentSubUnit === true;
     const descText = getOptionDescription(res);
 
     const isSelectDisabled = capability.isBlocked === true;

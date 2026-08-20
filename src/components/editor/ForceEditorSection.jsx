@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  computeRosterCounts,
   findForceEntryById,
-  collectUnreachableArmyWideSelectors,
+  findEntryInSystem,
   childSelectionsOf
 } from '../../roster';
+import { armyWideSelectorSlotsOf } from '../../evaluation/armyWideSelectorSlots';
 
 import CategoryUnitAdder from './CategoryUnitAdder';
 import AutoFillSuggestions from './AutoFillSuggestions';
@@ -65,17 +65,21 @@ export default function ForceEditorSection({
   // Regel wie `useRoster.catalogueIdOfForce`. Der Aushebe-Dialog filtert damit
   // seine Kandidaten nach Herkunft (Issue 0121, Task 19).
   const forceCatalogueId = force.catalogueId || roster.catalogueId || null;
-  const { selectionCounts, categoryCounts } = computeRosterCounts(roster, system);
-  const forceCategoryCounts = categoryCounts[force.id] || {};
 
   // Armeeweite Pflicht-Selektoren, die keine Kontingent-Kategorie anbietet (etwa
   // ein kontingent-gebundener Wurzeleintrag ohne passenden categoryLink), bekommen
-  // einen eigenen Konfigurator; alles, was eine Kategorie bereits anbietet, wird dort erledigt.
-  const armyWideSelectors = collectUnreachableArmyWideSelectors({
-    system, catalogueId: forceCatalogueId, forceDef: forceDefinition,
-    roster, selectionCounts, forceCategoryCounts, force
-  });
-  const armyWideSelectorIds = new Set(armyWideSelectors.map(entry => entry.id));
+  // einen eigenen Konfigurator; alles, was eine Kategorie bereits anbietet, wird
+  // dort erledigt. Welche das sind, sagt der **Bericht** (Issue 0156): sichtbare
+  // Slots dieses Kontingents mit wirksamem Minimum, deren effektive Kategorien
+  // keine Kategorie des Kontingents treffen. Der Katalog-Eintrag daneben ist
+  // Schreibmodell — der Aushebe-Dialog reicht ihn an `addUnit` weiter.
+  const armyWideSelectorSlots = armyWideSelectorSlotsOf(
+    capabilities, forcePath, categoryLinks.map(link => link.targetId));
+  const armyWideSelectors = armyWideSelectorSlots.map(capability =>
+    findEntryInSystem(system, capability.defId, forceCatalogueId)
+    ?? { id: capability.defId, name: capability.name });
+  const armyWideSelectorIds = new Set(armyWideSelectorSlots.flatMap(capability =>
+    [capability.defId, capability.targetDefId].filter(Boolean)));
   const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
   const armyWideSelectorSelections = childSelectionsOf(force).filter(belongsToArmyWideSelector);
 
@@ -115,8 +119,6 @@ export default function ForceEditorSection({
           violations={violations}
           capabilities={capabilities}
           pathBySelectionId={pathBySelectionId}
-          selectionCounts={selectionCounts}
-          forceCategoryCounts={forceCategoryCounts}
           costTypeLabel={costTypeLabel}
           addUnit={addUnitToThisForce}
           removeUnit={removeUnit}
@@ -137,8 +139,7 @@ export default function ForceEditorSection({
               entries={armyWideSelectors}
               capabilities={capabilities}
               forcePath={forcePath}
-              forceCatalogueId={forceCatalogueId}
-              system={system}
+                system={system}
               activeCatalogue={activeCatalogue}
               costTypeLabel={costTypeLabel}
               costLimitType={roster.costLimitType}

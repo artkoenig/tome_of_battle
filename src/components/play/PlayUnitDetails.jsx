@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
 import {
-  findEntryInSystem, resolveEntry, isIndependentSubUnit,
+  findEntryInSystem, resolveEntry,
   MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
 } from '../../roster';
+import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
 import { costLimitLabelOf, costLimitTypeIdOf } from '../../evaluation/costDisplays';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -87,14 +88,11 @@ export default function PlayUnitDetails({
     return w || 1;
   };
 
-  const independentSubUnits = childSelectionsOf(selection).filter(subSel => {
-    const entryId = subSel.entryLinkId || subSel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
-    const resolved = resolveEntry(system, entry, roster?.catalogueId);
-    
-    
-    return isIndependentSubUnit(resolved);
-  });
+  // Eigenstaendige Untereinheiten bekommen ihre eigene Karte. Ob eine
+  // Unter-Auswahl eine ist, sagt der Bericht (`capability.isIndependentSubUnit`,
+  // Issue 0156) — die Spielansicht loest dafuer keinen Katalog-Eintrag mehr auf.
+  const independentSubUnits = childSelectionsOf(selection).filter(subSel =>
+    isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSel));
 
   const hasSubUnits = independentSubUnits.length > 0;
 
@@ -325,7 +323,9 @@ export default function PlayUnitDetails({
               selection={selection}
               system={system}
               activeCatalogueId={roster.catalogueId}
-              roster={roster}
+              capability={slotCapability}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
@@ -342,6 +342,8 @@ export default function PlayUnitDetails({
               system={system}
               activeCatalogueId={roster.catalogueId}
               capability={slotCapability}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}

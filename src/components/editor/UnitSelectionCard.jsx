@@ -3,7 +3,8 @@ import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-r
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
 import { groupProfilesByType } from '../../roster';
-import { isIndependentSubUnitSelection, selectionViolationsForCard } from './unitCardValidation';
+import { selectionViolationsForCard } from './unitCardValidation';
+import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
@@ -210,11 +211,11 @@ export default function UnitSelectionCard({
   // ADR-0034); ohne Slot bleibt der gespeicherte Selektionsname stehen.
   const effectiveName = capability?.name ?? selection.name;
   const displayPoints = capability?.totalCosts?.[roster.costLimitType] ?? 0;
-  const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, system, activeCatalogue?.id);
+  const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, capabilities);
   const hasSelectionError = selectionViolations.length > 0;
 
   const independentSubUnits = (selection.selections || []).filter(
-    subSel => isIndependentSubUnitSelection(subSel, system, activeCatalogue?.id)
+    subSel => isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSel)
   );
 
   return (
@@ -307,7 +308,9 @@ export default function UnitSelectionCard({
             selection={selection}
             system={system}
             activeCatalogueId={activeCatalogue?.id}
-            roster={roster}
+            capability={capability}
+            capabilities={capabilities}
+            pathBySelectionId={pathBySelectionId}
             handleMouseEnter={handleMouseEnter}
             handleMouseMove={handleMouseMove}
             handleMouseLeave={handleMouseLeave}
@@ -324,6 +327,8 @@ export default function UnitSelectionCard({
               system={system}
               activeCatalogueId={activeCatalogue?.id}
               capability={capability}
+              capabilities={capabilities}
+              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={handleMouseEnter}
               handleMouseMove={handleMouseMove}
               handleMouseLeave={handleMouseLeave}

@@ -1,42 +1,18 @@
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  isCategoryLinkHidden,
-  isEntryPrimaryInCategory,
-  resolveListRuleGroup,
+  findEntryInSystem,
   childSelectionsOf
 } from '../../roster';
+import { resolveListRuleGroupFromReport } from '../../evaluation/listRuleGroups';
 
 import { isBlockingViolation } from '../../evaluation/violationStats';
-import { findCategoryAnchorSlot } from '../../evaluation/slotLookups';
+import { findCategoryAnchorSlot, hasUnitSlotsInCategory } from '../../evaluation/slotLookups';
 import CategoryUnitAdder from './CategoryUnitAdder';
 import ListRuleChecklist from './ListRuleChecklist';
 import CategoryCountBadge from './CategoryCountBadge';
 import UnitCardList from './UnitCardList';
 import { useTranslation } from '../../i18n/useTranslation';
-
-/**
- * Prüft, ob der Katalog des Kontingents überhaupt einen Eintrag kennt, für den
- * diese Kategorie die Primär-Kategorie ist.
- *
- * Maßgeblich ist die **effektive** (nach Modifikatoren wirksame)
- * Primär-Kategorie, damit eine Sektion auch dann erscheint, wenn ihre Einheiten
- * erst durch einen `set-primary`-Modifikator hineinfallen — deckungsgleich mit
- * dem, was der Kategorie-Hinzufüger anbietet (ADR 0003 §4).
- */
-function hasPrimaryCatalogItems({ system, roster, force, selectionCounts, categoryId }) {
-  const forceCatalogue = system.catalogues?.find(c => c.id === force.catalogueId);
-  if (!forceCatalogue) return false;
-
-  const isPrimaryHere = (entry) =>
-    isEntryPrimaryInCategory(entry, categoryId, {
-      system, roster, selectionCounts, force, catalogueId: forceCatalogue.id
-    });
-
-  return forceCatalogue.selectionEntries?.some(isPrimaryHere) ||
-         forceCatalogue.entryLinks?.some(isPrimaryHere) ||
-         forceCatalogue.sharedSelectionEntries?.some(isPrimaryHere);
-}
 
 /**
  * Eine Kategorie-Gruppe eines Kontingents: Kopfzeile mit Namen, Zähl-Chip und
@@ -58,8 +34,6 @@ export default function RosterCategorySection({
   violations,
   capabilities,
   pathBySelectionId,
-  selectionCounts,
-  forceCategoryCounts,
   costTypeLabel,
   addUnit,
   removeUnit,
@@ -71,16 +45,37 @@ export default function RosterCategorySection({
 }) {
   const { t } = useTranslation();
   const categoryId = categoryLink.targetId;
-  const isHidden = isCategoryLinkHidden(categoryLink, { system, roster, selectionCounts, forceCategoryCounts });
+  // Der Kategorie-Anker dieses Kontingents (Issue 0121, Task 7): der Evaluator
+  // verankert eine Kategorie an einem Slot mit `anchorKind: 'categoryAnchor'`,
+  // dessen `defId` der `categoryLink` (verlinkter Fall) oder die Kategorie selbst
+  // ist (unverlinkter Fall, `report.js`-Ankervertrag). Er trägt den Zähl-Chip —
+  // und die Sichtbarkeit: `isHidden` ist der **effektive** Zustand des Berichts
+  // (statisches Attribut plus greifende `field="hidden"`-Modifikatoren), nicht
+  // mehr eine zweite Katalog-Auswertung in der Oberfläche (Issue 0156).
+  const categoryAnchor = findCategoryAnchorSlot(capabilities, forcePath, categoryId)
+    ?? findCategoryAnchorSlot(capabilities, forcePath, categoryLink.id);
+  const isHidden = categoryAnchor?.isHidden === true;
   const selections = childSelectionsOf(force).filter(s => s.category === categoryId);
 
   // Eine Listenregel-Gruppe (datengetrieben: Katalogtyp = upgrade, ADR 0003) ist
   // eine listenweite Einstellungsgruppe, kein Einheiten-Slot: ihre Karten haben
   // keine Einheiten-Aktionen und die Gruppe bietet keinen „Einheit hinzufügen“-
-  // Knopf. Ein Aufruf des Schreibmodells klassifiziert die Gruppe und liefert im selben
-  // Katalog-Durchlauf die Zustände je Regel für die ListRuleChecklist.
-  const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroup(
-    system, activeCatalogue, categoryId, { roster, force }
+  // Knopf. Klassifikation und Zustände je Regel liest der **Bericht** (Issue
+  // 0156): welche Definitionen die Kategorie anbietet, welche davon Listenregeln
+  // und welche Pflicht sind, und welche gerade belegt sind. Nur der
+  // Katalog-Eintrag hinter einer Regel kommt weiter aus dem Schreibmodell — ihn
+  // braucht das Anhaken, nicht die Anzeige.
+  const selectionByPath = new Map();
+  for (const selection of childSelectionsOf(force)) {
+    const path = pathBySelectionId?.get(selection.id);
+    if (path !== undefined) selectionByPath.set(path, selection);
+  }
+  const { isListRuleGroup, states: listRuleStates } = resolveListRuleGroupFromReport(
+    capabilities, forcePath, categoryId, {
+      selectionByPath,
+      entryOf: (capability) => findEntryInSystem(system, capability.defId, activeCatalogue?.id)
+        ?? { id: capability.defId, name: capability.name },
+    }
   );
   const isRuleGroupCollapsed = isListRuleGroup && !isRuleGroupExpanded;
 
@@ -99,14 +94,11 @@ export default function RosterCategorySection({
     isBlockingViolation(violation)
     && violation.anchor?.anchorKind === 'categoryAnchor'
     && (violation.anchor.defId === categoryId || violation.anchor.defId === categoryLink.id));
-  // Zähl-Chip aus dem categoryAnchor-Slot des Berichts (Issue 0121, Task 7):
-  // Ist-Stand (`current`) und wirksame Grenzen (`effectiveMin`/`effectiveMax`;
-  // `null` = keine Grenze). Der Anker hängt unter dem Kontingent und trägt als
-  // `defId` den `categoryLink` bzw. — unverlinkt — die Kategorie selbst.
-  const categoryAnchor = findCategoryAnchorSlot(capabilities, forcePath, categoryId)
-    ?? findCategoryAnchorSlot(capabilities, forcePath, categoryLink.id);
-
-  const isPrimaryForAnyEntry = hasPrimaryCatalogItems({ system, roster, force, selectionCounts, categoryId });
+  // Ob diese Kategorie für irgendeine Einheit des Kontingents die
+  // Primär-Kategorie ist, sagt der Bericht: er führt je Slot die **effektive**
+  // Primär-Kategorie (`primaryCategoryId`), also auch die erst durch einen
+  // `set-primary`-Modifikator zugewiesene (ADR 0003 §4, Issue 0156).
+  const isPrimaryForAnyEntry = hasUnitSlotsInCategory(capabilities, forcePath, categoryId);
 
   // Kategorien, die für keine Einheit die Primär-Kategorie sind und nichts
   // enthalten, sind reine Regel-Schlagworte (etwa „Charaktermodelle“) statt
@@ -151,7 +143,6 @@ export default function RosterCategorySection({
             categoryName={categoryName}
             capabilities={capabilities}
             forcePath={forcePath}
-            forceCatalogueId={forceCatalogueId}
             system={system}
             activeCatalogue={activeCatalogue}
             costTypeLabel={costTypeLabel}

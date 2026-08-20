@@ -20,9 +20,7 @@ export {
   findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
 export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
-export {
-  findMissingMandatoryListRuleSelections, isListRuleSelection, resolveListRuleGroup
-} from './listRules.js';
+export { findMissingMandatoryListRuleSelections } from './listRules.js';
 export { canGroupMaxBeRaisedAboveSingleChoice, getEffectiveModifiers } from './modifierEvaluator.js';
 export { buildModifierEvalContext } from './modifierContext.js';
 export {
@@ -36,7 +34,6 @@ export { collectUnitProfilesAndRules } from './profileCollector.js';
 export { reconcileImportedSelectionIds, syncRosterSelectionsWithSystem } from './rosterSync.js';
 export { findForceEntryById } from './forceEntries.js';
 export { isCategoryLinkHidden, isEntryPrimaryInCategory } from './entryVisibility.js';
-export { collectUnreachableArmyWideSelectors } from './armyWideSelectors.js';
 export { isIndependentSubUnit } from './subUnit.js';
 export { getUnitOptions } from './optionsCollector.js';
 export { groupProfilesByType } from './rulesEvaluator.js';

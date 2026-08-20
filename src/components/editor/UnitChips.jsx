@@ -2,16 +2,22 @@ import React from 'react';
 import {
   resolveEntry,
   findEntryInSystem,
-  collectUnitProfilesAndRules,
-  isIndependentSubUnit,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS
 } from '../../roster';
+import { isIndependentSubUnitSlot, slotOfSelection } from '../../evaluation/slotLookups';
 import { useRuleUrl } from '../../hooks/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 
-const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
+/**
+ * Die gewählten Unter-Auswahlen einer Einheit, die als Chip erscheinen: der
+ * Teilbaum ohne die **eigenständigen Untereinheiten** — die tragen ihre eigene
+ * Karte und ihre eigenen Chips. Ob eine Unter-Auswahl eine solche Untereinheit
+ * ist, sagt der Bericht (`capability.isIndependentSubUnit`, Issue 0156); die
+ * Katalog-Auflösung daneben bleibt reines Beiwerk für Detail-/Regeltexte.
+ */
+const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
   const list = [];
   const collect = (node) => {
     if (!node.selections) return;
@@ -20,7 +26,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
       const entry = findEntryInSystem(system, entryId, activeCatalogueId);
       const resolved = resolveEntry(system, entry, activeCatalogueId);
       
-      const isIndependent = isIndependentSubUnit(resolved);
+      const isIndependent = isIndependentSubUnitSlot(slots?.capabilities, slots?.pathBySelectionId, subSel);
       
       if (resolved && !isIndependent) {
         list.push({
@@ -37,12 +43,30 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId) => {
   return list;
 };
 
-const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
-  const { profiles } = collectUnitProfilesAndRules(system, sel, activeCatalogueId, roster);
-  const tableProfiles = groupProfilesByType(profiles).filter(g => !g.isModel).flatMap(g => g.profiles);
-  const tableSelectionIds = new Set(
-    tableProfiles.map(p => p._sourceSelection?.id).filter(Boolean)
-  );
+/** Die Profil-Einträge der Info-Projektion eines Slots (`kind: 'profile'`). */
+const profileElementsOf = (slot) =>
+  (slot?.infoElements ?? []).filter(element => element.kind === 'profile');
+
+/**
+ * Die Aufwertungen, die als Chip erscheinen: die gewählten Unter-Auswahlen ohne
+ * die, die bereits in einer Profil-Tabelle der Karte stehen — es sei denn, sie
+ * tragen einen eigenen Regeltext.
+ *
+ * Welche Profile die Karte tabelliert, sagt der **Bericht**
+ * (`capability.infoElements`, Issue 0156): dieselbe Info-Projektion, aus der die
+ * Karte ihre Tabellen zeichnet, statt eines zweiten Katalog-Durchlaufs. Ob eine
+ * Aufwertung darin steht, entscheidet die Id ihres Profil-Eintrags — ersatzweise
+ * (für Profile, die unter einem anderen Namen tabelliert sind) der Name.
+ */
+const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
+  const slotOf = (selectionId) =>
+    slotOfSelection(slots?.capabilities, slots?.pathBySelectionId, { id: selectionId });
+  // Der Slot dieser Einheit: direkt gereicht (`capability`) oder über das
+  // Lookup-Paar aufgelöst — dieselbe Doppelung, die auch die Karte kennt.
+  const unitSlot = slots?.capability ?? slotOf(sel?.id);
+  const tableProfiles = groupProfilesByType(profileElementsOf(unitSlot))
+    .filter(g => !g.isModel).flatMap(g => g.profiles);
+  const tableProfileIds = new Set(tableProfiles.map(p => p.id).filter(Boolean));
 
   const isNameMatch = (selN, profN) => {
     if (!selN || !profN) return false;
@@ -87,11 +111,11 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, roster) => {
     return childCount > 0;
   };
 
-  return getSelectedUpgrades(sel, system, activeCatalogueId).filter(upgrade => {
+  return getSelectedUpgrades(sel, system, activeCatalogueId, slots).filter(upgrade => {
     const res = upgrade.resolved;
     if (isEmptyWrapper(res)) return false;
     const name = upgrade.name || res?.name;
-    const inTable = tableSelectionIds.has(upgrade.id) ||
+    const inTable = profileElementsOf(slotOf(upgrade.id)).some(p => tableProfileIds.has(p.id)) ||
                     (name && tableProfiles.some(p => isNameMatch(name, p.name)));
     if (!inTable) return true;
     return hasLore(res);
@@ -149,7 +173,9 @@ export function UnitUpgradesChips({
   selection,
   system,
   activeCatalogueId,
-  roster,
+  capability = null,
+  capabilities = null,
+  pathBySelectionId = null,
   handleMouseEnter,
   handleMouseMove,
   handleMouseLeave,
@@ -157,7 +183,8 @@ export function UnitUpgradesChips({
   onShowRule
 }) {
   const resolveRuleUrl = useRuleUrl();
-  const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId, roster);
+  const selectedUpgrades = getVisibleUpgrades(selection, system, activeCatalogueId,
+    { capability, capabilities, pathBySelectionId });
   if (selectedUpgrades.length === 0) return null;
 
   return (
@@ -229,7 +256,7 @@ export function UnitRulesChips({
 
   const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const upgradeChipNames = new Set(
-    getSelectedUpgrades(selection, system, activeCatalogueId)
+    getSelectedUpgrades(selection, system, activeCatalogueId, { capabilities, pathBySelectionId })
       .map(u => normalizeChipName(u.name || u.resolved?.name))
       .filter(Boolean)
   );
