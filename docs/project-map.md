@@ -30,6 +30,24 @@ correction.
 
 ## `src/` — subsystem boundaries
 
+**The three layers.** The subsystems below group into three layers, `UI → Fachlogik →
+Daten` ([ADR 0037](adr/0037-schichtenarchitektur-ui-fachlogik-daten.md)). The arrow is
+the *allowed* dependency direction: a higher layer may import a lower one, a reach back
+from low to high is forbidden.
+
+| Layer | Directories | Responsibility |
+|---|---|---|
+| UI | `src/components/`, `src/viewmodels/`, `src/contexts/`, `src/styles/`, `src/i18n/` (and `src/hooks/`) | Presentation and interaction |
+| Fachlogik | `src/evaluator/`, `src/evaluation/`, `src/roster/` | Evaluation, write model, translation between the two |
+| Daten | `src/services/`, `src/db/`, `src/parser/` | Persistence, import, catalogue decomposition |
+
+`src/services/` is the single address through which the UI reaches data; it does not
+exist yet. Four rules in `.dependency-cruiser.cjs` (`ui-nicht-auf-daten`,
+`daten-kein-rueckgriff`, `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the
+direction. They start as `warn` — `ui-nicht-auf-daten` reports the 14 direct UI → data
+edges that exist today — and are pulled to `error` as each phase (issues 0161–0171)
+removes its violations. `src/utils/` belongs to no layer and is dissolved on the way.
+
 | Folder | Responsibility |
 |---|---|
 | `src/parser/` | Imports uploaded `.cat`/`.gst`/`.zip` files: `zipExtractor.js`, `xmlParser.js`, advisory XSD validation (`schemaValidator.js`, [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)), `catalogEditor.js`. Has its own XML reader — separate from the evaluator's, a common source of confusion. |
