@@ -1,38 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Trash2, FileText, CheckCircle2, ShieldAlert, Download } from 'lucide-react';
-import JSZip from 'jszip';
-import { extractZipFiles } from '../parser/zipExtractor';
-import { getAllSystems, deleteSystem } from '../db/database';
+import { useImporter } from '../viewmodels/useImporter';
 import ConfirmationDialog from './editor/ConfirmationDialog';
-import { fetchCatalogText, buildRawFileUrl } from '../db/catalogUpdate';
-import { loadAvailableSystemsFromSources } from '../db/catalogSourceIndex';
-import { completeSystemImport, SYSTEM_IMPORT_STATUS } from '../db/systemImport';
-import {
-  catalogueDirectoryFromIndex,
-  catalogueDirectoryFromLinks,
-} from '../parser/libraryDependencies';
-import { buildRevisionDisplay, revisionLabelClassName } from './importer/revisionDisplay';
-import {
-  buildFailedCatalogueMessage,
-  buildImportSuccessMessage,
-  buildMissingLibraryDependencyMessage,
-} from './importer/importMessages';
 import { useTranslation } from '../i18n/useTranslation';
 
 /**
- * A selection map that marks every catalogue of a system as selected. Used to preselect
- * all factions whenever a system becomes the active one in the dropdown.
- */
-function buildAllSelectedCats(system) {
-  const selected = {};
-  (system?.catalogues ?? []).forEach(cat => {
-    selected[cat.id] = true;
-  });
-  return selected;
-}
-
-/**
+ * Der Import-Bildschirm — nur noch JSX (ADR-0038).
+ *
+ * Zustand, Meldungen und Revisionsanzeige kommen aus `useImporter`.
+ *
  * @param {object} props
+ * @param {object[]} [props.systems] die **eine** Systemliste der App
+ *   (`useAppData`). Der Bildschirm liest sie nicht mehr selbst aus der
+ *   Datenbank; eine zweite Liste konnte von der ersten abweichen.
  * @param {() => Promise<void>|void} [props.onSystemImported] runs after a system was stored.
  * @param {(message: string) => void} [props.onReportError] carries a failure to the app-wide
  *   channel. Needed because a completed import navigates away and unmounts this screen, so
@@ -40,227 +20,13 @@ function buildAllSelectedCats(system) {
  * @param {boolean} [props.showAsEmptyState] renders the importer as the app's empty state
  *   when no system exists yet.
  */
-export default function Importer({ onSystemImported, onReportError, showAsEmptyState = false }) {
+export default function Importer({ systems = [], onSystemImported, onReportError, showAsEmptyState = false }) {
   const { t } = useTranslation();
-  const [systems, setSystems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState(null);
-  const [systemToDelete, setSystemToDelete] = useState(null);
-
-  // States for pre-bundled catalog import
-  const [availableSystems, setAvailableSystems] = useState([]);
-  const [selectedBundleSysId, setSelectedBundleSysId] = useState('');
-  const [selectedCats, setSelectedCats] = useState({});
-
-  // Bewusst nur beim Mounten: Beide Lader sind bei jedem Render neue Funktionen und
-  // setzen Zustand, den sie im Fehlerfall selbst wieder lesen (availableSystems).
-  // In die Abhängigkeitsliste aufgenommen, würde jeder erfolgreiche Abruf die Identität
-  // ändern und den Effekt erneut auslösen — eine Endlosschleife aus Netzwerkabrufen.
-  // Der Katalog-Index wird deshalb einmal je Bildschirmaufruf geladen.
-  useEffect(() => {
-    loadSystems();
-    fetchAvailableSystems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadSystems = async () => {
-    try {
-      const data = await getAllSystems();
-      setSystems(data);
-    } catch (e) {
-      console.error("Error loading systems", e);
-      setError(t('importer.error.systemListUnavailable'));
-    }
-  };
-
-  const fetchAvailableSystems = async () => {
-    try {
-      const { systems, anyIndexReachable } = await loadAvailableSystemsFromSources(fetchCatalogText);
-      if (systems.length > 0) {
-        setAvailableSystems(systems);
-        setSelectedBundleSysId(systems[0].id);
-        setSelectedCats(buildAllSelectedCats(systems[0]));
-      } else if (!anyIndexReachable) {
-        setError(t('importer.error.indexUnreachable'));
-      }
-    } catch (e) {
-      console.warn("Could not load catalog index from fork", e);
-      // Nur wenn noch keine Auswahl steht, ist der Fehler für den Nutzer relevant —
-      // andernfalls kann er mit dem bereits geladenen Index weiterarbeiten.
-      if (availableSystems.length === 0) {
-        setError(t('importer.error.noDataAvailable'));
-      }
-    }
-  };
-
-  const handleSystemChange = (sysId) => {
-    setSelectedBundleSysId(sysId);
-    const system = availableSystems.find(s => s.id === sysId);
-    setSelectedCats(buildAllSelectedCats(system));
-  };
-
-  const handleToggleCat = (catId) => {
-    setSelectedCats(prev => ({
-      ...prev,
-      [catId]: !prev[catId]
-    }));
-  };
-
-  const handleToggleAllCats = (checked) => {
-    const system = availableSystems.find(s => s.id === selectedBundleSysId);
-    if (!system) return;
-    const nextCats = {};
-    system.catalogues.forEach(cat => {
-      nextCats[cat.id] = checked;
-    });
-    setSelectedCats(nextCats);
-  };
-
-  /**
-   * Runs the shared import completion for raw XML files that either import path has
-   * gathered, and reflects its outcome in the UI. Both paths therefore share the schema
-   * advisory, the library-dependency guard, persistence and the success confirmation.
-   * Catalogues that failed to parse are named in the same error area as the dependency
-   * warning, and the confirmation reports the import as incomplete.
-   */
-  const finishImport = async (gstFiles, catFiles, catalogueDirectory) => {
-    const result = await completeSystemImport({ gstFiles, catFiles, catalogueDirectory });
-
-    if (result.status === SYSTEM_IMPORT_STATUS.MISSING_LIBRARY_DEPENDENCIES) {
-      setError(buildMissingLibraryDependencyMessage(result.missingDependencies));
-      return;
-    }
-
-    const failedCatalogues = result.failedCatalogues ?? [];
-    if (failedCatalogues.length > 0) {
-      const failureMessage = buildFailedCatalogueMessage(failedCatalogues);
-      setError(failureMessage);
-      if (onReportError) onReportError(failureMessage);
-    }
-    setSuccessMsg(buildImportSuccessMessage(result.system, failedCatalogues));
-    loadSystems();
-    // Await the parent so it has already switched to the Heerlager view before
-    // `finally` clears `loading` and unmounts this Importer — no visible flash.
-    if (onSystemImported) await onSystemImported();
-  };
-
-  const handleImportBundle = async () => {
-    const system = availableSystems.find(s => s.id === selectedBundleSysId);
-    if (!system) return;
-
-    const selectedCatList = system.catalogues.filter(cat => selectedCats[cat.id]);
-    
-    setError(null);
-    setSuccessMsg(null);
-    setLoading(true);
-
-    try {
-      const gstUrl = buildRawFileUrl(system.rawBaseUrl, system.gst.fileName);
-      const gstRes = await fetch(gstUrl);
-      if (!gstRes.ok) throw new Error(t('importer.error.systemLoadFailed', { status: gstRes.statusText }));
-      const gstText = await gstRes.text();
-      const gstFiles = [{ name: system.gst.fileName, content: gstText }];
-
-      const catFiles = await Promise.all(selectedCatList.map(async (cat) => {
-        const catUrl = buildRawFileUrl(system.rawBaseUrl, cat.fileName);
-        const catRes = await fetch(catUrl);
-        if (!catRes.ok) throw new Error(t('importer.error.catalogueLoadFailed', { name: cat.name, status: catRes.statusText }));
-        const catText = await catRes.text();
-        return { name: cat.fileName, content: catText };
-      }));
-
-      // The catalog index knows every selectable catalogue, so a link target it does not
-      // list is broken upstream rather than a selection the user could complete.
-      await finishImport(gstFiles, catFiles, catalogueDirectoryFromIndex(system.catalogues));
-    } catch (e) {
-      console.error(e);
-      setError(t('importer.error.importFailed', { message: e.message }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileInput = async (e) => {
-    if (e.target.files && e.target.files[0]) {
-      await processUploadedFile(e.target.files[0]);
-    }
-  };
-
-  const processUploadedFile = async (file) => {
-    setError(null);
-    setSuccessMsg(null);
-
-    if (!file.name.endsWith('.zip')) {
-      setError(t('importer.error.invalidZip'));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { gstFiles, catFiles } = await extractZipFiles(file);
-      // An uploaded archive comes with no index bounding its catalogues, so every link
-      // target missing from the archive is one the user could add to it.
-      await finishImport(gstFiles, catFiles, catalogueDirectoryFromLinks());
-    } catch (e) {
-      console.error(e);
-      setError(t('importer.error.fileProcessingFailed', { message: e.message }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = (id) => {
-    const sys = systems.find(s => s.id === id);
-    if (sys) {
-      setSystemToDelete(sys);
-    }
-  };
-
-  const handleExport = async (sys) => {
-    try {
-      if (!sys.rawXmls) {
-        setError(t('importer.error.noRawXml'));
-        return;
-      }
-
-      const zip = new JSZip();
-      sys.rawXmls.gst?.forEach(f => {
-        zip.file(f.name, f.content);
-      });
-      sys.rawXmls.cat?.forEach(f => {
-        zip.file(f.name, f.content);
-      });
-
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${sys.name}_original.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      setSuccessMsg(t('importer.success.systemExported', { name: sys.name }));
-    } catch (e) {
-      console.error(e);
-      setError(t('importer.error.systemExportFailed', { message: e.message }));
-    }
-  };
+  const importer = useImporter({ systems, onSystemImported, onReportError });
+  const { bundle, loading } = importer;
 
   const renderBundleImporter = () => {
-    if (availableSystems.length === 0) return null;
-
-    const selectedSystem = availableSystems.find(s => s.id === selectedBundleSysId);
-    const selectedCount = selectedSystem ? selectedSystem.catalogues.filter(cat => selectedCats[cat.id]).length : 0;
-    const allChecked = selectedSystem ? selectedSystem.catalogues.every(cat => selectedCats[cat.id]) : false;
-    // The locally stored counterpart of the selected system (already loaded via
-    // getAllSystems — no extra DB access) drives the "new/current/outdated/ahead" state.
-    const storedSystem = selectedSystem ? systems.find(s => s.id === selectedSystem.id) ?? null : null;
-    const selectedSystemRevisionDisplay = selectedSystem
-      ? buildRevisionDisplay(selectedSystem.gst.revision, storedSystem)
-      : null;
+    if (!bundle.hasIndex) return null;
 
     return (
       <div className="gothic-panel bundle-importer-panel full-width">
@@ -272,74 +38,70 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         <div className="bundle-form-group">
           <div className="bundle-form-group-header">
             <label className="text-label text-gold">{t('importer.bundle.systemLabel')}</label>
-            {selectedSystemRevisionDisplay && (
+            {bundle.revisionDisplay && (
               <span
-                className={revisionLabelClassName(selectedSystemRevisionDisplay.tone)}
+                className={importer.revisionLabelClassName(bundle.revisionDisplay.tone)}
                 data-testid="selected-system-revision"
               >
-                {selectedSystemRevisionDisplay.text}
+                {bundle.revisionDisplay.text}
               </span>
             )}
           </div>
           <select
-            value={selectedBundleSysId}
-            onChange={(e) => handleSystemChange(e.target.value)}
+            value={importer.selectedBundleSysId}
+            onChange={(e) => importer.selectSystem(e.target.value)}
             disabled={loading}
           >
-            {availableSystems.map(sys => (
+            {importer.availableSystems.map(sys => (
               <option key={sys.id} value={sys.id}>{sys.name}</option>
             ))}
           </select>
         </div>
 
-        {selectedSystem && (
+        {bundle.selectedSystem && (
           <div className="bundle-form-group">
             <div className="bundle-importer-header">
-              <label className="text-label text-gold">{t('importer.bundle.cataloguesLabel', { count: selectedCount })}</label>
+              <label className="text-label text-gold">{t('importer.bundle.cataloguesLabel', { count: bundle.selectedCount })}</label>
               <button
                 type="button"
                 className="btn-gold btn-sm"
-                onClick={() => handleToggleAllCats(!allChecked)}
+                onClick={() => importer.toggleAllCatalogues(!bundle.allChecked)}
                 disabled={loading}
               >
-                {allChecked ? t('importer.bundle.deselectAll') : t('importer.bundle.selectAll')}
+                {bundle.allChecked ? t('importer.bundle.deselectAll') : t('importer.bundle.selectAll')}
               </button>
             </div>
             <div className="bundle-catalog-list-container">
-              {selectedSystem.catalogues.map(cat => {
-                const storedCatalogue = storedSystem?.catalogues?.find(c => c.id === cat.id) ?? null;
-                const catalogueRevisionDisplay = buildRevisionDisplay(cat.revision, storedCatalogue);
-                return (
-                  <label key={cat.id} className="bundle-catalog-item-label">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedCats[cat.id]}
-                      onChange={() => handleToggleCat(cat.id)}
-                      disabled={loading}
-                      aria-label={cat.name}
-                    />
-                    <span className="text-body">{cat.name}</span>
-                    {catalogueRevisionDisplay && (
-                      <span
-                        className={revisionLabelClassName(catalogueRevisionDisplay.tone)}
-                        data-testid={`catalog-revision-${cat.id}`}
-                      >
-                        {catalogueRevisionDisplay.text}
-                      </span>
-                    )}
-                  </label>
-                );
-              })}
+              {bundle.catalogues.map(cat => (
+                <label key={cat.id} className="bundle-catalog-item-label">
+                  <input
+                    type="checkbox"
+                    checked={cat.isSelected}
+                    onChange={() => importer.toggleCatalogue(cat.id)}
+                    disabled={loading}
+                    aria-label={cat.name}
+                  />
+                  <span className="text-body">{cat.name}</span>
+                  {cat.revisionDisplay && (
+                    <span
+                      className={importer.revisionLabelClassName(cat.revisionDisplay.tone)}
+                      data-testid={`catalog-revision-${cat.id}`}
+                    >
+                      {cat.revisionDisplay.text}
+                    </span>
+                  )}
+                </label>
+              ))}
             </div>
           </div>
         )}
 
         <div className="bundle-importer-actions">
-          <button 
-            type="button" 
-            className="btn-primary" 
-            onClick={handleImportBundle}
-            disabled={loading || selectedCount === 0}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={importer.importSelectedBundle}
+            disabled={loading || bundle.selectedCount === 0}
           >
             {t('common.import')}
           </button>
@@ -353,17 +115,17 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
   // they would become a second flex item and squeeze the column beside the panel.
   const statusBanners = (
     <>
-      {error && (
+      {importer.error && (
         <div className="validation-error-item importer-status-banner importer-status-banner--error">
           <ShieldAlert className="text-danger" size={20} />
-          <span className="text-danger">{error}</span>
+          <span className="text-danger">{importer.error}</span>
         </div>
       )}
 
-      {successMsg && (
+      {importer.successMsg && (
         <div className="validation-error-item importer-status-banner importer-status-banner--success">
           <CheckCircle2 className="text-success" size={20} />
-          <span className="text-success">{successMsg}</span>
+          <span className="text-success">{importer.successMsg}</span>
         </div>
       )}
     </>
@@ -403,22 +165,22 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
         </div>
       )}
 
-      <input 
-        type="file" 
+      <input
+        type="file"
         id="file-upload"
         className="is-hidden"
         accept=".zip"
-        onChange={handleFileInput}
+        onChange={importer.pickUploadFile}
       />
 
       {!showAsEmptyState && (
         <div className="margin-top-md">
           <h2>{t('importer.installedTitle')}</h2>
-          {systems.length === 0 ? (
+          {importer.systems.length === 0 ? (
             <p className="text-dim importer-empty-hint">{t('importer.emptyListHint')}</p>
           ) : (
             <div className="imported-system-list">
-              {systems.map((sys) => (
+              {importer.systems.map((sys) => (
                 <div
                   key={sys.id}
                   className="catalog-item imported-system-item"
@@ -437,14 +199,14 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
                   <div className="imported-system-actions">
                     <button
                       className="btn-gold square-btn"
-                      onClick={() => handleExport(sys)}
+                      onClick={() => importer.exportSystem(sys)}
                       title={t('importer.exportSystemTitle')}
                     >
                       <Download size={16} />
                     </button>
                     <button
                       className="btn-danger square-btn"
-                      onClick={() => handleDelete(sys.id)}
+                      onClick={() => importer.requestDelete(sys.id)}
                       title={t('importer.deleteSystemTitle')}
                     >
                       <Trash2 size={16} />
@@ -458,25 +220,13 @@ export default function Importer({ onSystemImported, onReportError, showAsEmptyS
       )}
       {/* Confirmation Dialog for deleting System */}
       <ConfirmationDialog
-        isOpen={!!systemToDelete}
-        onClose={() => setSystemToDelete(null)}
-        onConfirm={async () => {
-          if (!systemToDelete) return;
-          const id = systemToDelete.id;
-          setSystemToDelete(null);
-          try {
-            await deleteSystem(id);
-            loadSystems();
-            if (onSystemImported) onSystemImported();
-          } catch (e) {
-            console.error(e);
-            setError(t('importer.error.systemDeleteFailed'));
-          }
-        }}
+        isOpen={!!importer.systemToDelete}
+        onClose={importer.cancelDelete}
+        onConfirm={importer.confirmDelete}
         title={t('importer.deleteSystem.title')}
         message={
           <>
-            {t('importer.deleteSystem.confirmPrefix')}<strong>{systemToDelete?.name}</strong>{t('importer.deleteSystem.confirmSuffix')}
+            {t('importer.deleteSystem.confirmPrefix')}<strong>{importer.systemToDelete?.name}</strong>{t('importer.deleteSystem.confirmSuffix')}
           </>
         }
         confirmLabel={t('common.delete')}

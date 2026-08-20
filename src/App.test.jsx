@@ -39,13 +39,17 @@ vi.mock('./db/migrations', () => ({
 
 // Mock child components. The Importer mock exposes a button that invokes the
 // `onSystemImported` callback so tests can drive the post-import flow.
+const { importerProps } = vi.hoisted(() => ({ importerProps: { current: null } }));
 vi.mock('./components/Importer', () => ({
-  default: ({ onSystemImported }) => (
-    <div data-testid="importer-mock">
-      Importer Mock
-      <button data-testid="trigger-import" onClick={() => onSystemImported?.()}>Import</button>
-    </div>
-  ),
+  default: (props) => {
+    importerProps.current = props;
+    return (
+      <div data-testid="importer-mock">
+        Importer Mock
+        <button data-testid="trigger-import" onClick={() => props.onSystemImported?.()}>Import</button>
+      </div>
+    );
+  },
 }));
 // The dashboard and editor mocks expose the roster they are given (and the
 // dashboard's callbacks), so tests can drive App's navigation and observe which
@@ -302,4 +306,53 @@ describe('App roster selection derived from the roster list', () => {
   });
 });
 
+/**
+ * Issue 0165, AC3 — es gibt genau eine Systemliste. Der Importer hält keinen
+ * eigenen `getAllSystems`-Zustand mehr, sondern bekommt dieselbe Liste wie jeder
+ * andere Bildschirm; ein fertiger Import ist damit überall zugleich sichtbar,
+ * ohne dass der Nutzer die Ansicht wechseln muss.
+ */
+describe('App: die eine Systemliste', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getAllRosters.mockResolvedValue([]);
+    importerProps.current = null;
+    dashboardProps.current = null;
+  });
 
+  it('hands the importer the very same list object the other screens get', async () => {
+    const storedSystem = { id: 'sys-1', name: 'Stored System' };
+    getAllSystems.mockResolvedValue([storedSystem]);
+    runSystemMigrations.mockImplementation((systems) => Promise.resolve({ systems, failures: [] }));
+
+    render(<App />);
+
+    await waitFor(() => expect(dashboardProps.current).not.toBeNull());
+    await act(async () => { fireEvent.click(screen.getAllByTestId('nav-importer')[0]); });
+
+    await waitFor(() => expect(importerProps.current).not.toBeNull());
+    expect(importerProps.current.systems).toBe(dashboardProps.current.systems);
+  });
+
+  it('publishes a finished import to every screen at once', async () => {
+    const first = { id: 'sys-1', name: 'Stored System' };
+    const second = { id: 'sys-2', name: 'Freshly Imported' };
+    getAllSystems.mockResolvedValue([first]);
+    runSystemMigrations.mockImplementation((systems) => Promise.resolve({ systems, failures: [] }));
+
+    render(<App />);
+
+    await waitFor(() => expect(dashboardProps.current).not.toBeNull());
+    await act(async () => { fireEvent.click(screen.getAllByTestId('nav-importer')[0]); });
+    await waitFor(() => expect(importerProps.current?.systems).toHaveLength(1));
+
+    // Der Import schreibt das zweite System und meldet sich über denselben
+    // Kanal wie jede andere Datenänderung.
+    getAllSystems.mockResolvedValue([first, second]);
+    await act(async () => { fireEvent.click(screen.getByTestId('trigger-import')); });
+
+    await waitFor(() => {
+      expect(dashboardProps.current.systems.map(s => s.id)).toEqual(['sys-1', 'sys-2']);
+    });
+  });
+});

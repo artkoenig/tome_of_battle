@@ -154,6 +154,7 @@ export default function App() {
           </div>
         ) : systems.length === 0 ? (
           <Importer
+            systems={systems}
             onSystemImported={handleSystemImported}
             onReportError={reportError}
             showAsEmptyState={true}
@@ -175,7 +176,7 @@ export default function App() {
             )}
 
             {view === VIEWS.IMPORTER && (
-              <Importer onSystemImported={handleSystemImported} onReportError={reportError} />
+              <Importer systems={systems} onSystemImported={handleSystemImported} onReportError={reportError} />
             )}
 
             {view === VIEWS.BUILDER && selectedRoster && selectedSystem && (

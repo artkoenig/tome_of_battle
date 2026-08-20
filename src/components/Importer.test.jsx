@@ -102,9 +102,16 @@ describe('Importer Component', () => {
   // (nested describes below) install their own fetch spy on top.
   let indexFetchSpy;
 
+  // Die installierten Systeme sind seit Issue 0165 (AC3) eine Prop: der
+  // Bildschirm liest keine zweite Liste mehr aus der Datenbank. Die Tests
+  // setzen daher diese Variable, und `renderImporter` reicht sie herein.
+  let installedSystems = [];
+  const renderImporter = (props = {}) =>
+    render(<Importer systems={installedSystems} {...props} />);
+
   beforeEach(() => {
     vi.clearAllMocks();
-    getAllSystems.mockResolvedValue([]);
+    installedSystems = [];
     deleteSystem.mockResolvedValue({});
     saveSystem.mockResolvedValue({});
     const emptyIndex = { repositoryFiles: [] };
@@ -120,7 +127,7 @@ describe('Importer Component', () => {
   });
 
   it('1. Render Empty State', async () => {
-    render(<Importer showAsEmptyState={true} onSystemImported={vi.fn()} />);
+    renderImporter({ showAsEmptyState: true, onSystemImported: vi.fn() });
 
     expect(screen.getByText('Willkommen bei Tome of Battle')).toBeDefined();
     expect(screen.queryByText('Eigene Spieldaten hochladen')).toBeNull();
@@ -128,14 +135,17 @@ describe('Importer Component', () => {
     // Check that systems list container is not rendered
     expect(screen.queryByText('Importierte Spielsysteme')).toBeNull();
 
+    // AC3 von Issue 0165: es gibt genau eine Systemliste. Der Bildschirm holt
+    // sie sich nicht selbst aus der Datenbank.
     await waitFor(() => {
-      expect(getAllSystems).toHaveBeenCalled();
+      expect(indexFetchSpy).toHaveBeenCalled();
     });
+    expect(getAllSystems).not.toHaveBeenCalled();
   });
 
   it('2. Render Empty System List', async () => {
-    getAllSystems.mockResolvedValue([]);
-    render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+    installedSystems = [];
+    renderImporter({ showAsEmptyState: false, onSystemImported: vi.fn() });
 
     await waitFor(() => {
       expect(screen.getByText('Keine Spielsysteme in der Datenbank vorhanden.')).toBeDefined();
@@ -148,9 +158,9 @@ describe('Importer Component', () => {
       { id: 'sys-1', name: 'Warhammer Fantasy', catalogues: [{ id: 'cat-1' }, { id: 'cat-2' }] },
       { id: 'sys-2', name: 'Warhammer 40k', catalogues: [{ id: 'cat-3' }] }
     ];
-    getAllSystems.mockResolvedValue(mockSystems);
+    installedSystems = mockSystems;
 
-    render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+    renderImporter({ showAsEmptyState: false, onSystemImported: vi.fn() });
 
     await waitFor(() => {
       expect(screen.getByText('Warhammer Fantasy')).toBeDefined();
@@ -172,7 +182,7 @@ describe('Importer Component', () => {
     mockParseResult({ id: 'dummy', catalogues: [] });
     saveSystem.mockResolvedValue({});
 
-    const { container } = render(<Importer showAsEmptyState={false} />);
+    const { container } = renderImporter({ showAsEmptyState: false });
     const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
     const fileInput = container.querySelector('#file-upload');
 
@@ -198,9 +208,9 @@ describe('Importer Component', () => {
     extractZipFiles.mockResolvedValue({ gstFiles: [{ name: 'rules.gst' }], catFiles: [{ name: 'faction.cat' }] });
     mockParseResult(systemData);
     saveSystem.mockResolvedValue({});
-    getAllSystems.mockResolvedValue([]);
+    installedSystems = [];
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
     const fileInput = container.querySelector('#file-upload');
@@ -230,15 +240,13 @@ describe('Importer Component', () => {
     });
     mockParseResult(systemData, [{ fileName: 'broken.cat', message: 'Unexpected end of input' }]);
     saveSystem.mockResolvedValue({});
-    getAllSystems.mockResolvedValue([]);
+    installedSystems = [];
 
-    const { container } = render(
-      <Importer
-        showAsEmptyState={false}
-        onSystemImported={vi.fn()}
-        onReportError={onReportErrorMock}
-      />
-    );
+    const { container } = renderImporter({
+      showAsEmptyState: false,
+      onSystemImported: vi.fn(),
+      onReportError: onReportErrorMock,
+    });
 
     const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
     fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
@@ -255,7 +263,7 @@ describe('Importer Component', () => {
 
   it('6. Invalid Extension Rejection', async () => {
     const onSystemImportedMock = vi.fn();
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['textcontent'], 'game_system.txt', { type: 'text/plain' });
     const fileInput = container.querySelector('#file-upload');
@@ -275,7 +283,7 @@ describe('Importer Component', () => {
     extractZipFiles.mockRejectedValue(new Error('Zip extraction failed'));
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['zipcontent'], 'invalid.zip', { type: 'application/zip' });
     const fileInput = container.querySelector('#file-upload');
@@ -308,7 +316,7 @@ describe('Importer Component', () => {
     ]);
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['zipcontent'], 'game_system.zip', { type: 'application/zip' });
     fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
@@ -348,7 +356,7 @@ describe('Importer Component', () => {
       ],
     });
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['zipcontent'], 'partial_export.zip', { type: 'application/zip' });
     fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
@@ -380,7 +388,7 @@ describe('Importer Component', () => {
       ],
     });
 
-    const { container } = render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    const { container } = renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     const file = new File(['zipcontent'], 'full_export.zip', { type: 'application/zip' });
     fireEvent.change(container.querySelector('#file-upload'), { target: { files: [file] } });
@@ -404,10 +412,10 @@ describe('Importer Component', () => {
         } 
       }
     ];
-    getAllSystems.mockResolvedValue(mockSystems);
+    installedSystems = mockSystems;
     const onSystemImportedMock = vi.fn();
 
-    render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+    renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
     await waitFor(() => {
       expect(screen.getByText('Export System')).toBeDefined();
@@ -471,9 +479,9 @@ describe('Importer Component', () => {
     const mockSystems = [
       { id: 'sys-no-xml', name: 'No Xml System', catalogues: [] }
     ];
-    getAllSystems.mockResolvedValue(mockSystems);
+    installedSystems = mockSystems;
 
-    render(<Importer showAsEmptyState={false} />);
+    renderImporter({ showAsEmptyState: false });
 
     await waitFor(() => {
       expect(screen.getByText('No Xml System')).toBeDefined();
@@ -489,10 +497,10 @@ describe('Importer Component', () => {
     const mockSystems = [
       { id: 'sys-del-fail', name: 'Delete Fail System', catalogues: [] }
     ];
-    getAllSystems.mockResolvedValue(mockSystems);
+    installedSystems = mockSystems;
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    render(<Importer showAsEmptyState={false} />);
+    renderImporter({ showAsEmptyState: false });
 
     await waitFor(() => {
       expect(screen.getByText('Delete Fail System')).toBeDefined();
@@ -523,10 +531,10 @@ describe('Importer Component', () => {
         rawXmls: { gst: [], cat: [] } 
       }
     ];
-    getAllSystems.mockResolvedValue(mockSystems);
+    installedSystems = mockSystems;
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    render(<Importer showAsEmptyState={false} />);
+    renderImporter({ showAsEmptyState: false });
 
     await waitFor(() => {
       expect(screen.getByText('Export Fail System')).toBeDefined();
@@ -604,7 +612,7 @@ describe('Importer Component', () => {
     });
 
     it('should fetch catalog index and render pre-bundled importer', async () => {
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('catpkg.json'));
@@ -616,7 +624,7 @@ describe('Importer Component', () => {
     });
 
     it('should allow toggling individual catalogs and using select all/none button', async () => {
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByLabelText('Bretonnia')).toBeDefined();
@@ -653,7 +661,7 @@ describe('Importer Component', () => {
       mockParseResult(systemData);
       saveSystem.mockResolvedValue({});
 
-      render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+      renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
       await waitFor(() => {
         expect(screen.getByText('Importieren')).toBeDefined();
@@ -731,7 +739,7 @@ describe('Importer Component', () => {
         ]
       });
 
-      render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+      renderImporter({ showAsEmptyState: false, onSystemImported: vi.fn() });
 
       await waitFor(() => {
         expect(screen.getByLabelText('Mercenaries')).toBeDefined();
@@ -762,7 +770,7 @@ describe('Importer Component', () => {
         ]
       });
 
-      render(<Importer showAsEmptyState={false} onSystemImported={onSystemImportedMock} />);
+      renderImporter({ showAsEmptyState: false, onSystemImported: onSystemImportedMock });
 
       await waitFor(() => {
         expect(screen.getByText('Importieren')).toBeDefined();
@@ -804,7 +812,7 @@ describe('Importer Component', () => {
         ]
       });
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByLabelText('Bretonnia')).toBeDefined();
@@ -825,7 +833,7 @@ describe('Importer Component', () => {
         ]
       });
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 3 · neu');
@@ -844,7 +852,7 @@ describe('Importer Component', () => {
         ]
       });
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByLabelText('Catalogue Without Revision')).toBeDefined();
@@ -884,7 +892,7 @@ describe('Importer Component', () => {
 
       // Locally stored counterpart: system behind (7 < 9); catalogues cover every
       // matrix row. cat-new is deliberately absent (never imported) -> "neu".
-      getAllSystems.mockResolvedValue([
+      installedSystems = [
         {
           id: 'sys-1',
           name: 'System One',
@@ -896,9 +904,9 @@ describe('Importer Component', () => {
             { id: 'cat-legacy' }
           ]
         }
-      ]);
+      ];
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByTestId('selected-system-revision').textContent).toBe('Rev 9 · lokal 7 · Update verfügbar');
@@ -922,12 +930,12 @@ describe('Importer Component', () => {
         ]
       });
 
-      getAllSystems.mockResolvedValue([
+      installedSystems = [
         { id: 'sys-a', name: 'System A', revision: 5, catalogues: [{ id: 'cat-shared', revision: 3 }] },
         { id: 'sys-b', name: 'System B', revision: 5, catalogues: [{ id: 'cat-shared', revision: 8 }] }
-      ]);
+      ];
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByTestId('catalog-revision-cat-shared').textContent).toBe('Rev 8 · lokal 3 · Update verfügbar');
@@ -967,7 +975,7 @@ describe('Importer Component', () => {
         return Promise.reject(new Error(`Unexpected fetch URL: ${url}`));
       });
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       // Each system is shown under its own catalog name (Child-Issue 10): the real
       // `.gst` name, with no short label and no source qualifier appended.
@@ -997,7 +1005,7 @@ describe('Importer Component', () => {
       });
       mockParseResult({ id: ERGOFARG_SYSTEM_ID, name: 'Ergofarg', catalogues: [{ id: 'ergofarg-cat' }] });
 
-      render(<Importer showAsEmptyState={false} onSystemImported={vi.fn()} />);
+      renderImporter({ showAsEmptyState: false, onSystemImported: vi.fn() });
 
       await waitFor(() => {
         expect(screen.getByLabelText('Kislev')).toBeDefined();
@@ -1017,11 +1025,11 @@ describe('Importer Component', () => {
       // Uses the outer beforeEach's empty-index fetch stub: no dropdown systems, so the
       // asserted name can only come from the imported-systems list.
       const ergofargName = 'Warhammer Fantasy Battle 6th edition';
-      getAllSystems.mockResolvedValue([
+      installedSystems = [
         { id: ERGOFARG_SYSTEM_ID, name: ergofargName, catalogues: [] },
-      ]);
+      ];
 
-      render(<Importer showAsEmptyState={false} />);
+      renderImporter({ showAsEmptyState: false });
 
       await waitFor(() => {
         expect(screen.getByText(ergofargName)).toBeDefined();

@@ -4,32 +4,9 @@ import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
-import { getProfileCellClassName } from '../profileCellClasses';
 import { useUnitCard } from '../../viewmodels/editor/useUnitCard';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatViolation } from '../../i18n/violationMessages';
-
-const getModificationState = (characteristic) => {
-  if (!characteristic || characteristic.originalValue === undefined) return null;
-
-  const valStr = characteristic.value;
-  const origStr = characteristic.originalValue;
-  if (valStr === origStr) return null;
-
-  const getNumericValue = (str) => {
-    const match = str.match(/-?\d+/);
-    return match ? parseInt(match[0], 10) : null;
-  };
-
-  const valNum = getNumericValue(valStr);
-  const origNum = getNumericValue(origStr);
-
-  if (valNum !== null && origNum !== null) {
-    if (valNum > origNum) return 'positive';
-    if (valNum < origNum) return 'negative';
-  }
-  return 'modified';
-};
 
 /**
  * Die Einheitenkarte — nur noch JSX (ADR-0038).
@@ -102,28 +79,27 @@ export default function UnitSelectionCard({
   const renderProfileCell = (c, headerKey) => {
     if (!c) return <td key={headerKey} className="font-body">-</td>;
 
-    const modState = getModificationState(c);
-    const className = getProfileCellClassName(modState);
+    const cell = card.profileCellOf(c);
 
     return (
       <td
         key={headerKey}
-        className={className}
+        className={cell.className}
         onMouseEnter={(e) => {
-          if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(t('common.modifications', { name: c.name }), c.modificationBreakdown.join('\n'), e);
+          if (cell.breakdown) {
+            handleMouseEnter(t('common.modifications', { name: c.name }), cell.breakdown.join('\n'), e);
           }
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={(e) => {
-          if (modState && c.modificationBreakdown?.length > 0 && window.innerWidth <= 900) {
+          if (cell.breakdown && window.innerWidth <= 900) {
             e.stopPropagation();
             setActiveInfo({
               title: t('common.modifications', { name: c.name }),
               text: (
                 <ul className="modification-breakdown-list">
-                  {c.modificationBreakdown.map((b, bIdx) => (
+                  {cell.breakdown.map((b, bIdx) => (
                     <li key={bIdx} className="text-body">{b}</li>
                   ))}
                 </ul>

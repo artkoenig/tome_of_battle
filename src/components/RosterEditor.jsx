@@ -1,120 +1,48 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRosterState } from '../viewmodels/useRosterState';
+import React from 'react';
+import { useRosterEditor } from '../viewmodels/useRosterEditor';
 import { RosterCommandsProvider, RosterReportProvider } from '../viewmodels/rosterContexts';
-import { saveRoster } from '../db/database';
-import { resolveCostLimitLabel } from '../roster';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';
 import ForceEditorSection from './editor/ForceEditorSection';
 import RosterSidebar from './editor/RosterSidebar';
 import RulesIndexDialog from './RulesIndexDialog';
-import { useRuleUrl } from '../hooks/useRuleUrl';
 
-const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
-
+/**
+ * Die Editor-Hülle — nur noch JSX (ADR-0038).
+ *
+ * Zustandsknoten, aktiver Katalog, Kosten-Anzeigen, Ausklapp-Zustand der
+ * Listenregel-Gruppen und der Regel-Dialog kommen aus `useRosterEditor`; Bericht
+ * und Kommandos gehen als Bündel in die beiden Kontexte, aus denen die
+ * ViewModels der Blätter lesen.
+ */
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError, isFreshRoster }) {
-  // Der Zustandsknoten des Editors (ADR-0038): Bericht und Kommandos gehen als
-  // Bündel in die beiden Kontexte, aus denen die ViewModels der Blätter lesen.
-  const {
-    roster,
-    report,
-    selectedRosterSelection,
-    setSelectedRosterSelection,
-    commands,
-    canUndo,
-    canRedo
-  } = useRosterState(initialRoster, system, saveRoster, onReportError, isFreshRoster);
-  const { costTotals, pathByForceId } = report;
-  const { undo, redo } = commands;
-
-  const [activeCatalogue, setActiveCatalogue] = useState(null);
-  // Listenregel-Gruppen sind ausklappbar und **standardmäßig eingeklappt**. Wir
-  // verfolgen daher die (pro force+Kategorie) ausdrücklich AUSGEKLAPPTEN Gruppen;
-  // ein leeres Set bedeutet: alle eingeklappt.
-  const [expandedRuleGroups, setExpandedRuleGroups] = useState(() => new Set());
-  const isRuleGroupExpanded = useCallback(
-    (forceId, categoryId) => expandedRuleGroups.has(ruleGroupKeyOf(forceId, categoryId)),
-    [expandedRuleGroups]
-  );
-  const toggleRuleGroup = useCallback((forceId, categoryId) => {
-    const groupKey = ruleGroupKeyOf(forceId, categoryId);
-    setExpandedRuleGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
-      return next;
-    });
-  }, []);
-  // Ein Bündel statt zweier Props: die Sektion reicht es unverändert an ihre
-  // Kategorie-Gruppen weiter und wertet es selbst nie aus.
-  const ruleGroups = useMemo(
-    () => ({ isExpanded: isRuleGroupExpanded, onToggle: toggleRuleGroup }),
-    [isRuleGroupExpanded, toggleRuleGroup]
-  );
-  const resolveRuleUrl = useRuleUrl();
-
-  // Holds the rule whose external index is currently shown, together with the URL
-  // resolved at open time. Capturing the URL here (rather than re-resolving on each
-  // render) keeps an already-open dialog intact when the setting is toggled off,
-  // as required by the feature's out-of-scope note.
-  const [activeRuleDialog, setActiveRuleDialog] = useState(null);
-
-  const onShowRule = useCallback((ruleName) => {
-    const ruleUrl = resolveRuleUrl(ruleName);
-    if (!ruleUrl) return;
-    setActiveRuleDialog({ ruleName, url: ruleUrl });
-  }, [resolveRuleUrl]);
-
-  const closeRulesDialog = useCallback(() => {
-    setActiveRuleDialog(null);
-  }, []);
-
-  const costTypeLabel = resolveCostLimitLabel(roster, system);
-
-  // Kosten-Anzeigen aus dem Bericht (Issue 0121, Task 7): der Ist-Stand ist die
-  // roster-weite Kostensumme der Limit-Kostenart; die Extra-Ressourcen sind die
-  // Nicht-Limit-Kostenarten mit Summe ≠ 0 (Kostenarten aus der
-  // Datensatz-Beschreibung, `hidden` ausgeschlossen).
-  const currentPoints = costTotals[roster.costLimitType] || 0;
-  const limitPoints = roster.costLimit || 0;
-
-  const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
-  const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
-
-  // Was der Karte bleibt, seit ihr ViewModel den Bericht selbst liest: der
-  // Auswahl-Zustand der Oberfläche und der Regel-Kanal.
-  const unitCardContext = {
-    selectedRosterSelection,
-    setSelectedRosterSelection,
-    costTypeLabel,
-    onShowRule
-  };
-
-  // Resolve active catalogue definition
-  useEffect(() => {
-    if (system && roster) {
-      const cat = system.catalogues.find(c => c.id === roster.catalogueId);
-      setActiveCatalogue(cat);
-    }
-  }, [system, roster]);
+  const editor = useRosterEditor({
+    system, initialRoster, onPlay, onExportRoster, onReportError, isFreshRoster,
+  });
 
   return (
-    <RosterCommandsProvider commands={commands}>
-      <RosterReportProvider report={report} roster={roster} system={system} activeCatalogue={activeCatalogue}>
+    <RosterCommandsProvider commands={editor.commands}>
+      <RosterReportProvider
+        report={editor.report}
+        roster={editor.roster}
+        system={system}
+        activeCatalogue={editor.activeCatalogue}
+      >
     <div className="builder-layout-container">
       <RosterEditorTopBar
-        roster={roster}
+        roster={editor.roster}
         system={system}
-        activeCatalogue={activeCatalogue}
-        currentPoints={currentPoints}
-        limitPoints={limitPoints}
-        costTypeLabel={costTypeLabel}
+        activeCatalogue={editor.activeCatalogue}
+        currentPoints={editor.currentPoints}
+        limitPoints={editor.limitPoints}
+        costTypeLabel={editor.costTypeLabel}
         onBack={onBack}
-        onPlay={playRoster}
-        onExport={exportRoster}
-        onUndo={undo}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
+        onPlay={editor.playRoster}
+        onExport={editor.exportRoster}
+        onUndo={editor.undo}
+        onRedo={editor.redo}
+        canUndo={editor.canUndo}
+        canRedo={editor.canRedo}
       />
 
       <div className="builder-layout">
@@ -125,17 +53,17 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               gar nicht im Auswertungsbaum, und jedes folgende liegt dann einen
               Index tiefer. Ein Kontingent ohne Pfad wird weiterhin gerendert —
               es zeigt dann keine Angebote und keine Kategorie-Grenzen (die
-              Meldung „diese Auswahl gibt es im Katalog nicht mehr“ nennt den
+              Meldung „diese Auswahl gibt es im Katalog nicht mehr" nennt den
               Fall), statt dem Nutzer seine eigenen Daten zu verbergen. */}
-          {roster.forces.map(force => (
+          {editor.forces.map(({ force, forcePath }) => (
             <ForceEditorSection
               key={force.id}
               force={force}
-              forcePath={pathByForceId?.get(force.id) ?? null}
-              unitCardContext={unitCardContext}
-              ruleGroups={ruleGroups}
-              onShowRule={onShowRule}
-              onPlay={playRoster}
+              forcePath={forcePath}
+              unitCardContext={editor.unitCardContext}
+              ruleGroups={editor.ruleGroups}
+              onShowRule={editor.showRule}
+              onPlay={editor.playRoster}
             />
           ))}
         </div>
@@ -148,12 +76,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             Seitenleiste keine Anforderungen statt der eines fremden Kontingents. */}
         <RosterSidebar className="desktop-only-sidebar" />
 
-        {activeRuleDialog && (
+        {editor.activeRuleDialog && (
           <RulesIndexDialog
-            ruleName={activeRuleDialog.ruleName}
-            url={activeRuleDialog.url}
+            ruleName={editor.activeRuleDialog.ruleName}
+            url={editor.activeRuleDialog.url}
             isOpen={true}
-            onClose={closeRulesDialog}
+            onClose={editor.closeRuleDialog}
           />
         )}
       </div>

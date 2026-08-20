@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
+import { useBottomSheet } from '../../viewmodels/useBottomSheet';
 import { useTranslation } from '../../i18n/useTranslation';
 
 export default function BottomSheet({
@@ -11,74 +12,10 @@ export default function BottomSheet({
   containerRef = null // optional, to handle click outside
 }) {
   const { t } = useTranslation();
-  const [renderedChildren, setRenderedChildren] = useState(isOpen ? children : null);
-  const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [activeClass, setActiveClass] = useState(false);
-  const innerRef = useRef(null);
+  const { innerRef, renderedChildren, renderedTitle, activeClass, isRendered } =
+    useBottomSheet({ isOpen, onClose, title, children, desktopMode, containerRef });
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsTransitioning(true);
-      setRenderedChildren(children);
-      setRenderedTitle(title);
-      
-      // Force layout reflow by accessing offsetHeight to guarantee the browser
-      // registers the closed state (translateY(100%)) in the DOM first.
-      if (innerRef.current) {
-        const _ = innerRef.current.offsetHeight;
-      }
-
-      // Small paint delay to ensure the entry transition runs reliably
-      const delayTimer = setTimeout(() => {
-        setActiveClass(true);
-      }, 40);
-      return () => clearTimeout(delayTimer);
-    } else {
-      setActiveClass(false);
-      setIsTransitioning(true);
-      const timer = setTimeout(() => {
-        setRenderedChildren(null);
-        setRenderedTitle('');
-        setIsTransitioning(false);
-      }, 300); // 300ms matches CSS transition duration
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, children, title]);
-
-  // Close on click outside for desktop popover or modal
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (!isOpen) return;
-      
-      if (window.innerWidth > 900) {
-        if (desktopMode === 'popover') {
-          if (containerRef?.current && !containerRef.current.contains(event.target)) {
-            onClose();
-          }
-        }
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose, desktopMode, containerRef]);
-
-  // Lock body scroll on mobile
-  useEffect(() => {
-    if (isOpen && window.innerWidth <= 900) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
-    }
-  }, [isOpen]);
-
-  // Do not render anything if closed and not transitioning
-  if (!isOpen && !isTransitioning) return null;
+  if (!isRendered) return null;
 
   return (
     <>

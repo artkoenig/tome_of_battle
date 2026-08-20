@@ -23,6 +23,33 @@
       }
     },
     {
+      // ADR-0038: eine Komponente ist JSX. Zustandsfolgen und Ableitungen
+      // gehoeren in ihr ViewModel unter src/viewmodels/ -- ein `useEffect` oder
+      // `useMemo` in einer Komponente ist genau die Ableitung im Render, die
+      // die Schicht abschaffen soll.
+      "files": ["src/components/**/*.jsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "importNames": ["useEffect", "useMemo", "useLayoutEffect"],
+                "message": "ADR-0038: Effekte und Memoisierung gehoeren in das ViewModel des Bildschirms (src/viewmodels/), nicht in die Komponente."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["src/evaluator/**"],
       "rules": {
         "no-restricted-imports": [

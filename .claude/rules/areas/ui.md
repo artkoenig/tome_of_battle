@@ -24,6 +24,16 @@ paths:
   same rule since Issue 0164: no derivation in the render, one ViewModel each in
   `src/viewmodels/editor/`, both contexts instead of a flat prop set. Their tests take a harness
   from `src/test-utils/harnesses/`, one file per component.
+- Since Issue 0165 the five screen shells (`RosterEditor`, `PlayMode`/`play/PlayUnitDetails`,
+  `RosterDashboard`, `Importer`, `editor/NewRosterModal`) and the two overlays
+  (`editor/BottomSheet`, `RulesIndexDialog`) do too. `useEffect` and `useMemo` are **lint errors**
+  in any `.jsx` here (oxlint `no-restricted-imports` override on `src/components/**/*.jsx`, so
+  `forge-lint` fails): put the effect or the memo in the screen's ViewModel under
+  `src/viewmodels/`. Timer, DOM-listener and body-scroll effects count too.
+- `Importer` takes the installed systems as a `systems` prop from `App` — the one list of
+  `useAppData`. It must never read `getAllSystems` itself; a second list drifted from the first
+  and a fresh import stayed invisible in the editor. Its test file therefore hands the list in
+  (`renderImporter` + `installedSystems`) rather than mocking the DB read.
 - "No derivation in the render" and "few props" are claims about the **source**, not the screen: a
   filter or sort put back into a component renders the same DOM and passes every behaviour test.
   Such a rule is pinned by a source-reading test next to the component

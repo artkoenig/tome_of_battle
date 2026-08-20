@@ -1,37 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Plus, Minus, ReceiptText } from 'lucide-react';
-import {
-  findEntryInSystem, resolveEntry,
-  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
-} from '../../roster';
-import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
-import { costLimitLabelOf, costLimitTypeIdOf } from '../../evaluation/costDisplays';
+import { usePlayUnit } from '../../viewmodels/usePlayUnit';
 import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
-import { getProfileCellClassName } from '../profileCellClasses';
 import { useTranslation } from '../../i18n/useTranslation';
 
-const getModificationState = (characteristic) => {
-  if (!characteristic || characteristic.originalValue === undefined) return null;
-  
-  const valStr = characteristic.value;
-  const origStr = characteristic.originalValue;
-  if (valStr === origStr) return null;
-
-  const getNumericValue = (str) => {
-    const match = str.match(/-?\d+/);
-    return match ? parseInt(match[0], 10) : null;
-  };
-
-  const valNum = getNumericValue(valStr);
-  const origNum = getNumericValue(origStr);
-
-  if (valNum !== null && origNum !== null) {
-    if (valNum > origNum) return 'positive';
-    if (valNum < origNum) return 'negative';
-  }
-  return 'modified';
-};
-
+/**
+ * Die Einheitenkarte des Spielmodus — nur noch JSX (ADR-0038).
+ *
+ * Profil-Tabellen, Wunden, Kosten und die eigenständigen Untereinheiten kommen
+ * aus `usePlayUnit`; die Karte leitet nichts mehr im Render ab.
+ */
 export default function PlayUnitDetails({
   selection,
   system,
@@ -50,90 +28,35 @@ export default function PlayUnitDetails({
   onShowRule
 }) {
   const { t } = useTranslation();
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const unit = usePlayUnit({
+    selection, system, roster, costTypes, capability, capabilities,
+    pathBySelectionId, getUnitCurrentWounds, isSubUnit,
+  });
 
-  // Helper to extract maximum wounds of an entry
-  const getMaxWounds = (sel) => {
-    const entryId = sel.entryLinkId || sel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
-    const resolved = resolveEntry(system, entry, roster?.catalogueId);
-
-    if (!resolved) return 1;
-
-    // Search profiles in selection instance or resolved catalog entry
-    const searchProfiles = (profiles) => {
-      if (!profiles) return null;
-      for (const prof of profiles) {
-        const char = prof.characteristics?.find(c => 
-          ['w', 'wounds', 'l', 'lp', 'lebenspunkte'].includes(c.name.toLowerCase())
-        );
-        if (char && parseInt(char.value)) {
-          return parseInt(char.value);
-        }
-      }
-      return null;
-    };
-
-    let w = searchProfiles(sel.profiles) || 
-            searchProfiles(resolved.profiles) ||
-            searchProfiles(resolved.selectionEntries?.[0]?.profiles);
-
-    if (!w && resolved.selectionEntries) {
-      for (const child of resolved.selectionEntries) {
-        w = searchProfiles(child.profiles);
-        if (w) break;
-      }
-    }
-
-    return w || 1;
+  const openDetails = (title, breakdown) => {
+    setSaveSummaryData({ title, breakdown });
+    setSaveSummaryOpen(true);
   };
 
-  // Eigenstaendige Untereinheiten bekommen ihre eigene Karte. Ob eine
-  // Unter-Auswahl eine ist, sagt der Bericht (`capability.isIndependentSubUnit`,
-  // Issue 0156) — die Spielansicht loest dafuer keinen Katalog-Eintrag mehr auf.
-  const independentSubUnits = childSelectionsOf(selection).filter(subSel =>
-    isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSel));
+  const renderProfileCell = (characteristic, headerKey) => {
+    if (!characteristic) return <td key={headerKey} className="font-body">-</td>;
 
-  const hasSubUnits = independentSubUnits.length > 0;
-
-  // Der Fähigkeitsdatensatz des Slots dieser Auswahl (Issue 0121, Task 7):
-  // direkt gereicht (`capability`) oder über das Lookup-Paar `capabilities` +
-  // `pathBySelectionId` aufgelöst.
-  const slotCapability = capability
-    ?? capabilities?.get(pathBySelectionId?.get(selection?.id));
-
-  // Profil-Tabellen aus der Info-Projektion des Berichts: die Profile des
-  // Slots (samt der von belegten Unter-Auswahlen geerbten), gruppiert nach
-  // Profiltyp (bestehende Observable: Statblock zuerst, weitere Typen als
-  // eigene Tabelle mit Typ-Überschrift).
-  const profileGroups = groupProfilesByType(
-    (slotCapability?.infoElements ?? []).filter(element => element.kind === 'profile')
-  );
-
-  const renderProfileCell = (c, headerKey) => {
-    if (!c) return <td key={headerKey} className="font-body">-</td>;
-
-    const modState = getModificationState(c);
-    const className = getProfileCellClassName(modState);
+    const cell = unit.profileCellOf(characteristic);
+    const title = t('common.modifications', { name: characteristic.name });
 
     return (
       <td
         key={headerKey}
-        className={className}
+        className={cell.className}
         onMouseEnter={(e) => {
-          if (modState && c.modificationBreakdown?.length > 0) {
-            handleMouseEnter(e, t('common.modifications', { name: c.name }), c.modificationBreakdown);
-          }
+          if (cell.breakdown) handleMouseEnter(e, title, cell.breakdown);
         }}
         onMouseLeave={handleMouseLeave}
         onClick={() => {
-          if (modState && c.modificationBreakdown?.length > 0) {
-            setSaveSummaryData({ title: t('common.modifications', { name: c.name }), breakdown: c.modificationBreakdown });
-            setSaveSummaryOpen(true);
-          }
+          if (cell.breakdown) openDetails(title, cell.breakdown);
         }}
       >
-        {c.value}
+        {characteristic.value}
       </td>
     );
   };
@@ -142,15 +65,7 @@ export default function PlayUnitDetails({
     const { typeName, profiles, isModel } = group;
     if (!profiles || profiles.length === 0) return null;
 
-    const headers = [];
-    profiles.forEach(prof => {
-      prof.characteristics?.forEach(c => {
-        if (c.name && !headers.includes(c.name)) {
-          headers.push(c.name);
-        }
-      });
-    });
-
+    const headers = unit.profileTableHeadersOf(profiles);
     const showNameCol = isModel ? profiles.length > 1 : true;
     const nameHeader = isModel ? t('common.model') : (typeName || t('common.profileHeader'));
 
@@ -182,66 +97,11 @@ export default function PlayUnitDetails({
     );
   };
 
-
-
-  const getUnitModelCount = (sel) => {
-    const entryId = sel.entryLinkId || sel.selectionEntryId;
-    const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
-    const resolved = resolveEntry(system, entry, roster?.catalogueId);
-    
-    if (!resolved) return sel.number || 1;
-
-    if (resolved.type === 'model') {
-      return sel.number || 1;
-    }
-
-    let totalModels = 0;
-    let hasModelChildren = false;
-
-    childSelectionsOf(sel).forEach(child => {
-      const childEntryId = child.entryLinkId || child.selectionEntryId;
-      const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
-      const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);
-
-      if (childResolved) {
-        const isModel = childResolved.type === 'model' ||
-                        child.type === 'model' ||
-                        childResolved.profiles?.some(p =>
-                          MODEL_COUNT_PROFILE_TYPES.includes(p.profileTypeName?.toLowerCase())
-                        );
-
-        if (isModel) {
-          totalModels += (child.number || 1);
-          hasModelChildren = true;
-        }
-      }
-    });
-
-    if (!hasModelChildren) {
-      return sel.number || 1;
-    }
-
-    return totalModels;
-  };
-
-  const maxWounds = getMaxWounds(selection);
-  const modelCount = getUnitModelCount(selection);
-  const totalMaxWounds = modelCount * maxWounds;
-  const currentWounds = getUnitCurrentWounds(selection.id, totalMaxWounds);
-  const modelGroup = profileGroups.find(g => g.isModel);
-  const itemGroups = profileGroups.filter(g => !g.isModel);
-
-  const isDead = hasSubUnits ? false : (currentWounds === 0);
-  // Kosten aus dem Bericht (Issue 0121, Task 8; ADR-0034): der Teilbaum-Betrag
-  // des Slots in der Limit-Kostenart der Liste; das Label aus den Kostenarten
-  // der Datensatz-Beschreibung.
-  const totalCost = slotCapability?.totalCosts?.[costLimitTypeIdOf(roster, costTypes)] ?? 0;
-
   return (
-    <div 
-      className={`play-unit-card ${isDead ? 'unit-destroyed' : ''} ${isSubUnit ? 'play-unit-card--sub' : ''}`}
+    <div
+      className={`play-unit-card ${unit.isDead ? 'unit-destroyed' : ''} ${isSubUnit ? 'play-unit-card--sub' : ''}`}
     >
-      {isDead && (
+      {unit.isDead && (
         <div className="destroyed-overlay">
           <span className="destroyed-text">{t('play.destroyed')}</span>
         </div>
@@ -249,12 +109,12 @@ export default function PlayUnitDetails({
       <div className="play-unit-header">
         <div className="play-unit-title text-ui-title">
           <div>
-            {slotCapability?.name ?? selection.name}
+            {unit.name}
           </div>
           <div className="flex-row gap-8">
-            {totalCost > 0 && (
+            {unit.totalCost > 0 && (
               <div className="text-ui-title text-gold text-strong">
-                {totalCost} {costLimitLabelOf(roster, costTypes)}
+                {unit.totalCost} {unit.costLabel}
               </div>
             )}
           </div>
@@ -265,38 +125,38 @@ export default function PlayUnitDetails({
               standen: er ist im Spiel das am häufigsten bediente Element. Der
               Platzhalter hält die Position auch bei Einheiten ohne eigenen Zähler
               (Untereinheiten führen ihn selbst), damit der Profil-Schalter rechts bleibt. */}
-          {hasSubUnits ? (
+          {unit.hasSubUnits ? (
             <div />
           ) : (
-            <div className={`play-unit-header-controls${isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
-              {isDead && <span className="text-danger font-serif play-unit-destroyed-label">{t('play.destroyedCaps')}</span>}
+            <div className={`play-unit-header-controls${unit.isDead ? ' play-unit-header-controls--dimmed' : ''}`}>
+              {unit.isDead && <span className="text-danger font-serif play-unit-destroyed-label">{t('play.destroyedCaps')}</span>}
               <button
                 className="qty-btn"
-                onClick={() => handleAdjustWound(selection.id, -1, totalMaxWounds)}
-                disabled={isDead}
+                onClick={() => handleAdjustWound(selection.id, -1, unit.totalMaxWounds)}
+                disabled={unit.isDead}
               >
                 <Minus size={12} />
               </button>
               <span className="font-body play-unit-wound-value">
-                {currentWounds} / {totalMaxWounds}
+                {unit.currentWounds} / {unit.totalMaxWounds}
               </span>
               <button
                 className="qty-btn"
-                onClick={() => handleAdjustWound(selection.id, 1, totalMaxWounds)}
-                disabled={currentWounds === totalMaxWounds}
+                onClick={() => handleAdjustWound(selection.id, 1, unit.totalMaxWounds)}
+                disabled={unit.currentWounds === unit.totalMaxWounds}
               >
                 <Plus size={12} />
               </button>
             </div>
           )}
           <div className="flex-row gap-8">
-            {!isSubUnit && (modelGroup || itemGroups.length > 0) && (
+            {unit.showsDetailsToggle && (
               <button
                 type="button"
-                className={`square-btn unit-card-details-toggle ${isDetailsOpen ? 'is-active' : ''}`}
-                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                title={isDetailsOpen ? t('play.hideProfiles') : t('play.showProfiles')}
-                aria-expanded={isDetailsOpen}
+                className={`square-btn unit-card-details-toggle ${unit.isDetailsOpen ? 'is-active' : ''}`}
+                onClick={unit.toggleDetails}
+                title={unit.isDetailsOpen ? t('play.hideProfiles') : t('play.showProfiles')}
+                aria-expanded={unit.isDetailsOpen}
               >
                 <ReceiptText size={16} />
               </button>
@@ -307,13 +167,13 @@ export default function PlayUnitDetails({
 
       <div className="play-unit-body">
         <div className="flex-col gap-8">
-          <div className={`play-unit-profiles ${isDetailsOpen ? 'is-open' : ''}`}>
-            {!isSubUnit && (
+          <div className={`play-unit-profiles ${unit.isDetailsOpen ? 'is-open' : ''}`}>
+            {unit.showsProfiles && (
               <div>
-                {modelGroup
-                  ? renderProfileTable(modelGroup, 'model')
+                {unit.modelGroup
+                  ? renderProfileTable(unit.modelGroup, 'model')
                   : <p className="text-dim text-label">{t('play.noProfileValues')}</p>}
-                {itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
+                {unit.itemGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
               </div>
             )}
           </div>
@@ -325,10 +185,7 @@ export default function PlayUnitDetails({
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
               onClickDetails={(title, text) => {
-                if (window.innerWidth <= 900) {
-                  setSaveSummaryData({ title, breakdown: text });
-                  setSaveSummaryOpen(true);
-                }
+                if (window.innerWidth <= 900) openDetails(title, text);
               }}
               onShowRule={onShowRule}
             />
@@ -338,17 +195,14 @@ export default function PlayUnitDetails({
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
               onClickDetails={(title, text) => {
-                if (window.innerWidth <= 900) {
-                  setSaveSummaryData({ title, breakdown: text });
-                  setSaveSummaryOpen(true);
-                }
+                if (window.innerWidth <= 900) openDetails(title, text);
               }}
               onShowRule={onShowRule}
             />
           </div>
-          {hasSubUnits && (
+          {unit.hasSubUnits && (
             <div className="sub-units-container play-unit-sub-units">
-              {independentSubUnits.map(subSel => (
+              {unit.subUnits.map(subSel => (
                 <PlayUnitDetails
                   key={subSel.id}
                   selection={subSel}

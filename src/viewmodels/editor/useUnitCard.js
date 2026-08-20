@@ -14,6 +14,62 @@ import { useRosterCommands, useRosterReport } from '../rosterContexts';
  * Karte ist eine Ableitung der Karte und gehört zu ihrem Modell.
  */
 
+// Darstellung einer Profil-Zelle. Die frühere `components/profileCellClasses.js`
+// ist hier aufgegangen: welche Hervorhebung eine geänderte Eigenschaft bekommt,
+// ist eine Ableitung der Karte, nicht ihr JSX. `usePlayUnit` liest dieselbe
+// Ableitung von hier — die Profil-Tabelle des Editors und die der Spielansicht
+// können so nicht auseinanderlaufen, und die Farben bleiben in der Stil-Ebene
+// (ADR-0004).
+const BASE_PROFILE_CELL_CLASS = 'font-body';
+
+const CLASSES_BY_MODIFICATION_STATE = {
+  positive: 'text-success profile-cell--positive',
+  negative: 'text-danger profile-cell--negative',
+  modified: 'text-gold profile-cell--modified',
+};
+
+const numericValueOf = (value) => {
+  const match = String(value ?? '').match(/-?\d+/);
+  return match ? parseInt(match[0], 10) : null;
+};
+
+/**
+ * Der Änderungszustand einer Eigenschaft: `null`, wenn der Bericht keinen
+ * Ursprungswert kennt oder der Wert unverändert ist.
+ * @param {{ value?: string, originalValue?: string }|null|undefined} characteristic
+ * @returns {'positive'|'negative'|'modified'|null}
+ */
+export function modificationStateOf(characteristic) {
+  if (!characteristic || characteristic.originalValue === undefined) return null;
+  if (characteristic.value === characteristic.originalValue) return null;
+
+  const valueNumber = numericValueOf(characteristic.value);
+  const originalNumber = numericValueOf(characteristic.originalValue);
+  if (valueNumber !== null && originalNumber !== null) {
+    if (valueNumber > originalNumber) return 'positive';
+    if (valueNumber < originalNumber) return 'negative';
+  }
+  return 'modified';
+}
+
+/**
+ * Die Anzeigewerte einer Profil-Zelle: Klassenname und — nur wenn es etwas zu
+ * erklären gibt — die Auflistung der Änderungen. `breakdown: null` heißt: kein
+ * Tooltip, kein Detail-Blatt.
+ * @param {{ value?: string, originalValue?: string, modificationBreakdown?: string[] }|null|undefined} characteristic
+ * @returns {{ modificationState: string|null, className: string, breakdown: string[]|null }}
+ */
+export function profileCellDisplayOf(characteristic) {
+  const modificationState = modificationStateOf(characteristic);
+  const stateClasses = CLASSES_BY_MODIFICATION_STATE[modificationState];
+  const breakdown = characteristic?.modificationBreakdown ?? [];
+  return {
+    modificationState,
+    className: stateClasses ? `${BASE_PROFILE_CELL_CLASS} ${stateClasses}` : BASE_PROFILE_CELL_CLASS,
+    breakdown: modificationState && breakdown.length > 0 ? breakdown : null,
+  };
+}
+
 /**
  * Die Ids aller Selections, die die Karte der übergebenen Selection
  * repräsentiert: die Selection selbst samt Teilbaum, ohne die Teilbäume der
@@ -124,6 +180,9 @@ export function useUnitCard({ selection, isSubUnit = false }) {
       // Mini-Profil aus der Info-Projektion des Berichts, gruppiert nach
       // Profiltyp (Statblock zuerst, weitere Typen als eigene Tabelle).
       profileGroups: groupProfilesByType(profileElements),
+      // Die Zellen-Darstellung reicht das ViewModel als Funktion durch, damit
+      // die Karte selbst nichts mehr aus einer Eigenschaft ableitet.
+      profileCellOf: profileCellDisplayOf,
       violations: cardViolations,
       hasError: cardViolations.length > 0,
       subUnits: (selection.selections || []).filter(
