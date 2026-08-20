@@ -140,6 +140,23 @@ describe('useAutoFillSuggestions — die Kandidaten', () => {
     expect(result.current.suggestions.map(s => s.name)).toEqual(['Eigenes']);
   });
 
+  it('ein Slot an einer Auswahl eines anderen Kontingents bleibt ein Vorschlag', () => {
+    // Der Rahmenfilter fragt den roster-weiten Auswahl-Index, nicht den Pfad:
+    // hängt ein Slot an einer bestehenden Auswahl, zählt er — auch wenn diese
+    // Auswahl in einem zweiten Kontingent steht (Verhalten vor Issue 0164).
+    const { result } = renderPanel({
+      capabilities: new Map([
+        ['1/0', offer({ name: 'Ally Unit', anchorKind: 'occupied', headroom: null, frame: { path: '1' } })],
+        ['1/0/0', offer({ name: 'Foreign Upgrade', frame: { path: '1/0' } })],
+      ]),
+      pathBySelectionId: new Map([['sel-b', '1/0']]),
+      spent: 980,
+    });
+
+    expect(result.current.suggestions.map(s => s.name)).toEqual(['Foreign Upgrade']);
+    expect(result.current.suggestions[0].unitName).toBe('Ally Unit');
+  });
+
   it('ein Slot an einer bestehenden Auswahl nennt seine Einheit und wächst über increaseCount', () => {
     const increaseCount = vi.fn();
     const { result } = renderPanel({

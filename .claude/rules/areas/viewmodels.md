@@ -46,6 +46,12 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   `report.pathByForceId` (never the roster's input index). What stays a prop is only what the
   caller knows: `force`/`forceId`, `forcePath`, `categoryLink`/`categoryId` and display state.
   `src/components/editor/sectionPropCount.test.js` pins the ceilings.
+- `useAutoFillSuggestions` scopes a slot by its **frame**, not by its path: `framePath ===
+  forcePath` (a unit under this force) or `framePath` present in the roster-wide
+  `pathBySelectionId` inverse (an option on any existing selection). Filtering the capabilities map
+  by the `forcePath` prefix instead silently drops upgrade slots hanging on a second force's units,
+  which the panel has always offered; the test `ein Slot an einer Auswahl eines anderen
+  Kontingents bleibt ein Vorschlag` pins it.
 - `useValidationPanel` reads `report.violations` **without** a `?? []` fallback on purpose: a
   missing list is a broken report and must fail loudly rather than read as "all clear"
   (`RosterEditor.test.jsx` pins the throw).

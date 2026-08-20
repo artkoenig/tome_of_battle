@@ -77,20 +77,12 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
   const foreignCatalogueIds = useMemo(
     () => foreignCatalogueIdsOf(system, ownCatalogueId), [system, ownCatalogueId]);
 
-  // Die Slots DIESES Kontingents: ohne Pfad führt der Bericht für das
-  // Kontingent überhaupt keine Slots.
-  const forceScopedCapabilities = useMemo(() => {
-    if (forcePath === null || forcePath === undefined) return new Map();
-    return new Map([...(capabilities ?? [])].filter(([path]) =>
-      path === forcePath || path.startsWith(`${forcePath}/`)));
-  }, [capabilities, forcePath]);
-
   const collected = useMemo(() => {
     const found = [];
     if (costLimitTypeId === null || remainingPoints === null) return found;
     if (remainingPoints <= 0 || remainingPoints > FILL_UP_WINDOW_POINTS) return found;
 
-    for (const [path, capability] of forceScopedCapabilities) {
+    for (const [path, capability] of capabilities ?? []) {
       if (!isSelectableSlot(capability)) continue;
       if (capability.isHidden || capability.isBlocked) continue;
       // Nur zwei Standorte sind gemeint: unmittelbar unter dem Kontingent (eine
@@ -105,7 +97,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     }
     found.sort((a, b) => b.cost - a.cost);
     return found;
-  }, [forceScopedCapabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
+  }, [capabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
 
   const suggestions = useMemo(() => {
     // Der Katalogeintrag hinter einem Slot — für die bestehende Aushebe-Mechanik.
@@ -136,7 +128,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     const unitNameFor = (capability) => {
       const framePath = capability.frame?.path ?? null;
       if (framePath === null || framePath === forcePath) return null;
-      return forceScopedCapabilities.get(framePath)?.name ?? null;
+      return capabilities?.get(framePath)?.name ?? null;
     };
 
     return collected.map(({ path, capability, cost }) => ({
@@ -146,7 +138,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
       unitName: unitNameFor(capability),
       apply: applyActionFor(capability),
     }));
-  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, forceScopedCapabilities, forceId]);
+  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, capabilities, forceId]);
 
   // Sichtbar an der Lücke: steht die Liste auf ihren letzten Punkten, steht das
   // Panel da — auch wenn gerade nichts hineinpasst. Ohne `forcePath` führt der
