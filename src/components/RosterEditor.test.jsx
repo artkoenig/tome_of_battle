@@ -93,26 +93,35 @@ const defaultMockViolations = [
   }
 ];
 
-vi.mock('../hooks/useRoster', () => ({
-  useRoster: () => ({
+// Der Zustandsknoten des Editors (ADR-0038): der Editor liest ihn direkt und
+// spannt daraus die beiden Roster-Kontexte auf.
+vi.mock('../viewmodels/useRosterState', () => ({
+  useRosterState: () => ({
     roster: mockRoster,
-    violations: mockViolations,
-    capabilities: new Map(),
-    // Kosten kommen seit Issue 0121, Task 7 aus dem Bericht (costTotals);
-    // der frühere Solver-Kostenpfad (`costs`) existiert im Hook nicht mehr.
-    costTotals: mockCosts,
-    description: null,
-    pathBySelectionId: new Map(),
+    report: {
+      violations: mockViolations,
+      capabilities: new Map(),
+      // Kosten kommen seit Issue 0121, Task 7 aus dem Bericht (costTotals);
+      // der frühere Solver-Kostenpfad (`costs`) existiert im Hook nicht mehr.
+      costTotals: mockCosts,
+      description: null,
+      pathBySelectionId: new Map(),
+      pathByForceId: new Map(),
+      unresolvedSelections: [],
+      diagnostics: [],
+    },
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
-    addUnit: mockAddUnit,
-    removeUnit: mockRemoveUnit,
-    copyUnit: mockCopyUnit,
-    subSelectionOperations: mockSubSelectionOperations,
-    updateRosterName: mockUpdateRosterName,
-    save: mockSave,
-    undo: mockUndo,
-    redo: mockRedo,
+    commands: {
+      addUnit: mockAddUnit,
+      removeUnit: mockRemoveUnit,
+      copyUnit: mockCopyUnit,
+      subSelectionOperations: mockSubSelectionOperations,
+      updateRosterName: mockUpdateRosterName,
+      save: mockSave,
+      undo: mockUndo,
+      redo: mockRedo,
+    },
     canUndo: mockCanUndo,
     canRedo: mockCanRedo
   })

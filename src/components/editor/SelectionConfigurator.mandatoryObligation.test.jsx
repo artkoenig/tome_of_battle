@@ -34,7 +34,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SelectionConfigurator from './SelectionConfigurator';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';

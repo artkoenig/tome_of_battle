@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, test, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import SelectionConfigurator from './SelectionConfigurator';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../parser/xmlParser.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';

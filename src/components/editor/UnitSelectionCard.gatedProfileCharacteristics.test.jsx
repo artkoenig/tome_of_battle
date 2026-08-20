@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import UnitSelectionCard from './UnitSelectionCard';
+import { UnitSelectionCardHarness as UnitSelectionCard } from '../../test-utils/editorHarness';
 import { processImportedData } from '../../parser/xmlParser.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';

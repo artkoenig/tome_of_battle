@@ -56,10 +56,10 @@ export function createNoopRosterCommands(overrides = {}) {
  * selbst setzt.
  * @param {{ report?: Object, roster?: Object|null, commands?: Object, children: React.ReactNode }} props
  */
-export function RosterProviders({ report, roster = null, commands, children }) {
+export function RosterProviders({ report, roster = null, system = null, activeCatalogue = null, commands, children }) {
   return (
     <RosterCommandsProvider commands={commands ?? createNoopRosterCommands()}>
-      <RosterReportProvider report={report ?? createEmptyRosterReport()} roster={roster}>
+      <RosterReportProvider report={report ?? createEmptyRosterReport()} roster={roster} system={system} activeCatalogue={activeCatalogue}>
         {children}
       </RosterReportProvider>
     </RosterCommandsProvider>
@@ -67,14 +67,29 @@ export function RosterProviders({ report, roster = null, commands, children }) {
 }
 
 /**
+ * Ein `wrapper` für `renderHook`: beide Provider um den getesteten Hook.
+ * @param {{ report?: Object, roster?: Object|null, system?: Object|null, commands?: Object }} [options]
+ * @returns {(props: { children: React.ReactNode }) => React.ReactElement}
+ */
+export function createRosterProviderWrapper({ report, roster = null, system = null, activeCatalogue = null, commands } = {}) {
+  return function Wrapper({ children }) {
+    return (
+      <RosterProviders report={report} roster={roster} system={system} activeCatalogue={activeCatalogue} commands={commands}>
+        {children}
+      </RosterProviders>
+    );
+  };
+}
+
+/**
  * `render` aus `@testing-library/react`, mit beiden Providern darum.
  * @param {React.ReactElement} ui
  * @param {{ report?: Object, roster?: Object|null, commands?: Object }} [options]
  */
-export function renderWithRosterProviders(ui, { report, roster = null, commands, ...renderOptions } = {}) {
+export function renderWithRosterProviders(ui, { report, roster = null, system = null, activeCatalogue = null, commands, ...renderOptions } = {}) {
   return render(ui, {
     wrapper: ({ children }) => (
-      <RosterProviders report={report} roster={roster} commands={commands}>
+      <RosterProviders report={report} roster={roster} system={system} activeCatalogue={activeCatalogue} commands={commands}>
         {children}
       </RosterProviders>
     ),

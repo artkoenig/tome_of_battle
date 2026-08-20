@@ -14,6 +14,17 @@ paths:
   while the 14 existing edges are being removed, `error` afterwards.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
   pair is an incomplete change.
+- The four editor leaves (`UnitSelectionCard`, `SelectionConfigurator`, `OptionGroup`, `UnitChips`)
+  are JSX only (ADR-0038): their derivations live in `src/viewmodels/editor/`, and they read the
+  report through the two roster contexts instead of `capabilities`/`pathBySelectionId` props. A
+  parent that renders one must sit under both providers — `RosterEditor.jsx` and `PlayMode.jsx`
+  open them.
+- A test that renders one of those leaves goes through `src/test-utils/editorHarness.jsx`: the
+  harnesses take the **old** flat prop set (`capabilities`, `pathBySelectionId`, `system`,
+  `activeCatalogue`, the commands, a directly handed `capability`) and wire the providers, so a
+  test file only swaps its import. Extend a harness rather than building providers per call site.
+- Hover and detail callbacks travel as one `tooltip` prop (`{ onEnter, onMove, onLeave, onOpen }`)
+  from the card down through the configurator into every group.
 - Styling is 33 numbered CSS layer files under `src/styles/`, loaded in cascade order (ADR 0004
   §6). Put a rule in the layer its number describes; a component-local style that fights the
   cascade is the usual cause of a "mysteriously overridden" property.

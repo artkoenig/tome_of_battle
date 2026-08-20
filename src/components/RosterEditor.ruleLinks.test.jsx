@@ -36,26 +36,34 @@ vi.mock('lucide-react', () => ({
   Redo2: () => <span data-testid="icon-redo" />,
 }));
 
-vi.mock('../hooks/useRoster', () => ({
-  useRoster: () => ({
+vi.mock('../viewmodels/useRosterState', () => ({
+  useRosterState: () => ({
     roster: mockRoster,
-    costs: { pts: 420 },
-    violations: [],
-    capabilities: new Map(),
-    costTotals: {},
-    pathBySelectionId: new Map(),
     selectedRosterSelection: null,
     setSelectedRosterSelection: vi.fn(),
-    addUnit: vi.fn(),
-    removeUnit: vi.fn(),
-    copyUnit: vi.fn(),
-    subSelectionOperations: createSubSelectionOperationsMock(),
-    updateRosterName: vi.fn(),
-    save: vi.fn(),
-    undo: vi.fn(),
-    redo: vi.fn(),
     canUndo: false,
     canRedo: false,
+    report: {
+      costs: { pts: 420 },
+      violations: [],
+      capabilities: new Map(),
+      costTotals: {},
+      pathBySelectionId: new Map(),
+      pathByForceId: new Map(),
+      unresolvedSelections: [],
+      description: null,
+      diagnostics: [],
+    },
+    commands: {
+      addUnit: vi.fn(),
+      removeUnit: vi.fn(),
+      copyUnit: vi.fn(),
+      subSelectionOperations: createSubSelectionOperationsMock(),
+      updateRosterName: vi.fn(),
+      save: vi.fn(),
+      undo: vi.fn(),
+      redo: vi.fn(),
+    },
   }),
 }));
 

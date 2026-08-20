@@ -321,11 +321,6 @@ export default function PlayUnitDetails({
           <div className="play-unit-chips">
             <UnitUpgradesChips
               selection={selection}
-              system={system}
-              activeCatalogueId={roster.catalogueId}
-              capability={slotCapability}
-              capabilities={capabilities}
-              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}
@@ -339,11 +334,6 @@ export default function PlayUnitDetails({
             />
             <UnitRulesChips
               selection={selection}
-              system={system}
-              activeCatalogueId={roster.catalogueId}
-              capability={slotCapability}
-              capabilities={capabilities}
-              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={(title, text, e) => handleMouseEnter(e, title, text)}
               handleMouseMove={null}
               handleMouseLeave={handleMouseLeave}

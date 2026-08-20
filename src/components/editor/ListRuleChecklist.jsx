@@ -211,16 +211,12 @@ export default function ListRuleChecklist({
               <div className="list-rule-suboptions">
                 <SelectionConfigurator
                   selection={state.selection}
-                  capabilities={capabilities}
-                  pathBySelectionId={pathBySelectionId}
-                  system={system}
-                  roster={roster}
-                  subSelectionOperations={subSelectionOperations}
-                  activeCatalogue={activeCatalogue}
-                  handleMouseEnter={handleMouseEnter}
-                  handleMouseMove={handleMouseMove}
-                  handleMouseLeave={handleMouseLeave}
-                  setActiveInfo={setActiveInfo}
+                  tooltip={{
+                    onEnter: handleMouseEnter,
+                    onMove: handleMouseMove,
+                    onLeave: handleMouseLeave,
+                    onOpen: setActiveInfo,
+                  }}
                   onShowRule={onShowRule}
                   isListRule
                 />

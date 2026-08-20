@@ -2,18 +2,16 @@ import React, { useState, useRef } from 'react';
 import { Trash2, Copy, AlertTriangle, MoreVertical, ReceiptText } from 'lucide-react';
 import SelectionConfigurator from './SelectionConfigurator';
 import BottomSheet from './BottomSheet';
-import { groupProfilesByType } from '../../roster';
-import { selectionViolationsForCard } from './unitCardValidation';
-import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
 import { UnitUpgradesChips, UnitRulesChips } from './UnitChips';
 import GothicTooltip from '../GothicTooltip';
 import { getProfileCellClassName } from '../profileCellClasses';
+import { useUnitCard } from '../../viewmodels/editor/useUnitCard';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatViolation } from '../../i18n/violationMessages';
 
 const getModificationState = (characteristic) => {
   if (!characteristic || characteristic.originalValue === undefined) return null;
-  
+
   const valStr = characteristic.value;
   const origStr = characteristic.originalValue;
   if (valStr === origStr) return null;
@@ -33,20 +31,18 @@ const getModificationState = (characteristic) => {
   return 'modified';
 };
 
+/**
+ * Die Einheitenkarte — nur noch JSX (ADR-0038).
+ *
+ * Name, Punkte, Profil-Tabellen, Verletzungen, die eigenständigen
+ * Untereinheiten und die beiden Kommandos kommen aus `useUnitCard`; die Karte
+ * kennt weder `capabilities` noch `pathBySelectionId`.
+ */
 export default function UnitSelectionCard({
   selection,
   selectedRosterSelection,
   setSelectedRosterSelection,
-  roster,
-  system,
-  violations,
-  capabilities,
-  pathBySelectionId,
   costTypeLabel,
-  removeUnit,
-  copyUnit,
-  subSelectionOperations,
-  activeCatalogue,
   isSubUnit = false,
   onShowRule = null
 }) {
@@ -57,6 +53,8 @@ export default function UnitSelectionCard({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const menuRef = useRef(null);
+
+  const card = useUnitCard({ selection, isSubUnit });
 
   const updateTooltipPosition = (e) => {
     const tooltipWidth = 320;
@@ -90,6 +88,15 @@ export default function UnitSelectionCard({
 
   const handleMouseLeave = () => {
     setHoveredInfo(null);
+  };
+
+  // Die Hover- und Detailkanäle, die Konfigurator und Gruppen als ein Bündel
+  // bekommen — statt vier einzelner Rückrufe im Prop-Satz jeder Ebene.
+  const tooltip = {
+    onEnter: handleMouseEnter,
+    onMove: handleMouseMove,
+    onLeave: handleMouseLeave,
+    onOpen: setActiveInfo,
   };
 
   const renderProfileCell = (c, headerKey) => {
@@ -177,23 +184,11 @@ export default function UnitSelectionCard({
     );
   };
 
-  // Der Fähigkeitsdatensatz des Slots dieser Auswahl (Issue 0121, Task 7):
-  // Kosten (`totalCosts`) und Profil-Sektion (`infoElements`) kommen aus dem
-  // Bericht, aufgelöst über die Zuordnung Selection-UUID → Slot-Pfad.
-  const capability = capabilities?.get(pathBySelectionId?.get(selection.id));
-
-  // Mini-Profil aus der Info-Projektion des Berichts: die Profile des Slots
-  // (samt der von belegten Unter-Auswahlen geerbten), gruppiert nach Profiltyp
-  // (bestehende Anzeige-Observable: Statblock zuerst, weitere Typen als eigene
-  // Tabelle mit Typ-Überschrift).
   const renderMiniProfile = () => {
-    const profiles = (capability?.infoElements ?? []).filter(element => element.kind === 'profile');
-    const groups = groupProfilesByType(profiles);
-    if (groups.length === 0) return null;
-
+    if (card.profileGroups.length === 0) return null;
     return (
       <div className="mini-profile">
-        {groups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
+        {card.profileGroups.map((group, gIdx) => renderProfileTable(group, group.typeName || gIdx))}
       </div>
     );
   };
@@ -207,19 +202,9 @@ export default function UnitSelectionCard({
   // card has no toggle at all; the play view's card does the same
   // (`PlayUnitDetails`, `!isSubUnit` on its toggle).
   const detailsOpen = isSubUnit || isDetailsOpen;
-  // Der effektive Name kommt aus dem Slot des Berichts (Issue 0121, Task 8;
-  // ADR-0034); ohne Slot bleibt der gespeicherte Selektionsname stehen.
-  const effectiveName = capability?.name ?? selection.name;
-  const displayPoints = capability?.totalCosts?.[roster.costLimitType] ?? 0;
-  const selectionViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, capabilities);
-  const hasSelectionError = selectionViolations.length > 0;
-
-  const independentSubUnits = (selection.selections || []).filter(
-    subSel => isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSel)
-  );
 
   return (
-    <div className={`selection-node ${hasSelectionError ? 'has-error' : ''} ${copyUnit ? '' : 'selection-node--sub'}`}>
+    <div className={`selection-node ${card.hasError ? 'has-error' : ''} ${card.copy ? '' : 'selection-node--sub'}`}>
       <div
         className="selection-node-header"
         onClick={() => setSelectedRosterSelection(isUnitEditing ? null : selection)}
@@ -227,13 +212,13 @@ export default function UnitSelectionCard({
         <div className="selection-node-header-row">
           <div className="selection-node-title">
             <span className="selection-node-name text-ui-title">
-              {selection.number > 1 ? `${selection.number}x ` : ''}{effectiveName}
+              {card.count > 1 ? `${card.count}x ` : ''}{card.name}
             </span>
           </div>
           <div className="selection-node-right">
-            {displayPoints > 0 && (
+            {card.points > 0 && (
               <span className="selection-node-cost font-body">
-                {displayPoints} {costTypeLabel}
+                {card.points} {costTypeLabel}
               </span>
             )}
             {!isSubUnit && (
@@ -269,13 +254,13 @@ export default function UnitSelectionCard({
                 containerRef={menuRef}
               >
                 <div className="popover-list">
-                  {copyUnit && (
+                  {card.copy && (
                     <div
                       data-testid="unit-action-copy"
                       className="popover-item"
                       onClick={() => {
                         setIsMenuOpen(false);
-                        copyUnit(selection.id);
+                        card.copy();
                       }}
                     >
                       <span className="popover-item-name unit-card-menu-item">
@@ -306,11 +291,6 @@ export default function UnitSelectionCard({
           {!isSubUnit && renderMiniProfile()}
           <UnitUpgradesChips
             selection={selection}
-            system={system}
-            activeCatalogueId={activeCatalogue?.id}
-            capability={capability}
-            capabilities={capabilities}
-            pathBySelectionId={pathBySelectionId}
             handleMouseEnter={handleMouseEnter}
             handleMouseMove={handleMouseMove}
             handleMouseLeave={handleMouseLeave}
@@ -324,11 +304,6 @@ export default function UnitSelectionCard({
           {!isSubUnit && (
             <UnitRulesChips
               selection={selection}
-              system={system}
-              activeCatalogueId={activeCatalogue?.id}
-              capability={capability}
-              capabilities={capabilities}
-              pathBySelectionId={pathBySelectionId}
               handleMouseEnter={handleMouseEnter}
               handleMouseMove={handleMouseMove}
               handleMouseLeave={handleMouseLeave}
@@ -344,7 +319,7 @@ export default function UnitSelectionCard({
         </div>
       </div>
 
-      {selectionViolations.map((violation, idx) => (
+      {card.violations.map((violation, idx) => (
         <div key={idx} className="unit-error-alert text-danger text-label">
           <AlertTriangle size={14} />
           <span>{formatViolation(violation, t)}</span>
@@ -354,38 +329,20 @@ export default function UnitSelectionCard({
       {isUnitEditing && (
         <SelectionConfigurator
           selection={selection}
-          capabilities={capabilities}
-          pathBySelectionId={pathBySelectionId}
-          system={system}
-          roster={roster}
-          subSelectionOperations={subSelectionOperations}
-          activeCatalogue={activeCatalogue}
-          handleMouseEnter={handleMouseEnter}
-          handleMouseMove={handleMouseMove}
-          handleMouseLeave={handleMouseLeave}
-          setActiveInfo={setActiveInfo}
+          tooltip={tooltip}
           onShowRule={onShowRule}
         />
       )}
 
-      {independentSubUnits.length > 0 && (
+      {card.subUnits.length > 0 && (
         <div className="sub-units-container selection-node-sub-units">
-          {independentSubUnits.map(subSel => (
-            <UnitSelectionCard 
+          {card.subUnits.map(subSel => (
+            <UnitSelectionCard
               key={subSel.id}
               selection={subSel}
               selectedRosterSelection={selectedRosterSelection}
               setSelectedRosterSelection={setSelectedRosterSelection}
-              roster={roster}
-              system={system}
-              violations={violations}
-              capabilities={capabilities}
-              pathBySelectionId={pathBySelectionId}
               costTypeLabel={costTypeLabel}
-              removeUnit={(subUnitSelectionId) => subSelectionOperations.removeInstance(selection.id, subUnitSelectionId)}
-              copyUnit={null}
-              subSelectionOperations={subSelectionOperations}
-              activeCatalogue={activeCatalogue}
               isSubUnit={true}
               // Without this hand-down the sub-unit card still draws the
               // BookOpen affordance on its linked rule chips, but the click
@@ -420,7 +377,7 @@ export default function UnitSelectionCard({
         desktopMode="modal"
       >
         <div className="info-popup-body unit-delete-confirm-body">
-          <p className="unit-delete-confirm-question">{t('editor.deleteUnit.confirmPrefix')}<strong>{effectiveName}</strong>{t('editor.deleteUnit.confirmSuffix')}</p>
+          <p className="unit-delete-confirm-question">{t('editor.deleteUnit.confirmPrefix')}<strong>{card.name}</strong>{t('editor.deleteUnit.confirmSuffix')}</p>
           <div className="unit-delete-confirm-actions">
             <button
               data-testid="unit-delete-cancel"
@@ -434,7 +391,7 @@ export default function UnitSelectionCard({
               className="btn btn-danger"
               onClick={() => {
                 setShowConfirmDelete(false);
-                removeUnit(selection.id);
+                card.remove();
               }}
             >
               {t('common.delete')}

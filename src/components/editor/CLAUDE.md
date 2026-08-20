@@ -25,6 +25,19 @@ display (`ListRuleChecklist`, `ValidationCauses`, `ValidationMessage`,
   real-facade, `getUnitOptions`-stubbed shape described below. A case belongs in
   the file whose component owns the screen it pins.
 
+### The provider seam (ADR-0038)
+
+`UnitSelectionCard`, `SelectionConfigurator`, `OptionGroup` and `UnitChips` read
+the report from the two roster contexts, not from props. A test does **not**
+build those providers itself: it imports the matching harness from
+`../../test-utils/editorHarness` under the component's own name
+(`import { UnitSelectionCardHarness as UnitSelectionCard } from …`) and keeps
+its flat props (`capabilities`, `pathBySelectionId`, `system`,
+`activeCatalogue`, the command mocks, a directly handed `capability`) exactly as
+before. Counts, however, come from the roster subtree now — a case that used to
+fake `getSubSelectionCount` must put the chosen options into
+`selection.selections` instead.
+
 ### Seams — all production code, nothing of the evaluator ever mocked
 
 Two seams, and which one a case takes follows from what it means to prove:

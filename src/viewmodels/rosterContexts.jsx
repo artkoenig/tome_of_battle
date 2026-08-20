@@ -32,12 +32,28 @@ export function RosterCommandsProvider({ commands, children }) {
 }
 
 /**
- * Stellt Bericht und Roster bereit. Das Paar wird memoisiert, damit ein Render
+ * Stellt Bericht und Roster bereit. Das Bündel wird memoisiert, damit ein Render
  * ohne Bearbeitung keinen neuen Kontextwert erzeugt.
- * @param {{ report: Object, roster: Object|null, children: React.ReactNode }} props
+ *
+ * Neben Bericht und Roster trägt der Kontext den **Datensatz**: das geparste
+ * System und den aktiven Katalog. Beide sind keine Anzeigefrage (die beantwortet
+ * weiterhin allein der Bericht, ADR-0034), sondern der Rahmen, in dem ein
+ * ViewModel Detailtexte auflöst und die Katalogstruktur einer Options-Gruppe
+ * liest. Der aktive Katalog wird hier **abgeleitet** (`roster.catalogueId`),
+ * damit ihn keine Komponente mehr als Prop führen muss; ein Aufrufer, der ihn
+ * selbst führt, reicht ihn statt dessen durch.
+ * @param {{ report: Object, roster: Object|null, system?: Object|null,
+ *   activeCatalogue?: Object|null, children: React.ReactNode }} props
  */
-export function RosterReportProvider({ report, roster, children }) {
-  const value = useMemo(() => ({ report, roster }), [report, roster]);
+export function RosterReportProvider({ report, roster, system = null, activeCatalogue, children }) {
+  const value = useMemo(() => ({
+    report,
+    roster,
+    system,
+    activeCatalogue: activeCatalogue
+      ?? system?.catalogues?.find(c => c.id === roster?.catalogueId)
+      ?? null,
+  }), [report, roster, system, activeCatalogue]);
   return (
     <RosterReportContext.Provider value={value}>
       {children}
@@ -58,8 +74,8 @@ export function useRosterCommands() {
 }
 
 /**
- * Bericht und Roster des umgebenden Editors.
- * @returns {{ report: Object, roster: Object|null }}
+ * Bericht, Roster und Datensatz des umgebenden Editors.
+ * @returns {{ report: Object, roster: Object|null, system: Object|null, activeCatalogue: Object|null }}
  */
 export function useRosterReport() {
   const value = useContext(RosterReportContext);

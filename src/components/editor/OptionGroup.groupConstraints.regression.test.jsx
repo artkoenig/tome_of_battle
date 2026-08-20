@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import OptionGroupComponent from './OptionGroup';
+import { OptionGroupHarness as OptionGroupComponent } from '../../test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -83,16 +83,23 @@ const capabilityMapOf = (records) => new Map(records.map((record, index) => [
 let subSelectionOperations;
 let counts;
 
-const getSubSelectionCount = (_selection, optionId) => counts[optionId] || 0;
+// Die gewählten Optionen stehen im Roster-Teilbaum der Träger-Auswahl: das
+// ViewModel zählt sie dort, statt einen gereichten Zähler zu befragen.
+const selectionWithCounts = () => ({
+  id: 'sel-unit', entryLinkId: 'unit-link', number: 1,
+  selections: Object.entries(counts).flatMap(([optionId, count]) =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `${optionId}-${index}`, entryLinkId: optionId, number: 1, selections: [],
+    }))),
+});
 
 const buildProps = (group, capabilities) => ({
   group,
-  selection: { id: 'sel-unit', entryLinkId: 'unit-link', number: 1, selections: [] },
+  selection: selectionWithCounts(),
   selectionPath: SELECTION_PATH,
   capabilities,
   system,
   roster,
-  getSubSelectionCount,
   subSelectionOperations,
   getOptionDescription: () => '',
   activeCatalogue,

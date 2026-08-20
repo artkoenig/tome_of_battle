@@ -22,8 +22,22 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - Proving "does not render again" needs a `memo`-wrapped consumer. Without `memo` a consumer
   re-renders because its parent did, and the test proves nothing about the context.
 - `rosterContexts.jsx` passes `commands` through **unchanged**; only the report context memoizes
-  its `{ report, roster }` pair. Both hooks throw when no provider is above them — that is the
-  contract, not a convenience.
+  its bundle. Both hooks throw when no provider is above them — that is the contract, not a
+  convenience. Any tree that renders an editor leaf therefore needs both providers, including the
+  play view (`PlayMode.jsx` wraps its tree for `UnitChips`).
+- The report context carries `{ report, roster, system, activeCatalogue }`. `system` is the frame a
+  ViewModel resolves detail texts and catalogue structure in, never a display answer (ADR-0034);
+  `activeCatalogue` is derived from `roster.catalogueId` unless the provider is handed one.
+- `src/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
+  `useSelectionConfigurator`, `useUnitChips`) plus `costBudgets.js`. A ViewModel may not import
+  `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
+  entry and `system`, and the component renders the detail block.
+- `useOptionGroup` imports `optionDescriptionOf`, `resolveRowSelectionId` and `subSelectionCountOf`
+  from `useSelectionConfigurator.js` — the configurator owns the row derivations both share.
+- An option row's description comes from `capability.infoElements` only. The old name-based lookup
+  against `system.sharedRules` + every catalogue took the first same-named hit and confused two
+  rules from different catalogues; do not reintroduce it (`useSelectionConfigurator.test.jsx` pins
+  the case).
 - The report the context carries is `useRosterReportModel` from `src/evaluation/rosterReport.js`
   (App evaluation + `unresolvedSelections`), referentially stable per `(system, roster)` on top of
   the WeakMap in `evaluationCache.js`. Any new derived field belongs in that bundle, memoized, or
@@ -35,5 +49,10 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   Where the case is about state or context only, pass `system = null`: the evaluation is then the
   frozen empty result and the test runs instantly.
 - `src/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
-  `createEmptyRosterReport`, `createNoopRosterCommands`) so a component still renders in isolation.
-  Extend the empty report there when the report gains a field.
+  `createRosterProviderWrapper` for `renderHook`, `createEmptyRosterReport`,
+  `createNoopRosterCommands`) so a component still renders in isolation. Extend the empty report
+  there when the report gains a field.
+- A hook test here builds its report by hand (`new Map()` of slots) and runs instantly; only pin
+  what the derivation does, not what the engine computes. Where the hand-built system does not
+  resolve the frame, `getUnitOptions` returns nothing and the configurator's safety net keeps every
+  group anchor as an empty section — expect those sections in an assertion over `sections`.

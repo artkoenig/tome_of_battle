@@ -4,7 +4,7 @@ import React from 'react';
 
 import { createSelectionFromDef } from './selectionFactory.js';
 import { resolveEntry } from './catalogResolver.js';
-import PlayUnitDetails from '../components/play/PlayUnitDetails.jsx';
+import { PlayUnitDetailsHarness as PlayUnitDetails } from '../test-utils/editorHarness';
 import { SettingsProvider } from '../contexts/SettingsContext.jsx';
 
 /**

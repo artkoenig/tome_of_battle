@@ -24,7 +24,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import PlayUnitDetails from './PlayUnitDetails';
+import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../test-utils/editorHarness';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 

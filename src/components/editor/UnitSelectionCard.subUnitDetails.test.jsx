@@ -22,7 +22,7 @@ import { join } from 'node:path';
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
-import UnitSelectionCard from './UnitSelectionCard';
+import { UnitSelectionCardHarness as UnitSelectionCard } from '../../test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 vi.mock('lucide-react', () => ({

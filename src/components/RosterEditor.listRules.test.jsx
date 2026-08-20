@@ -32,27 +32,34 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span data-testid="icon-chevron-right" />,
 }));
 
-vi.mock('../hooks/useRoster', () => ({
-  useRoster: () => ({
+vi.mock('../viewmodels/useRosterState', () => ({
+  useRosterState: () => ({
     roster: mockRoster,
-    costs: { pts: 420 },
-    violations: [],
-    capabilities: mockCapabilities,
-    costTotals: {},
-    pathBySelectionId: new Map([['sel-unit', '0/1']]),
-    pathByForceId: new Map([['force-1', '0']]),
     selectedRosterSelection: null,
     setSelectedRosterSelection: vi.fn(),
-    addUnit: vi.fn(),
-    removeUnit: vi.fn(),
-    copyUnit: vi.fn(),
-    subSelectionOperations: createSubSelectionOperationsMock(),
-    updateRosterName: vi.fn(),
-    save: vi.fn(),
-    undo: vi.fn(),
-    redo: vi.fn(),
     canUndo: false,
     canRedo: false,
+    report: {
+      costs: { pts: 420 },
+      violations: [],
+      capabilities: mockCapabilities,
+      costTotals: {},
+      pathBySelectionId: new Map([['sel-unit', '0/1']]),
+      pathByForceId: new Map([['force-1', '0']]),
+      unresolvedSelections: [],
+      description: null,
+      diagnostics: [],
+    },
+    commands: {
+      addUnit: vi.fn(),
+      removeUnit: vi.fn(),
+      copyUnit: vi.fn(),
+      subSelectionOperations: createSubSelectionOperationsMock(),
+      updateRosterName: vi.fn(),
+      save: vi.fn(),
+      undo: vi.fn(),
+      redo: vi.fn(),
+    },
   }),
 }));
 

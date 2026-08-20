@@ -3,7 +3,7 @@ import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
-import SelectionConfigurator from './SelectionConfigurator';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../parser/xmlParser.js';
 import { resolveEntry } from '../../roster/catalogResolver.js';

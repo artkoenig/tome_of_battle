@@ -4,6 +4,7 @@ import { saveRoster } from '../db/database';
 import { findForceEntryById, childSelectionsOf } from '../roster';
 import { slotOfSelection } from '../evaluation/slotLookups';
 import { useEvaluation } from '../evaluation/useEvaluation';
+import { RosterReportProvider } from '../viewmodels/rosterContexts';
 import { costLimitTypeIdOf, extraResourceTotalsOf } from '../evaluation/costDisplays';
 import BottomSheet from './editor/BottomSheet';
 import usePlayState from '../hooks/usePlayState';
@@ -27,7 +28,8 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
   // Summe ≠ 0 (`costTotals` × Kostenarten der Datensatz-Beschreibung, `hidden`
   // ausgeschlossen); die Fähigkeitsdatensätze speisen die Einheitenkarten
   // (Profile/Regeln aus `infoElements`).
-  const { capabilities, description, costTotals, pathBySelectionId } = useEvaluation(system, roster);
+  const report = useEvaluation(system, roster);
+  const { capabilities, description, costTotals, pathBySelectionId } = report;
   const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster?.costLimitType);
 
   const { getUnitCurrentWounds, handleAdjustWound } = usePlayState(initialRoster, setRoster, saveRoster, onReportError);
@@ -127,6 +129,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
   };
 
   return (
+    <RosterReportProvider report={report} roster={roster} system={system}>
     <>
       {/* Desktop Header in Play Mode (same style as editor) */}
       <div className="builder-top-bar play-mode-top-bar hide-on-mobile">
@@ -268,5 +271,6 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
         )}
       </div>
     </>
+    </RosterReportProvider>
   );
 }

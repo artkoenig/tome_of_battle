@@ -25,7 +25,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UnitRulesChips } from './UnitChips';
+import { UnitRulesChipsHarness as UnitRulesChips } from '../../test-utils/editorHarness';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 

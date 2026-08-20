@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useRoster } from '../hooks/useRoster';
+import { useRosterState } from '../viewmodels/useRosterState';
+import { RosterCommandsProvider, RosterReportProvider } from '../viewmodels/rosterContexts';
 import { saveRoster } from '../db/database';
 import { resolveCostLimitLabel } from '../roster';
 import { extraResourceTotalsOf } from '../evaluation/costDisplays';
@@ -13,26 +14,22 @@ import { useRuleUrl } from '../hooks/useRuleUrl';
 const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 
 export default function RosterEditor({ system, roster: initialRoster, onBack, onPlay, onExportRoster, onReportError, isFreshRoster }) {
+  // Der Zustandsknoten des Editors (ADR-0038): Bericht und Kommandos gehen als
+  // Bündel in die beiden Kontexte, aus denen die ViewModels der Blätter lesen.
   const {
     roster,
-    violations,
-    unresolvedSelections,
-    capabilities,
-    description,
-    costTotals,
-    pathBySelectionId,
-    pathByForceId,
+    report,
     selectedRosterSelection,
     setSelectedRosterSelection,
-    addUnit,
-    removeUnit,
-    copyUnit,
-    subSelectionOperations,
-    undo,
-    redo,
+    commands,
     canUndo,
     canRedo
-  } = useRoster(initialRoster, system, saveRoster, onReportError, isFreshRoster);
+  } = useRosterState(initialRoster, system, saveRoster, onReportError, isFreshRoster);
+  const {
+    violations, unresolvedSelections, capabilities, description, costTotals,
+    pathBySelectionId, pathByForceId
+  } = report;
+  const { addUnit, removeUnit, copyUnit, subSelectionOperations, undo, redo } = commands;
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   // Listenregel-Gruppen sind ausklappbar und **standardmäßig eingeklappt**. Wir
@@ -88,21 +85,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
   const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
 
-  // Der Prop-Satz, den jede Einheitenkarte braucht — an genau einer Stelle
-  // gebündelt und unverändert bis zur Karte durchgereicht.
+  // Was der Karte bleibt, seit ihr ViewModel den Bericht selbst liest: der
+  // Auswahl-Zustand der Oberfläche und der Regel-Kanal.
   const unitCardContext = {
     selectedRosterSelection,
     setSelectedRosterSelection,
-    roster,
-    system,
-    violations,
-    capabilities,
-    pathBySelectionId,
     costTypeLabel,
-    removeUnit,
-    copyUnit,
-    subSelectionOperations,
-    activeCatalogue,
     onShowRule
   };
 
@@ -115,6 +103,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   }, [system, roster]);
 
   return (
+    <RosterCommandsProvider commands={commands}>
+      <RosterReportProvider report={report} roster={roster} system={system}>
     <div className="builder-layout-container">
       <RosterEditorTopBar
         roster={roster}
@@ -196,5 +186,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
         )}
       </div>
     </div>
+      </RosterReportProvider>
+    </RosterCommandsProvider>
   );
 }

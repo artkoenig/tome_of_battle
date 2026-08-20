@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UnitRulesChips, UnitUpgradesChips } from './UnitChips';
+import { UnitRulesChipsHarness as UnitRulesChips, UnitUpgradesChipsHarness as UnitUpgradesChips } from '../../test-utils/editorHarness';
 
 // Both chip components decide between the 6th.whfb.app rule link and the catalogue
 // fallback through the central useRuleUrl hook (ADR-0015). These tests exercise
