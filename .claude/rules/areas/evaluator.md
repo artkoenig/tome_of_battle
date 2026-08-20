@@ -36,12 +36,23 @@ means; it outranks the ADRs where the two disagree.
   mandatory obligation declared in a foreign army book never fires (`isInCatalogueScope`,
   Issue 0098). Any change to "which absence is reported" hits all three; check them before
   designing, not after the test run.
+- A contingent is evaluated against **exactly** its army book, that book's transitive
+  `catalogueLink` hull and the game system (`buildCatalogueScopeClosure`/`isInCatalogueScope`,
+  Issue 0159, ADR-0032 addendum). No root `entryLink` exemption exists any more: a foreign book's
+  link anchors nothing. Alongside it runs the narrower `buildRootImportClosure`/
+  `isInRootImportScope` — only `catalogueLink`s with `importRootEntries="true"` — and **that** one
+  gates root-level offers (`offer.js`) and the root definitions' mandatory phantoms
+  (`synthesizeMandatoryPhantoms`). Shared entries, link targets and categories go through the full
+  hull. Picking the wrong one of the two is the mistake here.
 - Root-level offers are deduplicated by **target id** (`attachOfferAnchors`/`identityIdsOf` in
-  `offer.js`), and a root `entryLink` is exempt from the catalogue scope filter. Several army
-  books linking the same shared library entry therefore compete for one anchor, and the winner
-  brings its own source and its own category modifiers. A bug of the shape "unit missing from one
-  army's dialog" reproduces only with the **whole corpus** loaded — with two catalogues it looks
-  correct.
+  `offer.js`), and the contingent's own book wins the tie. Several army books linking the same
+  shared library entry therefore compete for one anchor, and the winner brings its own source and
+  its own category modifiers. A bug of the shape "unit missing from one army's dialog" reproduces
+  only with the **whole corpus** loaded — with two catalogues it looks correct.
+- A synthetic multi-catalogue test fixture that expects a library entry to be offered must give
+  the army book an explicit `catalogueLink` to that library (with `importRootEntries="true"` when
+  the entry is a root entry). Merely passing the library as a source no longer reaches anything —
+  that was the pre-0159 rule, and several UI tests encoded it.
 - Effort has a budget: `node scripts/measure-evaluator.js` fails over 100 ms on real catalog data.
   A change that widens a traversal needs that number checked.
   `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser

@@ -88,6 +88,9 @@ const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const PRIMARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${PRIMARY_CATALOGUE_ID}" name="Vampire Counts" gameSystemId="${GAME_SYSTEM_ID}">
+    <catalogueLinks>
+      <catalogueLink id="cl-own-to-lib" name="Mercenaries" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <selectionEntries>
       <selectionEntry id="${PRIMARY_ENTRY_ID}" name="Vampire" type="unit">
         <categoryLinks><categoryLink id="ol-1" name="Special" targetId="${CATEGORY_ID}" primary="true"/></categoryLinks>
@@ -103,6 +106,9 @@ const PRIMARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const ALLIED_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   <catalogue id="${ALLIED_CATALOGUE_ID}" name="Ogre Kingdoms" gameSystemId="${GAME_SYSTEM_ID}">
+    <catalogueLinks>
+      <catalogueLink id="cl-ally-to-lib" name="Mercenaries" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+    </catalogueLinks>
     <sharedSelectionEntries>
       <selectionEntry id="${ALLIED_SHARED_ENTRY_ID}" name="Ogre Bull" type="unit">
         <categoryLinks><categoryLink id="fs-1" name="Special" targetId="${CATEGORY_ID}" primary="true"/></categoryLinks>
@@ -331,6 +337,15 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
   // Angebots-Anker. „Vampire" steht dem Dialog hier also nicht mehr zur
   // Auswahl, unabhaengig von jeder Prop.
   //
+  // **Was Issue 0159 zusaetzlich genommen hat:** „Hired Ogre" — der
+  // Wurzel-`entryLink` des PRIMAER-Buchs auf den geteilten Eintrag des
+  // verbuendeten — stand hier frueher ebenfalls im Angebot, weil ein
+  // Wurzel-`entryLink` von der Herkunftspruefung ausgenommen war. Diese Ausnahme
+  // ist ersatzlos entfallen: unter dem verbuendeten Kontingent verankert ein
+  // fremdes Armeebuch kein Angebot mehr. Uebrig bleiben der Spielsystem-Eintrag
+  // und der Bibliothekseintrag (die Bibliothek liegt per `catalogueLink` in der
+  // Huelle beider Buecher).
+  //
   // **Was unveraendert gilt:** die Regel selbst — fehlt `forceCatalogueId` oder
   // ist sie `null`, filtert `activeCatalogue.id`. Gepinnt wird sie jetzt
   // negativ: unter dem verbuendeten Kontingent zeigt der Dialog dessen eigene
@@ -350,7 +365,7 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
     // die Einheit des verbuendeten Buchs heraus.
     expect(screen.queryByText('Gorger')).toBeNull();
     expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain'].sort(),
+      ['Grand Banner', 'Mercenary Captain'].sort(),
     );
   });
 
@@ -363,7 +378,7 @@ describe('CategoryUnitAdder: ohne eigenen Katalog gilt der der Liste (Issue 0121
 
     expect(screen.queryByText('Gorger')).toBeNull();
     expect(offeredNames()).toEqual(
-      ['Grand Banner', 'Hired Ogre', 'Mercenary Captain'].sort(),
+      ['Grand Banner', 'Mercenary Captain'].sort(),
     );
   });
 });

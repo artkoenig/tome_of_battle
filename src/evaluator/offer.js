@@ -54,7 +54,7 @@
 
 import { DefinitionKind, isLinkDefinition } from './model.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
-import { isInCatalogueScope, forceCatalogueReferenceOf } from './catalogSet.js';
+import { isInRootImportScope, forceCatalogueIdOf } from './catalogSet.js';
 
 /**
  * Die **Basis**-Kategorien einer angebotenen Definition: ihre eigenen
@@ -169,55 +169,64 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * Angebots: sie ist keine Auswahl, und das Armee-Angebot haengt am Kontingent.
  *
  * Fuer ein Kontingent gilt zusaetzlich der **Katalog-Bezugsrahmen** (Issue
- * 0098): ein eigenstaendiger Wurzel-Eintrag (`ENTRY`) wird nur angeboten,
- * wenn seine Herkunft zum Katalog-Fussabdruck **dieses** Kontingents gehoert
- * ({@link isInCatalogueScope}) — ein Wurzel-Eintrag eines fremden Katalogs im
- * selben Datensatz bleibt aussen vor — ein Eintrag des Spielsystems dagegen
- * nie, und ein Eintrag eines **Bibliothekskatalogs** dann nicht, wenn das
- * Armeebuch dieses Kontingents aus der Angabe des Rosters stammt und die
- * Bibliothek nicht selbst benennt ({@link isInCatalogueScope}, Issue 0140):
- * ein geteilter Vorrat ist kein fremdes Armeebuch.
- * Welches Armeebuch das Kontingent hat, beantwortet
- * {@link forceCatalogueReferenceOf}: der Herkunftsindex aus den Katalogdaten, und nur
+ * 0098, Umfang nach Issue 0159): ein Wurzel-Angebot — ein eigenstaendiger
+ * Eintrag (`ENTRY`) **wie** ein Wurzel-`entryLink` — wird nur angeboten, wenn
+ * der es deklarierende Katalog im Auswertungsumfang **dieses** Kontingents
+ * liegt ({@link isInRootImportScope}): sein Armeebuch, dessen transitive
+ * `catalogueLink`-Huelle und das Spielsystem — beim Wurzel-Angebot in der
+ * engeren Lesart, die nur `catalogueLink`s mit `importRootEntries="true"`
+ * durchschreitet: die Wurzel-Eintraege eines ohne dieses Attribut verlinkten
+ * Katalogs bleiben sein eigenes Angebot (Issue 0098, Kriterium 3). Die frueher fuer einen
+ * Wurzel-`entryLink` gemachte Ausnahme — er verankerte unabhaengig von seiner
+ * Herkunft, weil geteilte Inhalte („Regiments of Renown“/Soeldner) so
+ * angeboten wuerden — **entfaellt ersatzlos** (Issue 0159, Kriterium 2): ein
+ * Buch, das solche Inhalte anbieten will, verlinkt ihren Katalog, und dann
+ * liegt er in seiner Huelle. Welches Armeebuch das Kontingent hat, beantwortet
+ * {@link forceCatalogueIdOf}: der Herkunftsindex aus den Katalogdaten, und nur
  * wo der schweigt die Angabe des Rosters am Kontingent-Knoten (Issue 0140) —
  * nur so hat ein in der Spielsystemdatei deklariertes Kontingent ueberhaupt
- * ein Armeebuch, gegen das gefiltert werden kann. Ein Wurzel-**`entryLink`** ist davon
- * ausgenommen: er verweist auf eine geteilte Definition (typischerweise
- * einer Bibliothek) und ist der etablierte, mit echten Katalogdaten belegte
- * Weg, wie Katalogautoren katalogübergreifende Inhalte anbieten (z. B.
- * „Regiments of Renown"/Söldner, die jede Armee ueber ihre eigene, geteilte
- * Kategorie nehmen darf) — unabhaengig davon, welcher Katalog den Link
- * deklariert. Die belegte-Auswahl-Regel (2) betrifft nur Optionen unter
- * einer schon verankerten Definition und bleibt unveraendert.
+ * ein Armeebuch, gegen das gefiltert werden kann.
+ *
+ * **Das eigene Buch gewinnt die Entdopplung.** Dasselbe geteilte Ziel wird oft
+ * von mehreren Buechern je eigenem Wurzel-`entryLink` angeboten (Issue 0155:
+ * der Riese der Mercenaries-Bibliothek haengt an je einem Link in O&G,
+ * Dunkelelfen, Skaven, Imperium und Vampirfuersten), und seit die Huelle die
+ * Bibliothek selbst in den Umfang traegt, steht auch ihr eigener Wurzel-Eintrag
+ * daneben. Weil die Entdopplung in {@link attachOfferAnchors} ueber die Ziel-Id
+ * laeuft, verankert nur einer davon — und traegt dann seine Herkunft und seine
+ * Kategorie-Modifikatoren. Deshalb weicht jedes Angebot auf ein Ziel, das das
+ * Armeebuch **dieses** Kontingents selbst per Wurzel-`entryLink` fuehrt,
+ * diesem eigenen Link.
+ *
+ * Die belegte-Auswahl-Regel (2) betrifft nur Optionen unter einer schon
+ * verankerten Definition und bleibt unveraendert.
  */
 function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalogueByForceDefId) {
   if (frame.isForce) {
     const forceCategoryIds = linkedCategoryIdsOf(frame.def);
-    const forceReference = forceCatalogueReferenceOf(frame, primaryCatalogueByForceDefId);
-    const catalogueReferences = forceReference === null ? [] : [forceReference];
+    const forceCatalogueId = forceCatalogueIdOf(frame, primaryCatalogueByForceDefId);
+    const catalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     const carried = armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds));
-    const isOwn = def => isInCatalogueScope(def.id, catalogueReferences, catalogueScope);
-    // Dasselbe geteilte Ziel wird oft von MEHREREN Armeebuechern je eigenem
-    // Wurzel-`entryLink` angeboten (Issue 0155: der Riese der Mercenaries-
-    // Bibliothek haengt an je einem Link in O&G, Dunkelelfen, Skaven, Imperium
-    // und Vampirfuersten). Weil die Entdopplung in {@link attachOfferAnchors}
-    // ueber die Ziel-ID laeuft, verankert nur der erste dieser Links — und traegt
-    // dann seine Herkunft und seine Kategorie-Modifikatoren statt derer des
-    // Kontingents. Deshalb weicht hier ein fremder Link, sobald das Armeebuch
-    // DIESES Kontingents selbst einen Link auf dasselbe Ziel fuehrt; wo es
-    // keinen fuehrt, bleibt das fremde Angebot bestehen (der etablierte
-    // „Regiments of Renown"-Weg, siehe oben).
+    const isInScope = def => isInRootImportScope(def.id, catalogueIds, catalogueScope);
+    const inScope = carried.filter(isInScope);
+    // Die Ziele, die das Buch DIESES Kontingents selbst per Wurzel-`entryLink`
+    // fuehrt: sie gewinnen die Entdopplung gegen jedes andere Angebot desselben
+    // Ziels aus der Huelle (siehe oben, Issue 0155/0159).
+    const ownDeclaredIn = def => catalogueScope?.sourceIdByDefId?.get(def.id) === forceCatalogueId;
+    // Der Entdopplungs-Schluessel eines Wurzel-Angebots: bei einem Verweis sein
+    // Ziel, bei einem eigenstaendigen Eintrag er selbst — so weicht auch der
+    // Wurzel-Eintrag der Bibliothek dem eigenen Link auf ihn.
+    const dedupeKeyOf = def => linkTargetIdentityOf(def) ?? def.id;
     const targetsOfOwnLinks = new Set();
-    for (const def of carried) {
-      if (def.kind !== DefinitionKind.ENTRY_LINK || !isOwn(def)) continue;
+    for (const def of inScope) {
+      if (def.kind !== DefinitionKind.ENTRY_LINK || !ownDeclaredIn(def)) continue;
       const targetId = linkTargetIdentityOf(def);
       if (targetId !== null) targetsOfOwnLinks.add(targetId);
     }
     // Ein Wurzel-Angebot steht unmittelbar im Kontingent — es gibt keine
     // durchschrittene Gruppe, die es klammern koennte.
-    return carried.filter(def => (def.kind === DefinitionKind.ENTRY_LINK
-      ? isOwn(def) || !targetsOfOwnLinks.has(linkTargetIdentityOf(def))
-      : isOwn(def)))
+    return inScope
+      .filter(def => ownDeclaredIn(def) || !targetsOfOwnLinks.has(dedupeKeyOf(def)))
       .map(def => ({ def, gates: [] }));
   }
   return [...optionDefinitionsUnder(ownerDefinitionOf(frame))];
@@ -235,12 +244,12 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
  *
  * @param {object} root  Wurzel des Auswertungsbaums nach Baumphase 1.
  * @param {{ armyLevelCandidates?: object[] }} resolved  die aufgeloeste Katalogsicht.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string>, linkedCatalogueIdsById?: Map<string, Set<string>> }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098, siehe {@link candidatesFor}). Ohne ihn
  *   (`undefined`) ungefiltertes, unveraendertes Verhalten.
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]  Der Herkunftsindex
  *   der Kontingente — die erste Quelle des Armeebuchs eines Kontingents, vor
- *   der Angabe des Rosters am Knoten ({@link forceCatalogueReferenceOf}); ohne beide
+ *   der Angabe des Rosters am Knoten ({@link forceCatalogueIdOf}); ohne beide
  *   ist `catalogueScope` je Kontingent nicht auszuwerten.
  * @returns {object[]} die angehaengten Anker, in Anhaenge-Reihenfolge. Der Aufrufer
  *   traegt sie in die Effektiv-Werte-Schicht nach (`extendBaseEffectiveState`),
