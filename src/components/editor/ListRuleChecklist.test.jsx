@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ListRuleChecklist from './ListRuleChecklist';
+import { ListRuleChecklistHarness as ListRuleChecklist } from '../../test-utils/harnesses/ListRuleChecklistHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 
 // Seam B: the checkbox list itself. The per-rule enumeration is the solver's job
@@ -88,7 +88,7 @@ describe('ListRuleChecklist', () => {
     render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Allow special characters?' }));
-    expect(baseProps.addUnit).toHaveBeenCalledWith({ id: 'e1' }, 'cat-rules');
+    expect(baseProps.addUnit).toHaveBeenCalledWith(expect.objectContaining({ id: 'e1' }), 'cat-rules');
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Campaign rules' }));
     expect(baseProps.removeUnit).toHaveBeenCalledWith('sel-2');

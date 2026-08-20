@@ -28,7 +28,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import CategoryUnitAdder from './CategoryUnitAdder';
+import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../test-utils/harnesses/CategoryUnitAdderHarness';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 
 vi.mock('lucide-react', () => ({

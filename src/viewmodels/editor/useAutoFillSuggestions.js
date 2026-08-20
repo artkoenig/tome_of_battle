@@ -1,0 +1,180 @@
+import { useMemo } from 'react';
+
+import { findEntryInSystem, foreignCatalogueIdsOf, resolveCostLimitLabel } from '../../roster';
+import { useRosterReport, useRosterCommands } from '../rosterContexts';
+
+/**
+ * Die **Auffüll-Vorschläge** eines Kontingents (Issue 0135/0151; ADR-0034/0035),
+ * seit Issue 0164 als ViewModel.
+ *
+ * Beantwortet genau eine Frage: **was passt noch in die Restpunkte?** Das Panel
+ * ist damit ein Werkzeug für den Schluss der Listenbauerei — es öffnet erst auf
+ * den letzten {@link FILL_UP_WINDOW_POINTS} Punkten: die Liste hat eine
+ * Punktgrenze, und es fehlt noch etwas zu ihr, aber höchstens diese Spanne. Bei
+ * einer größeren Lücke schweigt es. Innerhalb der Spanne ist es **immer**
+ * sichtbar, auch wenn gerade nichts hineinpasst — verschwände es still, wäre
+ * „nichts passt mehr" von „alle Punkte verplant" nicht zu unterscheiden.
+ *
+ * Vorgeschlagen wird allein, was der Bericht als **wählbar** führt: ein
+ * Angebots-Anker (`offerAnchor`) oder ein belegter Slot mit verbleibendem
+ * Spielraum. Beide Ankerarten tragen ausschließlich `selectionEntry`/`entryLink`
+ * — nie eine Kategorie: eine offene Pflicht erzeugt hier keinen Vorschlag, sie
+ * steht im Meldungs-Panel. Dazu der **Herkunftsfilter** des Aushebe-Dialogs
+ * ({@link foreignCatalogueIdsOf}): eine Einheit aus einem fremden Armeebuch
+ * darf in dieser Liste gar nicht aufgestellt werden (ADR-0032).
+ *
+ * Ein Vorschlag muss in der Limit-Kostenart etwas kosten und darf die Restsumme
+ * nicht überschreiten; Verstecktes (`isHidden`) und Ausgeschöpftes (`isBlocked`)
+ * fällt heraus. Der Preis ist der **Aushebe**-Preis (`raiseCosts`), nicht der
+ * Eigenpreis (Issue 0085). Sortiert wird nach Kosten absteigend.
+ *
+ * @param {{ forceId: string|null, forcePath: string|null }} params
+ * @returns {{ isOpen: boolean, remainingPoints: number|null, costTypeLabel: string,
+ *   suggestions: Array<{ key: string, name: string, cost: number,
+ *     unitName: string|null, apply: (() => void)|null }> }}
+ */
+
+/**
+ * Die letzten Punkte einer Liste: nur bis zu dieser Lücke zum eingestellten
+ * Punktwert wird aufgefüllt (Issue 0151).
+ */
+export const FILL_UP_WINDOW_POINTS = 50;
+
+export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
+  const { report, roster, system, activeCatalogue } = useRosterReport();
+  const { addUnit, subSelectionOperations } = useRosterCommands();
+  const capabilities = report?.capabilities;
+  const pathBySelectionId = report?.pathBySelectionId;
+  const costTotals = report?.costTotals ?? {};
+
+  const force = useMemo(
+    () => roster?.forces?.find(candidate => candidate.id === forceId) ?? null,
+    [roster, forceId]
+  );
+
+  // Was der Liste zu ihrem eingestellten Punktwert fehlt (Issue 0135). Ohne
+  // Limit-Kostenart oder ohne gesetzten Punktwert gibt es keine Differenz zu
+  // füllen: `null`, nicht 0. Die Lücke ist roster-weit, wie die Punktgrenze
+  // selbst; jedes Kontingent zeigt sie deshalb gleich.
+  const costLimitTypeId = roster?.costLimitType ?? null;
+  const limitPoints = roster?.costLimit || 0;
+  const remainingPoints = costLimitTypeId && limitPoints > 0
+    ? limitPoints - (costTotals[costLimitTypeId] || 0)
+    : null;
+
+  // Rahmen-Auflösung: Slot-Pfad → App-Selection-UUID (Umkehrung des Adapters).
+  const selectionIdByPath = useMemo(() => {
+    const inverse = new Map();
+    if (pathBySelectionId) {
+      for (const [selectionId, path] of pathBySelectionId) inverse.set(path, selectionId);
+    }
+    return inverse;
+  }, [pathBySelectionId]);
+
+  // Das eigene Armeebuch ist das des Kontingents; ohne eigenes gilt der aktive
+  // Katalog der Liste — dieselbe Rückfallregel wie im Aushebe-Dialog.
+  const ownCatalogueId = force?.catalogueId || roster?.catalogueId || activeCatalogue?.id || null;
+  const foreignCatalogueIds = useMemo(
+    () => foreignCatalogueIdsOf(system, ownCatalogueId), [system, ownCatalogueId]);
+
+  // Die Slots DIESES Kontingents: ohne Pfad führt der Bericht für das
+  // Kontingent überhaupt keine Slots.
+  const forceScopedCapabilities = useMemo(() => {
+    if (forcePath === null || forcePath === undefined) return new Map();
+    return new Map([...(capabilities ?? [])].filter(([path]) =>
+      path === forcePath || path.startsWith(`${forcePath}/`)));
+  }, [capabilities, forcePath]);
+
+  const collected = useMemo(() => {
+    const found = [];
+    if (costLimitTypeId === null || remainingPoints === null) return found;
+    if (remainingPoints <= 0 || remainingPoints > FILL_UP_WINDOW_POINTS) return found;
+
+    for (const [path, capability] of forceScopedCapabilities) {
+      if (!isSelectableSlot(capability)) continue;
+      if (capability.isHidden || capability.isBlocked) continue;
+      // Nur zwei Standorte sind gemeint: unmittelbar unter dem Kontingent (eine
+      // Einheit) oder unter einer bestehenden Auswahl (eine Option an ihr).
+      const framePath = capability.frame?.path ?? null;
+      if (framePath === null) continue;
+      if (framePath !== forcePath && !selectionIdByPath.has(framePath)) continue;
+      if (foreignCatalogueIds.has(capability.sourceId)) continue;
+      const cost = capability.raiseCosts?.[costLimitTypeId] ?? 0;
+      if (cost <= 0 || cost > remainingPoints) continue;
+      found.push({ path, capability, cost });
+    }
+    found.sort((a, b) => b.cost - a.cost);
+    return found;
+  }, [forceScopedCapabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
+
+  const suggestions = useMemo(() => {
+    // Der Katalogeintrag hinter einem Slot — für die bestehende Aushebe-Mechanik.
+    const entryFor = (capability) =>
+      findEntryInSystem(system, capability.defId, activeCatalogue?.id)
+        ?? { id: capability.defId, name: capability.name };
+
+    /**
+     * Die Anwenden-Aktion eines Vorschlags über die bestehende Mechanik — oder
+     * `null`, wenn der nötige Kontext fehlt: ein Slot in einer Auswahl wächst
+     * über `increaseCount` am Rahmen, ein Slot unter einem Kontingent wird über
+     * `addUnit` ausgehoben (unter seiner effektiven Primärkategorie).
+     */
+    const applyActionFor = (capability) => {
+      const framePath = capability.frame?.path ?? null;
+      if (framePath !== null && selectionIdByPath.has(framePath)) {
+        const frameSelectionId = selectionIdByPath.get(framePath);
+        if (!subSelectionOperations) return null;
+        return () => subSelectionOperations.increaseCount(frameSelectionId, entryFor(capability));
+      }
+      if (addUnit && framePath !== null) {
+        return () => addUnit(entryFor(capability), capability.primaryCategoryId ?? null, forceId);
+      }
+      return null;
+    };
+
+    /** Der Name der Einheit, an der eine Option hängt — `null` unter dem Kontingent. */
+    const unitNameFor = (capability) => {
+      const framePath = capability.frame?.path ?? null;
+      if (framePath === null || framePath === forcePath) return null;
+      return forceScopedCapabilities.get(framePath)?.name ?? null;
+    };
+
+    return collected.map(({ path, capability, cost }) => ({
+      key: path,
+      name: capability.name,
+      cost,
+      unitName: unitNameFor(capability),
+      apply: applyActionFor(capability),
+    }));
+  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, forceScopedCapabilities, forceId]);
+
+  // Sichtbar an der Lücke: steht die Liste auf ihren letzten Punkten, steht das
+  // Panel da — auch wenn gerade nichts hineinpasst. Ohne `forcePath` führt der
+  // Bericht für dieses Kontingent überhaupt keine Slots; dann schweigt es.
+  const isOpen = forcePath !== null
+    && forcePath !== undefined
+    && costLimitTypeId !== null
+    && remainingPoints !== null
+    && remainingPoints > 0
+    && remainingPoints <= FILL_UP_WINDOW_POINTS;
+
+  return {
+    isOpen,
+    remainingPoints,
+    costTypeLabel: resolveCostLimitLabel(roster, system),
+    suggestions,
+  };
+}
+
+/**
+ * True für einen Slot, an dem noch etwas gewählt werden kann: ein
+ * Angebots-Anker (im Rahmen wählbar, noch nicht vorhanden) oder eine belegte
+ * Auswahl mit verbleibendem Spielraum (`headroom === null` heißt: kein
+ * Höchstmaß). Jede andere Ankerart — Pflicht-Phantom, Gruppen- und
+ * Kategorie-Anker — benennt keinen Eintrag, den dieses Panel aushebt.
+ */
+function isSelectableSlot(capability) {
+  if (capability.anchorKind === 'offerAnchor') return true;
+  return capability.anchorKind === 'occupied'
+    && (capability.headroom === null || capability.headroom > 0);
+}

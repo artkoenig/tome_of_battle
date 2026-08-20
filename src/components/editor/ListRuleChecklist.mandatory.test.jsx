@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ListRuleChecklist from './ListRuleChecklist';
+import { ListRuleChecklistHarness as ListRuleChecklist } from '../../test-utils/harnesses/ListRuleChecklistHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { t } from '../../i18n/i18nStore';
 

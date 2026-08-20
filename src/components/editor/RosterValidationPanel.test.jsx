@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import RosterValidationPanel from './RosterValidationPanel';
+import { RosterValidationPanelHarness as RosterValidationPanel } from '../../test-utils/harnesses/RosterValidationPanelHarness';
 
 // Ergänzt RosterValidationPanel.evaluator.test.jsx (Vertragstests von Issue
 // 0121, Task 5) um die Observablen, die dort nicht abgedeckt sind: mobiler

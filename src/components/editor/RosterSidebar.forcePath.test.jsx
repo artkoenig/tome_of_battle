@@ -30,7 +30,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import RosterSidebar from './RosterSidebar';
+import { RosterSidebarHarness as RosterSidebar } from '../../test-utils/harnesses/RosterSidebarHarness';
 
 vi.mock('lucide-react', () => ({
   Check: (props) => <span data-testid="icon-check" {...props} />,

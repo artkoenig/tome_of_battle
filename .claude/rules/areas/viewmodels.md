@@ -29,9 +29,32 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   ViewModel resolves detail texts and catalogue structure in, never a display answer (ADR-0034);
   `activeCatalogue` is derived from `roster.catalogueId` unless the provider is handed one.
 - `src/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
-  `useSelectionConfigurator`, `useUnitChips`) plus `costBudgets.js`. A ViewModel may not import
+  `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
+  `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
+  `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
   `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
   entry and `system`, and the component renders the detail block.
+- The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
+  `violationStats.js` are read **here only** — the dependency-cruiser rule
+  `ableitungen-nur-in-viewmodels` fails `forge-lint` on an import of them from `src/components/`.
+  The cost-budget helpers (`costBudgetTextsOf`, `hasExceededCostBudget`) live in
+  `useSelectionConfigurator.js` next to the other row derivations it shares with `useOptionGroup`;
+  the former `costBudgets.js` is gone.
+- A section ViewModel derives what the editor used to thread through as props: `costTypeLabel`
+  from `roster`+`system`, `remainingPoints` from `roster.costLimit` minus `report.costTotals`,
+  `extraResources` from `description.costTypes`, and the sidebar's force path from
+  `report.pathByForceId` (never the roster's input index). What stays a prop is only what the
+  caller knows: `force`/`forceId`, `forcePath`, `categoryLink`/`categoryId` and display state.
+  `src/components/editor/sectionPropCount.test.js` pins the ceilings.
+- `useValidationPanel` reads `report.violations` **without** a `?? []` fallback on purpose: a
+  missing list is a broken report and must fail loudly rather than read as "all clear"
+  (`RosterEditor.test.jsx` pins the throw).
+- A section component's own tests go through `src/test-utils/harnesses/<Component>Harness.jsx` —
+  one file per component, not one shared module: a test that mocks `lucide-react` only partially
+  would otherwise fail on the icons of a component it never renders. `sectionHarnessBase.jsx`
+  holds the shared pieces, including the inversions a flat prop set needs (`costTypeLabel` → a
+  cost-type declaration, `remainingPoints` → limit + totals, `extraResources` → description cost
+  types, list-rule `states` → a capabilities map plus the entries in a catalogue).
 - `useOptionGroup` imports `optionDescriptionOf`, `resolveRowSelectionId` and `subSelectionCountOf`
   from `useSelectionConfigurator.js` — the configurator owns the row derivations both share.
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup

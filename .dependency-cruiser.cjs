@@ -94,6 +94,25 @@ module.exports = {
       to: { path: COMPONENTS_LAYER },
     },
     {
+      name: 'ableitungen-nur-in-viewmodels',
+      comment:
+        'ADR-0038 (Issue 0164): die Anzeige-Ableitungen aus dem Bericht -- die ' +
+        'Listenregel-Ankreuzliste, die armeeweiten Selektoren und die ' +
+        'Verletzungs-Statistik -- werden von den ViewModels in ' +
+        'src/viewmodels/editor/ gelesen, nie von einer Komponente. Eine ' +
+        'Komponente, die sie selbst aufruft, rechnet wieder im Render und ist ' +
+        'nur noch ueber das DOM pruefbar.',
+      severity: 'error',
+      from: { path: COMPONENTS_LAYER, pathNot: TEST_FILE },
+      to: {
+        path: [
+          '^src/evaluation/listRuleGroups\\.js$',
+          '^src/evaluation/armyWideSelectorSlots\\.js$',
+          '^src/evaluation/violationStats\\.js$',
+        ],
+      },
+    },
+    {
       name: 'ui-nicht-auf-daten',
       comment:
         'ADR-0037: die Oberflaeche erreicht Daten ausschliesslich ueber ' +

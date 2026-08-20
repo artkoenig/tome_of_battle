@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRosterState } from '../viewmodels/useRosterState';
 import { RosterCommandsProvider, RosterReportProvider } from '../viewmodels/rosterContexts';
 import { saveRoster } from '../db/database';
 import { resolveCostLimitLabel } from '../roster';
-import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 import RosterEditorTopBar from './editor/RosterEditorTopBar';
 import ForceEditorSection from './editor/ForceEditorSection';
@@ -25,11 +24,8 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
     canUndo,
     canRedo
   } = useRosterState(initialRoster, system, saveRoster, onReportError, isFreshRoster);
-  const {
-    violations, unresolvedSelections, capabilities, description, costTotals,
-    pathBySelectionId, pathByForceId
-  } = report;
-  const { addUnit, removeUnit, copyUnit, subSelectionOperations, undo, redo } = commands;
+  const { costTotals, pathByForceId } = report;
+  const { undo, redo } = commands;
 
   const [activeCatalogue, setActiveCatalogue] = useState(null);
   // Listenregel-Gruppen sind ausklappbar und **standardmäßig eingeklappt**. Wir
@@ -48,6 +44,12 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
       return next;
     });
   }, []);
+  // Ein Bündel statt zweier Props: die Sektion reicht es unverändert an ihre
+  // Kategorie-Gruppen weiter und wertet es selbst nie aus.
+  const ruleGroups = useMemo(
+    () => ({ isExpanded: isRuleGroupExpanded, onToggle: toggleRuleGroup }),
+    [isRuleGroupExpanded, toggleRuleGroup]
+  );
   const resolveRuleUrl = useRuleUrl();
 
   // Holds the rule whose external index is currently shown, together with the URL
@@ -74,13 +76,6 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
   // Datensatz-Beschreibung, `hidden` ausgeschlossen).
   const currentPoints = costTotals[roster.costLimitType] || 0;
   const limitPoints = roster.costLimit || 0;
-  const extraResources = extraResourceTotalsOf(costTotals, description?.costTypes, roster.costLimitType);
-  // Was der Liste zu ihrem eingestellten Punktwert fehlt — die Grundlage der
-  // Auffüll-Vorschläge (Issue 0135). Ohne Limit-Kostenart oder ohne gesetzten
-  // Punktwert gibt es keine Differenz zu füllen: `null`, nicht 0.
-  const remainingPoints = roster.costLimitType && limitPoints > 0
-    ? limitPoints - currentPoints
-    : null;
 
   const playRoster = useCallback(() => onPlay(roster), [onPlay, roster]);
   const exportRoster = useCallback(() => onExportRoster?.(roster), [onExportRoster, roster]);
@@ -104,7 +99,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
 
   return (
     <RosterCommandsProvider commands={commands}>
-      <RosterReportProvider report={report} roster={roster} system={system}>
+      <RosterReportProvider report={report} roster={roster} system={system} activeCatalogue={activeCatalogue}>
     <div className="builder-layout-container">
       <RosterEditorTopBar
         roster={roster}
@@ -137,23 +132,9 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
               key={force.id}
               force={force}
               forcePath={pathByForceId?.get(force.id) ?? null}
-              system={system}
-              roster={roster}
-              activeCatalogue={activeCatalogue}
-              violations={violations}
-              unresolvedSelections={unresolvedSelections}
-              capabilities={capabilities}
-              pathBySelectionId={pathBySelectionId}
-              costTypeLabel={costTypeLabel}
-              remainingPoints={remainingPoints}
-              addUnit={addUnit}
-              removeUnit={removeUnit}
-              subSelectionOperations={subSelectionOperations}
               unitCardContext={unitCardContext}
-              isRuleGroupExpanded={isRuleGroupExpanded}
-              onToggleRuleGroup={toggleRuleGroup}
+              ruleGroups={ruleGroups}
               onShowRule={onShowRule}
-              extraResources={extraResources}
               onPlay={playRoster}
             />
           ))}
@@ -165,16 +146,7 @@ export default function RosterEditor({ system, roster: initialRoster, onBack, on
             Eingabe-Index (Task 21). Fehlt das Kontingent im Bericht, weil seine
             Definition nicht auflöst, ist der Pfad `null` — dann zeigt die
             Seitenleiste keine Anforderungen statt der eines fremden Kontingents. */}
-        <RosterSidebar
-          roster={roster}
-          costTotals={costTotals}
-          costTypes={description?.costTypes}
-          capabilities={capabilities}
-          violations={violations}
-          costTypeLabel={costTypeLabel}
-          forcePath={roster.forces?.[0] ? (pathByForceId?.get(roster.forces[0].id) ?? null) : null}
-          className="desktop-only-sidebar"
-        />
+        <RosterSidebar className="desktop-only-sidebar" />
 
         {activeRuleDialog && (
           <RulesIndexDialog

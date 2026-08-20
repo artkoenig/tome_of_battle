@@ -19,6 +19,11 @@ paths:
   report through the two roster contexts instead of `capabilities`/`pathBySelectionId` props. A
   parent that renders one must sit under both providers — `RosterEditor.jsx` and `PlayMode.jsx`
   open them.
+- The section level above them (`ForceEditorSection`, `RosterCategorySection`, `CategoryUnitAdder`,
+  `ListRuleChecklist`, `AutoFillSuggestions`, `RosterSidebar`, `RosterValidationPanel`) follows the
+  same rule since Issue 0164: no derivation in the render, one ViewModel each in
+  `src/viewmodels/editor/`, both contexts instead of a flat prop set. Their tests take a harness
+  from `src/test-utils/harnesses/`, one file per component.
 - A test that renders one of those leaves goes through `src/test-utils/editorHarness.jsx`: the
   harnesses take the **old** flat prop set (`capabilities`, `pathBySelectionId`, `system`,
   `activeCatalogue`, the commands, a directly handed `capability`) and wire the providers, so a

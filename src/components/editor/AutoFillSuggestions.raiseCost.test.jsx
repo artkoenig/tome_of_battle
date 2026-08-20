@@ -13,7 +13,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import AutoFillSuggestions from './AutoFillSuggestions';
+import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../test-utils/harnesses/AutoFillSuggestionsHarness';
 import { createSubSelectionOperationsMock } from '../../test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
 import { createSubSelectionOperationsMock } from '../test-utils/subSelectionOperationsMock';
+import { useRosterCommands } from '../viewmodels/rosterContexts';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -160,12 +161,17 @@ vi.mock('../roster', async (importOriginal) => ({
 }));
 
 // Dummy child components to speed up execution
+// Der Aushebe-Callback kommt seit Issue 0164 aus dem Kommando-Kontext, nicht
+// mehr als Stuetze — die Attrappe greift ihn dort ab.
 vi.mock('./editor/CategoryUnitAdder', () => ({
-  default: ({ categoryId, addUnit }) => (
-    <button data-testid={`adder-${categoryId}`} onClick={() => addUnit('mock-added-unit')}>
-      Add to {categoryId}
-    </button>
-  )
+  default: function CategoryUnitAdderStub({ categoryId, forceId }) {
+    const { addUnit } = useRosterCommands();
+    return (
+      <button data-testid={`adder-${categoryId}`} onClick={() => addUnit('mock-added-unit', categoryId, forceId)}>
+        Add to {categoryId}
+      </button>
+    );
+  }
 }));
 vi.mock('./editor/ListRuleChecklist', () => ({
   default: () => <div data-testid="list-rule-checklist" />
@@ -250,7 +256,7 @@ describe('RosterEditor Component', () => {
     fireEvent.click(adderButton);
     expect(mockAddUnit).toHaveBeenCalledTimes(1);
     // Die Kontingent-Sektion bindet ihr eigenes Kontingent an das Ausheben.
-    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit', undefined, 'force-1');
+    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit', 'cat-heroes', 'force-1');
   });
 
   describe('Adversarial & Stress Tests', () => {

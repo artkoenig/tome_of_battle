@@ -1,8 +1,6 @@
 import React from 'react';
 import { Check, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
-import { hasBlockingViolations, countBlockingViolations } from '../../evaluation/violationStats';
-import { categoryAnchorSlotsOf } from '../../evaluation/slotLookups';
-import { extraResourceTotalsOf } from '../../evaluation/costDisplays';
+import { useRosterSidebar } from '../../viewmodels/editor/useRosterSidebar';
 import CategoryCountBadge from './CategoryCountBadge';
 import { useTranslation } from '../../i18n/useTranslation';
 import { formatViolation } from '../../i18n/violationMessages';
@@ -17,55 +15,19 @@ const SEVERITY_PRESENTATION = {
 };
 
 /**
- * Die Armeeanforderungen der ersten Streitmacht, gelesen aus den
- * Kategorie-Anker-Slots des Evaluator-Berichts (Issue 0121, Task 7): je
- * sichtbarem Kategorie-Anker eine Zeile mit aktuellem Stand (`current`) und
- * den wirksamen Grenzen (`effectiveMin`/`effectiveMax`; `null` = unbegrenzt).
+ * Die Zusammenfassung rechts neben dem Editor: Punktstand, Gesamtstatus,
+ * Extra-Ressourcen, Armeeanforderungen und Verletzungsliste.
  *
- * `forcePath` kommt von aussen — aus `pathByForceId` der App-Auswertung, nie
- * aus dem Eingabe-Index des Rosters (Issue 0121, Task 21). Der Index stimmt
- * naemlich nur, solange jede Kontingent-Definition aufloest: faellt die erste
- * weg, fuehrt der Bericht unter `"0"` das **zweite** Kontingent, und ein festes
- * Literal zeigte still dessen Kategorien und Grenzen. `null` (wie auch ein
- * fehlender Wert) heisst „der Bericht fuehrt fuer dieses Kontingent keine
- * Slots" — dann erscheint **keine** Anforderung, statt der eines fremden.
+ * Alles darin kommt seit Issue 0164 aus {@link useRosterSidebar} — auch der
+ * Slot-Pfad des ersten Kontingents, den die Anforderungen brauchen.
  */
-function CategoryRequirementList({ capabilities, forcePath }) {
-  if (forcePath === null || forcePath === undefined) return [];
-  return categoryAnchorSlotsOf(capabilities, forcePath)
-    .filter(({ capability }) => capability.isHidden !== true)
-    .map(({ path, capability }) => {
-      const isInvalid = capability.isMandatoryUnmet === true
-        || (capability.effectiveMax !== null && capability.current > capability.effectiveMax);
-      return (
-        <div key={path} className="flex-between text-label sidebar-requirement-row">
-          <span>
-            {capability.name}:
-          </span>
-          <CategoryCountBadge
-            count={capability.current}
-            min={capability.effectiveMin}
-            max={capability.effectiveMax}
-            hasErrors={isInvalid}
-          />
-        </div>
-      );
-    });
-}
-
-export default function RosterSidebar({
-  roster,
-  costTotals,
-  costTypes,
-  capabilities,
-  violations,
-  costTypeLabel,
-  className,
-  forcePath = null
-}) {
+export default function RosterSidebar({ className }) {
   const { t } = useTranslation();
-  // Nur blockierende Verletzungen machen das Roster ungültig; warning/info zählen nicht mit.
-  const blockingErrorCount = countBlockingViolations(violations);
+  const {
+    totalCosts, costLimit, costTypeLabel, isValid, blockingErrorCount,
+    extraResources, requirements, violations
+  } = useRosterSidebar();
+
   return (
     <div className={`builder-right-bar ${className || ''}`}>
       <h3>{t('editor.sidebar.title')}</h3>
@@ -73,18 +35,18 @@ export default function RosterSidebar({
         <div data-testid="sidebar-total-costs" className="flex-between text-ui-title text-gold sidebar-summary-total">
           <span>{t('editor.sidebar.totalCosts')}</span>
           <span>
-            {costTotals?.[roster.costLimitType] || 0} / {roster.costLimit} {costTypeLabel}
+            {totalCosts} / {costLimit} {costTypeLabel}
           </span>
         </div>
         <div className="flex-between text-label text-dim">
           <span>{t('editor.sidebar.status')}</span>
-          {hasBlockingViolations(violations) ? (
-            <span className="badge badge-danger">{t('editor.sidebar.invalid', { count: blockingErrorCount })}</span>
-          ) : (
+          {isValid ? (
             <span className="badge badge-success">{t('editor.sidebar.valid')}</span>
+          ) : (
+            <span className="badge badge-danger">{t('editor.sidebar.invalid', { count: blockingErrorCount })}</span>
           )}
         </div>
-        {extraResourceTotalsOf(costTotals, costTypes, roster.costLimitType).map(res => (
+        {extraResources.map(res => (
           <div key={res.id} className="flex-between text-label text-dim sidebar-summary-resource">
             <span>{res.name}:</span>
             <span className="badge badge-muted">{res.total}</span>
@@ -95,7 +57,19 @@ export default function RosterSidebar({
       {/* Category breakdown */}
       <div className="sidebar-section">
         <h4 data-testid="sidebar-army-requirements" className="sidebar-section-title">{t('editor.sidebar.armyRequirements')}</h4>
-        <CategoryRequirementList capabilities={capabilities} forcePath={forcePath} />
+        {requirements.map(requirement => (
+          <div key={requirement.key} className="flex-between text-label sidebar-requirement-row">
+            <span>
+              {requirement.name}:
+            </span>
+            <CategoryCountBadge
+              count={requirement.count}
+              min={requirement.min}
+              max={requirement.max}
+              hasErrors={requirement.hasErrors}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Validation Errors Detailed List */}

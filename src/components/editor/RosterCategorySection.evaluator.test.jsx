@@ -23,7 +23,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import RosterCategorySection from './RosterCategorySection';
+import { RosterCategorySectionHarness as RosterCategorySection } from '../../test-utils/harnesses/RosterCategorySectionHarness';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Play, AlertTriangle, Check } from 'lucide-react';
-import { isBlockingViolation, hasBlockingViolations, countBlockingViolations } from '../../evaluation/violationStats';
+import { useValidationPanel } from '../../viewmodels/editor/useValidationPanel';
 import { useTranslation } from '../../i18n/useTranslation';
 import ValidationMessage from './ValidationMessage';
 
@@ -9,26 +9,16 @@ import ValidationMessage from './ValidationMessage';
  * Verletzungen des Evaluator-Berichts, die rein informativen Hinweise des
  * Katalogautors (warning/info) und die zusätzlichen Ressourcen-Summen.
  *
- * `violations` ist die Verletzungsliste der Evaluator-Fassade — dieselbe, die
- * `useRoster` liefert. Blockierend (Spielen gesperrt) ist allein severity
- * `error` (`violationStats.js`).
- *
- * Dazu kommt der eine Datensatz-Befund, den der Nutzer handhaben kann: eine
- * Auswahl, deren Definition der Katalog nicht mehr kennt. Sie ist keine
- * Regelverletzung, sondern eine Diagnose — ohne Meldung verschwaende sie
- * stumm aus der Bewertung (`unresolvedSelections`).
+ * Was darin steht, sagt seit Issue 0164 {@link useValidationPanel}: es liest
+ * Verletzungen, unaufgeloeste Auswahlen und Ressourcen-Summen aus dem
+ * Bericht-Kontext. Hier bleibt allein das Markup.
  */
-export default function RosterValidationPanel({
-  violations,
-  extraResources,
-  onPlay,
-  unresolvedSelections = [],
-}) {
+export default function RosterValidationPanel({ onPlay }) {
   const { t } = useTranslation();
-  const blockingViolations = violations.filter(isBlockingViolation);
-  const advisoryViolations = violations.filter(violation => !isBlockingViolation(violation));
-  const blockingCount = countBlockingViolations(violations);
-  const isRosterValid = !hasBlockingViolations(violations) && unresolvedSelections.length === 0;
+  const {
+    blockingViolations, advisoryViolations, blockingCount, isRosterValid,
+    unresolvedSelections, extraResources
+  } = useValidationPanel();
 
   return (
     <div

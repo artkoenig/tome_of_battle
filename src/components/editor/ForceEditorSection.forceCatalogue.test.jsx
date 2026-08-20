@@ -19,7 +19,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import ForceEditorSection from './ForceEditorSection';
+import { ForceEditorSectionHarness as ForceEditorSection } from '../../test-utils/harnesses/ForceEditorSectionHarness';
 
 vi.mock('lucide-react', () => ({
   ChevronDown: () => <span data-testid="icon-chevron-down" />,
@@ -126,7 +126,7 @@ describe('ForceEditorSection: der Aushebe-Dialog kennt das Armeebuch seines Kont
 
     expect(screen.getByTestId(`adder-${CATEGORY_ID}`)).toBeDefined();
     expect(categoryAdderProps().forcePath).toBe('0');
-    expect(categoryAdderProps().capabilities).toBeDefined();
+    expect(categoryAdderProps().forceId).toBe('force-allied');
   });
 
   it('die Sektion entscheidet die Herkunft nicht mehr selbst — keine Katalog-Stuetze am Dialog', () => {

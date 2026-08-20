@@ -6,38 +6,32 @@ import BottomSheet from './BottomSheet';
 import GothicTooltip from '../GothicTooltip';
 import RuleChipIcon from './RuleChipIcon';
 import { renderUpgradeDetails } from './upgradeDetails';
-import { resolveEntry } from '../../roster';
+import { useListRuleChecklist } from '../../viewmodels/editor/useListRuleChecklist';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**
- * Ankreuzliste der „Special list rules" einer Kategorie. Ersetzt die frühere
- * Auto-Materialisierung samt Einheiten-Karten: jede Katalog-Listenregel wird
- * datengetrieben aufgezählt (ob im Roster präsent oder nicht) und als Ankreuzfeld
- * dargestellt — angehakt ⇔ präsent. Anhaken fügt die Regel-Selektion hinzu,
- * Abhaken entfernt sie. Behälter-Regeln zeigen ihre Unteroptionen direkt und
- * eingerückt unter ihrer Zeile (ohne Karte, ohne Überschrift). Ein eigener
+ * Ankreuzliste der „Special list rules" einer Kategorie. Jede Katalog-Listenregel
+ * wird datengetrieben aufgezählt (ob im Roster präsent oder nicht) und als
+ * Ankreuzfeld dargestellt — angehakt ⇔ präsent. Anhaken fügt die Regel-Selektion
+ * hinzu, Abhaken entfernt sie. Behälter-Regeln zeigen ihre Unteroptionen direkt
+ * und eingerückt unter ihrer Zeile (ohne Karte, ohne Überschrift). Ein eigener
  * Pfeil-Umschalter klappt diese Unteroptionen ein bzw. aus — unabhängig vom
  * Ankreuzzustand (angehakt bleibt angehakt), anfänglich ausgeklappt.
  * Eine nicht-binäre Regel (`max > 1`) fällt datengetrieben auf den Mengen-Adder
  * zurück (ADR 0003 — keine hartkodierten Regelnamen).
+ *
+ * Zeilenliste, Sperren und die beiden Schreib-Aktionen kommen seit Issue 0164
+ * aus {@link useListRuleChecklist}; hier bleiben nur die Anzeige-Zustände
+ * (Einklappen, Tooltip, Info-Blatt).
  */
 export default function ListRuleChecklist({
-  system,
-  activeCatalogue,
+  forceId = null,
+  forcePath = null,
   categoryId,
-  roster,
-  capabilities,
-  forcePath,
-  pathBySelectionId,
-  states,
-  addUnit,
-  removeUnit,
-  subSelectionOperations,
-  costTypeLabel,
-  costLimitType,
   onShowRule,
 }) {
   const { t } = useTranslation();
+  const { rows, system } = useListRuleChecklist({ forceId, forcePath, categoryId });
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   // Eingeklappte Behälter, nach `resolvedId`. Fehlt ein Eintrag, gilt die Zeile
@@ -57,50 +51,25 @@ export default function ListRuleChecklist({
   };
   const handleMouseLeave = () => setHoveredInfo(null);
 
-  if (!states || states.length === 0) return null;
-
-  // Die Sperre einer eindeutigen Pflicht-Listenregel folgt ihrer **Präsenz**
-  // (Issue 0140, Kriterium 4): gesperrt ist sie nur, solange sie tatsächlich im
-  // Roster steht — dann ist sie nicht abwählbar (Issue 0138, AC5). Fehlt sie
-  // dagegen (ein vor dem automatischen Setzen angelegtes Bestandsroster bekommt
-  // sie nie nachgereicht), bleibt die Zeile ankreuzbar, damit der sonst
-  // blockierende Fehler wie bisher von Hand behebbar ist. Der Pflicht-Hinweis
-  // (Info-Symbol) hängt nicht an der Sperre und erscheint in beiden Zuständen.
-  const isLocked = (state) => state.mandatory && state.checked;
-
-  const toggleRule = (state, nextChecked) => {
-    // Der disabled-Zustand der Checkbox verhindert das Abwählen einer präsenten
-    // Pflichtregel ohnehin schon auf DOM-Ebene; dieser Guard hält die Regel auch
-    // gegen einen programmatischen Aufruf ein.
-    if (isLocked(state)) return;
-    if (nextChecked) {
-      addUnit(state.entry, categoryId);
-    } else if (state.selection) {
-      removeUnit(state.selection.id);
-    }
-  };
+  if (rows.length === 0) return null;
 
   // Erklärung einer gesperrten Pflichtregel-Zeile (Issue 0138, AC5, Revision
   // Prüfrunde 1 F2): dasselbe Info-Symbol-Muster, das `SelectionConfigurator.jsx`
-  // für jede andere Unteroption schon einsetzt (`RuleChipIcon` + `resolveEntry`/
+  // für jede andere Unteroption schon einsetzt (`RuleChipIcon` +
   // `renderUpgradeDetails`), statt einer separaten, nur-Hover-Mechanik auf der
-  // (deaktivierten) Checkbox. `res`/`content` werden nur für Pflichtzeilen
-  // berechnet, weil nur sie das Symbol bekommen.
-  const mandatoryInfoContent = (state) => {
-    const res = resolveEntry(system, state.entry, activeCatalogue?.id);
-    return (
-      <>
-        {renderUpgradeDetails(res, system)}
-        {t('editor.listRules.mandatoryTooltip')}
-      </>
-    );
-  };
+  // (deaktivierten) Checkbox.
+  const mandatoryInfoContent = (row) => (
+    <>
+      {renderUpgradeDetails(row.resolvedEntry, system)}
+      {t('editor.listRules.mandatoryTooltip')}
+    </>
+  );
 
-  const renderMandatoryInfoIcon = (state) => {
-    if (!state.mandatory) return null;
+  const renderMandatoryInfoIcon = (row) => {
+    if (!row.mandatory) return null;
     return (
       <RuleChipIcon
-        name={state.name}
+        name={row.name}
         // Das Symbol muss unbedingt erscheinen (auch ohne aufgelöste
         // Beschreibung) und darf nie vom externen BookOpen-Regel-Link
         // verdrängt werden (Plan Contract 3b) — beides deckt `forceInfo` ab;
@@ -111,10 +80,10 @@ export default function ListRuleChecklist({
         forceInfo
         onInfoClick={() => {
           if (window.innerWidth <= 900) {
-            setActiveInfo({ title: state.name, text: mandatoryInfoContent(state) });
+            setActiveInfo({ title: row.name, text: mandatoryInfoContent(row) });
           }
         }}
-        onInfoEnter={(e) => handleMouseEnter(state.name, mandatoryInfoContent(state), e)}
+        onInfoEnter={(e) => handleMouseEnter(row.name, mandatoryInfoContent(row), e)}
         onInfoMove={handleMouseMove}
         onInfoLeave={handleMouseLeave}
       />
@@ -123,36 +92,30 @@ export default function ListRuleChecklist({
 
   return (
     <div className="list-rule-checklist">
-      {states.map((state) => {
+      {rows.map((row) => {
         // Datengetriebener Rückfall: eine nicht-binäre Regel (echte Mengen-Beschränkung)
         // wird über den Mengen-Adder statt ein Ankreuzfeld bedient.
-        if (!state.isBinary) {
+        if (!row.isBinary) {
           return (
-            <div key={state.resolvedId} className="list-rule-row">
+            <div key={row.key} className="list-rule-row">
               <span className="list-rule-chevron-slot" />
-              <span className="list-rule-name text-body">{state.name}</span>
+              <span className="list-rule-name text-body">{row.name}</span>
               <CategoryUnitAdder
-                categoryId={categoryId}
-                categoryName={state.name}
-                entries={[state.entry]}
-                capabilities={capabilities}
+                forceId={forceId}
                 forcePath={forcePath}
-                system={system}
-                activeCatalogue={activeCatalogue}
-                costTypeLabel={costTypeLabel}
-                costLimitType={costLimitType}
-                addUnit={addUnit}
+                categoryId={categoryId}
+                categoryName={row.name}
+                entries={[row.entry]}
               />
             </div>
           );
         }
 
-        const hasSubOptions = state.checked && state.isContainer && !!state.selection;
-        const isExpanded = !collapsed[state.resolvedId];
+        const isExpanded = !collapsed[row.resolvedId];
 
         return (
-          <div key={state.resolvedId} className="list-rule-item">
-            {hasSubOptions ? (
+          <div key={row.key} className="list-rule-item">
+            {row.hasSubOptions ? (
               // Behälter (angehakt, mit Unteroptionen): Ein Klick auf die Zeile klappt
               // ein/aus; nur die Checkbox schaltet die Regel an/aus. Der Chevron ist
               // reines Icon. Die Checkbox stoppt die Klick-Propagation, damit sie die
@@ -163,11 +126,11 @@ export default function ListRuleChecklist({
                 tabIndex={0}
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? t('editor.subOptions.collapse') : t('editor.subOptions.expand')}
-                onClick={() => toggleCollapsed(state.resolvedId)}
+                onClick={() => toggleCollapsed(row.resolvedId)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    toggleCollapsed(state.resolvedId);
+                    toggleCollapsed(row.resolvedId);
                   }
                 }}
               >
@@ -175,16 +138,16 @@ export default function ListRuleChecklist({
                   {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                 </span>
                 <span className="list-rule-name text-body">
-                  {state.name}
-                  {renderMandatoryInfoIcon(state)}
+                  {row.name}
+                  {renderMandatoryInfoIcon(row)}
                 </span>
                 <input
                   type="checkbox"
-                  checked={state.checked}
-                  aria-label={state.name}
-                  disabled={isLocked(state)}
+                  checked={row.checked}
+                  aria-label={row.name}
+                  disabled={row.isLocked}
                   onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => toggleRule(state, e.target.checked)}
+                  onChange={(e) => row.toggle(e.target.checked)}
                 />
               </div>
             ) : (
@@ -194,23 +157,23 @@ export default function ListRuleChecklist({
               <label className="list-rule-row list-rule-row-toggle">
                 <span className="list-rule-chevron-slot" />
                 <span className="list-rule-name text-body">
-                  {state.name}
-                  {renderMandatoryInfoIcon(state)}
+                  {row.name}
+                  {renderMandatoryInfoIcon(row)}
                 </span>
                 <input
                   type="checkbox"
-                  checked={state.checked}
-                  aria-label={state.name}
-                  disabled={isLocked(state)}
-                  onChange={(e) => toggleRule(state, e.target.checked)}
+                  checked={row.checked}
+                  aria-label={row.name}
+                  disabled={row.isLocked}
+                  onChange={(e) => row.toggle(e.target.checked)}
                 />
               </label>
             )}
 
-            {hasSubOptions && isExpanded && (
+            {row.hasSubOptions && isExpanded && (
               <div className="list-rule-suboptions">
                 <SelectionConfigurator
-                  selection={state.selection}
+                  selection={row.selection}
                   tooltip={{
                     onEnter: handleMouseEnter,
                     onMove: handleMouseMove,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import ForceEditorSection from './ForceEditorSection';
+import { ForceEditorSectionHarness as ForceEditorSection } from '../../test-utils/harnesses/ForceEditorSectionHarness';
 
 
 vi.mock('../../roster', () => ({
@@ -34,18 +34,19 @@ vi.mock('./CategoryUnitAdder', () => ({
 // Berichts, ADR-0035); die Sektion reicht nur die Kontingent-Slots durch. Der
 // Stub macht die durchgereichte Slot-Menge beobachtbar.
 vi.mock('./AutoFillSuggestions', () => ({
-  default: ({ capabilities }) => (
-    <div data-testid="auto-fill">{[...(capabilities ?? new Map()).keys()].join(',')}</div>
+  default: ({ forceId, forcePath }) => (
+    <div data-testid="auto-fill" data-force-id={String(forceId)}>{String(forcePath)}</div>
   )
 }));
 vi.mock('./RosterCategorySection', () => ({
-  default: ({ categoryLink, isRuleGroupExpanded, addUnit }) => (
-    <div data-testid={`category-${categoryLink.targetId}`} data-expanded={String(isRuleGroupExpanded)}>
-      <button
-        data-testid={`add-${categoryLink.targetId}`}
-        onClick={() => addUnit({ id: 'entry-1' }, categoryLink.targetId)}
-      >
-        Ausheben
+  default: ({ categoryLink, force, ruleGroup }) => (
+    <div
+      data-testid={`category-${categoryLink.targetId}`}
+      data-expanded={String(ruleGroup?.isExpanded)}
+      data-force-id={force.id}
+    >
+      <button data-testid={`toggle-${categoryLink.targetId}`} onClick={ruleGroup?.onToggle}>
+        Umschalten
       </button>
     </div>
   )
@@ -157,29 +158,32 @@ describe('ForceEditorSection', () => {
     expect(screen.queryByText('Sonstiges')).toBeNull();
   });
 
-  // Seit Issue 0121 (Task 6) speist der Bericht die Auffüll-Vorschläge: die
-  // Sektion filtert die Slot-Map auf das eigene Kontingent (Pfad-Präfix) und
-  // reicht sie durch — die frühere Punktelimit-Schwelle ist entfallen, das
-  // Panel blendet sich über die Pflicht-Signale selbst aus.
-  it('reicht dem Auffüll-Panel nur die Slots des eigenen Kontingents durch', () => {
-    const capabilities = new Map([
-      ['0', { defId: 'fe-1' }],
-      ['0/0', { defId: 'entry-own' }],
-      ['1/0', { defId: 'entry-foreign' }],
-    ]);
-    renderForce({ capabilities });
+  // Seit Issue 0164 grenzt das Auffüll-Panel die Slot-Map selbst auf sein
+  // Kontingent ein (`useAutoFillSuggestions`, dort geprüft); die Sektion nennt
+  // ihm dafür nur noch, welches Kontingent sie darstellt.
+  it('nennt dem Auffüll-Panel das Kontingent, das die Sektion darstellt', () => {
+    renderForce();
 
-    expect(screen.getByTestId('auto-fill').textContent).toBe('0,0/0');
+    const panel = screen.getByTestId('auto-fill');
+    expect(panel.getAttribute('data-force-id')).toBe('force-1');
+    expect(panel.textContent).toBe('0');
   });
 
-  // Ohne das Kontingent der Sektion landete die Einheit in jedem Kontingent des Rosters.
-  it('hebt in das Kontingent aus, das die Sektion darstellt', () => {
-    const addUnit = vi.fn();
-    renderForce({ addUnit });
+  // Ohne das Kontingent der Sektion landete die Einheit in jedem Kontingent des
+  // Rosters: jede Untersektion hebt über `force.id` aus.
+  it('gibt jeder Kategorie-Sektion das Kontingent mit, in das sie aushebt', () => {
+    renderForce();
 
-    fireEvent.click(screen.getByTestId('add-cat-heroes'));
+    expect(screen.getByTestId('category-cat-heroes').getAttribute('data-force-id')).toBe('force-1');
+  });
 
-    expect(addUnit).toHaveBeenCalledWith({ id: 'entry-1' }, 'cat-heroes', 'force-1');
+  it('reicht den Umschalter der Listenregel-Gruppe mit Kontingent und Kategorie durch', () => {
+    const onToggleRuleGroup = vi.fn();
+    renderForce({ onToggleRuleGroup });
+
+    fireEvent.click(screen.getByTestId('toggle-cat-heroes'));
+
+    expect(onToggleRuleGroup).toHaveBeenCalledWith('force-1', 'cat-heroes');
   });
 
 });

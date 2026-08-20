@@ -171,10 +171,13 @@ const renderEditor = (roster) =>
     />
   );
 
-/** Der zuletzt an die Seitenleiste gereichte Kontingent-Pfad. */
-function sidebarForcePath() {
+/**
+ * Seit Issue 0164 fuehrt die Seitenleiste den Pfad nicht mehr als Stuetze: ihr
+ * ViewModel liest ihn selbst aus `pathByForceId`. Beobachtbar ist er daher nur
+ * noch an dem, was er bewirkt — den Anforderungszeilen.
+ */
+function sidebarRendered() {
   expect(receivedSidebarProps.length, 'Seitenleiste gerendert').toBeGreaterThan(0);
-  return receivedSidebarProps[receivedSidebarProps.length - 1].forcePath;
 }
 
 /** Die gerenderten Anforderungszeilen der Seitenleiste. */
@@ -190,13 +193,14 @@ describe('RosterEditor: die Seitenleiste bekommt den Pfad des ERSTEN Kontingents
     receivedSidebarProps.length = 0;
   });
 
-  it('zwei aufloesbare Kontingente: die Stuetze traegt "0"', () => {
+  it('zwei aufloesbare Kontingente: die Anforderungen sind die des ERSTEN', () => {
     renderEditor(appRoster([
       force('force-uuid-a', FIRST_FORCE_DEF_ID),
       force('force-uuid-b', SECOND_FORCE_DEF_ID),
     ]));
 
-    expect(sidebarForcePath()).toBe('0');
+    sidebarRendered();
+    expect(requirementRows()).toEqual(['Core:0 / Max: 3']);
   });
 
   it('zwei aufloesbare Kontingente: die Anforderungen zeigen „Core" des ersten, nicht „Rare" des zweiten', () => {
@@ -227,43 +231,44 @@ describe('RosterEditor: die Seitenleiste bekommt den Pfad des ERSTEN Kontingents
     expect(requirementRows()).toEqual([]);
   });
 
-  it('erstes Kontingent unaufloesbar: die Stuetze traegt keinen Pfad (kein fremder)', () => {
+  it('erstes Kontingent unaufloesbar: die Seitenleiste steht da, zeigt aber keine fremde Anforderung', () => {
     renderEditor(appRoster([
       force('force-uuid-gone', 'force-vanished'),
       force('force-uuid-b', SECOND_FORCE_DEF_ID),
     ]));
 
-    expect(sidebarForcePath() ?? null).toBeNull();
+    sidebarRendered();
+    expect(requirementRows()).toEqual([]);
   });
 
   it('ein einziges, aufloesbares Kontingent: "0" und seine Kategorien (Regressionsschutz)', () => {
     renderEditor(appRoster([force('force-uuid-a', FIRST_FORCE_DEF_ID)]));
 
-    expect(sidebarForcePath()).toBe('0');
+    sidebarRendered();
     expect(requirementRows()).toEqual(['Core:0 / Max: 3']);
   });
 
-  it('Rand: das ZWEITE Kontingent ist unaufloesbar — das erste behaelt "0" und seine Kategorien', () => {
+  it('Rand: das ZWEITE Kontingent ist unaufloesbar — das erste behaelt seine Kategorien', () => {
     renderEditor(appRoster([
       force('force-uuid-a', FIRST_FORCE_DEF_ID),
       force('force-uuid-gone', 'force-vanished'),
     ]));
 
-    expect(sidebarForcePath()).toBe('0');
+    sidebarRendered();
     expect(screen.getByText('Core:')).toBeTruthy();
   });
 
   it('Rand: ein einziges, unaufloesbares Kontingent — keine Anforderungen, kein Pfad', () => {
     renderEditor(appRoster([force('force-uuid-gone', 'force-vanished')]));
 
-    expect(sidebarForcePath() ?? null).toBeNull();
+    sidebarRendered();
     expect(requirementRows()).toEqual([]);
   });
 
   it('Rand: Roster ohne Kontingente — keine Anforderungen, kein Pfad, kein Fehler', () => {
     renderEditor(appRoster([]));
 
-    expect(sidebarForcePath() ?? null).toBeNull();
+    sidebarRendered();
     expect(requirementRows()).toEqual([]);
   });
 });
