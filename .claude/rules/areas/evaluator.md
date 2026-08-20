@@ -54,11 +54,16 @@ means; it outranks the ADRs where the two disagree.
 - `raiseCosts` and `raiseMembers` are **one** walk (`costProjection.js`,
   `mandatoryMemberDefsOf` in `evalTree.js`): the price of raising a slot and the children raising
   it creates. Two shapes make a child mandatory and they are exclusive per group — an itemised
-  member (its own parent-scoped MIN, whatever the group says) and, only where no member is
-  itemised, the group's own MIN filled by `defaultSelectionEntryId` (else the first member). A
-  hidden child is skipped: its MIN is not validated, so it is neither created nor priced. The
-  write model reads exactly this (`src/roster/selectionFactory.js`, Issue 0157), so a change here
-  changes what a recruit puts on the table.
+  member (its **own** parent-scoped MIN, and only inside a group that carries one too) and, where
+  no member of the group is obliged itemised, the group's own MIN filled by
+  `defaultSelectionEntryId` (else the first member). A group without a MIN obliges nothing at all,
+  a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
+  `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
+  engine taste: they are the reading a recruit has always followed, and
+  `src/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
+  (`src/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
+  and that sweep fails first.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
   entry is no root offer and synthesises no mandatory phantom from its own `min` (ADR-0032), and a

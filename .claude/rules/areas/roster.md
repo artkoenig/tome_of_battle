@@ -54,8 +54,11 @@ evaluator. `src/db/` persists it in IndexedDB.
   only **resolves** those ids against the catalogue — through groups and group links, in any
   depth (`selectionMembers.js`'s `findMemberDefById`). A recruit path without a report (a test
   system with no `rawXmls`) therefore creates a bare selection; that is the contract, not a bug.
-- The reading of "which children must this slot create" changed with it, and two shapes it now
-  covers were previously wrong here: a member with its own `min` inside a group without one is
-  mandatory (this is what left the corpus with ~73 unfulfilled obligations after a recruit), and
-  a **hidden** obligation is none — its MIN limit is not validated, so the raise neither creates
-  nor prices it.
+- The reading of "which children must this slot create" moved, it did not change: the recruited
+  tree is the same for all 208 units of the fixture corpus, pinned by
+  `src/evaluation/recruitTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
+  A group without a `min` still obliges nothing (even where a member declares one), a `min` a link
+  inherits from its shared target obliges nothing, and a **hidden** obligation is created like any
+  other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a recruit
+  (`SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx`) — closing that gap is a
+  user-visible change and needs its own issue.

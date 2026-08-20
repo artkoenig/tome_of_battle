@@ -12,14 +12,17 @@
  * Geprüfte Intention (aus `docs/battlescribe-data-format.md` §7.4/§8/§9.7
  * abgeleitet, nicht aus dem Engine-Quelltext):
  *  1. Ein Mitglied mit eigenem `min > 0` (Bezugsrahmen `parent`) ist Pflicht —
- *     mit seinem eigenen `min` als Anzahl, gleich ob eine Gruppe es hält.
+ *     mit seinem eigenen `min` als Anzahl —, sofern die Gruppe, die es hält,
+ *     selbst ein `min` trägt; ohne Gruppe zählt es unmittelbar.
  *  2. Eine Pflichtgruppe ohne itemisierte Mitglieder („nimm eins aus dem Topf")
  *     steuert die Vorgabe `defaultSelectionEntryId` bei, ersatzweise ihr erstes
  *     Mitglied, mit dem `min` der GRUPPE als Anzahl.
- *  3. Eine Gruppe ohne eigenes `min` steuert selbst nichts bei — aber der
- *     Abstieg in sie hängt nie daran.
- *  4. Ein verstecktes Pflicht-Kind ist keine Pflicht: seine Min-Grenze wird
- *     nicht validiert, also entsteht es auch nicht.
+ *  3. Eine Gruppe ohne eigenes `min` steuert nichts bei und klammert auch die
+ *     itemisierte Pflicht ihrer Mitglieder ein — aber der Abstieg in eine
+ *     geschachtelte Gruppe hängt nie daran.
+ *  4. Sichtbarkeit entscheidet nicht mit: ein verstecktes Pflicht-Kind entsteht
+ *     wie jedes andere. Das Ausheben legt seit jeher denselben Baum an
+ *     (Kriterium 1 des Issues), und diese Umstellung bewegt ihn nicht.
  *  5. Die Anzahl ist der **effektive** Wert: ein Modifikator, der das `min`
  *     hebt oder auf 0 senkt, entscheidet mit.
  *  6. Pflicht-Kinder eines Pflicht-Kindes stehen darunter, rekursiv.
@@ -83,20 +86,28 @@ describe('raiseMembers — itemisierte Pflicht (Kriterium 1)', () => {
       .toEqual([{ defId: 'entry-crew', count: 3 }]);
   });
 
-  it('gilt auch innerhalb einer Gruppe ohne eigenes min — die Gruppe klammert nur', () => {
-    const report = evaluate(catalogueWith(`
+  it('greift innerhalb einer Gruppe nur, wenn die Gruppe selbst ein min trägt', () => {
+    const memberWithOwnMin = `
+      <selectionEntry id="entry-sword" name="Sword" type="upgrade">
+        <constraints>${minLimit('lim-sword', 1)}</constraints>
+      </selectionEntry>`;
+    const groupWith = (groupConstraints) => catalogueWith(`
       <selectionEntryGroups>
         <selectionEntryGroup id="grp-equipment" name="Equipment">
-          <selectionEntries>
-            <selectionEntry id="entry-sword" name="Sword" type="upgrade">
-              <constraints>${minLimit('lim-sword', 1)}</constraints>
-            </selectionEntry>
-          </selectionEntries>
+          ${groupConstraints}
+          <selectionEntries>${memberWithOwnMin}</selectionEntries>
         </selectionEntryGroup>
-      </selectionEntryGroups>`), EMPTY_ROSTER);
+      </selectionEntryGroups>`);
 
-    expect(shapeOf(offerAnchorByDefId(report, HERO_ID).raiseMembers))
-      .toEqual([{ defId: 'entry-sword', count: 1 }]);
+    // Ohne eigenes `min` der Gruppe entsteht nichts: die Gruppe sagt, wieviel
+    // aus ihrem Topf genommen werden MUSS — unverändertes Aushebe-Verhalten.
+    expect(offerAnchorByDefId(evaluate(groupWith(''), EMPTY_ROSTER), HERO_ID).raiseMembers)
+      .toEqual([]);
+
+    // Mit einem `min` der Gruppe entscheidet das eigene `min` des Mitglieds.
+    expect(shapeOf(offerAnchorByDefId(
+      evaluate(groupWith(`<constraints>${minLimit('lim-equipment', 1)}</constraints>`), EMPTY_ROSTER), HERO_ID,
+    ).raiseMembers)).toEqual([{ defId: 'entry-sword', count: 1 }]);
   });
 });
 
@@ -178,7 +189,7 @@ describe('raiseMembers — was keine Pflicht ist (Kriterien 3 und 4)', () => {
       .toEqual([{ defId: 'entry-torch', count: 1 }]);
   });
 
-  it('ein verstecktes Pflicht-Kind entsteht nicht — seine Min-Grenze wird nicht validiert', () => {
+  it('ein verstecktes Pflicht-Kind entsteht wie jedes andere — Sichtbarkeit entscheidet nicht mit', () => {
     const report = evaluate(catalogueWith(`
       <selectionEntries>
         <selectionEntry id="entry-secret" name="Secret" type="upgrade" hidden="true">
@@ -189,8 +200,11 @@ describe('raiseMembers — was keine Pflicht ist (Kriterien 3 und 4)', () => {
         </selectionEntry>
       </selectionEntries>`), EMPTY_ROSTER);
 
+    // Das Ausheben hat ein verstecktes Pflicht-Kind immer angelegt (z. B. die
+    // "Spears" der Zombies im Vampire-Counts-Katalog); Kriterium 1 des Issues
+    // verlangt genau diesen Baum weiterhin.
     expect(shapeOf(offerAnchorByDefId(report, HERO_ID).raiseMembers))
-      .toEqual([{ defId: 'entry-open', count: 1 }]);
+      .toEqual([{ defId: 'entry-secret', count: 1 }, { defId: 'entry-open', count: 1 }]);
   });
 });
 

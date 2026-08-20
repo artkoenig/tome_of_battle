@@ -91,18 +91,17 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
     }
   });
 
-  it('does not create \"Lore of Necromancy\" — the report hides that obligation, and a hidden obligation is none', () => {
+  it('does not create "Lore of Necromancy" — its group ("Lores of Magic") has a max but no min', () => {
     const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
 
     expect(zacharias.selections.map(s => s.name)).not.toContain('Lore of Necromancy');
   });
 
-  it('creates each of the five Equipment members exactly once — each carries min=1 of its own (Issue 0157)', () => {
-    // Bis Issue 0157 las die Fabrik die Pflicht selbst aus den Constraints und
-    // liess diese fuenf aus, weil ihre Gruppe kein eigenes `min` traegt — der
-    // Bericht forderte sie zugleich als unerfuellte Pflicht ein. Beide Seiten
-    // lesen die Verpflichtung jetzt aus derselben Quelle, also kommt Zacharias
-    // mit seiner festen Ausruestung auf den Tisch.
+  it('does not create any of the five Equipment members — their group carries no constraints at all', () => {
+    // Issue 0157 moved the obligation from a second reading of the constraints
+    // into the report (`raiseMembers`), and left this answer untouched: a group
+    // without a minimum of its own obliges nothing, whatever its members
+    // declare. What a recruit puts on the table is unchanged (AC1).
     const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 
@@ -113,7 +112,7 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
       'Scrolls of Semhtep (Arcane Item)',
       'Staff of Kaphamon (Enchanted Item)',
     ]) {
-      expect(names.filter(n => n === equipmentName), equipmentName).toHaveLength(1);
+      expect(names, equipmentName).not.toContain(equipmentName);
     }
   });
 

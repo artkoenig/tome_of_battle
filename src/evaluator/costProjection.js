@@ -200,38 +200,80 @@ export function buildRaiseCostProjection(root, effective, { index, categoryIds, 
     return costs;
   }
 
+  /** The identifying ids of a definition — its own and its link target's. */
+  function idsOf(def) {
+    return [def.id, def.resolved?.id].filter(id => id !== undefined && id !== null);
+  }
+
   function raiseOf(node, visited) {
     const costs = ownCostsOf(node);
-    const members = [];
-    for (const { def, gates, limit, limitDef } of mandatoryChildrenOf(node)) {
-      const ids = [def.id, def.resolved?.id].filter(id => id !== undefined && id !== null);
+    const candidates = mandatoryChildrenOf(node);
+    /** The effective minimum of a gating group, evaluated at most once. */
+    const groupBounds = new Map();
+    function groupBoundOf(candidate) {
+      if (candidate.group === null || candidate.groupLimit === null) return 0;
+      if (!groupBounds.has(candidate.group)) {
+        const shadow = evaluateDetached(createDetachedChildNode(root, node, candidate.group, candidate.groupGates));
+        const bound = effective.limitValue(shadow, candidate.groupLimit.id) ?? candidate.groupLimit.value;
+        groupBounds.set(candidate.group, bound === UNLIMITED ? 0 : Math.max(0, bound));
+      }
+      return groupBounds.get(candidate.group);
+    }
+
+    /**
+     * The bound a candidate carries, AFTER the modifier pass: a minimum a
+     * modifier lifts from 0 counts, one it drops to 0 obliges nothing. An
+     * unlimited bound is no piece count at all. For a pick-one candidate the
+     * bound hangs on the GROUP, and it is read there.
+     */
+    function countOf(candidate, shadow) {
+      if (candidate.kind === 'groupDefault') return groupBoundOf(candidate);
+      const bound = effective.limitValue(shadow, candidate.limit.id) ?? candidate.limit.value;
+      return bound === UNLIMITED ? 0 : Math.max(0, bound);
+    }
+
+    /** The obliged candidates, in document order, with what each obliges. */
+    const obliged = new Map();
+    /** Groups an itemised member already fills — their pick-one does not fire. */
+    const itemisedGroups = new Set();
+
+    for (const candidate of candidates) {
+      if (candidate.kind !== 'itemised') continue;
+      // A member inside a group without a minimum of its own obliges nothing:
+      // the group is what says how much of its pot must be taken.
+      if (candidate.group !== null && groupBoundOf(candidate) === 0) continue;
+      const shadow = evaluateDetached(createDetachedChildNode(root, node, candidate.def, candidate.gates));
+      const count = countOf(candidate, shadow);
+      if (count === 0) continue;
+      if (candidate.group !== null) itemisedGroups.add(candidate.group);
+      const ids = idsOf(candidate.def);
       if (ids.some(id => visited.has(id))) continue;
-      const shadow = evaluateDetached(createDetachedChildNode(root, node, def, gates));
-      // A hidden obligation is none: a MIN limit at a hidden anchor is not
-      // validated (§8, `evaluableLimitsOf`), so the raise neither owes this
-      // child nor pays for it. Read after the modifier pass, like the bound —
-      // a modifier may uncover it, and its visibility gates count too.
-      if (effective.isHidden(shadow)) continue;
-      // The bound is read AFTER the modifier pass: a minimum a modifier lifts
-      // from 0 counts, one it drops to 0 contributes nothing and stops the
-      // recursion there. An unlimited bound is no piece count at all.
-      // For a pick-one group the bound hangs on the GROUP, so it is read off a
-      // detached node of the group — evaluated the same way, one level up.
-      const boundCarrier = limitDef === def
-        ? shadow
-        : evaluateDetached(createDetachedChildNode(root, node, limitDef, gates.slice(0, -1)));
-      const bound = effective.limitValue(boundCarrier, limit.id) ?? limit.value;
-      if (bound === UNLIMITED) continue;
-      const mandatoryCount = Math.max(0, bound);
-      if (mandatoryCount === 0) continue;
-      const child = raiseOf(shadow, new Set([...visited, ...ids]));
+      obliged.set(candidate, { shadow, count, ids });
+    }
+
+    for (const candidate of candidates) {
+      if (candidate.kind !== 'groupDefault') continue;
+      if (itemisedGroups.has(candidate.group)) continue;
+      const count = groupBoundOf(candidate);
+      if (count === 0) continue;
+      const ids = idsOf(candidate.def);
+      if (ids.some(id => visited.has(id))) continue;
+      const shadow = evaluateDetached(createDetachedChildNode(root, node, candidate.def, candidate.gates));
+      obliged.set(candidate, { shadow, count, ids });
+    }
+
+    const members = [];
+    for (const candidate of candidates) {
+      const taken = obliged.get(candidate);
+      if (taken === undefined) continue;
+      const child = raiseOf(taken.shadow, new Set([...visited, ...taken.ids]));
       for (const [costTypeId, perInstance] of Object.entries(child.costs)) {
-        addTo(costs, costTypeId, mandatoryCount * perInstance);
+        addTo(costs, costTypeId, taken.count * perInstance);
       }
       members.push(Object.freeze({
-        defId: def.id,
-        targetDefId: def.resolved?.id ?? null,
-        count: mandatoryCount,
+        defId: candidate.def.id,
+        targetDefId: candidate.def.resolved?.id ?? null,
+        count: taken.count,
         members: child.members,
       }));
     }
