@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { calculateRosterCosts, getSelectionTotalCost, computeRosterCounts } from './rosterCounter.js';
+import { getSelectionTotalCost, computeRosterCounts } from './rosterCounter.js';
+/**
+ * Die Rostersumme einer Kostenart, aus denselben Knotensummen gerechnet, die
+ * `getSelectionTotalCost` liefert — der frühere `calculateRosterCosts` ist mit
+ * dem zweiten Auswertungspfad entfallen (Issue 0157); die App liest ihre Summe
+ * aus dem Bericht.
+ */
+const rosterTotalOf = (roster, system, costTypeId) =>
+  (roster.forces || []).reduce((forceSum, force) => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId || null;
+    return forceSum + (force.selections || []).reduce(
+      (sum, selection) => sum + getSelectionTotalCost(selection, costTypeId, 1, {
+        system, roster, currentCatalogueId
+      }), 0);
+  }, 0);
+
 
 describe('Collective Entries', () => {
   const mockSystem = {
@@ -45,7 +60,7 @@ describe('Collective Entries', () => {
       ]
     };
 
-    const costs = calculateRosterCosts(roster, mockSystem);
+    const costs = { pts: rosterTotalOf(roster, mockSystem, 'pts') };
     // 10 archers * 5 = 50
     // 1 collective spear * 2 pts * 10 archers = 20
     // Total = 70
@@ -80,7 +95,7 @@ describe('Collective Entries', () => {
       ]
     };
 
-    const costs = calculateRosterCosts(roster, mockSystem);
+    const costs = { pts: rosterTotalOf(roster, mockSystem, 'pts') };
     // 10 archers * 5 = 50
     // 1 non-collective banner * 10 pts * 10 archers = 100
     // Total = 150

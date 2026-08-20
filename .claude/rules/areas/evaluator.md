@@ -40,6 +40,10 @@ means; it outranks the ADRs where the two disagree.
   per slot, and never left to a component (ADR-0034). The same holds for an entry's own kind
   (`entryClassification.js`: `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`) — read
   it through link **and** target (`def.resolved`), since a link carries no `type` of its own.
+- A definition's `children` also holds its `categoryLink`s (`catalogReader.js`,
+  `readSelectionChildren`). "Has its own sub-choices" therefore has to filter
+  `DefinitionKind.CATEGORY_LINK` out — an entry that merely declares a category otherwise counts
+  as a container and silently loses `isMandatoryListRule`/`isIndependentSubUnit` (Issue 0157).
 - A slot's origin decision (`isForeignCatalogue`) needs three things `buildReport` has no other
   way to know, and they travel as `extras`: `libraryCatalogueIds`, `gameSystemId` and
   `primaryCatalogueByForceDefId`. The force book of a slot is the one `forceCatalogueIdOf`

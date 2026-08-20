@@ -1,5 +1,20 @@
 import { describe, test, expect } from 'vitest';
-import { calculateRosterCosts, getSelectionOwnCosts, getSelectionTotalCost } from './rosterCounter.js';
+import { getSelectionOwnCosts, getSelectionTotalCost } from './rosterCounter.js';
+/**
+ * Die Rostersumme einer Kostenart, aus denselben Knotensummen gerechnet, die
+ * `getSelectionTotalCost` liefert — der frühere `calculateRosterCosts` ist mit
+ * dem zweiten Auswertungspfad entfallen (Issue 0157); die App liest ihre Summe
+ * aus dem Bericht.
+ */
+const rosterTotalOf = (roster, system, costTypeId) =>
+  (roster.forces || []).reduce((forceSum, force) => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId || null;
+    return forceSum + (force.selections || []).reduce(
+      (sum, selection) => sum + getSelectionTotalCost(selection, costTypeId, 1, {
+        system, roster, currentCatalogueId
+      }), 0);
+  }, 0);
+
 
 // System where base costs live in the catalogue (unit cost + a link-level cost that
 // overrides its target's cost), plus an unconditional cost modifier on the link.
@@ -62,9 +77,9 @@ const makeRoster = () => ({
 });
 
 describe('rosterCounter — costs derived from the catalogue', () => {
-  test('calculateRosterCosts derives base + link costs and applies cost modifiers without stored selection.costs', () => {
+  test('the roster total derives base + link costs and applies cost modifiers without stored selection.costs', () => {
     // 100 (unit) + 6 (link armour, link cost wins over target 999) + (2 + 3 modifier) shield = 111
-    expect(calculateRosterCosts(makeRoster(), system).pts).toBe(111);
+    expect(rosterTotalOf(makeRoster(), system, 'pts')).toBe(111);
   });
 
   test('getSelectionOwnCosts returns a node own modifier-aware cost, excluding children', () => {

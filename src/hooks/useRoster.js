@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import {
-  resolveEntry, syncRosterSelectionsWithSystem,
+  resolveEntry, findEntryInSystem, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById, computeRosterCounts, aggregateRosterCategoryCounts,
   buildModifierEvalContext, createSelectionFromDef as buildSelectionFromDef,
-  withAddedInstance, withoutInstance, withChangedOptionCount,
-  findMissingMandatoryListRuleSelections
+  withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../roster';
+import { findMissingMandatoryListRules } from '../evaluation/mandatoryListRules';
 import { unresolvedSelectionsOf } from '../evaluation/datasetDiagnostics';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { useUndoableState } from './useUndoableState';
@@ -199,23 +199,37 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   // gated auf `isFreshRoster`, damit ein bereits bestehendes Roster nie
   // rückwirkend verändert wird (AC4). Läuft — wie der Katalog-Sync-Effekt —
   // über `replaceRoster`, also ohne eigenen Undo-Schritt: der Nutzer hat
-  // diesen Eintrag nie selbst angeklickt (siehe Plan, "Nicht-offensichtliche
-  // Entscheidungen"). Kein Endlosschleifen-Risiko: ein einmal hinzugefügter
-  // Eintrag gilt im nächsten Durchlauf von `findMissingMandatoryListRuleSelections`
-  // nicht mehr als fehlend, wodurch der Effekt beim nächsten Aufruf keine
-  // Änderung mehr produziert. Läuft je Force erneut bei jeder Roster-Änderung
-  // in derselben Sitzung, sodass eine erst durch eine andere Wahl sichtbar
-  // gewordene Pflichtregel im selben Zug ergänzt wird (AC3).
+  // diesen Eintrag nie selbst angeklickt.
+  //
+  // **Welche** Regeln das sind, sagt seit Issue 0157 der Bericht
+  // (`findMissingMandatoryListRules`, ADR-0034): er zählt das Angebot des
+  // Kontingents auf und markiert je Slot Listenregel, armeeweite Pflicht,
+  // Sichtbarkeit und Belegung. Der Katalog wird nur noch für den **Eintrag**
+  // gelesen, aus dem die Selektion gebaut wird. Kein Endlosschleifen-Risiko:
+  // eine einmal hinzugefügte Regel steht im nächsten Bericht als `occupied`
+  // und fehlt damit nicht mehr. Läuft je Force erneut bei jeder
+  // Roster-Änderung in derselben Sitzung, sodass eine erst durch eine andere
+  // Wahl sichtbar gewordene Pflichtregel im selben Zug ergänzt wird.
   useEffect(() => {
     if (!roster || !system || !isFreshRoster) return;
 
     let anyAdded = false;
+    // Eine armeeweite Pflicht wird genau einmal gesetzt: was ein frueheres
+    // Kontingent dieses Durchlaufs uebernommen hat, faellt fuer die spaeteren
+    // heraus (der Bericht des naechsten Durchlaufs meldet sie dann als belegt).
+    const claimedResolvedIds = new Set();
     const updatedForces = (roster.forces || []).map(force => {
       const catalogueId = catalogueIdOfForce(force);
-      const catalogue = system.catalogues?.find(c => c.id === catalogueId);
-      const missing = findMissingMandatoryListRuleSelections(system, catalogue, force);
+      const carriedEntryIds = new Set(
+        childSelectionsOf(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
+      );
+      const missing = findMissingMandatoryListRules(capabilities, pathByForceId?.get(force.id), {
+        entryOf: (capability) => findEntryInSystem(system, capability.defId, catalogueId),
+        skipResolvedIds: claimedResolvedIds,
+      }).filter(({ entry, defId }) => entry && !carriedEntryIds.has(defId));
       if (missing.length === 0) return force;
 
+      missing.forEach(({ resolvedId }) => claimedResolvedIds.add(resolvedId));
       const newSelections = missing
         .map(({ entry, categoryId }) => createSelectionFromDef(entry, categoryId, catalogueId))
         .filter(Boolean);
@@ -228,7 +242,7 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
     if (anyAdded) {
       replaceRoster({ ...roster, forces: updatedForces });
     }
-  }, [roster, system, isFreshRoster, replaceRoster]);
+  }, [roster, system, isFreshRoster, replaceRoster, capabilities, pathByForceId]);
 
   /**
    * Hebt `entry` in genau ein Kontingent aus.

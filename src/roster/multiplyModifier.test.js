@@ -6,7 +6,22 @@ import {
   getEffectiveModifiers,
   getModifiedConstraintValue
 } from './modifierEvaluator.js';
-import { calculateRosterCosts, getSelectionOwnCosts } from './rosterCounter.js';
+import { getSelectionOwnCosts, getSelectionTotalCost } from './rosterCounter.js';
+/**
+ * Die Rostersumme einer Kostenart, aus denselben Knotensummen gerechnet, die
+ * `getSelectionTotalCost` liefert — der frühere `calculateRosterCosts` ist mit
+ * dem zweiten Auswertungspfad entfallen (Issue 0157); die App liest ihre Summe
+ * aus dem Bericht.
+ */
+const rosterTotalOf = (roster, system, costTypeId) =>
+  (roster.forces || []).reduce((forceSum, force) => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId || null;
+    return forceSum + (force.selections || []).reduce(
+      (sum, selection) => sum + getSelectionTotalCost(selection, costTypeId, 1, {
+        system, roster, currentCatalogueId
+      }), 0);
+  }, 0);
+
 
 // JSDOM provides DOMParser for the parser in the Node test environment.
 beforeAll(() => {
@@ -84,7 +99,7 @@ describe('multiply modifier on a non-cost constraint', () => {
 
 // ---------------------------------------------------------------------------
 // End-to-end through the roster cost pipeline: the doubled price must surface in
-// the roster total (calculateRosterCosts) — the same per-selection cost the XML
+// the roster total — the same per-selection cost the XML
 // export serializes and the editor displays — not only at the raw constraint level.
 // ---------------------------------------------------------------------------
 describe('multiply cost modifier flows through the roster total (editor / sum / export)', () => {
@@ -147,11 +162,11 @@ describe('multiply cost modifier flows through the roster total (editor / sum / 
   });
 
   test('roster total is doubled when the condition is met', () => {
-    expect(calculateRosterCosts(makeRoster(true), system).pts).toBe(BASE_UNIT_COST * 2);
+    expect(rosterTotalOf(makeRoster(true), system, 'pts')).toBe(BASE_UNIT_COST * 2);
   });
 
   test('roster total stays at the base cost when the condition is not met', () => {
-    expect(calculateRosterCosts(makeRoster(false), system).pts).toBe(BASE_UNIT_COST);
+    expect(rosterTotalOf(makeRoster(false), system, 'pts')).toBe(BASE_UNIT_COST);
   });
 
   test('per-selection own cost (as serialized to XML export) reflects the doubling', () => {

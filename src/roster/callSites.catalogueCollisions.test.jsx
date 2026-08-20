@@ -2,8 +2,6 @@ import { describe, test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { collectPrimaryCategoryEntries } from './entryVisibility.js';
-import { getOptionDisplayCost } from './rosterCounter.js';
 import { createSelectionFromDef } from './selectionFactory.js';
 import { resolveEntry } from './catalogResolver.js';
 import PlayUnitDetails from '../components/play/PlayUnitDetails.jsx';
@@ -20,6 +18,11 @@ import { SettingsProvider } from '../contexts/SettingsContext.jsx';
  * Die Vorrichtung ist so gebaut, dass dieser Erst-Treffer immer der Ork-Eintrag ist,
  * während jede Prüfung den Chaoszwergen-Eintrag erwartet. Eine Aufrufstelle ohne
  * Katalog-Kontext fällt damit sichtbar durch.
+ *
+ * Zwei der vier frueheren Aufrufstellen — die Kategorie-Aufzaehlung des Adders und
+ * der Anzeigepreis vor dem Ausheben — sind mit der zweiten Katalog-Auswertung
+ * entfallen (Issue 0157): beide Antworten kommen heute aus dem Bericht, der die
+ * Herkunft je Slot selbst kennt (`sourceId`/`isForeignCatalogue`).
  */
 
 const COLLIDING_ENTRY_ID = 'shared-hero';
@@ -51,7 +54,6 @@ const CHAOS_DWARF_HERO = Object.freeze({
   wounds: 3
 });
 
-const CHAOS_DWARF_TOTAL_COST = CHAOS_DWARF_HERO.cost + CHAOS_DWARF_HERO.childCost;
 
 /**
  * Ein Katalog, der den kollidierenden Helden ausschliesslich über einen entryLink
@@ -130,29 +132,6 @@ function catalogueOf(system, catalogueId) {
 describe('Aufrufstellen des Resolvers — kollidierende IDs über Katalogsgrenzen', () => {
   // Deckt zwei Auswertungen in einem ab: den aufgeloesten Namen und den hidden-Zustand.
   // Ohne Katalog-Kontext traegt der Ork-Held (hidden) die Antwort und die Liste bleibt leer.
-  test('die Kategorie-Aufzaehlung listet den Helden des aufgezaehlten Katalogs', () => {
-    const system = createSystem();
-    const roster = createChaosDwarfRoster();
-
-    const found = collectPrimaryCategoryEntries(
-      system, catalogueOf(system, CHAOS_DWARFS_CATALOGUE_ID), HERO_CATEGORY_ID, { roster }
-    );
-
-    expect(found.map(({ resolved }) => resolved.name)).toEqual([CHAOS_DWARF_HERO.name]);
-  });
-
-  test('der Anzeigepreis stammt aus dem Katalog des Kontexts', () => {
-    const system = createSystem();
-    const roster = createChaosDwarfRoster();
-    const chaosDwarfLink = catalogueOf(system, CHAOS_DWARFS_CATALOGUE_ID).entryLinks[0];
-
-    const cost = getOptionDisplayCost(system, chaosDwarfLink, POINTS_TYPE_ID, {
-      system, roster, parentCatalogueId: CHAOS_DWARFS_CATALOGUE_ID
-    });
-
-    expect(cost).toBe(CHAOS_DWARF_TOTAL_COST);
-  });
-
   test('die Selektions-Fabrik baut Einheit und Pflicht-Kind aus dem angegebenen Katalog', () => {
     const system = createSystem();
     const chaosDwarfLink = catalogueOf(system, CHAOS_DWARFS_CATALOGUE_ID).entryLinks[0];

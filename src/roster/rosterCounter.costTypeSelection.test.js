@@ -1,10 +1,23 @@
 import { describe, test, expect } from 'vitest';
 import {
-  calculateRosterCosts,
-  getOptionDisplayCost,
   getSelectionTotalCost,
   resolveCostLimitTypeId
 } from './rosterCounter.js';
+/**
+ * Die Rostersumme einer Kostenart, aus denselben Knotensummen gerechnet, die
+ * `getSelectionTotalCost` liefert — der frühere `calculateRosterCosts` ist mit
+ * dem zweiten Auswertungspfad entfallen (Issue 0157); die App liest ihre Summe
+ * aus dem Bericht.
+ */
+const rosterTotalOf = (roster, system, costTypeId) =>
+  (roster.forces || []).reduce((forceSum, force) => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId || null;
+    return forceSum + (force.selections || []).reduce(
+      (sum, selection) => sum + getSelectionTotalCost(selection, costTypeId, 1, {
+        system, roster, currentCatalogueId
+      }), 0);
+  }, 0);
+
 import {
   POINTS,
   CASTING_DICE,
@@ -132,28 +145,14 @@ describe('getSelectionTotalCost — Wert allein über die eingestellte Kostenart
   });
 });
 
-describe('getOptionDisplayCost — Wert allein über die eingestellte Kostenart', () => {
-  test('nimmt die eingestellte Kostenart, auch wenn eine andere im Array vorne steht', () => {
-    const system = createDualCostSystem();
-
-    expect(getOptionDisplayCost(system, { id: WIZARD_ENTRY_ID }, CASTING_DICE))
-      .toBe(WIZARD_CASTING_DICE);
-  });
-
-  test('ist 0, wenn dem Eintrag die eingestellte Kostenart fehlt', () => {
-    const system = createDualCostSystem();
-
-    expect(getOptionDisplayCost(system, { id: CHAMPION_ENTRY_ID }, CASTING_DICE)).toBe(0);
-  });
-});
-
-describe('calculateRosterCosts hält die Kostenarten auseinander', () => {
+describe('die Rostersumme hält die Kostenarten auseinander', () => {
   test('summiert jede Kostenart getrennt', () => {
     const selections = [createSelection(WIZARD_ENTRY_ID, 'sel-wizard'), createSelection(CHAMPION_ENTRY_ID, 'sel-champion')];
-    const costs = calculateRosterCosts(createDualCostRoster(POINTS, selections), createDualCostSystem());
+    const roster = createDualCostRoster(POINTS, selections);
+    const system = createDualCostSystem();
 
-    expect(costs[POINTS]).toBe(WIZARD_POINTS + CHAMPION_POINTS);
-    expect(costs[CASTING_DICE]).toBe(WIZARD_CASTING_DICE);
+    expect(rosterTotalOf(roster, system, POINTS)).toBe(WIZARD_POINTS + CHAMPION_POINTS);
+    expect(rosterTotalOf(roster, system, CASTING_DICE)).toBe(WIZARD_CASTING_DICE);
   });
 });
 
@@ -199,11 +198,6 @@ describe('kein Rückfall auf eine als "pts" benannte Kostenart', () => {
     expect(total).toBe(0);
   });
 
-  test('getOptionDisplayCost liefert 0 statt des Punktwerts', () => {
-    const system = createLiteralPointsSystem();
-
-    expect(getOptionDisplayCost(system, { id: SCROLL_ENTRY_ID }, CASTING_DICE)).toBe(0);
-  });
 });
 
 describe('Testdaten bilden echte Katalogdaten ab', () => {

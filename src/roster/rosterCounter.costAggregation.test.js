@@ -1,9 +1,20 @@
 import { describe, test, expect } from 'vitest';
-import {
-  calculateRosterCosts,
-  getOptionDisplayCost,
-  getSelectionTotalCost
-} from './rosterCounter.js';
+import { getSelectionTotalCost } from './rosterCounter.js';
+/**
+ * Die Rostersumme einer Kostenart, aus denselben Knotensummen gerechnet, die
+ * `getSelectionTotalCost` liefert — der frühere `calculateRosterCosts` ist mit
+ * dem zweiten Auswertungspfad entfallen (Issue 0157); die App liest ihre Summe
+ * aus dem Bericht.
+ */
+const rosterTotalOf = (roster, system, costTypeId) =>
+  (roster.forces || []).reduce((forceSum, force) => {
+    const currentCatalogueId = force.catalogueId || roster.catalogueId || null;
+    return forceSum + (force.selections || []).reduce(
+      (sum, selection) => sum + getSelectionTotalCost(selection, costTypeId, 1, {
+        system, roster, currentCatalogueId
+      }), 0);
+  }, 0);
+
 import {
   POINTS,
   UNIT_COST,
@@ -12,11 +23,11 @@ import {
   createValidRoster
 } from '../__fixtures__/grimdarkSystem.js';
 
-describe('calculateRosterCosts — Summe über das Roster', () => {
+describe('Rostersumme über getSelectionTotalCost', () => {
   test('summiert die Katalogkosten aller Auswahlen des Rosters', () => {
-    const costs = calculateRosterCosts(createValidRoster(), createGrimdarkSystem());
+    const total = rosterTotalOf(createValidRoster(), createGrimdarkSystem(), POINTS);
 
-    expect(costs[POINTS]).toBe(UNIT_COST.captain + UNIT_COST.tacticalSquad);
+    expect(total).toBe(UNIT_COST.captain + UNIT_COST.tacticalSquad);
   });
 });
 
@@ -34,55 +45,6 @@ describe('Kostenaggregation über verschachtelte Auswahlen', () => {
   const MAGIC_GROUP_POINTS_MAX = 30;
   const WIZARD_COST = 100;
 
-  function createNestedSystem() {
-    return {
-      id: 'sys-nested',
-      name: 'Nested System',
-      costTypes: [{ id: POINTS, name: 'Points', defaultCostLimit: 2000 }],
-      categoryEntries: [{ id: HQ_CATEGORY_ID, name: 'HQ' }],
-      forceEntries: [{
-        id: NESTED_FORCE_ENTRY_ID,
-        name: 'Patrol Force',
-        categoryLinks: [{ id: 'cl-hq', targetId: HQ_CATEGORY_ID }]
-      }],
-      catalogues: [{
-        id: NESTED_CATALOGUE_ID,
-        name: 'Nested Catalogue',
-        selectionEntries: [
-          { id: ENTRY_ID.general, name: 'General' },
-          {
-            id: 'unit-nested',
-            name: 'Wizard',
-            costs: [{ typeId: POINTS, value: WIZARD_COST }],
-            categoryLinks: [{ targetId: HQ_CATEGORY_ID }],
-            selectionEntryGroups: [{
-              id: 'group-magic',
-              name: 'Magic Items',
-              constraints: [{
-                id: 'limit-magic-pts',
-                type: 'max',
-                value: MAGIC_GROUP_POINTS_MAX,
-                field: POINTS,
-                scope: 'parent'
-              }],
-              selectionEntries: [{
-                id: WRAPPER_ENTRY_ID,
-                name: 'Power Stone Wrapper',
-                costs: [{ typeId: POINTS, value: 0 }],
-                selectionEntries: [{
-                  id: STONE_ENTRY_ID,
-                  name: 'Power Stone Item',
-                  constraints: [{ id: 'con-child-min', type: 'min', value: 1, field: 'selections' }],
-                  costs: [{ typeId: POINTS, value: STONE_COST }]
-                }]
-              }]
-            }]
-          }
-        ]
-      }]
-    };
-  }
-
   function createWrapperSelection(count) {
     return {
       id: 'sel-parent',
@@ -99,12 +61,6 @@ describe('Kostenaggregation über verschachtelte Auswahlen', () => {
       }]
     };
   }
-
-  test('getOptionDisplayCost rechnet die Pflicht-Unterauswahl in den Anzeigepreis ein', () => {
-    const displayCost = getOptionDisplayCost(createNestedSystem(), { id: WRAPPER_ENTRY_ID }, POINTS);
-
-    expect(displayCost).toBe(STONE_COST);
-  });
 
   test('getSelectionTotalCost summiert die Kosten der Unterauswahlen', () => {
     const totalCost = getSelectionTotalCost(createWrapperSelection(1), POINTS);
@@ -189,27 +145,9 @@ describe('Kostenmodifier mit parent-bezogener Wiederholung', () => {
 
   const expectedSpearCost = MODEL_COUNT * COST_PER_MODEL;
 
-  test('getOptionDisplayCost skaliert den Anzeigepreis mit der Modellzahl', () => {
-    const system = createCostModifierSystem();
-    const roster = createCostModifierRoster();
-    const spearsOption = system.catalogues[0].sharedSelectionEntries[0].selectionEntries[1];
+  test('die Rostersumme übernimmt den skalierten Preis', () => {
+    const total = rosterTotalOf(createCostModifierRoster(), createCostModifierSystem(), POINTS);
 
-    const displayCost = getOptionDisplayCost(system, spearsOption, POINTS, {
-      roster,
-      system,
-      selectionCounts: { [MODEL_ENTRY_ID]: MODEL_COUNT },
-      forceCategoryCounts: {},
-      selection: null,
-      parentSelection: roster.forces[0].selections[0],
-      parentCatalogueId: COST_MODIFIER_CATALOGUE_ID
-    });
-
-    expect(displayCost).toBe(expectedSpearCost);
-  });
-
-  test('calculateRosterCosts übernimmt den skalierten Preis in die Rostersumme', () => {
-    const rosterCosts = calculateRosterCosts(createCostModifierRoster(), createCostModifierSystem());
-
-    expect(rosterCosts[POINTS]).toBe(expectedSpearCost);
+    expect(total).toBe(expectedSpearCost);
   });
 });

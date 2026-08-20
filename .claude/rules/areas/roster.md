@@ -10,8 +10,21 @@ paths:
 `src/roster/` builds and rewrites the selection tree. `src/evaluation/` translates it for the
 evaluator. `src/db/` persists it in IndexedDB.
 
+- What `src/roster/` still is: catalogue resolution (`catalogResolver.js`), the selection factory
+  and sub-selection editing, the tree helpers, catalogue sync, the option **structure** collector
+  (`optionsCollector.js` — membership and order, no visibility), the cost-type labels and the
+  counting/modifier machinery that only `queryEngine.js`/`selectionFactory.js` still feed on.
+  Evaluation is **not** part of it: violations, availability, costs, profiles, visibility and the
+  static entry classification all come from the report (ADR-0034).
 - `src/roster/` is **structural only** — it never judges a roster (ADR 0011). A rule check that
   creeps in here duplicates the evaluator and will drift from it.
+- Gone with Issue 0157, do not resurrect: `entryVisibility.js`, `profileCollector.js`,
+  `armyWideSelectors.js`, `listRules.js`, and `rosterCounter.js`'s `getOptionDisplayCost` /
+  `calculateRosterCosts` / `getExtraResourceTotals`. Their answers live in `src/evaluation/`
+  (`listRuleGroups.js`, `mandatoryListRules.js`, `costDisplays.js`, `slotLookups.js`) reading the
+  report. A test that needs a roster cost total uses `evaluateAppRoster(system, roster).costTotals`.
+- `getUnitOptions` takes no visibility context any more: it yields raw catalogue structure and the
+  caller asks the report whether a slot is hidden.
 - No import of `src/evaluator/**` from `src/roster/**`, in either direction; the rule is blocking
   in `forge-lint`. Anything that needs both belongs in `src/evaluation/`.
 - `src/roster/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
@@ -20,15 +33,12 @@ evaluator. `src/db/` persists it in IndexedDB.
   into the evaluator silently defeats `evaluationCache.js`.
 - A change to the persisted shape in `src/db/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
-- Three modules read a catalogue's **root pools** and they do not agree, by design:
-  `entryVisibility.js`'s `collectPrimaryCategoryEntries` (der `+`-Adder) also reads
-  `sharedSelectionEntries` — die Söldner-Regimenter hängen daran —, `listRules.js` darf das
-  nicht: es *setzt* Einträge automatisch, und ein geteilter Eintrag ist allein über einen
-  Verweis erreichbar (BSData §7.2, wie `resolver.js` im Evaluator). Wer einen Pool ändert, prüft
-  zuerst, ob die Stelle anbietet oder setzt.
 - The only automatic, choice-free write into a roster is `useRoster.js`'s fresh-roster effect over
-  `findMissingMandatoryListRuleSelections` — gated on `isFreshRoster`, ohne Undo-Schritt. Alles,
-  was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf Kontingent-Ebene.
+  `findMissingMandatoryListRules` (`src/evaluation/`, report-driven) — gated on `isFreshRoster`,
+  ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
+  Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans
+  Kontingent** — ein Leser, der nur `childSlotsOf(forcePath)` fragt, sieht genau die §9.9-Regeln
+  nicht, um die es geht.
 - Anzeige-Felder, die `src/evaluation/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
   die Evaluator-E2E prueft den Bericht, nicht seine Uebersetzung. `listRuleGroups.js` (`checked`,
   `mandatory`, `isContainer`, `isBinary` fuer `ListRuleChecklist.jsx`) haengt allein an

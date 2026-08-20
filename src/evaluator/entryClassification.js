@@ -1,5 +1,5 @@
 import { ConstraintKind, SelectionEntryKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { ScopeKeyword } from './model.js';
+import { DefinitionKind, ScopeKeyword } from './model.js';
 
 /**
  * Die **statischen Eintragsmerkmale**, die jede Oberflaeche an einem Slot
@@ -49,9 +49,19 @@ export function isListRuleDef(def) {
   return entryTypeOf(def) === SelectionEntryKind.UPGRADE;
 }
 
-/** True, wenn die Definition (oder ihr Ziel) eigene Auswahl-Kinder mitbringt. */
+/**
+ * True, wenn die Definition (oder ihr Ziel) eigene **Auswahl**-Kinder mitbringt.
+ *
+ * `children` einer Definition führt neben Einträgen, Gruppen und Verweisen auch
+ * die `categoryLink`s (`catalogReader.js`, `readSelectionChildren`) — und die
+ * sind keine Wahl, die dem Nutzer offensteht. Ein Eintrag ohne jede
+ * Unterauswahl, der bloss eine Kategorie deklariert, galt sonst als
+ * „Behälter" und damit weder als eindeutige Pflicht-Listenregel noch als
+ * eigenständige Untereinheit (Issue 0157).
+ */
 function hasSelectableChildren(def) {
-  return declarationsOf(def).some(declaration => (declaration.children ?? []).length > 0);
+  return declarationsOf(def).some(declaration => (declaration.children ?? [])
+    .some(child => child?.kind !== DefinitionKind.CATEGORY_LINK));
 }
 
 /** True, wenn die Definition (oder ihr Ziel) als kollektiv gefuehrt wird. */

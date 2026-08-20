@@ -1,12 +1,9 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import {
-  getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks,
-  resolveContextCatalogueId
+  getModifiedConstraintValue, getEffectiveModifiers, getEffectiveCategoryLinks
 } from './modifierEvaluator.js';
 import { childSelectionsOf, effectiveCountOf, foldSelectionTree, someSelection, traverseSelectionTree } from './rosterTree.js';
 import { buildModifierEvalContext } from './modifierContext.js';
-import { ConstraintKind } from '../parser/schema/battlescribeSchema.generated.js';
-import { mandatoryChildrenOf } from './selectionMembers.js';
 
 /**
  * The multiplier applied to a top-level (subject) selection when its cost is
@@ -60,67 +57,6 @@ export function resolveCostLimitLabel(roster, system) {
  * @property {Object|null} [parentSelection] the selection's parent, for conditions
  * @property {Object|null} [counts] pre-computed roster counts (computeRosterCounts)
  */
-
-/**
- * Recursively computes the display cost of an option definition, including its base cost
- * and the costs of any mandatory sub-selections (min > 0).
- *
- * `ctx` supplies the catalogue the entry was read from (see `resolveContextCatalogueId`);
- * without it the same-id entry of another loaded catalogue could be priced instead
- * (ADR 0018).
- */
-export function getOptionDisplayCost(system, entry, costLimitType, ctx = {}) {
-  const catalogueId = resolveContextCatalogueId(ctx);
-  let resolved = resolveEntry(system, entry, catalogueId);
-  if (!resolved) return 0;
-
-  // If resolved is a skeleton or reference, look up the full entry in the system
-  if (resolved.id && (!resolved.costs || resolved.costs.length === 0) && (!resolved.selectionEntries || resolved.selectionEntries.length === 0) && (!resolved.entryLinks || resolved.entryLinks.length === 0) && (!resolved.selectionEntryGroups || resolved.selectionEntryGroups.length === 0)) {
-    const fullEntry = findEntryInSystem(system, resolved.id, catalogueId);
-    if (fullEntry) {
-      resolved = resolveEntry(system, fullEntry, catalogueId);
-    }
-  }
-
-  let total = 0;
-
-  // 1. Direct cost of this entry, in the requested cost type only. An entry that
-  // carries no cost of that type contributes 0 — never the value of another type.
-  const costOfLimitType = resolved.costs?.find(c => c.typeId === costLimitType);
-  let directCost = costOfLimitType?.value || 0;
-
-  // Apply cost modifiers if any
-  let modifiers = getEffectiveModifiers(resolved);
-  if (entry.modifiers !== resolved.modifiers || entry.modifierGroups !== resolved.modifierGroups) {
-    modifiers = modifiers.concat(getEffectiveModifiers(entry));
-  }
-  if (costOfLimitType && modifiers.length > 0 && ctx && Object.keys(ctx).length > 0) {
-    const tempCon = { id: costOfLimitType.typeId, value: directCost };
-    directCost = getModifiedConstraintValue(tempCon, modifiers, ctx);
-  }
-
-  total += directCost;
-
-  // The mandatory-child minimums below are read as their EFFECTIVE (modifier-adjusted)
-  // value in `ctx`, so a conditionally-raised `min` — a pick a modifier forces — is
-  // priced exactly as the selection factory will populate it.
-  const effectiveMin = (source) => {
-    const minConstraint = source.constraints?.find(c => c.type === ConstraintKind.MIN);
-    if (!minConstraint) return 0;
-    const value = getModifiedConstraintValue(minConstraint, getEffectiveModifiers(source), ctx);
-    return value > 0 ? value : 0;
-  };
-
-  // 2. Costs of the mandatory children — direct entries and links, plus what every
-  // selection-entry group below the entry contributes, at any depth. Which children
-  // those are is decided by the shared derivation the selection factory populates
-  // from, so the price shown here is the price the actual recruitment will incur.
-  mandatoryChildrenOf(resolved, effectiveMin).forEach(({ def: child, count }) => {
-    total += getOptionDisplayCost(system, child, costLimitType, ctx) * count;
-  });
-
-  return total;
-}
 
 /**
  * Locates the id of the force that contains the given selection.
@@ -204,59 +140,6 @@ export function getSelectionTotalCost(selection, costLimitType, parentCount = TO
       return childTotals.reduce((sum, childTotal) => sum + childTotal, ownTotal);
     }
   }, { parentCount, evaluationContext: context });
-}
-
-/**
- * Traverses a roster's nested selections and computes total costs,
- * returning flat stats and a resolved points total.
- */
-export function calculateRosterCosts(roster, system) {
-  const totals = {};
-
-  // Initialize cost types from system
-  if (system && system.costTypes) {
-    system.costTypes.forEach(ct => {
-      totals[ct.id] = 0;
-    });
-  }
-
-  const counts = (roster && system) ? computeRosterCounts(roster, system) : null;
-
-  const addSelectionCosts = (selection, { parentCount, parentSelection }, currentCatalogueId) => {
-    const effectiveCount = effectiveCountOf(selection, parentCount);
-
-    const ownCosts = getSelectionOwnCosts(selection, effectiveCount, { system, roster, currentCatalogueId, parentSelection, counts });
-    Object.entries(ownCosts).forEach(([typeId, value]) => {
-      totals[typeId] = (totals[typeId] || 0) + value;
-    });
-
-    return { parentCount: effectiveCount, parentSelection: selection };
-  };
-
-  (roster?.forces ?? []).forEach(force => {
-    const currentCatalogueId = force.catalogueId || roster.catalogueId;
-    traverseSelectionTree(
-      childSelectionsOf(force),
-      (selection, context) => addSelectionCosts(selection, context, currentCatalogueId),
-      { parentCount: TOP_LEVEL_PARENT_COUNT, parentSelection: null }
-    );
-  });
-
-  return totals;
-}
-
-/**
- * Non-primary cost types (e.g. "Casting Dice"/"Dispel Dice") that carry a nonzero
- * total in the given roster's already-computed cost totals. Cost types flagged
- * `hidden` in the game system are never surfaced, per the BattleScribe schema.
- */
-export function getExtraResourceTotals(system, roster, costs) {
-  if (!system?.costTypes || !roster) return [];
-  return system.costTypes
-    .filter(ct => ct.id !== roster.costLimitType)
-    .filter(ct => !ct.hidden)
-    .map(ct => ({ id: ct.id, name: ct.name, total: costs?.[ct.id] || 0 }))
-    .filter(ct => ct.total > 0);
 }
 
 export const computeRosterCounts = (roster, system) => {

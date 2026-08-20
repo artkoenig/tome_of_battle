@@ -10,7 +10,6 @@ import {
   syncRosterSelectionsWithSystem,
   resolveEntry
 } from '../roster/index.js';
-import { calculateRosterCosts } from '../roster/rosterCounter.js';
 import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { getUnitOptions } from '../roster/optionsCollector.js';
 
@@ -104,7 +103,7 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
   test('imports to exactly 2000 points with derived costs', () => {
     const system = buildSystem(cat);
     const roster = importFixture(system, fixture);
-    expect(calculateRosterCosts(roster, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
+    expect(evaluateAppRoster(system, roster).costTotals[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
   });
 
   test('recognises the chosen options after import and is reconcile-stable', () => {
@@ -124,7 +123,7 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
     const reconciled = reconcileImportedSelectionIds(reImported, system);
     const roundTripped = syncRosterSelectionsWithSystem(reconciled, system);
 
-    expect(calculateRosterCosts(roundTripped, system)[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
+    expect(evaluateAppRoster(system, roundTripped).costTotals[ptsTypeId(system)]).toBe(EXPECTED_TOTAL);
     expect(errorCount(roundTripped, system)).toBe(initialErrors);
     expect(flatSelectionPts(xml, ptsTypeId(system))).toBe(EXPECTED_TOTAL);
   });

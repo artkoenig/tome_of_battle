@@ -2,7 +2,7 @@ import { test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML, parseCatalogueXML } from './xmlParser';
 import { groupProfilesByType } from '../roster/rulesEvaluator';
-import { getExtraResourceTotals } from '../roster/rosterCounter';
+import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 beforeAll(() => {
   const dom = new JSDOM();
@@ -96,11 +96,12 @@ test('costType@hidden is parsed as a boolean, defaulting to false', () => {
 });
 
 test('a hidden cost type is excluded from the displayed extra resources', () => {
-  const system = parseGameSystemXML(gstWithHiddenCostType);
-  const roster = { costLimitType: 'pts' };
-  const costs = { pts: 1500, secret: 7 };
+  // Die Anzeige liest die Kostenarten aus der Beschreibung des Berichts, wo das
+  // geparste `hidden` als `isHidden` steht (Issue 0157).
+  const costTypes = parseGameSystemXML(gstWithHiddenCostType).costTypes
+    .map(costType => ({ id: costType.id, name: costType.name, isHidden: costType.hidden }));
 
-  const resources = getExtraResourceTotals(system, roster, costs);
+  const resources = extraResourceTotalsOf({ pts: 1500, secret: 7 }, costTypes, 'pts');
 
   expect(resources.some(r => r.id === 'secret')).toBe(false);
 });
