@@ -30,9 +30,7 @@ import {
   mergeCatalogues,
   buildPrimaryCatalogueIndex,
   buildDefinitionSourceIndex,
-  buildCatalogueRootEntryClosure,
-  buildLibraryCatalogueIds,
-  buildDeclaredCatalogueLinkIndex,
+  buildCatalogueScopeClosure,
 } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
@@ -90,10 +88,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -102,7 +100,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, libraryCatalogueIds: Set<string>, linkedCatalogueIdsById: Map<string, Set<string>>, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -136,17 +134,11 @@ export class PreparedDataset {
  * {@link buildDefinitionSourceIndex}), aus dem der Bericht je Slot seine
  * `sourceId` liest (Issue 0121) — anders als jener ueber **alle** Dokumente,
  * das Spielsystem eingeschlossen. Aus denselben Katalog-Dokumenten entsteht
- * ausserdem der **Wurzel-Angebots-Fussabdruck** je Katalog
- * (`catalogueRootEntryClosureById`, {@link buildCatalogueRootEntryClosure}):
- * welche Katalog-Herkuenfte als „zu diesem Katalog gehoerig" gelten, ihn
- * selbst und die per `catalogueLink importRootEntries="true"` importierten
- * eingeschlossen (Issue 0098) — und daneben die Menge der
- * **Bibliothekskataloge** (`libraryCatalogueIds`,
- * {@link buildLibraryCatalogueIds}) samt der Kataloge, ueber die sich ein
- * Katalog per `catalogueLink` ausdruecklich geaeussert hat
- * (`linkedCatalogueIdsById`, {@link buildDeclaredCatalogueLinkIndex}) — die
- * beiden Bedingungen der engen Bibliotheks-Ausnahme desselben Rahmens (Issue
- * 0140, `isInCatalogueScope`). Alle sind rosterunabhaengig und gehoeren deshalb
+ * ausserdem die **`catalogueLink`-Huelle** je Katalog
+ * (`catalogueScopeClosureById`, {@link buildCatalogueScopeClosure}): welche
+ * Katalog-Herkuenfte im Auswertungsumfang eines Kontingents dieses Katalogs
+ * liegen — er selbst und, transitiv, jeder per `catalogueLink` benannte
+ * Katalog (Issue 0156). Alle sind rosterunabhaengig und gehoeren deshalb
  * in den Vorlauf, nicht in die Auswertung.
  *
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
@@ -209,16 +201,10 @@ function prepare(dataset) {
     // Alle Dokumente, das Spielsystem eingeschlossen: ein geteilter Eintrag der
     // `.gst` hat als Herkunft die Spielsystem-Id (Issue 0121).
     sourceIdByDefId: buildDefinitionSourceIndex(documents),
-    // Nur die Kataloge, wie beim Herkunftsindex der Kontingente: der
-    // Wurzel-Angebots-Fussabdruck eines Katalogs ist eine Eigenschaft von
-    // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0098).
-    catalogueRootEntryClosureById: buildCatalogueRootEntryClosure(catalogueDocuments),
-    // Ebenfalls nur die Kataloge: das `library`-Kennzeichen ist ein Attribut der
-    // `.cat`-Wurzel; eine Bibliothek ist ein geteilter Vorrat, kein Armeebuch (Issue 0140).
-    libraryCatalogueIds: buildLibraryCatalogueIds(catalogueDocuments),
-    // Worueber ein Katalog sich per `catalogueLink` ausdruecklich geaeussert hat:
-    // die Grenze der Bibliotheks-Ausnahme (Issue 0140, siehe isInCatalogueScope).
-    linkedCatalogueIdsById: buildDeclaredCatalogueLinkIndex(catalogueDocuments),
+    // Nur die Kataloge, wie beim Herkunftsindex der Kontingente: die
+    // `catalogueLink`-Huelle eines Katalogs ist eine Eigenschaft von
+    // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0156).
+    catalogueScopeClosureById: buildCatalogueScopeClosure(catalogueDocuments),
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });
 }

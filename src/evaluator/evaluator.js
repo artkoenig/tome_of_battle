@@ -233,26 +233,20 @@ export function evaluate(prepared, roster, options) {
   // das Budget — bis in die Query-Kontexte durchgereicht.
   const contents = PreparedDataset.contentsOf(prepared);
   const {
-    resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueRootEntryClosureById,
-    libraryCatalogueIds, linkedCatalogueIdsById, gameSystemDocument, diagnostics: datasetDiagnostics,
+    resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueScopeClosureById,
+    gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
-  // Der Katalog-Bezugsrahmen (Issue 0098): welche Herkunft zu welchem
-  // Kontingent-Katalog gehoert. Reicht bis in die Baumphase 1 (Pflicht-Phantome,
-  // `evalTree.js`) und die Baumphase 2 (Angebot, `offer.js`) hinein, damit ein
-  // Wurzel-Eintrag oder ein roster-skopiertes Pflicht-Minimum eines fremden
-  // Katalogs weder angeboten noch erzwungen wird. Ausgenommen ist neben dem
-  // Spielsystem eine Bibliothek — aber nur in einem Kontingent, dessen Armeebuch
-  // erst das Roster beigebracht hat, und nur wenn dieses Buch die Bibliothek
-  // nicht selbst per `catalogueLink` benennt (Issue 0140, `isInCatalogueScope`).
-  // `libraryCatalogueIds` und `linkedCatalogueIdsById` tragen diese beiden
-  // Bedingungen bei; die Herkunft der Antwort haengt am Referenz-Katalog selbst.
+  // Der Katalog-Bezugsrahmen (Issue 0098, Umfang nach Issue 0156): der
+  // Auswertungsumfang eines Kontingents ist genau sein Armeebuch, dessen
+  // transitive `catalogueLink`-Huelle und das Spielsystem. Er reicht bis in die
+  // Baumphase 1 (Pflicht-Phantome und Umfangs-Diagnose, `evalTree.js`) und die
+  // Baumphase 2 (Angebot, `offer.js`) hinein, damit eine Definition eines
+  // Katalogs ausserhalb dieses Umfangs weder angeboten noch erzwungen wird.
   const catalogueScope = {
     sourceIdByDefId,
-    catalogueRootEntryClosureById,
+    catalogueScopeClosureById,
     gameSystemId: gameSystemDocument?.id ?? null,
-    libraryCatalogueIds,
-    linkedCatalogueIdsById,
   };
 
   // ── Abschnitt 1: die iterierte Auswertung ─────────────────────────────────

@@ -44,7 +44,7 @@
  */
 
 import { AnchorKind, CountedFieldKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
-import { isInCatalogueScope, declaredCatalogueIdOf, forceCatalogueReferenceOf } from './catalogSet.js';
+import { isInCatalogueScope, declaredCatalogueIdOf, forceCatalogueIdOf } from './catalogSet.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -74,7 +74,7 @@ function createFrameIdSource() {
  * Ein **Kontingent**-Knoten traegt dabei die vom Roster genannte Armeebuch-Id
  * (`declaredCatalogueId`, Issue 0140) — einmal hier gegen die dem Datensatz
  * bekannten Kataloge geprueft ({@link declaredCatalogueIdOf}) und danach von
- * jedem Aufrufer ueber {@link forceCatalogueReferenceOf} gelesen. Sie haengt am
+ * jedem Aufrufer ueber {@link forceCatalogueIdOf} gelesen. Sie haengt am
  * **Knoten**, nicht an der Definition: zwei Kontingente derselben
  * `.gst`-Definition koennen zu zwei verschiedenen Armeebuechern gehoeren.
  */
@@ -422,7 +422,7 @@ function countInstances(fromNode, defId) {
  * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
  * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
  * Kontingents. Welches Armeebuch ein Kontingent hat, beantwortet dabei
- * {@link forceCatalogueReferenceOf} — der Herkunftsindex, und nur wo der schweigt die
+ * {@link forceCatalogueIdOf} — der Herkunftsindex, und nur wo der schweigt die
  * Angabe des Rosters (Issue 0140), je Kontingent-**Knoten** und deshalb fuer
  * zwei Kontingente aus verschiedenen Buechern getrennt. Ein Wurzel-**`entryLink`** wird hier bewusst **nicht** wie
  * beim Angebot (`offer.js`) ausgenommen (Issue 0133): waehrend ein
@@ -467,16 +467,15 @@ function countInstances(fromNode, defId) {
  * {@link synthesizeUnlinkedCategoryAnchors}, damit beide dieselbe Definition
  * von "im Roster referenzierte Kataloge" verwenden.
  *
- * Je Kontingent gilt sein eigenes Armeebuch ({@link forceCatalogueReferenceOf}):
+ * Je Kontingent gilt sein eigenes Armeebuch ({@link forceCatalogueIdOf}):
  * zuerst der Herkunftsindex, und nur wo der schweigt die Angabe des Rosters.
  * Ein Roster mit Kontingenten aus **verschiedenen** Buechern traegt deshalb
- * hier beide — jeder Eintrag mit der Herkunft seiner Antwort, denn die
- * Bibliotheks-Ausnahme haengt daran.
+ * hier beide.
  */
 function rosterCatalogueReferencesOf(forceNodeList, primaryCatalogueByForceDefId) {
   return forceNodeList
-    .map(forceNode => forceCatalogueReferenceOf(forceNode, primaryCatalogueByForceDefId))
-    .filter(reference => reference !== null);
+    .map(forceNode => forceCatalogueIdOf(forceNode, primaryCatalogueByForceDefId))
+    .filter(catalogueId => catalogueId !== undefined);
 }
 
 /**
@@ -530,8 +529,8 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
     // in `anchoredCategoryIds`), zaehlen fuer dieses Kontingent ebenso als
     // referenziert (Review-Runde 3, derselbe Grund wie im ROSTER-Zweig).
     const forceLinkedCategoryIds = referencedCategoryIdsUnder(forceNode);
-    const forceReference = forceCatalogueReferenceOf(forceNode, primaryCatalogueByForceDefId);
-    const forceCatalogueReferences = forceReference === null ? [] : [forceReference];
+    const forceCatalogueId = forceCatalogueIdOf(forceNode, primaryCatalogueByForceDefId);
+    const forceCatalogueReferences = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     for (const def of definitions) {
       if (def.kind === DefinitionKind.CATEGORY && anchoredCategoryIds.has(def.id)) continue;
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
@@ -1118,18 +1117,17 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
  *   Der Instanzbaum. Ein Kontingent-Knoten darf sein Armeebuch nennen
  *   (`catalogueId`, Issue 0140); die Angabe landet geprueft am Knoten
  *   ({@link attachInstance}) und gilt dort, wo der Herkunftsindex schweigt.
- * @param {{ sourceIdByDefId: Map<string, string>, catalogueRootEntryClosureById: Map<string, Set<string>>, gameSystemId: string|null, libraryCatalogueIds?: Set<string>, linkedCatalogueIdsById?: Map<string, Set<string>> }} [catalogueScope]
+ * @param {{ sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
  *   Der Katalog-Bezugsrahmen (Issue 0098): schneidet die Pflicht-Phantom-Synthese
  *   auf Definitionen zu, deren Herkunft zu den im Roster tatsaechlich
- *   vertretenen Kontingent-Katalogen gehoert — das Spielsystem ausgenommen, eine
- *   Bibliothek unter den engen Bedingungen von {@link isInCatalogueScope}. Ohne
- *   ihn (`undefined`) ungefiltertes, unveraendertes Verhalten. Sein `catalogueRootEntryClosureById` ist zugleich
+ *   vertretenen Kontingent-Katalogen gehoert — das Spielsystem ausgenommen. Ohne
+ *   ihn (`undefined`) ungefiltertes, unveraendertes Verhalten. Sein `catalogueScopeClosureById` ist zugleich
  *   die Registratur, gegen die die Armeebuch-Angabe des Rosters geprueft wird —
  *   eine dem Datensatz unbekannte Id zaehlt wie keine Angabe
  *   ({@link declaredCatalogueIdOf}).
  * @param {Map<string, string>} [primaryCatalogueByForceDefId]
  *   Der Herkunftsindex der Kontingente — die **erste** Quelle des Armeebuchs
- *   eines Kontingents ({@link forceCatalogueReferenceOf}); ohne ihn **und** ohne
+ *   eines Kontingents ({@link forceCatalogueIdOf}); ohne ihn **und** ohne
  *   Angabe des Rosters wirkt `catalogueScope` wie fehlend.
  * @returns {{ root: object, diagnostics: object[] }}
  */
@@ -1151,7 +1149,7 @@ export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogue
   };
   // Die Kataloge, die dieser Datensatz fuehrt: die Registratur, an der sich die
   // Armeebuch-Angabe des Rosters messen lassen muss (Issue 0140).
-  const knownCatalogueIds = catalogueScope?.catalogueRootEntryClosureById;
+  const knownCatalogueIds = catalogueScope?.catalogueScopeClosureById;
   for (const forceInstance of roster.forces ?? []) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId, knownCatalogueIds);
   }
@@ -1246,8 +1244,8 @@ export function synthesizeOfferedSharedMandatoryPhantoms(root, resolved, catalog
   }
   for (const forceNode of forceNodeList) {
     const forceOfferedIds = offeredIdsUnder(forceNode);
-    const forceReference = forceCatalogueReferenceOf(forceNode, primaryCatalogueByForceDefId);
-    const forceCatalogueReferences = forceReference === null ? [] : [forceReference];
+    const forceCatalogueId = forceCatalogueIdOf(forceNode, primaryCatalogueByForceDefId);
+    const forceCatalogueReferences = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     for (const def of sharedDefinitions) {
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && forceOfferedIds.has(def.id)
