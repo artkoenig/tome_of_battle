@@ -45,3 +45,5 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0035 | [Verfügbarkeit aus Fähigkeitsdatensätzen statt Validierungs-Diff](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md) | Accepted | 2026-07-26 |
 | 0036 | [Angebots-Anker als Blätter in einer zweiten Baumphase außerhalb der Fixpunktschleife](0036-angebots-anker-als-blaetter-in-einer-zweiten-baumphase.md) | Accepted | 2026-07-26 |
 
+| 0037 | [Schichtenarchitektur UI → Fachlogik → Daten mit maschinell geprüfter Richtung](0037-schichtenarchitektur-ui-fachlogik-daten.md) | Accepted | 2026-08-20 |
+| 0038 | [Custom Hook als ViewModel je UI-Baustein, gespeist aus dem Auswertungsbericht](0038-custom-hooks-als-viewmodel-je-ui-baustein.md) | Accepted | 2026-08-20 |
