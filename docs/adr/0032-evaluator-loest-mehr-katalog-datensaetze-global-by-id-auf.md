@@ -46,8 +46,11 @@ auf. `catalogueLink`/`.cat`→`.cat` ist damit real und für jede Armee zwingend
    gebaut: er ist nur bei mehrdeutigen IDs über importierende Kataloge nötig, was
    die disjunkten GUIDs ausschließen (YAGNI). `catalogueLink` wird deshalb als
    **Abhängigkeits-Deklaration** behandelt, nicht als eigener
-   Auflösungsmechanismus — weil alle benötigten Kataloge gemeinsam als Quellen
-   übergeben werden.
+   Auflösungsmechanismus — ~~weil alle benötigten Kataloge gemeinsam als Quellen
+   übergeben werden~~. *(Diese Begründung ist mit Issue 0156 widerrufen — siehe
+   den [Nachtrag](#nachtrag-issue-0156--der-cataloguelink-ist-die-umfangsgrenze-eines-armeebuchs)
+   unten. Die globale Symboltabelle bleibt; was ein Kontingent aus ihr erreicht,
+   ist es nicht mehr.)*
 
 3. **Kohärenz wird als Diagnose gemeldet, nie still fehlausgewertet.** Ein
    Katalog, dessen `gameSystemId` nicht zur mitgegebenen `.gst` passt, und ein
@@ -80,6 +83,52 @@ Datensatz die GUID-Disjunktheit verletzt.
   Import-Isolation läuft seither gegen das Schreibmodell `src/roster/`.)* Der
   vollständige Kontext-Stack-Aufbau bleibt bewusst ungebaut, bis ein realer
   Datensatz ihn erzwingt.
+
+## Nachtrag (Issue 0156) — der `catalogueLink` ist die Umfangsgrenze eines Armeebuchs
+
+**Status des Nachtrags:** akzeptiert, 2026-08-20. Er ändert Entscheidung 2 nicht
+in ihrem Kern (die Auflösung bleibt global-by-ID über eine flache
+Symboltabelle), widerruft aber ihre Begründung und die daraus gezogene
+Folgerung.
+
+**Widerrufen ist:** „`catalogueLink` ist bloß eine Abhängigkeits-Deklaration,
+weil alle benötigten Kataloge gemeinsam als Quellen übergeben werden." Der Satz
+verwechselt zwei Fragen. Dass ein Katalog als Quelle **mitgegeben** ist, sagt,
+dass die Engine ihn lesen kann. Dass ein Armeebuch ihn **verlinkt**, sagt, dass
+seine Inhalte zu diesem Armeebuch gehören. Der Datensatz eines Nutzers enthält
+alle 18 Bücher einer Edition; ohne die zweite Frage lieferte jedes Buch jedem
+anderen Definitionen und Angebote — ein Vampirfürsten-Kontingent bekam
+Angebote, die nur die Oger-Kataloge deklarieren.
+
+**Es gilt seither:** Ein `catalogueLink` ist die **Umfangs- und
+Auflösungsgrenze** eines Armeebuchs. Der Auswertungsumfang eines Kontingents ist
+genau
+
+1. sein Armeebuch (`forceEntry`-Herkunft aus den Katalogdaten, ersatzweise die
+   Angabe des Rosters),
+2. dessen **transitive** `catalogueLink`-Hülle und
+3. das Spielsystem.
+
+Eine Definition aus einem Katalog außerhalb davon erreicht dieses Kontingent
+nicht — weder als Angebot noch als Pflicht —, gleich ob der Katalog eine
+Bibliothek ist und gleich, woher die Antwort auf „welches Armeebuch?" stammt.
+Damit entfällt ersatzlos die frühere Ausnahme, die einen Wurzel-`entryLink`
+unabhängig von seinem deklarierenden Katalog als Angebot verankerte: was ein
+Buch aus einer geteilten Bibliothek anbieten will, verlinkt es — und dann liegt
+sie in seiner Hülle. Ebenso entfällt die pauschale Bibliotheks-Ausnahme aus
+Issue 0140.
+
+**Unberührt bleibt `importRootEntries`.** Die Hülle sagt, welche Definitionen
+ein Kontingent erreichen; `importRootEntries` sagt, wessen **Wurzel**-Einträge es
+als eigenes Angebot führt (XSD-Vorgabe `false`). Ein ohne dieses Attribut
+verlinkter Bibliothekskatalog liegt also im Umfang — seine geteilten Einträge
+sind über `entryLink`s erreichbar —, sein Wurzel-Angebot bleibt aber sein
+eigenes. Beide Hüllen stehen nebeneinander in `src/evaluator/catalogSet.js`
+(`buildCatalogueScopeClosure` / `buildRootImportClosure`).
+
+**Unberührt bleibt auch Entscheidung 3:** ein `catalogueLink` ohne mitgegebenen
+Ziel-Katalog ist weiterhin die Diagnose `MISSING_CATALOGUE_DEPENDENCY`, keine
+stille Teil-Auswertung.
 
 ## Bekannte Verhaltens-Charakteristiken der Engine (B1/B2)
 

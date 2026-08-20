@@ -233,7 +233,7 @@ export function evaluate(prepared, roster, options) {
   // das Budget — bis in die Query-Kontexte durchgereicht.
   const contents = PreparedDataset.contentsOf(prepared);
   const {
-    resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueScopeClosureById,
+    resolved, primaryCatalogueByForceDefId, sourceIdByDefId, catalogueScopeClosureById, rootImportClosureById,
     gameSystemDocument, diagnostics: datasetDiagnostics,
   } = contents;
 
@@ -246,6 +246,9 @@ export function evaluate(prepared, roster, options) {
   const catalogueScope = {
     sourceIdByDefId,
     catalogueScopeClosureById,
+    // Die engere Huelle daneben: wessen WURZEL-Eintraege dieses Kontingent als
+    // eigenes Angebot fuehrt (`importRootEntries`, Issue 0098 Kriterium 3).
+    rootImportClosureById,
     gameSystemId: gameSystemDocument?.id ?? null,
   };
 

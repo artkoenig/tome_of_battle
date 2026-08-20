@@ -575,6 +575,15 @@ export const DiagnosticKind = Object.freeze({
   // Katalog, der nicht unter den mitgegebenen Quellen ist — Kohaerenz-Diagnose
   // statt stiller Teil-Auswertung (ADR-0032, Entscheidung 3).
   MISSING_CATALOGUE_DEPENDENCY: 'missingCatalogueDependency',
+  // Das Roster enthaelt unter einem Kontingent eine belegte Auswahl, deren
+  // Definition aus einem Katalog **ausserhalb des Auswertungsumfangs** dieses
+  // Kontingents stammt (Issue 0156): weder sein Armeebuch noch dessen transitive
+  // `catalogueLink`-Huelle noch das Spielsystem fuehrt sie. Sie wird trotzdem
+  // voll ausgewertet — gemeldet wird sie, damit der Umfangsbruch nicht still
+  // bleibt (ADR-0032, Nachtrag zu Entscheidung 3). Die Diagnose traegt neben der
+  // `defId` die Herkunft (`sourceId`) und das Armeebuch des Kontingents
+  // (`forceCatalogueId`).
+  SELECTION_OUT_OF_CATALOGUE_SCOPE: 'selectionOutOfCatalogueScope',
   // Eine Regel nennt ueber `limit::<costTypeId>` eine eingestellte Kostengrenze,
   // die sich nicht aufloesen laesst — die Kostenart ist nicht budgetiert, das Feld
   // traegt einen Scope ausserhalb von `roster`/`force`, oder der `force`-Rahmen

@@ -274,46 +274,42 @@ describe('Kriterium 1, Rand: eine Armeebuch-Id, die der Datensatz nicht kennt, z
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Bibliothekskatalog: ausgenommen — aber NUR, wo das Roster das Armeebuch nennt
+// Bibliothekskatalog: KEINE Ausnahme mehr — es gilt die `catalogueLink`-Huelle
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('Bibliothekskatalog: ausgenommen nur, wo das Armeebuch aus der Roster-Angabe kommt', () => {
-  // Entscheidung des Issues, gestuetzt auf den schon festgelegten Vertrag aus
-  // Issue 0121, Task 19, Punkt 5 („Spielsystem- und Bibliothekseintraege
-  // erscheinen weiterhin ueberall", `CategoryUnitAdder.forceCatalogue.test.jsx`)
-  // und Kriterium 10 aus Issue 0135. Ein Soeldner-/Bibliothekskatalog ist kein
-  // Armeebuch, das man einem Kontingent streitig machen koennte — ohne die
-  // Ausnahme verloere ein Kontingent mit `.gst`-Definition genau diese Angebote.
+describe('Bibliothekskatalog: nur in der Huelle des Armeebuchs, nie als pauschale Ausnahme', () => {
+  // **Widerrufen durch Issue 0156.** Dieses Issue (0140) nahm einen
+  // Bibliothekskatalog pauschal von der Filterung aus, wo das Armeebuch des
+  // Kontingents aus der Angabe des Rosters stammte — mit der Begruendung, ein
+  // Soeldner-/Bibliothekskatalog sei kein Armeebuch, das man einem Kontingent
+  // streitig machen koennte. Issue 0156 hebt das auf: der Auswertungsumfang
+  // eines Kontingents ist **genau** sein Armeebuch, dessen transitive
+  // `catalogueLink`-Huelle und das Spielsystem — gleich, ob der Fremde eine
+  // Bibliothek ist und gleich, ob Katalogdaten oder Roster das Armeebuch
+  // genannt haben. Was ein Buch aus einer Bibliothek anbieten will, verlinkt es;
+  // dann liegt sie in seiner Huelle (und `importRootEntries` entscheidet dort
+  // ueber ihr Wurzel-Angebot, siehe die beiden Faelle weiter unten).
   //
-  // **Die Ausnahme ist eng, und sie muss es sein (Kriterium 4).** Sie gilt
-  // ausschliesslich dort, wo das Armeebuch des Kontingents aus der **Angabe des
-  // Rosters** stammt — nie dort, wo die Katalogdaten selbst geantwortet haben.
-  // Grund: dieses Issue laesst den Herkunftsfilter ueberhaupt erst in einer Lage
-  // greifen, in der er vorher gar nicht greifen konnte (Kontingent-Definition in
-  // der `.gst`). Nur fuer diese neu gefilterte Lage gibt es die Ausnahme — damit
-  // sie dem Kontingent nicht still seine geteilten Soeldner-Pools nimmt. Wo der
-  // Herkunftsindex antwortet, war der Filter schon vor diesem Issue in Kraft;
-  // dort gilt Issue 0098 unveraendert weiter, und `importRootEntries` regiert wie
-  // eh und je. Genau das verlangt Kriterium 4: ein Kontingent ohne Armeebuch-Id
-  // verhaelt sich exakt wie zuvor.
+  // Armeebuch A erwaehnt die Bibliothek in keinem `catalogueLink` — sie liegt
+  // damit ausserhalb seiner Huelle und erreicht dessen Kontingent nicht.
   const forcesFromA = [forceNode(GST_FORCE_ID, CATALOGUE_A_ID)];
 
-  it('der Wurzel-Eintrag des Bibliothekskatalogs wird angeboten', () => {
+  it('der Wurzel-Eintrag der NICHT verlinkten Bibliothek wird NICHT angeboten', () => {
     const report = evaluateForces(forcesFromA);
 
-    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(true);
+    expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(false);
   });
 
-  it('die roster-weite Pflicht des Bibliothekskatalogs gilt weiterhin', () => {
+  it('die roster-weite Pflicht der NICHT verlinkten Bibliothek gilt nicht', () => {
     const report = evaluateForces(forcesFromA);
 
-    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'l-roster-min')).toBe(false);
   });
 
-  it('die kontingent-weite Pflicht des Bibliothekskatalogs gilt weiterhin', () => {
+  it('die kontingent-weite Pflicht der NICHT verlinkten Bibliothek gilt nicht', () => {
     const report = evaluateForces(forcesFromA);
 
-    expect(hasViolationWithLimitId(report, 'l-force-min')).toBe(true);
+    expect(hasViolationWithLimitId(report, 'l-force-min')).toBe(false);
   });
 
   it('Kontrast: das NICHT-Bibliotheks-Armeebuch B bleibt im selben Bericht draussen', () => {
@@ -325,17 +321,13 @@ describe('Bibliothekskatalog: ausgenommen nur, wo das Armeebuch aus der Roster-A
     expect(hasViolationWithLimitId(report, 'b-roster-min')).toBe(false);
   });
 
-  it('Rand: im Kontingent aus einer .cat gilt die Ausnahme NICHT — dort filtert Issue 0098 unveraendert weiter', () => {
-    // Die enge Kante, und der Fall, an dem eine unbedingte Ausnahme Kriterium 4
-    // brechen wuerde: hier hat **der Herkunftsindex** geantwortet (die
-    // Kontingent-Definition steht in Armeebuch B), das Roster nennt nichts. Der
-    // Filter war fuer diese Lage schon vor diesem Issue in Kraft, und vor ihm
-    // war der Bibliothekseintrag hier weder angeboten noch seine Pflicht
-    // erzwungen — Armeebuch B fuehrt die Bibliothek in keinem `catalogueLink`.
-    // Kriterium 4 verspricht fuer ein Kontingent ohne Armeebuch-Id genau das
-    // unveraenderte Verhalten; die Ausnahme darf hier also nicht greifen, sonst
-    // brächte dieses Issue einem Roster Angebote und Pflichten, die es zuvor nie
-    // hatte.
+  it('Rand: dasselbe im Kontingent aus einer .cat — die Herkunft der Antwort aendert nichts', () => {
+    // Hier hat **der Herkunftsindex** geantwortet (die Kontingent-Definition
+    // steht in Armeebuch B), das Roster nennt nichts. Seit Issue 0156 ist das
+    // fuer den Umfang gleichgueltig: es zaehlt allein, dass Armeebuch B die
+    // Bibliothek in keinem `catalogueLink` fuehrt. Zuvor trug dieselbe Zeile die
+    // Gegenprobe zur Bibliotheks-Ausnahme; nun ist sie die zweite Haelfte
+    // derselben, einen Regel.
     const report = evaluateForces([forceNode(B_OWN_FORCE_ID, undefined)]);
 
     expect(isOfferedAnywhere(report, 'l-offer-unit')).toBe(false);
@@ -343,13 +335,13 @@ describe('Bibliothekskatalog: ausgenommen nur, wo das Armeebuch aus der Roster-A
   });
 
   it('Rand: nennt das roster-deklarierte Armeebuch die Bibliothek per catalogueLink importRootEntries="false", bleibt sie draussen', () => {
-    // Die Ausnahme fuellt eine **Luecke** in der Auskunft der Katalogdaten — sie
-    // ueberschreibt keine Auskunft, die es gibt. Armeebuch C nennt die
-    // Bibliothek ausdruecklich per `catalogueLink` und stellt damit
-    // `importRootEntries="false"`: „deren Wurzel-Angebot gehoert nicht zu
-    // meinem" (XSD-Vorgabe, ADR-0032; Issue 0098, Kriterium 3). Diese
-    // ausdrueckliche Aussage schlaegt die Ausnahme — anders als bei Armeebuch A,
-    // das die Bibliothek nirgends erwaehnt und deshalb oben ausgenommen bleibt.
+    // Der Fall, in dem die Bibliothek sehr wohl in der Huelle liegt (Armeebuch C
+    // nennt sie per `catalogueLink`) und ihr Wurzel-Angebot trotzdem draussen
+    // bleibt: der Link stellt `importRootEntries="false"` — „deren
+    // Wurzel-Angebot gehoert nicht zu meinem" (XSD-Vorgabe, ADR-0032; Issue
+    // 0098, Kriterium 3). Die Huelle entscheidet, welche Definitionen das
+    // Kontingent erreichen; `importRootEntries` entscheidet, wessen
+    // Wurzel-Eintraege es als eigenes Angebot fuehrt (Issue 0156).
     // Das Gegenstueck `importRootEntries="true"` haelt schon
     // `crossCatalog.rootEntryScope.test.js` (Issue 0098, Kriterium 3) fest.
     const report = evaluate(

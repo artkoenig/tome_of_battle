@@ -267,11 +267,17 @@ export function buildDefinitionSourceIndex(documents) {
  * selbst, plus transitiv und zyklensicher jeder Katalog, den er per
  * `catalogueLink` benennt.
  *
- * `importRootEntries` steuert das **nicht** (Issue 0156, ADR-0032 Nachtrag):
- * ein `catalogueLink` ist die Umfangs- und Aufloesungsgrenze eines Armeebuchs,
- * nicht bloss eine Abhaengigkeits-Deklaration. Wer verlinkt ist, ist im
- * Umfang; wer nicht verlinkt ist, erreicht dieses Kontingent nicht — auch dann
- * nicht, wenn er als Quelle mitgegeben wurde.
+ * `importRootEntries` steuert diese Huelle **nicht** (Issue 0156, ADR-0032
+ * Nachtrag): ein `catalogueLink` ist die Umfangs- und Aufloesungsgrenze eines
+ * Armeebuchs, nicht bloss eine Abhaengigkeits-Deklaration. Wer verlinkt ist,
+ * ist im Umfang; wer nicht verlinkt ist, erreicht dieses Kontingent nicht —
+ * auch dann nicht, wenn er als Quelle mitgegeben wurde.
+ *
+ * Was `importRootEntries` steuert, ist die **engere** zweite Huelle
+ * ({@link buildRootImportClosure}): ob die **Wurzel**-Eintraege des verlinkten
+ * Katalogs zum Wurzel-Angebot des verlinkenden gehoeren. Ein geteilter Eintrag
+ * des verlinkten Katalogs bleibt davon unberuehrt — er wird ueber einen
+ * `entryLink` erreicht, nicht importiert.
  *
  * Nur ein Katalog mit eigener Wurzel-Id nimmt an der Huelle teil — ein Katalog
  * ohne sie bekommt keinen Eintrag und gilt ueberall dort, wo dieser Index
@@ -282,6 +288,36 @@ export function buildDefinitionSourceIndex(documents) {
  * @returns {Map<string, Set<string>>} Katalog-Id → Menge der Katalog-Ids in ihrer Huelle.
  */
 export function buildCatalogueScopeClosure(catalogueDocuments) {
+  return buildClosure(catalogueDocuments, () => true);
+}
+
+/**
+ * Baut die **Wurzel-Import-Huelle** je Katalog (`Map<catalogueId,
+ * Set<catalogueId>>`): die Menge der Katalog-Ids, deren **Wurzel**-Eintraege zum
+ * Wurzel-Angebot eines Kontingents dieses Katalogs gehoeren — er selbst, plus
+ * transitiv und zyklensicher jeder Katalog, den er per `catalogueLink` mit
+ * `importRootEntries="true"` benennt.
+ *
+ * Sie ist die engere Schwester von {@link buildCatalogueScopeClosure} und
+ * beantwortet eine andere Frage: jene sagt, **welche Definitionen** ein
+ * Kontingent ueberhaupt erreichen, diese, **wessen Wurzel-Eintraege** es als
+ * eigenes Angebot fuehrt (Issue 0098, Kriterium 3). Ohne
+ * `importRootEntries="true"` ist ein `catalogueLink` laut XSD-Vorgabe stumm:
+ * die geteilten Eintraege des Ziels bleiben ueber `entryLink`s erreichbar, sein
+ * Wurzel-Angebot gehoert aber nicht dem verlinkenden Katalog.
+ *
+ * @param {Array<{ id?: string|null, catalogueLinks?: Array<{ targetId: string, importRootEntries?: boolean }> }>} catalogueDocuments
+ * @returns {Map<string, Set<string>>} Katalog-Id → Menge der Katalog-Ids, deren Wurzel-Eintraege er importiert.
+ */
+export function buildRootImportClosure(catalogueDocuments) {
+  return buildClosure(catalogueDocuments, link => link.importRootEntries === true);
+}
+
+/**
+ * Die gemeinsame, transitive und zyklensichere Huellenbildung beider Indizes —
+ * `followLink` entscheidet, welche `catalogueLink`s sie durchschreitet.
+ */
+function buildClosure(catalogueDocuments, followLink) {
   const byId = new Map(catalogueDocuments.filter(document => document.id !== null && document.id !== undefined)
     .map(document => [document.id, document]));
 
@@ -292,7 +328,7 @@ export function buildCatalogueScopeClosure(catalogueDocuments) {
     visited.add(catalogueId);
     const document = byId.get(catalogueId);
     for (const link of document?.catalogueLinks ?? []) {
-      if (!byId.has(link.targetId)) continue;
+      if (!byId.has(link.targetId) || !followLink(link)) continue;
       for (const linkedId of closureOf(link.targetId, visited)) hull.add(linkedId);
     }
     return hull;
@@ -346,15 +382,50 @@ export function buildCatalogueScopeClosure(catalogueDocuments) {
  * @returns {boolean}
  */
 export function isInCatalogueScope(defId, catalogueIds, catalogueScope) {
+  return isInClosure(defId, catalogueIds, catalogueScope, catalogueScope?.catalogueScopeClosureById);
+}
+
+/**
+ * True, wenn eine **Wurzel**-Definition zum Wurzel-Angebot irgendeines der
+ * gegebenen Referenz-Kataloge gehoert — dieselbe Pruefung wie
+ * {@link isInCatalogueScope}, aber gegen die engere Wurzel-Import-Huelle
+ * ({@link buildRootImportClosure}).
+ *
+ * Sie gilt genau dort, wo eine Definition **als Wurzel-Eintrag ihres Katalogs**
+ * ins Spiel kommt: das Wurzel-Angebot je Kontingent (`offer.js`) und die
+ * Pflicht-Phantome der Wurzel-Definitionsliste (`evalTree.js`). Ein Katalog, den
+ * das Armeebuch ohne `importRootEntries="true"` verlinkt, liegt zwar im
+ * Auswertungsumfang — seine Wurzel-Eintraege bleiben aber sein eigenes Angebot
+ * (Issue 0098, Kriterium 3). Alles Uebrige — geteilte Eintraege, Link-Ziele,
+ * Kategorien — geht ueber {@link isInCatalogueScope}.
+ *
+ * @param {string} defId
+ * @param {Iterable<string>} catalogueIds
+ * @param {{ sourceIdByDefId: Map<string, string>, rootImportClosureById: Map<string, Set<string>>, gameSystemId: string|null }} [catalogueScope]
+ * @returns {boolean}
+ */
+export function isInRootImportScope(defId, catalogueIds, catalogueScope) {
+  return isInClosure(defId, catalogueIds, catalogueScope, catalogueScope?.rootImportClosureById);
+}
+
+/**
+ * Der gemeinsame Kern beider Pruefungen: dieselben Faelle des offenen Ausfalls,
+ * nur je eine andere Huelle.
+ */
+function isInClosure(defId, catalogueIds, catalogueScope, closureById) {
   if (catalogueScope === null || catalogueScope === undefined) return true;
-  const { sourceIdByDefId, catalogueScopeClosureById, gameSystemId } = catalogueScope;
+  // Eine Huelle, die der Kontext nicht fuehrt (ein aelterer, von Hand gebauter
+  // `catalogueScope` einer Schichtenprobe), faellt offen aus wie ein fehlender
+  // Kontext — nicht als Ausschluss von allem.
+  if (closureById === null || closureById === undefined) return true;
+  const { sourceIdByDefId, gameSystemId } = catalogueScope;
   const sourceId = sourceIdByDefId.get(defId);
   if (sourceId === undefined || sourceId === null) return true;
   if (sourceId === gameSystemId) return true;
   let hasAnyReference = false;
   for (const catalogueId of catalogueIds) {
     hasAnyReference = true;
-    if (catalogueScopeClosureById.get(catalogueId)?.has(sourceId)) return true;
+    if (closureById.get(catalogueId)?.has(sourceId)) return true;
   }
   return !hasAnyReference;
 }

@@ -44,7 +44,7 @@
  */
 
 import { AnchorKind, CountedFieldKind, DefinitionKind, InfoElementKind, DiagnosticKind, ConstraintKind, ScopeKeyword, diagnostic, isLinkDefinition } from './model.js';
-import { isInCatalogueScope, declaredCatalogueIdOf, forceCatalogueIdOf } from './catalogSet.js';
+import { isInCatalogueScope, isInRootImportScope, declaredCatalogueIdOf, forceCatalogueIdOf } from './catalogSet.js';
 
 /** Praefix der Rahmen-Identitaet eines realen Knotens (die Wurzel ist `roster`). */
 const NODE_FRAME_PREFIX = 'node:';
@@ -418,7 +418,14 @@ function countInstances(fromNode, defId) {
  * **Katalog-Bezugsrahmen** (`catalogueScope`, Issue 0098): eine eigenstaendige
  * Wurzel-Definition (`ENTRY`/`FORCE`/`ENTRY_LINK`) synthetisiert ihr
  * Pflicht-Phantom nur, wenn ihre Herkunft zum Katalog-Fussabdruck der
- * Referenz-Kataloge gehoert ({@link isInCatalogueScope}) — fuer den
+ * Referenz-Kataloge gehoert — und zwar, weil sie hier als **Wurzel**-Eintrag
+ * ihres Katalogs ins Spiel kommt, in der engeren Lesart
+ * ({@link isInRootImportScope}): ein ohne `importRootEntries="true"`
+ * verlinkter Katalog liegt im Auswertungsumfang, seine Wurzel-Eintraege aber
+ * erzwingen im verlinkenden Buch nichts (Issue 0098, Kriterium 3). Geteilte
+ * Eintraege gehen stattdessen ueber
+ * {@link synthesizeOfferedSharedMandatoryPhantoms} und dort ueber die volle
+ * Huelle ({@link isInCatalogueScope}) — fuer den
  * ROSTER-Rahmen die Kataloge **aller** im Roster tatsaechlich vertretenen
  * Kontingente, fuer den FORCE-Rahmen allein der Katalog **dieses**
  * Kontingents. Welches Armeebuch ein Kontingent hat, beantwortet dabei
@@ -518,7 +525,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
     const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
     if (hasMinLimit(limits, ScopeKeyword.ROSTER) && countInstances(root, def.id) === 0
         && ((def.kind === DefinitionKind.CATEGORY && rosterLinkedCategoryIds.has(def.id))
-          || isInCatalogueScope(def.id, rosterCatalogueReferences, catalogueScope))) {
+          || isInRootImportScope(def.id, rosterCatalogueReferences, catalogueScope))) {
       attachPhantom(root, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
     }
   }
@@ -536,7 +543,7 @@ function synthesizeMandatoryPhantoms(root, definitions, nextFrameId, catalogueSc
       const { limits, ownLimitsOnly } = mandatoryLimitStockOf(def);
       if (hasMinLimit(limits, ScopeKeyword.FORCE) && countInstances(forceNode, def.id) === 0
           && ((def.kind === DefinitionKind.CATEGORY && forceLinkedCategoryIds.has(def.id))
-            || isInCatalogueScope(def.id, forceCatalogueReferences, catalogueScope))) {
+            || isInRootImportScope(def.id, forceCatalogueReferences, catalogueScope))) {
         attachPhantom(forceNode, def, nextFrameId, AnchorKind.MANDATORY_PHANTOM, null, ownLimitsOnly);
       }
     }
@@ -1095,6 +1102,48 @@ function synthesizeGroupAnchors(root, resolved, nextFrameId) {
 }
 
 /**
+ * Meldet jede **belegte** Auswahl, deren Definition aus einem Katalog
+ * ausserhalb des Auswertungsumfangs ihres Kontingents stammt (Issue 0156,
+ * Kriterium 4) — `SELECTION_OUT_OF_CATALOGUE_SCOPE`.
+ *
+ * Der Umfang ist derselbe wie ueberall sonst ({@link isInCatalogueScope}): das
+ * Armeebuch des Kontingents, dessen transitive `catalogueLink`-Huelle und das
+ * Spielsystem. Anders als beim Angebot wird hier die **volle** Huelle gelesen,
+ * nicht die Wurzel-Import-Huelle: ob ein Eintrag als Wurzel-Angebot gehoert
+ * haette, ist eine andere Frage als die, ob seine Definition dieses Kontingent
+ * ueberhaupt erreicht.
+ *
+ * Gemeldet, nicht verworfen: die Auswahl steht im Roster und wird weiter voll
+ * ausgewertet. Was sie nicht darf, ist still bleiben — weder als Absturz noch
+ * als halbe Auswertung (ADR-0032, Entscheidung 3 und ihr Nachtrag).
+ *
+ * Ein Knoten ueber keinem Kontingent (`forceRoot === null`) und ein Kontingent
+ * ohne bekanntes Armeebuch haben nichts, wogegen zu pruefen waere; beide fallen
+ * offen aus, wie die Pruefung selbst.
+ */
+function diagnoseSelectionsOutOfCatalogueScope(root, catalogueScope, primaryCatalogueByForceDefId, diagnostics) {
+  if (catalogueScope === null || catalogueScope === undefined) return;
+  const forceCatalogueIdByFrameId = new Map();
+  for (const node of realNodes(root)) {
+    const forceRoot = node.forceRoot;
+    if (forceRoot === null || forceRoot === undefined) continue;
+    if (!forceCatalogueIdByFrameId.has(forceRoot.frameId)) {
+      forceCatalogueIdByFrameId.set(forceRoot.frameId, forceCatalogueIdOf(forceRoot, primaryCatalogueByForceDefId));
+    }
+    const forceCatalogueId = forceCatalogueIdByFrameId.get(forceRoot.frameId);
+    if (forceCatalogueId === undefined) continue;
+    const defId = node.def?.id;
+    if (defId === undefined || defId === null) continue;
+    if (isInCatalogueScope(defId, [forceCatalogueId], catalogueScope)) continue;
+    diagnostics.push(diagnostic(DiagnosticKind.SELECTION_OUT_OF_CATALOGUE_SCOPE, {
+      defId,
+      sourceId: catalogueScope.sourceIdByDefId.get(defId) ?? null,
+      forceCatalogueId,
+    }));
+  }
+}
+
+/**
  * Baut **Baumphase 1** aus aufgeloesten Definitionen und Roster-Instanzen: die
  * realen Knoten und alle Anker, die schon vor der Konvergenz feststehen. Die
  * Wurzel ist ein synthetischer Ankerknoten ohne eigene Definition; sie traegt den
@@ -1153,6 +1202,7 @@ export function buildEvalTree(resolved, roster, catalogueScope, primaryCatalogue
   for (const forceInstance of roster.forces ?? []) {
     attachInstance(root, forceInstance, resolved, diagnostics, nextFrameId, knownCatalogueIds);
   }
+  diagnoseSelectionsOutOfCatalogueScope(root, catalogueScope, primaryCatalogueByForceDefId, diagnostics);
   // Direkt nach dem Instanzbaum: die Sichtbarkeits-Klammern der belegten Knoten.
   // Sie stammen aus dem Definitionsbaum, nicht aus der Instanz — die `.ros`
   // verwirft die Gruppen-Zugehoerigkeit (§3.2).

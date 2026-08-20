@@ -268,6 +268,9 @@ const ORIGIN_GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
 
 const OWN_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 <catalogue id="${OWN_CATALOGUE_ID}" name="Ogre Kingdoms" gameSystemId="${ORIGIN_GS_ID}">
+  <catalogueLinks>
+    <catalogueLink id="cl-own-to-lib" name="Bibliothek" type="catalogue" targetId="${LIBRARY_CATALOGUE_ID}" importRootEntries="true"/>
+  </catalogueLinks>
   <selectionEntries>${originUnitXml('entry-own', 'Schlachtmeister', 50)}</selectionEntries>
 </catalogue>`;
 

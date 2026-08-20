@@ -31,6 +31,7 @@ import {
   buildPrimaryCatalogueIndex,
   buildDefinitionSourceIndex,
   buildCatalogueScopeClosure,
+  buildRootImportClosure,
 } from './catalogSet.js';
 import { resolveCatalogue } from './resolver.js';
 import { DiagnosticKind, diagnostic } from './model.js';
@@ -88,10 +89,10 @@ function checkDatasetCoherence(gameSystemDocument, catalogueDocuments, diagnosti
  * bezweckt (ADR-0034).
  */
 export class PreparedDataset {
-  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }} */
+  /** @type {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, rootImportClosureById: Map<string, Set<string>>, diagnostics: object[] }} */
   #contents;
 
-  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }} contents */
+  /** @param {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, rootImportClosureById: Map<string, Set<string>>, diagnostics: object[] }} contents */
   constructor(contents) {
     this.#contents = contents;
   }
@@ -100,7 +101,7 @@ export class PreparedDataset {
    * Der Inhalt eines aufbereiteten Datensatzes — **engine-intern**.
    *
    * @param {PreparedDataset} prepared  Das Ergebnis von {@link prepareDataset}.
-   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, diagnostics: object[] }}
+   * @returns {{ gameSystemDocument: object|null, catalogueDocuments: object[], resolved: object, primaryCatalogueByForceDefId: Map<string, string>, sourceIdByDefId: Map<string, string>, catalogueScopeClosureById: Map<string, Set<string>>, rootImportClosureById: Map<string, Set<string>>, diagnostics: object[] }}
    * @throws {TypeError} Wenn kein aufbereiteter Datensatz uebergeben wurde. Das ist
    *   der haeufigste Aufruffehler der zweistufigen Fassade — ein roher Datensatz
    *   `{ gameSystem, catalogues }` statt seines aufbereiteten Ergebnisses —, und er
@@ -138,7 +139,11 @@ export class PreparedDataset {
  * (`catalogueScopeClosureById`, {@link buildCatalogueScopeClosure}): welche
  * Katalog-Herkuenfte im Auswertungsumfang eines Kontingents dieses Katalogs
  * liegen — er selbst und, transitiv, jeder per `catalogueLink` benannte
- * Katalog (Issue 0156). Alle sind rosterunabhaengig und gehoeren deshalb
+ * Katalog (Issue 0156) — und daneben die engere **Wurzel-Import-Huelle**
+ * (`rootImportClosureById`, {@link buildRootImportClosure}), die nur
+ * `catalogueLink`s mit `importRootEntries="true"` durchschreitet und damit
+ * sagt, wessen Wurzel-Eintraege ein Katalog als eigenes Angebot fuehrt. Alle
+ * sind rosterunabhaengig und gehoeren deshalb
  * in den Vorlauf, nicht in die Auswertung.
  *
  * @param {{ gameSystem?: string, catalogues?: string[] }} dataset
@@ -205,6 +210,10 @@ function prepare(dataset) {
     // `catalogueLink`-Huelle eines Katalogs ist eine Eigenschaft von
     // `catalogueLink`s, die nur zwischen Katalogen bestehen (Issue 0156).
     catalogueScopeClosureById: buildCatalogueScopeClosure(catalogueDocuments),
+    // Dieselbe Quelle, die engere Frage: wessen WURZEL-Eintraege ein Katalog als
+    // eigenes Angebot fuehrt — nur ueber `catalogueLink`s mit
+    // `importRootEntries="true"` (Issue 0098, Kriterium 3).
+    rootImportClosureById: buildRootImportClosure(catalogueDocuments),
     diagnostics: [...merged.diagnostics, ...coherenceDiagnostics, ...resolved.diagnostics],
   });
 }

@@ -54,7 +54,7 @@
 
 import { DefinitionKind, isLinkDefinition } from './model.js';
 import { attachOfferAnchor, realNodes, ownerDefinitionOf, linkedCategoryIdsOf } from './evalTree.js';
-import { isInCatalogueScope, forceCatalogueIdOf } from './catalogSet.js';
+import { isInRootImportScope, forceCatalogueIdOf } from './catalogSet.js';
 
 /**
  * Die **Basis**-Kategorien einer angebotenen Definition: ihre eigenen
@@ -172,8 +172,11 @@ function* optionDefinitionsUnder(ownerDef, visited = new Set(), gates = []) {
  * 0098, Umfang nach Issue 0156): ein Wurzel-Angebot — ein eigenstaendiger
  * Eintrag (`ENTRY`) **wie** ein Wurzel-`entryLink` — wird nur angeboten, wenn
  * der es deklarierende Katalog im Auswertungsumfang **dieses** Kontingents
- * liegt ({@link isInCatalogueScope}): sein Armeebuch, dessen transitive
- * `catalogueLink`-Huelle und das Spielsystem. Die frueher fuer einen
+ * liegt ({@link isInRootImportScope}): sein Armeebuch, dessen transitive
+ * `catalogueLink`-Huelle und das Spielsystem — beim Wurzel-Angebot in der
+ * engeren Lesart, die nur `catalogueLink`s mit `importRootEntries="true"`
+ * durchschreitet: die Wurzel-Eintraege eines ohne dieses Attribut verlinkten
+ * Katalogs bleiben sein eigenes Angebot (Issue 0098, Kriterium 3). Die frueher fuer einen
  * Wurzel-`entryLink` gemachte Ausnahme — er verankerte unabhaengig von seiner
  * Herkunft, weil geteilte Inhalte („Regiments of Renown“/Soeldner) so
  * angeboten wuerden — **entfaellt ersatzlos** (Issue 0156, Kriterium 2): ein
@@ -204,7 +207,7 @@ function candidatesFor(frame, armyLevelCandidates, catalogueScope, primaryCatalo
     const forceCatalogueId = forceCatalogueIdOf(frame, primaryCatalogueByForceDefId);
     const catalogueIds = forceCatalogueId === undefined ? [] : [forceCatalogueId];
     const carried = armyLevelCandidates.filter(def => isCarriedByForce(def, forceCategoryIds));
-    const isInScope = def => isInCatalogueScope(def.id, catalogueIds, catalogueScope);
+    const isInScope = def => isInRootImportScope(def.id, catalogueIds, catalogueScope);
     const inScope = carried.filter(isInScope);
     // Die Ziele, die das Buch DIESES Kontingents selbst per Wurzel-`entryLink`
     // fuehrt: sie gewinnen die Entdopplung gegen jedes andere Angebot desselben

@@ -213,7 +213,7 @@
     },
     {
       "file": "rosters/07-phantom-and-offer.ros",
-      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den beiden Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\", sonst leer. Zwei Aussagen in einem Roster: (a) der Pflicht-Anker \"Army of Sylvania\" - ein Wurzel-Eintrag mit je einer unerfuellten min-1-Grenze in force- und in parent-Reichweite - ist in diesem Kontingent effektiv versteckt: seine beiden Min-Grenzen erzeugen KEINE Meldung (Issue 0088); (b) der Angebots-Anker \"Manbiters\" traegt im Faehigkeits-Datensatz seine Autor-Meldung, steuert aber NICHTS zur Meldungsliste bei - weder diese Autor-Meldung noch die min-3-Grenze unterhalb des ebenfalls nur angebotenen \"Fell Bats\".",
+      "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den beiden Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\", sonst leer. Zwei Aussagen in einem Roster: (a) der Pflicht-Anker \"Army of Sylvania\" - ein Wurzel-Eintrag mit je einer unerfuellten min-1-Grenze in force- und in parent-Reichweite - ist in diesem Kontingent effektiv versteckt: seine beiden Min-Grenzen erzeugen KEINE Meldung (Issue 0088); (b) weder die Autor-Meldung des Mercenaries-Eintrags \"Manbiters\" noch die min-3-Grenze unterhalb des nur angebotenen \"Fell Bats\" steuert etwas zur Meldungsliste bei. \"Manbiters\" selbst wird in einem Vampirfuersten-Kontingent gar nicht mehr angeboten: der einzige Wurzel-entryLink darauf steht in der O&G-.cat, und ein fremdes Armeebuch verankert kein Angebot mehr (Issue 0156).",
       "dataset": {
         "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
@@ -229,19 +229,7 @@
           "1f2f-e5cc-d04d-162e",
           "e23f-0cea-11ac-9376"
         ],
-        "capabilities": [
-          {
-            "targetDefId": "0efb-7f63-7932-0655",
-            "anchorKind": "offerAnchor",
-            "frameDefId": "5e95-7d57-2b9c-d77d",
-            "name": "Manbiters",
-            "current": 0,
-            "effectiveMax": 0,
-            "authorMessages": [
-              { "severity": "error", "text": "Please enable \"Allow experimental rules?\"" }
-            ]
-          }
-        ],
+        "capabilities": [],
         "messages": [
           {
             "origin": "derivedLimit",
