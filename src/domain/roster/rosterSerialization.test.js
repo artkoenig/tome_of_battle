@@ -150,7 +150,7 @@ const mockRoster = {
 describe('Roster Serialization & Deserialization', () => {
   test('serialize roster to XML and deserialize back successfully', () => {
     // 1. Export roster to XML string
-    const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
+    const xmlText = exportRosterToXml(mockRoster, mockSystems[0], evaluateAppRoster(mockSystems[0], mockRoster));
     
     expect(xmlText).toContain('<?xml version="1.0"');
     expect(xmlText).toContain('<roster id="roster-uuid-1" name="My Undead Army"');
@@ -214,7 +214,7 @@ describe('Roster Serialization & Deserialization', () => {
       ]
     };
 
-    const xmlText = exportRosterToXml(multiModelRoster, mockSystems[0]);
+    const xmlText = exportRosterToXml(multiModelRoster, mockSystems[0], evaluateAppRoster(mockSystems[0], multiModelRoster));
     // The selection's <cost> must carry the total (5 * 10 = 50), not the per-item value.
     expect(xmlText).toContain('number="10" type="upgrade"');
     expect(xmlText).toContain('<cost name="pts" typeId="pts-id-999" value="50"/>');
@@ -229,7 +229,7 @@ describe('Roster Serialization & Deserialization', () => {
   test('round-trips the point limit through the costLimits block', () => {
     const limitedRoster = { ...mockRoster, id: 'roster-limit', costLimit: 3000 };
 
-    const xmlText = exportRosterToXml(limitedRoster, mockSystems[0]);
+    const xmlText = exportRosterToXml(limitedRoster, mockSystems[0], evaluateAppRoster(mockSystems[0], limitedRoster));
     expect(xmlText).toContain('<costLimits>');
     expect(xmlText).toContain('<costLimit name="pts" typeId="pts-id-999" value="3000"/>');
 
@@ -325,10 +325,10 @@ describe('Roster Serialization & Deserialization', () => {
       }))
     });
 
-    const firstImport = importRosterFromXml(exportRosterToXml(mockRoster, mockSystems[0]), mockSystems);
+    const firstImport = importRosterFromXml(exportRosterToXml(mockRoster, mockSystems[0], evaluateAppRoster(mockSystems[0], mockRoster)), mockSystems);
     expect(firstImport.forces.length).toBe(1);
 
-    const secondImport = importRosterFromXml(exportRosterToXml(firstImport, mockSystems[0]), mockSystems);
+    const secondImport = importRosterFromXml(exportRosterToXml(firstImport, mockSystems[0], evaluateAppRoster(mockSystems[0], firstImport)), mockSystems);
     expect(withoutIds(secondImport)).toEqual(withoutIds(firstImport));
   });
 
@@ -392,7 +392,7 @@ describe('Roster Serialization & Deserialization', () => {
   });
 
   test('throws MissingSystemError if game system is not found in systems database', () => {
-    const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
+    const xmlText = exportRosterToXml(mockRoster, mockSystems[0], evaluateAppRoster(mockSystems[0], mockRoster));
     
     // Call parser with an empty systems list
     expect(() => importRosterFromXml(xmlText, [])).toThrow(MissingSystemError);
@@ -502,20 +502,20 @@ describe('Export derives cost and type from the catalogue', () => {
   };
 
   test('per-selection cost flat-sum equals the computed roster total (no stored costs)', () => {
-    const xml = exportRosterToXml(roster, catSystem);
+    const xml = exportRosterToXml(roster, catSystem, evaluateAppRoster(catSystem, roster));
     // 5 (unit) + (2 + 1 modifier) * 3 = 5 + 9 = 14
     expect(evaluateAppRoster(catSystem, roster).costTotals.pts).toBe(14);
     expect(flatSelectionPts(xml)).toBe(14);
   });
 
   test('serializes the modifier-aware value per selection', () => {
-    const xml = exportRosterToXml(roster, catSystem);
+    const xml = exportRosterToXml(roster, catSystem, evaluateAppRoster(catSystem, roster));
     // Choppa base 2 + modifier 1 = 3, times its 3 count = 9 (not 6).
     expect(xml).toContain('<cost name="pts" typeId="pts" value="9"/>');
   });
 
   test('derives the type attribute from the catalogue entry', () => {
-    const xml = exportRosterToXml(roster, catSystem);
+    const xml = exportRosterToXml(roster, catSystem, evaluateAppRoster(catSystem, roster));
     expect(xml).toContain('name="Orc Boyz" entryId="boyz" entryLinkId="" number="1" type="unit"');
     expect(xml).toContain('name="Choppa" entryId="choppa" entryLinkId="" number="3" type="upgrade"');
   });

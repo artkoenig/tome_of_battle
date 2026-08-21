@@ -16,7 +16,7 @@ const REGELBUCH_URL = 'https://6th.whfb.app/?utm_source=6th-builder&utm_medium=r
 
 const mockResolveRuleUrl = vi.fn();
 
-vi.mock('../hooks/useRuleUrl', () => ({
+vi.mock('../viewmodels/useRuleUrl', () => ({
   useRuleUrl: () => mockResolveRuleUrl,
 }));
 
@@ -35,7 +35,7 @@ vi.mock('../../data/db/database', () => ({
   saveRoster: vi.fn(),
 }));
 
-vi.mock('../hooks/usePlayState', () => ({
+vi.mock('../viewmodels/usePlayState', () => ({
   default: () => ({
     gameState: { wounds: {} },
     adjustTracker: vi.fn(),

@@ -129,14 +129,30 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
     const resolvedUpgrade = {
       id: 'res-sword',
       name: UPGRADE_NAME,
-      rules: [{ description: 'A mighty sword' }],
       profiles: [],
     };
+
+    // Der Regeltext einer Aufwertung kommt aus der Info-Projektion ihres Slots
+    // (`capability.infoElements`), nicht mehr aus dem aufgeloesten Eintrag.
+    const upgradeCapabilities = new Map([
+      ['0', {
+        anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false,
+        primaryCategoryId: null, name: 'Unit', infoElements: [],
+      }],
+      ['0/0', {
+        anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false,
+        primaryCategoryId: null, name: UPGRADE_NAME,
+        infoElements: [{ kind: 'rule', id: 'r-sword', name: UPGRADE_NAME, text: 'A mighty sword' }],
+      }],
+    ]);
+    const upgradePathBySelectionId = new Map([['sel-1', '0'], ['sub-1', '0/0']]);
 
     const renderUpgradesChips = (overrides = {}) =>
       render(
         <UnitUpgradesChips
           {...baseProps}
+          capabilities={upgradeCapabilities}
+          pathBySelectionId={upgradePathBySelectionId}
           selection={upgradeSelection}
           onClickDetails={noop}
           onShowRule={noop}

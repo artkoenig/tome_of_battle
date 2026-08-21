@@ -441,6 +441,12 @@ function computeReport(prepared, roster, options) {
       libraryCatalogueIds,
       gameSystemId: catalogueScope.gameSystemId,
       primaryCatalogueByForceDefId,
+      // Die Dokumente des Datensatzes, fuer den einen Rueckfall der
+      // Info-Projektion: ein Slot ohne jeden Regeltext nimmt die gleichnamige
+      // Regel seines eigenen Katalogs (Issue 0173, `infoProjection.js`).
+      documents: gameSystemDocument === null
+        ? contents.catalogueDocuments
+        : [gameSystemDocument, ...contents.catalogueDocuments],
     });
   });
 

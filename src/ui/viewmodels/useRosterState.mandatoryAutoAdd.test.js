@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRoster } from './useRoster';
+import { useRosterState } from './useRosterState';
 import { syncRosterSelectionsWithSystem } from '../../domain/roster';
 import { findMissingMandatoryListRules } from '../../domain/evaluation/mandatoryListRules';
 
 /**
- * Issue 0138 — the auto-add effect in useRoster.js (Plan contracts 5/6):
+ * Issue 0138 — the auto-add effect in useRosterState.js (Plan contracts 5/6):
  * a 5th `isFreshRoster` parameter gates an effect that, per force, asks
  * `findMissingMandatoryListRules` (since Issue 0157 a **report** reader in
  * `src/domain/evaluation/`) and commits any hits via `replaceRoster` (no undo step),
@@ -16,7 +16,7 @@ import { findMissingMandatoryListRules } from '../../domain/evaluation/mandatory
  * resolveEntry/syncRosterSelectionsWithSystem stubs this file already carries)
  * — which slots qualify is the reader's own contract, covered by
  * `mandatoryListRules.test.js` and, end to end, by
- * `useRoster.costedMandatoryAutoAdd.test.js`. This file drives the EFFECT
+ * `useRosterState.costedMandatoryAutoAdd.test.js`. This file drives the EFFECT
  * WIRING: gating on isFreshRoster, the no-undo-step commit, and same-session
  * re-evaluation.
  */
@@ -36,7 +36,7 @@ vi.mock('../../domain/evaluation/mandatoryListRules', () => ({
 // from looping, and pinning that guard is part of the point.
 const missingAmong = (hits) => () => hits;
 
-describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', () => {
+describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)', () => {
   const mockSystem = { id: 'sys-1', name: 'Test System' };
   const initialRoster = {
     id: 'roster-1',
@@ -62,7 +62,7 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
   it('AC1: adds the one eligible mandatory selection to a fresh roster', () => {
     findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn(), undefined, true));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
 
     expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
   });
@@ -70,7 +70,7 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
   it('AC1: the auto-add commits via replaceRoster, not setRoster — no undo step is recorded', () => {
     findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn(), undefined, true));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
 
     expect(result.current.roster.forces[0].selections).toHaveLength(1);
     expect(result.current.canUndo).toBe(false);
@@ -85,7 +85,7 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
     };
     findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit, secondHit]));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn(), undefined, true));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
 
     const ids = result.current.roster.forces[0].selections.map(s => s.selectionEntryId).sort();
     expect(ids).toEqual(['campaign-rules', 'laws-of-undeath']);
@@ -95,7 +95,7 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
   it('AC4: never auto-adds on a roster that is not freshly created (isFreshRoster=false)', () => {
     findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn(), undefined, false));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, false));
 
     expect(result.current.roster.forces[0].selections).toEqual([]);
   });
@@ -103,7 +103,7 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
   it('AC4: never auto-adds when the fresh-marker is omitted (safe default for existing callers)', () => {
     findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
     expect(result.current.roster.forces[0].selections).toEqual([]);
   });
@@ -117,14 +117,14 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
     let visibleInReport = false;
     findMissingMandatoryListRules.mockImplementation(() => (visibleInReport ? [mandatoryHit] : []));
 
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn(), undefined, true));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
 
     // Nothing eligible yet: the reactive rule stays absent.
     expect(result.current.roster.forces[0].selections).toEqual([]);
 
     visibleInReport = true;
     act(() => {
-      result.current.addUnit(triggerEntry, 'cat-general');
+      result.current.commands.addUnit(triggerEntry, 'cat-general');
     });
 
     // The trigger is now present (a manual, undoable action) AND, in the same
@@ -149,14 +149,14 @@ describe('useRoster — automatic mandatory list-rule auto-add (Issue 0138)', ()
       }],
     };
 
-    const { result } = renderHook(() => useRoster(rosterWithSelection, mockSystem, vi.fn(), undefined, true));
+    const { result } = renderHook(() => useRosterState(rosterWithSelection, mockSystem, vi.fn(), undefined, true));
 
     expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
 
     // Trigger a further render (e.g. an unrelated user action) and confirm the
     // selection is still untouched afterwards.
     act(() => {
-      result.current.updateRosterName('Renamed');
+      result.current.commands.updateRosterName('Renamed');
     });
     expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
   });

@@ -29,6 +29,7 @@ const BOOK_ID = 'book-brb';
 const BOOK_NAME = 'Warhammer Rulebook';
 const OTHER_BOOK_ID = 'book-armies';
 const UNKNOWN_BOOK_ID = 'book-nirgends-deklariert';
+const PLAIN_UNIT_ID = 'entry-ohne-buch';
 
 /** Das Spielsystem deklariert die Buecher — und die Profiltypen. */
 const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
@@ -50,7 +51,8 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
       </rule>
     </sharedRules>
     <selectionEntries>
-      <selectionEntry id="${UNIT_ID}" name="Krieger" type="unit">
+      <selectionEntry id="${UNIT_ID}" name="Krieger" type="unit"
+                      publicationId="${BOOK_ID}" page="7">
         <profiles>
           <profile id="${PROFILE_ID}" name="Krieger" typeId="${PROFILE_TYPE_ID}"
                    publicationId="${UNKNOWN_BOOK_ID}" page="3"/>
@@ -66,11 +68,30 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
         <infoLinks>
           <infoLink id="${RULE_LINK_ID}" name="Verweis" type="rule" targetId="${SHARED_RULE_ID}"/>
         </infoLinks>
+        <selectionEntries>
+          <selectionEntry id="${PLAIN_UNIT_ID}" name="Ohne Buch" type="upgrade"/>
+        </selectionEntries>
       </selectionEntry>
     </selectionEntries>
   </catalogue>`;
 
 const ROSTER = { forces: [{ defId: UNIT_ID, count: 1, children: [] }] };
+
+/** Der Bericht ueber das Kontingent mit der einen Einheit. */
+function report() {
+  return evaluateDataset(
+    prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_XML] }),
+    ROSTER,
+  );
+}
+
+/** Der erste Slot einer Definition, gleich welcher Ankerart. */
+function slotOf(defId) {
+  for (const capability of report().capabilities.values()) {
+    if (capability.defId === defId) return capability;
+  }
+  return null;
+}
 
 /** Die Info-Projektion des belegten Slots der Einheit. */
 function infoElements() {
@@ -121,5 +142,21 @@ describe('Info-Projektion: die Buchquelle eines Info-Eintrags', () => {
       kind: InfoElementKind.RULE,
       source: { publicationId: OTHER_BOOK_ID, publicationName: 'Armies of the World', page: '99' },
     });
+  });
+});
+
+describe('Bericht: die eigene Buchquelle eines Slots', () => {
+  it('nennt Buch, Klartext-Namen und Seite der Definition des Slots', () => {
+    expect(slotOf(UNIT_ID).source).toEqual({
+      publicationId: BOOK_ID,
+      publicationName: BOOK_NAME,
+      page: '7',
+    });
+  });
+
+  it('bleibt `null`, wo die Definition weder Buch noch Seite nennt', () => {
+    const plain = slotOf(PLAIN_UNIT_ID);
+    expect(plain, `kein Slot fuer ${PLAIN_UNIT_ID} im Bericht`).not.toBeNull();
+    expect(plain.source).toBeNull();
   });
 });

@@ -22,8 +22,8 @@ Die Undo-Mechanik wird als generischer, wiederverwendbarer Hook implementiert (s
 ## Technical Decisions
 
 - **Affected Modules:**
-  - `src/ui/hooks/useUndoableState.js` *(neu)* – generischer History-Stack-Hook.
-  - `src/ui/hooks/useRoster.js` – nutzt `useUndoableState` für den `roster`-State; exponiert `undo`, `redo`, `canUndo`, `canRedo`.
+  - `src/ui/viewmodels/useUndoableState.js` *(neu)* – generischer History-Stack-Hook.
+  - `src/ui/viewmodels/useRosterState.js` – nutzt `useUndoableState` für den `roster`-State; exponiert `undo`, `redo`, `canUndo`, `canRedo`.
   - `src/ui/components/RosterEditor.jsx` – neue Undo/Redo-Buttons in der Toolbar.
 
 - **Technical Clarifications / Architectural Decisions:**

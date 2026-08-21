@@ -1,26 +1,16 @@
 ---
 paths:
   - "src/ui/components/**"
-  - "src/ui/hooks/**"
   - "src/ui/styles/**"
   - "src/ui/i18n/**"
 ---
 
-# UI, hooks, styles, i18n
+# UI, components, styles, i18n
 
 - This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
   allowed direction). It reaches data only through `src/data/services/`; a direct import of `src/data/db/`
   or `src/data/parser/` fails `forge-lint` on the dependency-cruiser rule `ui-nicht-auf-daten`
   (`error` since Issue 0167 moved the last 14 edges onto the facade — there is no exception left).
-- `src/ui/hooks/useAppData.js` is the **only** subscriber of the facade's change channel
-  (`services/dataEvents.js`): a write through `src/data/services/` announces itself there and the one
-  roster list follows. A screen that wants to see a foreign save subscribes nowhere — it reads
-  the list it already gets.
-- `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
-  `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
-  catalog refresh; `reloadData` — the one it hands out, and what `useRosterList` gets as its
-  `reloadData` — reads IndexedDB and nothing else. Hanging the start run off an event that repeats
-  (a nav click, a save) re-parses every stored catalogue and drops the evaluation cache with it.
 - Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
   systems are already in state and roster writes arrive over the data channel.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
@@ -39,7 +29,7 @@ paths:
     of them are allowed.
   - Four rules keep it, all `error`, all failing `forge-lint`: the oxlint
     `no-restricted-imports` override on `src/ui/components/**` (the hook ban), and in
-    `.dependency-cruiser.cjs` `viewmodel-kein-jsx` (`src/ui/viewmodels/` → `src/ui/components/`),
+    `.dependency-cruiser.cjs` `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
     `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
     `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
@@ -84,9 +74,9 @@ paths:
 - Text never appears literally in a component: it goes through `src/ui/i18n/` (own solution, no
   library, ADR 0026) with entries in both `locales/de.json` and `locales/en.json`. A missing `en`
   key does not fail a test — it fails silently for the user.
-- `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
-  `messageParams`/`detail` error from `src/domain/roster/` or `src/data/services/` into text. A test of that
-  path mocks those modules with `importOriginal()` spread (`vi.mock(mod, async (importOriginal) =>
+- `describeRosterFileError` in `viewmodels/useRosterList.js` is the only place that turns a
+  `messageKey`/`messageParams`/`detail` error from `src/domain/roster/` or `src/data/services/` into
+  text. A test of that path mocks those modules with `importOriginal()` spread (`vi.mock(mod, async (importOriginal) =>
   ({ ...await importOriginal(), fn: vi.fn() }))`) so `MissingSystemError`/`RosterFileError` stay
   real and carry their keys, and asserts on the German toast text — a hand-built error with a
   ready-made `message` passes even when the translation step is gone.
@@ -108,7 +98,7 @@ paths:
   `resolveEntry`/`findEntryInSystem` stay only for detail texts and
   for the entry the **write** path hands to `addUnit`.
 - The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
-  `capability.raiseMembers` of its offer slot — `useRoster` looks it up (`findChildSlot` under the
+  `capability.raiseMembers` of its offer slot — `useRosterState` looks it up (`findChildSlot` under the
   force, `findDescendantSlot` under a unit, since an option hangs below its group anchor) and
   hands it to the factory. Nothing in `src/domain/roster/` derives an obligation from the catalogue any
   more, so a seam that recruits without a report creates a bare selection.

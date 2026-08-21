@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: active
+branch: claude/issues-letzter-pr-ma1b62
 pr:
 ---
 
@@ -32,6 +32,8 @@ Umbau:
 
 Weg 1 ist der vorgeschlagene: er hält die Richtung UI → Fachlogik → Daten
 sauber und kostet eine Signatur.
+
+**Entschieden: Weg 1.** Der Bericht wird hereingereicht; AC3 entfällt damit.
 
 ## Acceptance criteria
 

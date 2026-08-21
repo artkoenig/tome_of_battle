@@ -3,8 +3,8 @@ import { saveRoster } from '../../data/services/rosterStore';
 import { findForceEntryById, childSelectionsOf } from '../../domain/roster';
 import { useEvaluation } from '../../domain/evaluation/useEvaluation';
 import { costLimitTypeIdOf, extraResourceTotalsOf } from '../../domain/evaluation/costDisplays';
-import usePlayState from '../hooks/usePlayState';
-import { useRuleUrl } from '../hooks/useRuleUrl';
+import usePlayState from './usePlayState';
+import { useRuleUrl } from './useRuleUrl';
 import { useTranslation } from '../i18n/useTranslation';
 import { t as translate } from '../i18n/i18nStore';
 

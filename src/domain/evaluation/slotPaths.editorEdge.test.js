@@ -12,7 +12,7 @@
  * **Die Raender, verifiziert durch Lesen des Produktivcodes (2026-07-30):**
  *
  * - `useEvaluation(system, roster)` — der Rand des **Editors**:
- *   `src/ui/hooks/useRoster.js:68` liest daraus `pathBySelectionId` und reicht es
+ *   `src/ui/viewmodels/useRosterState.js:68` liest daraus `pathBySelectionId` und reicht es
  *   ueber `RosterEditor` an jede Einheitenkarte weiter; `PlayMode.jsx:29` liest
  *   denselben Hook.
  * - `evaluateAppRoster(system, roster)` — der Rand des **`.ros`-Exports**:

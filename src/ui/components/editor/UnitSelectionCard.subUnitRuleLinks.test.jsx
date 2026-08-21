@@ -16,7 +16,7 @@ const RULE_NAME = 'Killing Blow';
 const RULE_URL = 'https://6th.whfb.app/special-rules/killing-blow';
 
 const mockResolveRuleUrl = vi.fn();
-vi.mock('../../hooks/useRuleUrl', () => ({
+vi.mock('../../viewmodels/useRuleUrl', () => ({
   useRuleUrl: () => mockResolveRuleUrl,
 }));
 
@@ -60,6 +60,7 @@ const DEFINITIONS = {
 
 vi.mock('../../../domain/roster', async () => ({
   findEntryInSystem: (_system, entryId) => (DEFINITIONS[entryId] ? entryId : null),
+  findRuleByName: () => null,
   resolveEntry: (_system, entryId) => DEFINITIONS[entryId] || null,
   collectUnitProfilesAndRules: () => ({ profiles: [], rules: [] }),
   getEffectiveSelectionName: (selection) => selection?.name ?? '',

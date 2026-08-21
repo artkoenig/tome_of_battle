@@ -37,7 +37,7 @@ export default function OptionGroupComponent({
   // Ein Klick auf den Schalter der Zeile ist nicht der Klick auf die Zeile.
   const isControlClick = (e) => e.target.closest('button') || e.target.closest('input');
   const {
-    rows, system, limitText, selectedItemsSummary, hasGroupError, isExpanded, toggleExpanded,
+    rows, limitText, selectedItemsSummary, hasGroupError, isExpanded, toggleExpanded,
   } = useOptionGroup({ group, selection, selectionPath, hasSelectedDescendant });
 
   return (
@@ -83,11 +83,11 @@ export default function OptionGroupComponent({
                       hasInfo={!!row.descText}
                       onShowRule={onShowRule}
                       onInfoClick={() => {
-                        if (row.resolved && window.innerWidth <= 900) {
-                          tooltip.onOpen?.({ title: row.name, text: renderUpgradeDetails(row.resolved, system) });
+                        if (row.detailElements && window.innerWidth <= 900) {
+                          tooltip.onOpen?.({ title: row.name, text: renderUpgradeDetails(row.detailElements) });
                         }
                       }}
-                      onInfoEnter={(e) => { if (row.resolved) tooltip.onEnter?.(row.name, renderUpgradeDetails(row.resolved, system), e); }}
+                      onInfoEnter={(e) => { if (row.detailElements) tooltip.onEnter?.(row.name, renderUpgradeDetails(row.detailElements), e); }}
                       onInfoMove={tooltip.onMove}
                       onInfoLeave={tooltip.onLeave}
                     />

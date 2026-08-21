@@ -49,9 +49,9 @@ const EVALUATION_LAYER = '^src/domain/evaluation/';
 // blockieren "fachlogik-kein-rueckgriff" und "keine-i18n-unter-ui": unterhalb
 // der Oberflaeche wird nicht mehr uebersetzt und nicht zurueckgegriffen.
 
-// Darstellung und Interaktion. src/ui/hooks/ steht in der ADR-Tabelle nicht
-// eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/data/db/
-// laufen ueber useAppData und useRosterList.
+// Darstellung und Interaktion. Seit Issue 0178 traegt die Oberflaeche nur noch
+// die Verzeichnisse aus der ADR-Tabelle: die Ableitungs- und Zustandshaken
+// liegen samt useAppData und useRosterList unter src/ui/viewmodels/.
 const VIEWMODEL_LAYER = '^src/ui/viewmodels/';
 
 // Seit Issue 0171 heisst das Verzeichnis wie die Schicht: alles unter src/ui/
@@ -117,12 +117,14 @@ module.exports = {
       },
     },
     {
-      name: 'viewmodel-kein-jsx',
+      name: 'viewmodel-keine-komponente',
       comment:
         'ADR-0038: src/ui/viewmodels/ liegt in der UI-Schicht ueber ' +
         'src/ui/components/. Ein ViewModel gibt Anzeigewerte heraus und kennt ' +
         'kein Markup -- importiert es eine Komponente, ist die Richtung ' +
-        'gedreht und das Modell nur noch ueber das DOM pruefbar.',
+        'gedreht und das Modell nur noch ueber das DOM pruefbar. Geprueft wird ' +
+        'die Importkante, nicht die Dateiendung: ein ViewModel darf .jsx ' +
+        'heissen, solange es keine Komponente importiert.',
       severity: 'error',
       from: { path: VIEWMODEL_LAYER, pathNot: TEST_FILE },
       to: { path: COMPONENTS_LAYER },
@@ -168,7 +170,7 @@ module.exports = {
         'ADR-0037: die Datenschicht ist die unterste. Sie kennt weder die ' +
         'Oberflaeche noch die Fachlogik -- ein Rueckgriff dorthin dreht die ' +
         'erlaubte Richtung um.',
-      severity: 'warn',
+      severity: 'error',
       from: { path: DATA_LAYER, pathNot: TEST_FILE },
       to: { path: [...UI_LAYER, I18N_LAYER, ...DOMAIN_LAYER] },
     },
@@ -208,6 +210,18 @@ module.exports = {
       severity: 'error',
       from: { path: ROSTER_LAYER, pathNot: TEST_FILE },
       to: { path: EVALUATOR_LAYER },
+    },
+    {
+      name: 'roster-keine-evaluation-abhaengigkeit',
+      comment:
+        'Das Schreibmodell src/domain/roster/ erreicht den Evaluator auch nicht mittelbar ' +
+        'ueber die Auswertungs-Bruecke src/domain/evaluation/ (Issue 0174, ADR-0039): ' +
+        'wer den Bericht braucht -- der .ros-Export --, bekommt ihn hereingereicht. ' +
+        'Testdateien sind ausgenommen wie bei roster-keine-evaluator-abhaengigkeit: ' +
+        'ein Fall, der eine Kostensumme braucht, ruft evaluateAppRoster selbst.',
+      severity: 'error',
+      from: { path: ROSTER_LAYER, pathNot: TEST_FILE },
+      to: { path: EVALUATION_LAYER },
     },
     {
       name: 'evaluation-keine-roster-abhaengigkeit',

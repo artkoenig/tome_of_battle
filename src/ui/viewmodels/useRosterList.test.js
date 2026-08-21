@@ -9,6 +9,7 @@ import {
 } from '../../domain/roster/rosterSerialization';
 import { readRosterText, buildRosterFile, RosterFileError } from '../../data/services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../domain/roster';
+import { evaluateAppRoster } from '../../domain/evaluation/evaluationCache';
 
 vi.mock('../../data/db/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
@@ -30,11 +31,18 @@ vi.mock('../../data/services/rosterTransfer', async (importOriginal) => ({
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));
 
+// Der Export wertet nicht mehr selbst aus (Issue 0174, ADR-0039): der Bericht
+// wird hier, in der UI-Schicht, geholt und hereingereicht.
+vi.mock('../../domain/evaluation/evaluationCache', () => ({
+  evaluateAppRoster: vi.fn(() => ({ costTotals: { pts: 0 }, slots: {} })),
+}));
+
 vi.mock('../../domain/roster', () => ({
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
   reconcileImportedSelectionIds: vi.fn((roster) => roster),
 }));
 
+const report = { costTotals: { pts: 0 }, slots: {} };
 const system = { id: 'sys-1', name: 'Sys', costTypes: [{ id: 'pts' }], forceEntries: [{ id: 'force-a' }] };
 const roster = { id: 'roster-1', name: 'Alte Liste', systemId: 'sys-1' };
 
@@ -331,7 +339,8 @@ describe('useRosterList — Export', () => {
       await result.current.exportRoster(roster);
     });
 
-    expect(exportRosterToXml).toHaveBeenCalledWith(roster, system);
+    expect(evaluateAppRoster).toHaveBeenCalledWith(system, roster);
+    expect(exportRosterToXml).toHaveBeenCalledWith(roster, system, report);
     expect(buildRosterFile).toHaveBeenCalled();
     expect(createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();

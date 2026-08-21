@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { saveRoster } from '../../data/services/rosterStore';
 import { resolveCostLimitLabel } from '../../domain/roster';
-import { useRuleUrl } from '../hooks/useRuleUrl';
+import { useRuleUrl } from './useRuleUrl';
 import { useRosterState } from './useRosterState';
 
 /**

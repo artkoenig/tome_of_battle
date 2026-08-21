@@ -33,7 +33,7 @@ vi.mock('../contexts/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 
-// Mock useRoster custom hook
+// Mock useRosterState custom hook
 const mockAddUnit = vi.fn();
 const mockRemoveUnit = vi.fn();
 const mockCopyUnit = vi.fn();
@@ -249,7 +249,7 @@ describe('RosterEditor Component', () => {
     expect(screen.getByTestId('adder-cat-heroes')).toBeDefined();
   });
 
-  it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRoster', () => {
+  it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRosterState', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     const adderButton = screen.getByTestId('adder-cat-heroes');
     fireEvent.click(adderButton);

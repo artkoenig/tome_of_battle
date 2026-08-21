@@ -27,6 +27,15 @@ const reportFromListRuleStates = (states, categoryId, forcePath) => {
       primaryCategoryId: categoryId,
       effectiveMax: state.isBinary === false ? 5 : 1,
       raiseCosts: {},
+      // Der Detailblock einer Pflichtzeile kommt aus der Info-Projektion ihres
+      // Slots; die Regeln des Eintrags eines `state` sind genau diese Projektion.
+      infoElements: (state.entry?.rules ?? []).map(rule => ({
+        kind: 'rule',
+        id: rule.id ?? rule.name,
+        name: rule.name,
+        source: null,
+        text: rule.description ?? null,
+      })),
     });
     if (state.isContainer) {
       capabilities.set(`${path}/0`, {

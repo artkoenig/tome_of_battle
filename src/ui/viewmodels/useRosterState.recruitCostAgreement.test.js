@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRoster } from './useRoster';
+import { useRosterState } from './useRosterState';
 import { processImportedData } from '../../data/parser/xmlParser';
 import { buildRoster } from '../../domain/roster/createRoster';
 
@@ -17,7 +17,7 @@ import { buildRoster } from '../../domain/roster/createRoster';
  * sie nicht auseinanderlaufen, wenn ein Pflicht-Kind mitkommt.
  *
  * Produktionsnaht, nichts gemockt: Katalog-XML → `processImportedData` →
- * `useRoster.addUnit` → `useEvaluation`.
+ * `useRosterState`s `commands.addUnit` → `useEvaluation`.
  */
 
 const GAME_SYSTEM_ID = 'gs-cost-agreement';
@@ -111,9 +111,9 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
     const system = loadSystem();
     const roster = freshRoster(system);
     const forceId = roster.forces[0].id;
-    const { result } = renderHook(() => useRoster(roster, system, vi.fn(), undefined, false));
+    const { result } = renderHook(() => useRosterState(roster, system, vi.fn(), undefined, false));
 
-    const offer = offerOf(result.current, forceId);
+    const offer = offerOf(result.current.report, forceId);
     expect(offer).toBeTruthy();
     // Die Schaetzung des Dialogs: der Held samt seines Pflicht-Kindes.
     expect(offer.raiseCosts[PTS_ID]).toBe(RECRUITED_COST);
@@ -122,13 +122,13 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
       .find(catalogue => catalogue.id === CATALOGUE_ID)
       .selectionEntries.find(selectionEntry => selectionEntry.id === CHAMPION_ID);
     act(() => {
-      result.current.addUnit(entry, HERO_CATEGORY_ID);
+      result.current.commands.addUnit(entry, HERO_CATEGORY_ID);
     });
 
     const recruited = result.current.roster.forces[0].selections[0];
     expect(recruited.selectionEntryId).toBe(CHAMPION_ID);
-    const recruitedSlot = result.current.slots.capabilities
-      .get(result.current.slots.pathBySelectionId.get(recruited.id));
+    const recruitedSlot = result.current.report.slots.capabilities
+      .get(result.current.report.slots.pathBySelectionId.get(recruited.id));
     expect(recruitedSlot.totalCosts[PTS_ID]).toBe(RECRUITED_COST);
     // Eine Quelle: derselbe Bericht traegt beide Zahlen.
     expect(recruitedSlot.totalCosts[PTS_ID]).toBe(offer.raiseCosts[PTS_ID]);
@@ -137,15 +137,15 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
   it('faehrt die Rostersumme des Berichts auf denselben Wert', () => {
     const system = loadSystem();
     const roster = freshRoster(system);
-    const { result } = renderHook(() => useRoster(roster, system, vi.fn(), undefined, false));
+    const { result } = renderHook(() => useRosterState(roster, system, vi.fn(), undefined, false));
 
     const entry = system.catalogues
       .find(catalogue => catalogue.id === CATALOGUE_ID)
       .selectionEntries.find(selectionEntry => selectionEntry.id === CHAMPION_ID);
     act(() => {
-      result.current.addUnit(entry, HERO_CATEGORY_ID);
+      result.current.commands.addUnit(entry, HERO_CATEGORY_ID);
     });
 
-    expect(result.current.costTotals[PTS_ID]).toBe(RECRUITED_COST);
+    expect(result.current.report.costTotals[PTS_ID]).toBe(RECRUITED_COST);
   });
 });

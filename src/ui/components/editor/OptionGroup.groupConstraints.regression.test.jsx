@@ -38,7 +38,7 @@ vi.mock('lucide-react', () => ({
 
 // Der Regel-Link-Hook hängt an der Settings-Context-Kette und ist für den
 // Render-Entscheid irrelevant — auf „kein Link" stellen.
-vi.mock('../../hooks/useRuleUrl', () => ({
+vi.mock('../../viewmodels/useRuleUrl', () => ({
   useRuleUrl: () => () => null,
 }));
 

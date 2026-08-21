@@ -9,14 +9,57 @@ The ViewModel layer of ADR-0038: hooks that hold state and derive display values
 roster contexts. It sits **above** `src/ui/components/` in the UI layer of ADR-0037 — a ViewModel may
 never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 
+- Since Issue 0178 this is the **only** directory of the layer: the app-level hooks `useRosterList`,
+  `useAppData`, `useAppNavigation`, `usePlayState`, `usePwaLifecycle`, `useRuleUrl`, `useToast`,
+  `useUndoableState`, `useViewportHeight` and the shared `persistenceFailure` helper live here too,
+  next to the screen ViewModels. There is no `src/ui/hooks/`; `App.jsx` imports them from
+  `./viewmodels/`. The layer takes small mechanics as well (`useBottomSheet` is the precedent).
+- The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
+  `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
+- `useAppData.js` is the **only** subscriber of the facade's change channel
+  (`services/dataEvents.js`): a write through `src/data/services/` announces itself there and the one
+  roster list follows. A screen that wants to see a foreign save subscribes nowhere.
+- `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
+  `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
+  catalog refresh; `reloadData` — what `useRosterList` gets — reads IndexedDB and nothing else.
+  Hanging the start run off a repeating event re-parses every stored catalogue and drops the
+  evaluation cache with it.
+- `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
+  `messageParams`/`detail` error from `src/domain/roster/` or `src/data/services/` into text.
+
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
-  bundles split by how often they change. `useRoster` in `src/ui/hooks/` is only the flat view onto
-  it — change the behaviour here, not there.
+  bundles split by how often they change. The flat view `useRoster` is gone
+  (Issue 0175): consumers and tests read `roster`, `report.*`, `commands.*` off the node itself.
+- The state node is cut along the same 300-line rule (Issue 0176): `rosterCommands.js`
+  (`createRosterCommands` — the write commands as a plain per-render factory over roster, report
+  slots and the state writers, plus `findTargetForce`), `useRosterPersistence.js` (catalogue sync,
+  the 150 ms autosave, the unmount flush, and `saveNow` for the explicit save),
+  `useMandatoryListRuleAutoAdd.js` (the fresh-roster §9.9 effect) and `rosterSelectionFactory.js`
+  (`catalogueIdOfForce`, `catalogueIdContaining`, `createSelectionFactory`). `useRosterState.js` is
+  the state apparatus and the identity-stable command wrappers, nothing else. A command test needs
+  no React and no catalogue: an entry without a `targetId` resolves to itself, so a fake `slots`
+  stub and a `setRoster` that applies the updater to a local roster pin the whole write path in
+  milliseconds.
 - The `commands` bundle is identity-stable for the hook's whole lifetime: implementations are
   rebuilt each render into `currentCommandsRef`, the exported functions are `useMemo(…, [])`
   wrappers calling through it. Returning a freshly built command object (or memoizing it on
   `roster`) silently breaks `RosterCommandsContext` and is the mistake a change here is most
   likely to make; `useRosterState.test.js` and `rosterContexts.test.jsx` pin it.
+- The node's own suite is `useRosterState.test.js` plus `useRosterState.<topic>.test.js`
+  (`commands`, `evaluator`, `mandatoryAutoAdd`, `costedMandatoryAutoAdd`, `nestedMandatoryGroups`,
+  `recruitCostAgreement`). A topic file that drives the **production seam** — real catalogue XML,
+  unmocked `resolveEntry`/`createSelectionFromDef`, the real evaluation — loads its fixture with
+  `fs.readFileSync` + `processImportedData` and builds the roster with `buildRoster`; nothing about
+  roster or catalogue is hand-built. `costedMandatoryAutoAdd` is synthetic-but-shape-faithful,
+  `nestedMandatoryGroups` reads `src/domain/evaluator/__fixtures__/whfb6-definitive/`.
+  Test titles here are English, unlike `src/domain/*`.
+- `isFreshRoster` (the node's fifth argument) gates the automatic mandatory list-rule addition
+  (Issue 0138/0140, §9.9): omit it or pass `false` to keep that effect out of a case about
+  `addUnit` or another seam, pass `true` only where the fresh-roster auto-add is the point.
+- `commands.addUnit(entry, categoryId, targetForceId?)` is the recruitment call the dialog makes.
+  A case that measures what recruiting produces calls it inside `act(...)` and reads
+  `result.current.roster.forces[0].selections`, never a lower-level factory (that is
+  `src/domain/roster`).
 - Proving "does not render again" needs a `memo`-wrapped consumer; without it the consumer
   re-renders because its parent did and the test proves nothing.
 - `rosterContexts.jsx` passes `commands` through **unchanged**; only the report context memoizes
@@ -35,7 +78,7 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
   shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
   `src/data/services/` like everything else.
-- `viewmodel-kein-jsx` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
+- `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
   formats a label needs `language` in its dependency list, or a language switch leaves the
@@ -50,15 +93,28 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 - `profileCellDisplayOf` lives in `editor/useUnitCard.js` and is read from `usePlayUnit.js` as
   well (`modificationStateOf` next to it is module-private since Issue 0166) — one profile-cell presentation for the editor table and the play
   table; the former `components/profileCellClasses.js` is gone. The same move absorbed
-  `components/importer/importMessages.js` and `revisionDisplay.js` into `useImporter.js`.
+  `components/importer/importMessages.js` and `revisionDisplay.js` into the import shell.
 - A hook test that reaches `useRuleUrl` (every shell with a rule channel) must mock
   `../contexts/SettingsContext`; the real `useSettings` throws without its provider.
 - `src/ui/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
   `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
   `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
-  `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
-  entry and `system`, and the component renders the detail block.
+  `components/editor/upgradeDetails.jsx` (it returns JSX).
+- The detail block of an upgrade is derived here, by `editor/upgradeDetailElements.js`
+  (`upgradeDetailElementsOf(capability)` — one argument, no `system`, no `catalogueId`), out of
+  `capability.infoElements` and `capability.source` alone (Issue 0173). Every row hook that offers
+  an info tooltip puts the finished list on the row as `detailElements`;
+  `renderUpgradeDetails(elements)` in the component only renders it. **No module under `src/ui/`
+  looks a rule up by its name** — neither the old name-*similarity* (substring,
+  last-ten-characters, a hard-wired `waaagh` case, first hit across all catalogues) nor the
+  narrow equal-name fallback. The fallback lives in the report
+  (`domain/evaluator/infoProjection.js`), so the detail block and `useUnitChips` read it from the
+  same `infoElements`; a lookup re-added here would reach only one of the two.
+  `publicationRefOf(source)` here is the one place the `[Book, S. 44]` form is written.
+- A component test that mocks `domain/roster` wholesale (`vi.mock('../../../domain/roster', …)`)
+  lists the exports by hand, so a new import a ViewModel adds there fails those files with
+  "No <name> export is defined on the mock" — the mock, not the ViewModel, is what is out of date.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
   (`src/domain/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
   `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back
@@ -68,8 +124,7 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   folder because `src/domain/evaluation/` may not import `src/domain/roster/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
-  on an import of them from `src/ui/components/`. The cost-budget helpers live in
-  `useSelectionConfigurator.js` next to the row derivations it shares with `useOptionGroup`.
+  on an import of them from `src/ui/components/`.
 - A section ViewModel derives what the editor used to thread through as props (`costTypeLabel`,
   `remainingPoints`, `extraResources`, the force path from `report.slots.pathOfForce(...)` — never the
   roster's input index). What stays a prop is only what the caller knows: `force`/`forceId`,
@@ -88,11 +143,27 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   fail on the icons of a component it never renders. `sectionHarnessBase.jsx` holds the shared
   pieces, including the inversions a flat prop set needs (`costTypeLabel`, `remainingPoints`,
   `extraResources`, list-rule `states`).
-- `useOptionGroup` imports `optionDescriptionOf`, `resolveRowSelectionId` and `subSelectionCountOf`
-  from `useSelectionConfigurator.js` — the configurator owns the row derivations both share.
+- No file under `src/ui/viewmodels/` may exceed 300 lines (Issue 0176). The configurator is cut
+  along that line into four modules, each with its own test file next to it:
+  `editor/optionRowDerivations.js` (`findSelectionById`, `resolveRowSelectionId`,
+  `subSelectionCountOf`, `optionDescriptionOf` — the row derivations `useOptionGroup` shares),
+  `editor/costBudgets.js` (`costBudgetTextsOf`, `hasExceededCostBudget`),
+  `editor/standaloneRow.js` (`buildStandaloneSection`) and `editor/configuratorSections.js`
+  (`buildSections`, `holdsSelection`, `isRoleGroupName`). `useSelectionConfigurator.js` is the hook
+  and nothing else. `buildSections`/`buildStandaloneSection` take the hook's memo bundle as a
+  `context` argument (`{ slots, system, activeCatalogueId, costTypeId, costTypeLabel,
+  subSelectionOperations }`) — pure functions, testable without a provider.
+- The import shell is cut along the same line: `importerMessages.js` (the three message builders),
+  `importerRevisionDisplay.js` (`REVISION_TONE`, `buildRevisionDisplay`, `revisionLabelClassName` —
+  the ADR 0014 state matrix), `importerBundle.js` (`allSelectedCatalogues`, `buildBundleView` —
+  the chosen index system held against the installed list) and `systemArchiveExport.js`
+  (`hasRawXmls`, `downloadSystemArchive`). `useImporter.js` is the flow and the state; it exports
+  only the hook, and `Importer.jsx` reads `revisionLabelClassName` off the hook's return, so the
+  component's props do not change when a derivation moves. A test for the export module stubs
+  `URL.createObjectURL`/`revokeObjectURL` — jsdom has neither.
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
-  reintroduce it (`useSelectionConfigurator.test.jsx` pins the case).
+  reintroduce it (`editor/optionRowDerivations.test.js` pins the case).
 - The report the context carries is `useRosterReportModel` (`src/domain/evaluation/rosterReport.js`),
   referentially stable per `(system, roster)`. A new derived field belongs in that bundle,
   memoized, or it destroys the stability every consumer depends on.

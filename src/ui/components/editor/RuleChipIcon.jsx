@@ -1,6 +1,6 @@
 import React from 'react';
 import { Info, BookOpen } from 'lucide-react';
-import { useRuleUrl } from '../../hooks/useRuleUrl';
+import { useRuleUrl } from '../../viewmodels/useRuleUrl';
 
 const ICON_SIZE = 14;
 

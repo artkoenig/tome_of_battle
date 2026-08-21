@@ -17,50 +17,25 @@
  * ADR-0038 sein Versprechen halten — ein Verbraucher, der bloß einen Knopf
  * auslöst, rendert bei einer Roster-Bearbeitung nicht neu.
  *
- * `useRoster` in `src/ui/hooks/` ist die flache Sicht auf denselben Zustand und
- * bleibt der Aufrufer für die noch nicht umgestellten Komponenten.
+ * Was hier steht, ist der Zustandsapparat. Die Schreib-Kommandos liegen in
+ * `rosterCommands.js`, Katalog-Abgleich und Autosave in `useRosterPersistence.js`,
+ * das automatische Setzen von Pflicht-Listenregeln in
+ * `useMandatoryListRuleAutoAdd.js` (Issue 0176).
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 
-import {
-  resolveEntry, syncRosterSelectionsWithSystem,
-  childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
-  mapSelectionTree, replaceSelectionById,
-  createSelectionFromDef as buildSelectionFromDef,
-  withAddedInstance, withoutInstance, withChangedOptionCount
-} from '../../domain/roster';
-import { findMissingMandatoryListRules } from '../../domain/evaluation/mandatoryListRules';
-import { findCapabilityEntry } from './capabilityEntries';
+import { findSelectionInRoster } from '../../domain/roster';
 import { useRosterReportModel } from '../../domain/evaluation/rosterReport';
-import { useUndoableState } from '../hooks/useUndoableState';
-import {
-  PERSISTENCE_FAILURE_MESSAGE_KEY,
-  createPersistenceFailureReporter,
-} from '../hooks/persistenceFailure';
+import { useUndoableState } from './useUndoableState';
+import { createRosterCommands } from './rosterCommands';
+import { useRosterPersistence } from './useRosterPersistence';
+import { useMandatoryListRuleAutoAdd } from './useMandatoryListRuleAutoAdd';
 import '../../shared/types.js';
-
-const AUTOSAVE_DEBOUNCE_MS = 150;
 
 /** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
 const COUNT_INCREASE = 1;
 const COUNT_DECREASE = -1;
-
-/** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
-const FALLBACK_FORCE_INDEX = 0;
-
-/**
- * Das eine Kontingent, in das eine ausgehobene Einheit gehört: das der aktiven
- * Ansicht, ersatzweise das erste des Rosters. Ein `.ros`-Import bringt beliebig
- * viele Kontingente mit, deshalb muss das Ziel eindeutig bestimmt sein.
- * @param {import('../../shared/types.js').Force[]} forces
- * @param {string|null} targetForceId
- * @returns {import('../../shared/types.js').Force|null}
- */
-function findTargetForce(forces, targetForceId) {
-  if (!forces?.length) return null;
-  return forces.find(force => force.id === targetForceId) ?? forces[FALLBACK_FORCE_INDEX];
-}
 
 /**
  * Hält Roster, Auswahl und Kommandos eines Editors.
@@ -111,314 +86,19 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
     }
   }, []);
 
-  const saveCallbackRef = useRef(saveRosterCallback);
-  saveCallbackRef.current = saveRosterCallback;
-  const pendingSaveRef = useRef(null);
-  // Über eine Ref, weil das Persistieren aus einem Timeout heraus läuft und dort sonst
-  // einen veralteten Kanal aus dem Erzeugungs-Render sähe.
-  const reportErrorRef = useRef(reportError);
-  reportErrorRef.current = reportError;
+  const { saveNow } = useRosterPersistence({
+    roster, system, replaceRoster, saveRosterCallback, reportError,
+  });
 
-  const persistRoster = (rosterToSave) => {
-    const save = saveCallbackRef.current;
-    if (!save) return;
-
-    const reportFailure = createPersistenceFailureReporter(
-      PERSISTENCE_FAILURE_MESSAGE_KEY.roster,
-      reportErrorRef.current
-    );
-
-    try {
-      const savePromise = save(rosterToSave);
-      if (savePromise && typeof savePromise.catch === 'function') {
-        savePromise.catch(reportFailure);
-      }
-    } catch (error) {
-      reportFailure(error);
-    }
-  };
-
-  // Katalog-Abgleich und Autosave. Die Verzögerung wirkt ausschließlich auf das
-  // Persistieren — Anzeige und Validierung leiten sich synchron aus dem Roster ab.
-  useEffect(() => {
-    if (!roster || !system) return;
-
-    const syncedRoster = syncRosterSelectionsWithSystem(roster, system);
-    if (syncedRoster !== roster) {
-      replaceRoster(syncedRoster);
-      return;
-    }
-
-    pendingSaveRef.current = roster;
-    const persistHandler = setTimeout(() => {
-      persistRoster(roster);
-      pendingSaveRef.current = null;
-    }, AUTOSAVE_DEBOUNCE_MS);
-
-    return () => clearTimeout(persistHandler);
-  }, [roster, system, replaceRoster]);
-
-  // Noch ausstehende Änderungen beim Unmount wegschreiben (z. B. bei schneller Navigation)
-  useEffect(() => {
-    return () => {
-      if (pendingSaveRef.current) {
-        persistRoster(pendingSaveRef.current);
-        pendingSaveRef.current = null;
-      }
-    };
-  }, []);
-
-  /**
-   * Der Katalog, gegen den die Verweise eines Kontingents auflösen: seiner, ersatzweise
-   * der der Liste. Bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine
-   * Eintrags-Id nur innerhalb ihres Katalogs eindeutig, deshalb wird er mitgegeben.
-   * @param {import('../../shared/types.js').Force|null|undefined} force
-   */
-  const catalogueIdOfForce = (force) => force?.catalogueId || roster?.catalogueId || null;
-
-  /** Der Katalog des Kontingents, das die Selektion `selectionId` enthält. */
-  const catalogueIdContaining = (selectionId) =>
-    catalogueIdOfForce(findForceContainingSelection(roster, selectionId));
-
-  // Geteilte Selektions-Fabrik (SSOT, ADR-0022): system/resolveEntry werden injiziert.
-  // **Welche** Pflicht-Mitglieder mitkommen, sagt seit Issue 0157 der Bericht
-  // (`capability.raiseMembers`, ADR-0034) — dieselbe Auskunft, aus der auch der vor
-  // dem Ausheben angezeigte Preis (`raiseCosts`) stammt, sodass Anzeige und
-  // angelegter Baum aus einem Durchlauf kommen. Der Katalog wird nur noch
-  // aufgelöst, nicht mehr ausgewertet.
-  /**
-   * @param {Object} entry
-   * @param {string|null} categoryId
-   * @param {string|null} catalogueId
-   * @param {ReadonlyArray<any>} [mandatoryMembers]
-   */
-  const createSelectionFromDef = (entry, categoryId, catalogueId, mandatoryMembers = []) =>
-    buildSelectionFromDef({
-      system, resolveEntry, catalogueId, entry, categoryId, mandatoryMembers
-    });
-
-  /** Die Pflicht-Mitglieder, die der Bericht dem Angebot `defId` unter `forceId` gibt. */
-  const raiseMembersInForce = (forceId, defId) =>
-    slots.findChildSlot(slots.pathOfForce(forceId), defId)?.raiseMembers ?? [];
-
-  /** Dieselbe Frage unterhalb einer Einheit: eine Option hängt ggf. unter einem Gruppen-Anker. */
-  const raiseMembersUnderSelection = (selectionId, defId) =>
-    slots.findDescendantSlot(slots.pathOfSelection(selectionId), defId)?.raiseMembers ?? [];
-
-  // Automatisches Setzen eindeutiger Pflicht-Listenregeln (Issue 0138, §9.9):
-  // gated auf `isFreshRoster`, damit ein bereits bestehendes Roster nie
-  // rückwirkend verändert wird (AC4). Läuft — wie der Katalog-Sync-Effekt —
-  // über `replaceRoster`, also ohne eigenen Undo-Schritt: der Nutzer hat
-  // diesen Eintrag nie selbst angeklickt.
-  //
-  // **Welche** Regeln das sind, sagt seit Issue 0157 der Bericht
-  // (`findMissingMandatoryListRules`, ADR-0034): er zählt das Angebot des
-  // Kontingents auf und markiert je Slot Listenregel, armeeweite Pflicht,
-  // Sichtbarkeit und Belegung. Der Katalog wird nur noch für den **Eintrag**
-  // gelesen, aus dem die Selektion gebaut wird. Kein Endlosschleifen-Risiko:
-  // eine einmal hinzugefügte Regel steht im nächsten Bericht als `occupied`
-  // und fehlt damit nicht mehr. Läuft je Force erneut bei jeder
-  // Roster-Änderung in derselben Sitzung, sodass eine erst durch eine andere
-  // Wahl sichtbar gewordene Pflichtregel im selben Zug ergänzt wird.
-  useEffect(() => {
-    if (!roster || !system || !isFreshRoster) return;
-
-    let anyAdded = false;
-    // Eine armeeweite Pflicht wird genau einmal gesetzt: was ein frueheres
-    // Kontingent dieses Durchlaufs uebernommen hat, faellt fuer die spaeteren
-    // heraus (der Bericht des naechsten Durchlaufs meldet sie dann als belegt).
-    const claimedResolvedIds = new Set();
-    const updatedForces = (roster.forces || []).map(force => {
-      const catalogueId = catalogueIdOfForce(force);
-      const carriedEntryIds = new Set(
-        childSelectionsOf(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
-      );
-      const missing = findMissingMandatoryListRules(slots, slots.pathOfForce(force.id), {
-        entryOf: (capability) => findCapabilityEntry(system, capability, catalogueId),
-        skipResolvedIds: claimedResolvedIds,
-      }).filter(({ entry, defId }) => entry && !carriedEntryIds.has(defId));
-      if (missing.length === 0) return force;
-
-      missing.forEach(({ resolvedId }) => claimedResolvedIds.add(resolvedId));
-      const newSelections = missing
-        .map(({ entry, categoryId, mandatoryMembers }) =>
-          createSelectionFromDef(entry, categoryId, catalogueId, mandatoryMembers))
-        .filter(Boolean);
-      if (newSelections.length === 0) return force;
-
-      anyAdded = true;
-      return { ...force, selections: [...childSelectionsOf(force), ...newSelections] };
-    });
-
-    if (anyAdded) {
-      replaceRoster({ ...roster, forces: updatedForces });
-    }
-  }, [roster, system, isFreshRoster, replaceRoster, slots]);
-
-  /**
-   * Hebt `entry` in genau ein Kontingent aus.
-   * @param {Object} entry Katalogeintrag, aus dem die Selektion gebaut wird
-   * @param {string} categoryId Kategorie, unter der die Einheit geführt wird
-   * @param {string} [targetForceId] Kontingent der aktiven Ansicht; ohne Angabe
-   *   das erste Kontingent des Rosters
-   */
-  const addUnit = (entry, categoryId, targetForceId = null) => {
-    const force = findTargetForce(roster?.forces, targetForceId);
-    const newUnit = createSelectionFromDef(
-      entry, categoryId, catalogueIdOfForce(force),
-      raiseMembersInForce(force?.id, entry.id)
-    );
-    if (!newUnit) return;
-
-    setRoster(prev => {
-      const targetForce = findTargetForce(prev.forces, targetForceId);
-      if (!targetForce) return prev;
-
-      const updatedForces = prev.forces.map(force => (
-        force === targetForce
-          ? { ...force, selections: [...childSelectionsOf(force), newUnit] }
-          : force
-      ));
-      return {
-        ...prev,
-        forces: updatedForces
-      };
-    });
-
-    setSelectedSelectionId(newUnit.id);
-  };
-
-  const removeUnit = (selectionId) => {
-    setRoster(prev => {
-      const updatedForces = prev.forces.map(force => {
-        return {
-          ...force,
-          selections: force.selections.filter(s => s.id !== selectionId)
-        };
-      });
-      return {
-        ...prev,
-        forces: updatedForces
-      };
-    });
-
-    if (selectedSelectionId === selectionId) {
-      setSelectedSelectionId(null);
-    }
-  };
-
-  const copyUnit = (selectionId) => {
-    // Jede Selection des Teilbaums erhält eine frische Id, damit die Kopie mit
-    // dem Original nicht kollidiert.
-    const cloneSelection = (unit) => mapSelectionTree(unit, (selection, clonedChildren) => ({
-      ...selection,
-      id: crypto.randomUUID(),
-      selections: clonedChildren
-    }));
-
-    setRoster(prev => {
-      let unitToCopy = null;
-      for (const force of prev.forces) {
-        unitToCopy = force.selections?.find(s => s.id === selectionId);
-        if (unitToCopy) break;
-      }
-      if (!unitToCopy) return prev;
-
-      const clonedUnit = cloneSelection(unitToCopy);
-
-      const updatedForces = prev.forces.map(force => {
-        if (force.selections?.some(s => s.id === selectionId)) {
-          const idx = force.selections.findIndex(s => s.id === selectionId);
-          const newSelections = [...force.selections];
-          newSelections.splice(idx + 1, 0, clonedUnit);
-          return {
-            ...force,
-            selections: newSelections
-          };
-        }
-        return force;
-      });
-
-      return {
-        ...prev,
-        forces: updatedForces
-      };
-    });
-  };
-
-  /**
-   * Ersetzt die Kind-Liste der Einheit `unitSelectionId` — beliebiger Tiefe im
-   * Roster — durch das Ergebnis von `changeChildSelections`. Die gemeinsame
-   * Verdrahtung aller Unter-Auswahl-Operationen mit dem Roster-State.
-   * @param {string} unitSelectionId
-   * @param {(childSelections: import('../../shared/types.js').Selection[]) => import('../../shared/types.js').Selection[]} changeChildSelections
-   */
-  const updateUnitChildSelections = (unitSelectionId, changeChildSelections) => {
-    setRoster(prev => {
-      const updatedForces = prev.forces.map(force => {
-        const currentSelections = childSelectionsOf(force);
-        const updatedSelections = replaceSelectionById(currentSelections, unitSelectionId, unit => ({
-          ...unit,
-          selections: changeChildSelections(childSelectionsOf(unit))
-        }));
-        if (updatedSelections === currentSelections) return force;
-        return { ...force, selections: updatedSelections };
-      });
-
-      return { ...prev, forces: updatedForces };
-    });
-  };
-
-  /** Legt eine weitere, eigenständig geführte Instanz einer Option an. */
-  const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
-    updateUnitChildSelections(unitSelectionId, childSelections =>
-      withAddedInstance(childSelections, createSelectionFromDef(
-        optionDefinition, null, catalogueIdContaining(unitSelectionId),
-        raiseMembersUnderSelection(unitSelectionId, optionDefinition.id)
-      )));
-
-  /** Entfernt eine einzeln geführte Instanz anhand ihrer Selection-Id. */
-  const removeSubSelectionInstance = (unitSelectionId, instanceSelectionId) =>
-    updateUnitChildSelections(unitSelectionId, childSelections =>
-      withoutInstance(childSelections, instanceSelectionId));
-
-  const changeSubSelectionCount = (unitSelectionId, optionDefinition, countDelta) =>
-    updateUnitChildSelections(unitSelectionId, childSelections =>
-      withChangedOptionCount(
-        childSelections,
-        optionDefinition.id,
-        countDelta,
-        () => createSelectionFromDef(
-          optionDefinition, null, catalogueIdContaining(unitSelectionId),
-          raiseMembersUnderSelection(unitSelectionId, optionDefinition.id)
-        )
-      ));
-
-  const updateRosterName = (newName) => {
-    setRoster(prev => ({
-      ...prev,
-      name: newName
-    }));
-  };
-
-  const save = async () => {
-    if (saveCallbackRef.current) {
-      await saveCallbackRef.current(roster);
-    }
-  };
+  useMandatoryListRuleAutoAdd({ roster, system, slots, isFreshRoster, replaceRoster });
 
   // Die Fassung dieses Renders. Die nach außen gereichten Kommandos rufen sie
   // über die Ref auf, statt selbst neu zu entstehen — daher ihre Identität.
   const currentCommandsRef = useRef(null);
   currentCommandsRef.current = {
-    addUnit,
-    removeUnit,
-    copyUnit,
-    addSubSelectionInstance,
-    removeSubSelectionInstance,
-    changeSubSelectionCount,
-    updateRosterName,
-    save,
+    ...createRosterCommands({
+      roster, system, slots, setRoster, selectedSelectionId, setSelectedSelectionId, saveNow,
+    }),
     undo,
     redo
   };

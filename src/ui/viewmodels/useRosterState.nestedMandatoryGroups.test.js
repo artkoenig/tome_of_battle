@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
-import { useRoster } from './useRoster';
+import { useRosterState } from './useRosterState';
 import { processImportedData } from '../../data/parser/xmlParser';
 import { buildRoster } from '../../domain/roster/createRoster';
 
 /**
  * Issue 0145, increment 1, Kriterium 1 — a mandatory member is created at any
- * group depth, through the production recruitment path (`useRoster.addUnit`),
+ * group depth, through the production recruitment path (`useRosterState`s `commands.addUnit`),
  * against the real fixture catalogues. Nothing is mocked: `processImportedData`
  * parses the real `.gst`/`.cat`, `buildRoster` builds the fresh contingent
  * (`isFreshRoster` left omitted so the list-rule auto-add of Issue 0138/0140
@@ -52,10 +52,10 @@ function recruitEntry(catFile, entryId) {
     { costTypes: system.costTypes, forceEntries: [{ id: forceEntryId }] }
   );
 
-  const { result } = renderHook(() => useRoster(roster, system, vi.fn()));
+  const { result } = renderHook(() => useRosterState(roster, system, vi.fn()));
 
   act(() => {
-    result.current.addUnit(entry, null);
+    result.current.commands.addUnit(entry, null);
   });
 
   return result.current.roster.forces[0].selections[0];

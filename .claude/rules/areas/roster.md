@@ -56,10 +56,14 @@ evaluator. `src/data/db/` persists it in IndexedDB.
 - The folder is Fachlogik and therefore **translates nothing** (`keine-i18n-unter-ui`, `error`
   since Issue 0169). An error carries `messageKey`/`messageParams` (`MissingSystemError`,
   `RosterFileError` from `src/data/services/rosterTransfer.js`); `describeRosterFileError` in
-  `src/ui/hooks/useRosterList.js` is the one place that formulates them. A test here asserts on the
+  `src/ui/viewmodels/useRosterList.js` is the one place that formulates them. A test here asserts on the
   key, never on German text.
-- `rosterSerialization.js` reads the report (`evaluateAppRoster`) for names and costs and only
-  produces/consumes XML **text**. Packing and unpacking the `.rosz` archive is file I/O and lives
+- `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
+  (Issue 0174, ADR-0039) — and only produces/consumes XML **text**. Nothing under
+  `src/domain/roster/` imports `src/domain/evaluation/` any more; the blocking depcruise rule
+  `roster-keine-evaluation-abhaengigkeit` (`error`) holds it, test files excepted, the same way
+  `roster-keine-evaluator-abhaengigkeit` does. The caller is `useRosterList.js`, in the UI layer,
+  which calls `evaluateAppRoster(system, roster)` itself. Packing and unpacking the `.rosz` archive is file I/O and lives
   in `src/data/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
   in `useRosterList.js`, because the data layer may not reach back into this one.
 - A UI behaviour model does not belong here: `classifyGroupItem`/`classifyStandaloneOption` moved
@@ -87,7 +91,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   from before the marker has none, differs, and is re-parsed exactly once.
 - A change to the persisted shape in `src/data/db/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
-- The only automatic, choice-free write into a roster is `useRoster.js`'s fresh-roster effect over
+- The only automatic, choice-free write into a roster is `useRosterState.js`'s fresh-roster effect over
   `findMissingMandatoryListRules` (`src/domain/evaluation/`, report-driven) — gated on `isFreshRoster`,
   ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
   Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans

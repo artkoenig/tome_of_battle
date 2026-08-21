@@ -14,7 +14,6 @@ import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../s
 const SYSTEM = {
   catalogues: [{
     id: 'cat-main',
-    sharedRules: [],
     selectionEntries: [
       { id: 'el-lance', name: 'Lanze', costs: [{ name: 'pts', value: '5' }], rules: [], profiles: [] },
       { id: 'el-empty', name: 'Behälter', costs: [], rules: [], profiles: [], selectionEntries: [{ id: 'child', name: 'Kind' }] },

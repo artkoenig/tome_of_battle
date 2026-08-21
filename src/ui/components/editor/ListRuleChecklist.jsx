@@ -31,7 +31,7 @@ export default function ListRuleChecklist({
   onShowRule,
 }) {
   const { t } = useTranslation();
-  const { rows, system } = useListRuleChecklist({ forceId, forcePath, categoryId });
+  const { rows } = useListRuleChecklist({ forceId, forcePath, categoryId });
   const [activeInfo, setActiveInfo] = useState(null);
   const [hoveredInfo, setHoveredInfo] = useState(null);
   // Eingeklappte Behälter, nach `resolvedId`. Fehlt ein Eintrag, gilt die Zeile
@@ -60,7 +60,7 @@ export default function ListRuleChecklist({
   // (deaktivierten) Checkbox.
   const mandatoryInfoContent = (row) => (
     <>
-      {renderUpgradeDetails(row.resolvedEntry, system)}
+      {renderUpgradeDetails(row.detailElements)}
       {t('editor.listRules.mandatoryTooltip')}
     </>
   );

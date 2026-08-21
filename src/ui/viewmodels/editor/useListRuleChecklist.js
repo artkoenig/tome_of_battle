@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf, resolveEntry } from '../../../domain/roster';
+import { childSelectionsOf } from '../../../domain/roster';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
 import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
+import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
 /**
  * Die **Ankreuzliste der Listenregeln** einer Kategorie (Issue 0164).
@@ -20,9 +21,10 @@ import { useRosterReport, useRosterCommands } from '../rosterContexts';
  * blockierende Fehler von Hand behebbar ist. Der Pflicht-Hinweis hängt nicht an
  * der Sperre und erscheint in beiden Zuständen.
  *
- * Der aufgelöste Katalog-Eintrag einer Pflichtzeile (`resolvedEntry`) geht
- * roh nach draußen: den Detailblock daraus baut die Komponente, weil
- * `upgradeDetails.jsx` JSX zurückgibt und ein ViewModel es nicht importieren darf.
+ * Der Detailblock einer Pflichtzeile (`detailElements`) entsteht hier, aus der
+ * Info-Projektion ihres Slots (`capability.infoElements`, ADR-0034); die
+ * Komponente rendert die fertige Liste, weil `upgradeDetails.jsx` JSX
+ * zurückgibt und ein ViewModel es nicht importieren darf.
  *
  * @param {{ forceId: string|null, forcePath: string|null, categoryId: string }} params
  * @returns {{ rows: Array<Object>, isListRuleGroup: boolean, system: Object|null }}
@@ -45,6 +47,7 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
     return resolveListRuleGroupFromReport(slots, forcePath, categoryId, {
       selectionByPath,
       entryOf: (capability) => capabilityEntryOf(system, capability, activeCatalogue?.id),
+      detailsOf: (capability) => upgradeDetailElementsOf(capability),
     });
   }, [force, slots, forcePath, categoryId, system, activeCatalogue]);
 
@@ -65,7 +68,7 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
       // und im Roster tatsächlich eine Auswahl dazu steht.
       hasSubOptions: state.checked && state.isContainer && !!state.selection,
       // Der Detailblock einer Pflichtzeile — die Komponente rendert ihn.
-      resolvedEntry: state.mandatory ? resolveEntry(system, state.entry, activeCatalogue?.id) : null,
+      detailElements: state.mandatory ? state.details : null,
       toggle: (nextChecked) => {
         // Der disabled-Zustand der Checkbox verhindert das Abwählen einer
         // präsenten Pflichtregel schon auf DOM-Ebene; dieser Guard hält die

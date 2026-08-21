@@ -4,14 +4,14 @@ import {
   resolveCostLimitTypeId, resolveCostLimitLabel,
 } from '../../../domain/roster';
 import { classifyGroupItem } from './selectionBehavior.js';
+import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 import {
   optionDescriptionOf,
   resolveRowSelectionId,
   subSelectionCountOf,
-  costBudgetTextsOf,
-  hasExceededCostBudget,
-} from './useSelectionConfigurator';
+} from './optionRowDerivations.js';
+import { costBudgetTextsOf, hasExceededCostBudget } from './costBudgets.js';
 
 /**
  * ViewModel einer Options-Gruppe (ADR-0038; ADR-0035/0036).
@@ -175,6 +175,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
           points: capability.costs?.[costTypeId] ?? 0,
           costTypeLabel,
           descText: optionDescriptionOf(capability),
+          detailElements: upgradeDetailElementsOf(capability),
           isBinary,
           isRadio,
           radioName: `${selection.id}-${group.name}`,

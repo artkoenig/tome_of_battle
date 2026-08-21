@@ -26,7 +26,7 @@ export default function SelectionConfigurator({
   const { t } = useTranslation();
   // Ein Klick auf den Schalter der Zeile ist nicht der Klick auf die Zeile.
   const isControlClick = (e) => e.target.closest('button') || e.target.closest('input');
-  const { sections, sectionsForRow, system } = useSelectionConfigurator({ selection });
+  const { sections, sectionsForRow } = useSelectionConfigurator({ selection });
 
   /**
    * Die Kind-Slots einer belegten Zeilen-Auswahl, eingerückt unter ihrer Zeile
@@ -60,11 +60,11 @@ export default function SelectionConfigurator({
               hasInfo={!!row.descText}
               onShowRule={onShowRule}
               onInfoClick={() => {
-                if (row.resolved && window.innerWidth <= 900) {
-                  tooltip.onOpen?.({ title: row.name, text: renderUpgradeDetails(row.resolved, system) });
+                if (row.detailElements && window.innerWidth <= 900) {
+                  tooltip.onOpen?.({ title: row.name, text: renderUpgradeDetails(row.detailElements) });
                 }
               }}
-              onInfoEnter={(e) => { if (row.resolved) tooltip.onEnter?.(row.name, renderUpgradeDetails(row.resolved, system), e); }}
+              onInfoEnter={(e) => { if (row.detailElements) tooltip.onEnter?.(row.name, renderUpgradeDetails(row.detailElements), e); }}
               onInfoMove={tooltip.onMove}
               onInfoLeave={tooltip.onLeave}
             />

@@ -3,7 +3,6 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { resolveCostLimitTypeId } from './costTypeLabels.js';
-import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
 
 /**
@@ -11,7 +10,7 @@ import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefau
  *
  * Die Schicht übersetzt nicht: ein Fehler trägt seinen Übersetzungsschlüssel
  * (`messageKey`) und dessen Platzhalter (`messageParams`) und wird erst in der
- * Oberfläche formuliert (`describeRosterFileError` in `src/ui/hooks/`).
+ * Oberfläche formuliert (`describeRosterFileError` in `src/ui/viewmodels/`).
  * Das Ein- und Auspacken der `.rosz`-Datei ist Datei-Ein-/Ausgabe und liegt in
  * der Datenschicht (`src/data/services/rosterTransfer.js`).
  */
@@ -89,15 +88,22 @@ export class MissingSystemError extends Error {
  * Roster-Summenblock ist `costTotals` — beide aus **derselben** Auswertung,
  * die flache Summe der Selektionskosten deckt sich damit mit dem Summenblock.
  *
+ * Der Bericht wird **hereingereicht** (Issue 0174, ADR-0039): das Schreibmodell
+ * wertet nichts aus und ruft die Auswertungs-Brücke `src/domain/evaluation/`
+ * nicht mehr auf. Der Aufrufer liegt in der Oberfläche und besorgt den Bericht
+ * dort, wo er ihn ohnehin haben darf (`evaluateAppRoster(system, roster)`).
+ *
  * @param {Object} roster
  * @param {Object} system
+ * @param {{costTotals: Object, slots: Object}} report Auswertung zu genau
+ *   diesem `(system, roster)`-Paar.
  * @returns {string} XML text
  */
-export function exportRosterToXml(roster, system) {
+export function exportRosterToXml(roster, system, report) {
   const systemName = system?.name || 'Unbekanntes System';
   const systemId = system?.id || roster.systemId;
 
-  const { costTotals, slots } = evaluateAppRoster(system, roster);
+  const { costTotals, slots } = report;
   // Shared report context so per-selection names/costs match the total block exactly.
   const ctx = { system, slots };
 

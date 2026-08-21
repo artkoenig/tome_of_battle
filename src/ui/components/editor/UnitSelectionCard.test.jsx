@@ -68,8 +68,10 @@ vi.mock('../../../domain/roster', async () => ({
 // Info-Projektion (`infoElements`) in der Berichtsform der Evaluator-Fassade.
 // Regeln werden als `{ id, name, description }` angegeben und hier auf die
 // Berichtsform `{ kind: 'rule', name, text }` abgebildet.
-const capabilitiesWith = ({ profiles = [], rules = [], totalCosts = { pts: 120 } } = {}) =>
-  new Map([['0/0', {
+// `sub` beschreibt daneben den Slot der Unter-Auswahl ('0/0/0'): ihr Regeltext
+// ist der Detailtext ihres Chips, und er kommt aus derselben Projektion.
+const capabilitiesWith = ({ profiles = [], rules = [], sub = null, totalCosts = { pts: 120 } } = {}) => {
+  const capabilities = new Map([['0/0', {
     anchorKind: 'occupied',
     isHidden: false,
     isIndependentSubUnit: false,
@@ -80,6 +82,20 @@ const capabilitiesWith = ({ profiles = [], rules = [], totalCosts = { pts: 120 }
       ...rules.map(rule => ({ kind: 'rule', id: rule.id, name: rule.name, text: rule.description })),
     ],
   }]]);
+  if (sub) {
+    capabilities.set('0/0/0', {
+      anchorKind: 'occupied',
+      isHidden: false,
+      isIndependentSubUnit: false,
+      primaryCategoryId: null,
+      name: sub.name,
+      infoElements: (sub.rules ?? []).map(rule => ({
+        kind: 'rule', id: rule.id, name: rule.name, text: rule.description,
+      })),
+    });
+  }
+  return capabilities;
+};
 
 const KNIGHT_PROFILE = {
   id: 'p1',
@@ -115,7 +131,13 @@ describe('UnitSelectionCard Component', () => {
       }
     ],
     pathBySelectionId: new Map([['sel-1', '0/0'], ['sub-1', '0/0/0']]),
-    capabilities: capabilitiesWith({ profiles: [KNIGHT_PROFILE] }),
+    capabilities: capabilitiesWith({
+      profiles: [KNIGHT_PROFILE],
+      sub: {
+        name: 'Barded Warhorse',
+        rules: [{ id: 'r-horse', name: 'Barded Warhorse', description: 'Adds +1 to Armour Save' }],
+      },
+    }),
     costTypeLabel: 'Pkt.',
     removeUnit: vi.fn(),
     copyUnit: vi.fn(),
@@ -679,7 +701,11 @@ describe('UnitSelectionCard Component', () => {
               { name: 'Range', value: 'Combat' }
             ]
           }
-        ]
+        ],
+        sub: {
+          name: 'Sword of the Lady',
+          rules: [{ id: 'r-sword', name: 'Sword of the Lady', description: 'Grants magical attacks' }],
+        },
       });
 
       // Resolved upgrade carries a rule description (lore).
@@ -695,7 +721,7 @@ describe('UnitSelectionCard Component', () => {
           {...defaultProps}
           selection={mockSel}
           capabilities={capabilities}
-          pathBySelectionId={new Map([['sel-unit', '0/0']])}
+          pathBySelectionId={new Map([['sel-unit', '0/0'], ['sub-sword', '0/0/0']])}
         />
       );
 

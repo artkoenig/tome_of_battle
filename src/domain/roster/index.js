@@ -19,7 +19,7 @@ export {
   childSelectionsOf, countSelections, findForceContainingSelection,
   findSelectionInRoster, mapSelectionTree, replaceSelectionById
 } from './rosterTree.js';
-export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
+export { findEntryInSystem, findRuleByName, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
 export {
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
 } from './costTypeLabels.js';

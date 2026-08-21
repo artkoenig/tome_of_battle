@@ -337,6 +337,47 @@ export function resolveEntry(system, entry, catalogueId) {
   return resolved;
 }
 
+/** A rule name reduced to what a catalogue author varies freely: case and padding. */
+const ruleNameKeyOf = (name) => (name || '').toLowerCase().trim();
+
+/**
+ * Looks up a **rule by its plain name**, preferring the catalogue the reference
+ * was read from.
+ *
+ * The corpus carries rules that no `infoLink` ever reaches: an army book declares
+ * the description of a magic item as a shared rule of the same name and leaves it
+ * unlinked (`Frostblade` in the Vampire Counts book is one of four in that book
+ * alone). The structure says nothing there, so the name is the only anchor left —
+ * but the anchor is an **equality** of names inside a known catalogue, never a
+ * similarity: `catalogueId` is searched first, the game system next, and the
+ * remaining catalogues only after that. Two same-named rules in two army books
+ * therefore no longer decide by catalogue order.
+ *
+ * @param {Object} system the parsed game system (gst plus its catalogues).
+ * @param {string|null|undefined} name the plain name to match.
+ * @param {string|null} catalogueId the catalogue the reference was read from.
+ * @returns {Object|null} the rule as the parser produced it, or `null`.
+ */
+export function findRuleByName(system, name, catalogueId) {
+  if (!system) return null;
+  const wanted = ruleNameKeyOf(name);
+  if (!wanted) return null;
+
+  const catalogues = system.catalogues ?? [];
+  const ownCatalogue = catalogueId ? catalogues.find(c => c.id === catalogueId) ?? null : null;
+  const ruleLists = [
+    ownCatalogue?.sharedRules,
+    system.sharedRules,
+    ...catalogues.filter(c => c !== ownCatalogue).map(c => c.sharedRules),
+  ];
+
+  for (const rules of ruleLists) {
+    const hit = (rules ?? []).find(rule => ruleNameKeyOf(rule.name) === wanted);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 function findPublicationById(system, publicationId, catalogueId = null) {
   if (!system || !publicationId) return null;
   

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRuleUrl } from '../../hooks/useRuleUrl';
+import { useRuleUrl } from '../../viewmodels/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { useUnitChips } from '../../viewmodels/editor/useUnitChips';
@@ -20,14 +20,14 @@ export function UnitUpgradesChips({
   onShowRule
 }) {
   const resolveRuleUrl = useRuleUrl();
-  const { upgrades, system } = useUnitChips({ selection });
+  const { upgrades } = useUnitChips({ selection });
   if (upgrades.length === 0) return null;
 
   return (
     <div className="unit-header-upgrades">
       {upgrades.map(upgrade => {
         const descText = upgrade.descText;
-        const details = renderUpgradeDetails(upgrade.resolved, system);
+        const details = renderUpgradeDetails(upgrade.detailElements);
 
         return (
           <span
