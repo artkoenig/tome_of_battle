@@ -24,7 +24,7 @@ directory: `forge-test --run src/domain/roster`; a single file: `forge-test --ru
   parser produces. Real catalogue data (`src/domain/evaluator/__fixtures__/
   whfb6-definitive/`, `src/shared/__fixtures__/whfb6/`) is read only where the point
   of the case is that real data, not a schema shape — see
-  `src/ui/hooks/useRoster.nestedMandatoryGroups.test.js` (a `src/ui/hooks` file, but
+  `src/ui/viewmodels/useRosterState.nestedMandatoryGroups.test.js` (a `src/ui/viewmodels` file, but
   the pattern for loading a fixture `.gst`/`.cat` and parsing it for real is
   the one to follow: `fs.readFileSync` + `processImportedData`, never a mock
   of the parser).
@@ -40,7 +40,7 @@ directory: `forge-test --run src/domain/roster`; a single file: `forge-test --ru
   finds its catalogue object, through groups and group links, in any depth.
   The estimate a user sees before recruiting is the report's `raiseCosts` from
   the same walk; that it agrees with the recruited selection's `totalCosts` is
-  pinned in `src/ui/hooks/useRoster.recruitCostAgreement.test.js`.
+  pinned in `src/ui/viewmodels/useRosterState.recruitCostAgreement.test.js`.
 - A case that needs a cost total reads `evaluateAppRoster(system, roster)` —
   `costTotals` roster-wide, `totalCosts`/`raiseCosts` per slot. There is no
   cost arithmetic left in this directory to call.

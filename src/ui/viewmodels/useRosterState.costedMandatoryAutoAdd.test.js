@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRoster } from './useRoster';
+import { useRosterState } from './useRosterState';
 import { processImportedData } from '../../data/parser/xmlParser';
 import { buildRoster } from '../../domain/roster/createRoster';
 import { formatViolation } from '../i18n/violationMessages';
@@ -9,11 +9,11 @@ import { formatViolation } from '../i18n/violationMessages';
  * Issue 0140 — "Eine Pflicht-Listenregel mit Kosten wird nicht automatisch
  * gesetzt", at the seam where the user actually notices it: a freshly created
  * contingent, the real (unmocked) sweep in `src/domain/roster/listRules.js`, the real
- * auto-add effect in `useRoster.js` and the real evaluator report behind
+ * auto-add effect in `useRosterState.js` and the real evaluator report behind
  * `useEvaluation`.
  *
  * Nothing is mocked here on purpose. The sibling file
- * `useRoster.mandatoryAutoAdd.test.js` (Issue 0138) stubs
+ * `useRosterState.mandatoryAutoAdd.test.js` (Issue 0138) stubs
  * `findMissingMandatoryListRuleSelections` to drive the effect WIRING; this file
  * is the opposite end — it drives the whole chain from catalogue XML to the
  * report, because Issue 0140's criteria 2 and 5 are statements about what the
@@ -193,7 +193,7 @@ function manualSelectionOfTheEntry() {
 }
 
 function render(roster, isFreshRoster) {
-  return renderHook(() => useRoster(roster, appSystem(), vi.fn(), undefined, isFreshRoster));
+  return renderHook(() => useRosterState(roster, appSystem(), vi.fn(), undefined, isFreshRoster));
 }
 
 const rootEntryIds = (result) =>
@@ -211,7 +211,7 @@ function messageKeyOf(violation) {
 
 /** Every blocking message the report raises about one particular catalogue entry. */
 function messageKeysAbout(result, defId) {
-  return result.current.violations
+  return result.current.report.violations
     .filter(violation => violation.anchor?.defId === defId)
     .map(messageKeyOf);
 }
@@ -283,7 +283,7 @@ describe('AC4: a roster that existed before this change is left alone', () => {
   });
 
   it('an omitted fresh-marker is the safe default: nothing is added', () => {
-    const { result } = renderHook(() => useRoster(preExistingRoster(), appSystem(), vi.fn()));
+    const { result } = renderHook(() => useRosterState(preExistingRoster(), appSystem(), vi.fn()));
 
     expect(result.current.roster.forces[0].selections).toEqual([]);
   });
@@ -295,7 +295,7 @@ describe('AC5: the costs of the auto-added entry count in the report', () => {
   it('the fresh contingent reports its 2 Casting Dice and 2 Dispel Dice', () => {
     const { result } = render(freshlyCreatedRoster(), true);
 
-    expect(result.current.costTotals).toEqual({
+    expect(result.current.report.costTotals).toEqual({
       [PTS_ID]: 0,
       [CASTING_DICE_ID]: CASTING_DICE_COST,
       [DISPEL_DICE_ID]: DISPEL_DICE_COST,
@@ -306,21 +306,21 @@ describe('AC5: the costs of the auto-added entry count in the report', () => {
     const { result: autoAdded } = render(freshlyCreatedRoster(), true);
     const { result: manuallyPresent } = render(preExistingRoster([manualSelectionOfTheEntry()]), false);
 
-    expect(autoAdded.current.costTotals).toEqual(manuallyPresent.current.costTotals);
+    expect(autoAdded.current.report.costTotals).toEqual(manuallyPresent.current.report.costTotals);
   });
 
   it('its costs add to the costs of a unit chosen afterwards rather than replacing them', () => {
     const system = appSystem();
     const spearmen = system.catalogues[0].selectionEntries.find(e => e.id === SPEARMEN_ID);
     const { result } = renderHook(
-      () => useRoster(freshlyCreatedRoster(), system, vi.fn(), undefined, true)
+      () => useRosterState(freshlyCreatedRoster(), system, vi.fn(), undefined, true)
     );
 
     act(() => {
-      result.current.addUnit(spearmen, null);
+      result.current.commands.addUnit(spearmen, null);
     });
 
-    expect(result.current.costTotals).toEqual({
+    expect(result.current.report.costTotals).toEqual({
       [PTS_ID]: SPEARMEN_POINTS,
       [CASTING_DICE_ID]: CASTING_DICE_COST,
       [DISPEL_DICE_ID]: DISPEL_DICE_COST,
@@ -412,12 +412,12 @@ function manualDwarfSelection() {
 }
 
 function renderDwarf(roster, isFreshRoster) {
-  return renderHook(() => useRoster(roster, dwarfSystem(), vi.fn(), undefined, isFreshRoster));
+  return renderHook(() => useRosterState(roster, dwarfSystem(), vi.fn(), undefined, isFreshRoster));
 }
 
 /** The report's cost-limit violations for the roster's budgeted cost type. */
 function pointsBudgetViolations(result) {
-  return result.current.violations.filter(
+  return result.current.report.violations.filter(
     violation => violation.limit?.measure === 'rosterBudget'
       && violation.limit?.kind === 'max'
       && violation.limit?.costTypeId === PTS_ID
@@ -432,8 +432,8 @@ describe('AC5: an auto-added entry with a POINTS cost counts against the budget 
     const { result } = renderDwarf(dwarfRoster(GENEROUS_LIMIT), true);
 
     expect(rootEntryIds(result)).toContain(DWARF_RULES_ID);
-    expect(result.current.costTotals[PTS_ID]).toBe(DWARF_RULES_POINTS);
-    expect(result.current.costTotals[DISPEL_DICE_ID]).toBe(DWARF_RULES_DISPEL_DICE);
+    expect(result.current.report.costTotals[PTS_ID]).toBe(DWARF_RULES_POINTS);
+    expect(result.current.report.costTotals[DISPEL_DICE_ID]).toBe(DWARF_RULES_DISPEL_DICE);
   });
 
   it('under a generous limit the report raises no cost-limit violation (control)', () => {
@@ -458,7 +458,7 @@ describe('AC5: an auto-added entry with a POINTS cost counts against the budget 
     const { result: autoAdded } = renderDwarf(dwarfRoster(TIGHT_LIMIT), true);
     const { result: manuallyPresent } = renderDwarf(dwarfRoster(TIGHT_LIMIT, [manualDwarfSelection()]), false);
 
-    expect(autoAdded.current.costTotals).toEqual(manuallyPresent.current.costTotals);
+    expect(autoAdded.current.report.costTotals).toEqual(manuallyPresent.current.report.costTotals);
     expect(pointsBudgetViolations(autoAdded).map(v => ({ actual: v.actual, bound: v.bound })))
       .toEqual(pointsBudgetViolations(manuallyPresent).map(v => ({ actual: v.actual, bound: v.bound })));
   });

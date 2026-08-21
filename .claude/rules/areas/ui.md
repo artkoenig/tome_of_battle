@@ -108,7 +108,7 @@ paths:
   `resolveEntry`/`findEntryInSystem` stay only for detail texts and
   for the entry the **write** path hands to `addUnit`.
 - The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
-  `capability.raiseMembers` of its offer slot — `useRoster` looks it up (`findChildSlot` under the
+  `capability.raiseMembers` of its offer slot — `useRosterState` looks it up (`findChildSlot` under the
   force, `findDescendantSlot` under a unit, since an option hangs below its group anchor) and
   hands it to the factory. Nothing in `src/domain/roster/` derives an obligation from the catalogue any
   more, so a seam that recruits without a report creates a bare selection.

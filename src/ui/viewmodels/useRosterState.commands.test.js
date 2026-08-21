@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRoster } from './useRoster';
-import { PERSISTENCE_FAILURE_MESSAGE_KEY } from './persistenceFailure';
+import { useRosterState } from './useRosterState';
+import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../hooks/persistenceFailure';
 import { t } from '../i18n/i18nStore';
 import { syncRosterSelectionsWithSystem } from '../../domain/roster';
 
@@ -18,7 +18,7 @@ vi.mock('../../domain/roster', async (importOriginal) => ({
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
 
-describe('useRoster Hook', () => {
+describe('useRosterState Hook', () => {
   const mockSystem = { id: 'sys-1', name: 'Test System' };
   const initialRoster = {
     id: 'roster-1',
@@ -37,21 +37,21 @@ describe('useRoster Hook', () => {
 
   it('initializes with the roster and the evaluator result', () => {
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     expect(result.current.roster).toEqual(initialRoster);
     // Das System dieser Tests hat kein rawXmls → Leer-Ergebnis des Evaluators.
-    expect(result.current.violations).toEqual([]);
-    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
-    expect(result.current.description).toBe(null);
-    expect(result.current.costTotals).toEqual({});
-    expect(result.current.slots.pathBySelectionId).toBeInstanceOf(Map);
+    expect(result.current.report.violations).toEqual([]);
+    expect(result.current.report.slots.capabilities).toBeInstanceOf(Map);
+    expect(result.current.report.description).toBe(null);
+    expect(result.current.report.costTotals).toEqual({});
+    expect(result.current.report.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 
   it('debounces only the persistence, not the derived roster state', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     act(() => {
       vi.advanceTimersByTime(200);
@@ -59,7 +59,7 @@ describe('useRoster Hook', () => {
     mockSave.mockClear();
 
     act(() => {
-      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
     });
 
     // Ohne Vorlauf der Debounce: der abgeleitete Zustand gehört bereits zum
@@ -77,12 +77,12 @@ describe('useRoster Hook', () => {
 
   it('addUnit adds a new selection to the roster', () => {
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     const testEntry = { id: 'entry-1', name: 'Space Marine' };
 
     act(() => {
-      result.current.addUnit(testEntry, 'cat-1');
+      result.current.commands.addUnit(testEntry, 'cat-1');
     });
 
     expect(result.current.roster.forces[0].selections.length).toBe(1);
@@ -108,10 +108,10 @@ describe('useRoster Hook', () => {
       result.current.roster.forces.map(force => force.selections.length);
 
     it('adds the unit to the addressed force only', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+        result.current.commands.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
       });
 
       expect(selectionsPerForce(result)).toEqual([0, 1]);
@@ -119,10 +119,10 @@ describe('useRoster Hook', () => {
     });
 
     it('keeps selection ids unique across the whole roster', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1', FIRST_FORCE_ID);
+        result.current.commands.addUnit(testEntry, 'cat-1', FIRST_FORCE_ID);
       });
 
       const allSelectionIds = result.current.roster.forces.flatMap(
@@ -132,30 +132,30 @@ describe('useRoster Hook', () => {
     });
 
     it('removes the unit from the single force that holds it', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+        result.current.commands.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
       });
       const addedUnitId = result.current.roster.forces[1].selections[0].id;
 
       act(() => {
-        result.current.removeUnit(addedUnitId);
+        result.current.commands.removeUnit(addedUnitId);
       });
 
       expect(selectionsPerForce(result)).toEqual([0, 0]);
     });
 
     it('edits the addressed unit without touching the other force', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
+        result.current.commands.addUnit(testEntry, 'cat-1', SECOND_FORCE_ID);
       });
       const addedUnitId = result.current.roster.forces[1].selections[0].id;
 
       act(() => {
-        result.current.subSelectionOperations.increaseCount(addedUnitId, { id: 'opt-1', name: 'Bolter' });
+        result.current.commands.subSelectionOperations.increaseCount(addedUnitId, { id: 'opt-1', name: 'Bolter' });
       });
 
       expect(result.current.roster.forces[1].selections[0].selections).toHaveLength(1);
@@ -163,20 +163,20 @@ describe('useRoster Hook', () => {
     });
 
     it('falls back to the first force when no force is addressed', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1');
+        result.current.commands.addUnit(testEntry, 'cat-1');
       });
 
       expect(selectionsPerForce(result)).toEqual([1, 0]);
     });
 
     it('falls back to the first force when the addressed force is unknown', () => {
-      const { result } = renderHook(() => useRoster(multiForceRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(multiForceRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit(testEntry, 'cat-1', 'force-does-not-exist');
+        result.current.commands.addUnit(testEntry, 'cat-1', 'force-does-not-exist');
       });
 
       expect(selectionsPerForce(result)).toEqual([1, 0]);
@@ -190,10 +190,10 @@ describe('useRoster Hook', () => {
     };
 
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(rosterWithUnit, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(rosterWithUnit, mockSystem, mockSave));
 
     act(() => {
-      result.current.removeUnit('sel-1');
+      result.current.commands.removeUnit('sel-1');
     });
 
     expect(result.current.roster.forces[0].selections.length).toBe(0);
@@ -201,10 +201,10 @@ describe('useRoster Hook', () => {
 
   it('calls saveRosterCallback when save is called', async () => {
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     await act(async () => {
-      await result.current.save();
+      await result.current.commands.save();
     });
 
     expect(mockSave).toHaveBeenCalledWith(result.current.roster);
@@ -213,7 +213,7 @@ describe('useRoster Hook', () => {
   it('saves after the debounce delay when unit is added', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     // Initialen Autosave abwarten und zurücksetzen
     act(() => {
@@ -224,7 +224,7 @@ describe('useRoster Hook', () => {
     const testEntry = { id: 'entry-1', name: 'Space Marine' };
 
     act(() => {
-      result.current.addUnit(testEntry, 'cat-1');
+      result.current.commands.addUnit(testEntry, 'cat-1');
     });
 
     // Vor Ablauf der Debounce noch kein Save
@@ -243,7 +243,7 @@ describe('useRoster Hook', () => {
   it('flushes a pending save on unmount', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
-    const { result, unmount } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result, unmount } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     act(() => {
       vi.advanceTimersByTime(200);
@@ -251,7 +251,7 @@ describe('useRoster Hook', () => {
     mockSave.mockClear();
 
     act(() => {
-      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
     });
 
     // Unmount vor Ablauf der Debounce — die Änderung darf nicht verloren gehen
@@ -272,7 +272,7 @@ describe('useRoster Hook', () => {
     // (`src/domain/evaluator/costProjection.raiseMembers.test.js`), ihre Aufloesung in
     // `src/domain/roster/selectionFactory.test.js`.
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     const testEntry = {
       id: 'unit-lord',
@@ -291,7 +291,7 @@ describe('useRoster Hook', () => {
     };
 
     act(() => {
-      result.current.addUnit(testEntry, 'cat-1');
+      result.current.commands.addUnit(testEntry, 'cat-1');
     });
 
     const unitSel = result.current.roster.forces[0].selections[0];
@@ -302,10 +302,10 @@ describe('useRoster Hook', () => {
   it('updateRosterName updates the roster name', () => {
     vi.useFakeTimers();
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     act(() => {
-      result.current.updateRosterName('New Roster Name');
+      result.current.commands.updateRosterName('New Roster Name');
     });
 
     expect(result.current.roster.name).toBe('New Roster Name');
@@ -321,11 +321,11 @@ describe('useRoster Hook', () => {
   describe('subSelectionOperations', () => {
     const addUnitWithOption = (result, optionDefinition) => {
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       const unit = result.current.roster.forces[0].selections[0];
       act(() => {
-        result.current.subSelectionOperations.increaseCount(unit.id, optionDefinition);
+        result.current.commands.subSelectionOperations.increaseCount(unit.id, optionDefinition);
       });
       return unit;
     };
@@ -333,7 +333,7 @@ describe('useRoster Hook', () => {
     const childSelectionsOfUnit = (result) => result.current.roster.forces[0].selections[0].selections;
 
     it('increaseCount chooses an option once and raises its count afterwards', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
       const bolter = { id: 'opt-1', name: 'Bolter' };
       const unit = addUnitWithOption(result, bolter);
 
@@ -341,7 +341,7 @@ describe('useRoster Hook', () => {
       expect(childSelectionsOfUnit(result)[0].number).toBe(1);
 
       act(() => {
-        result.current.subSelectionOperations.increaseCount(unit.id, bolter);
+        result.current.commands.subSelectionOperations.increaseCount(unit.id, bolter);
       });
 
       expect(childSelectionsOfUnit(result)).toHaveLength(1);
@@ -349,31 +349,31 @@ describe('useRoster Hook', () => {
     });
 
     it('decreaseCount drops the option once its count reaches zero', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
       const bolter = { id: 'opt-1', name: 'Bolter' };
       const unit = addUnitWithOption(result, bolter);
 
       act(() => {
-        result.current.subSelectionOperations.decreaseCount(unit.id, bolter);
+        result.current.commands.subSelectionOperations.decreaseCount(unit.id, bolter);
       });
 
       expect(childSelectionsOfUnit(result)).toHaveLength(0);
     });
 
     it('addInstance keeps each instance of the same option separate', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
       const champion = { id: 'opt-champion', name: 'Champion' };
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       const unit = result.current.roster.forces[0].selections[0];
 
       act(() => {
-        result.current.subSelectionOperations.addInstance(unit.id, champion);
+        result.current.commands.subSelectionOperations.addInstance(unit.id, champion);
       });
       act(() => {
-        result.current.subSelectionOperations.addInstance(unit.id, champion);
+        result.current.commands.subSelectionOperations.addInstance(unit.id, champion);
       });
 
       const instances = childSelectionsOfUnit(result);
@@ -382,25 +382,25 @@ describe('useRoster Hook', () => {
     });
 
     it('removeInstance removes the addressed instance by its selection id', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
       const champion = { id: 'opt-champion', name: 'Champion' };
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       const unit = result.current.roster.forces[0].selections[0];
 
       act(() => {
-        result.current.subSelectionOperations.addInstance(unit.id, champion);
+        result.current.commands.subSelectionOperations.addInstance(unit.id, champion);
       });
       act(() => {
-        result.current.subSelectionOperations.addInstance(unit.id, champion);
+        result.current.commands.subSelectionOperations.addInstance(unit.id, champion);
       });
       const survivingInstanceId = childSelectionsOfUnit(result)[1].id;
       const removedInstanceId = childSelectionsOfUnit(result)[0].id;
 
       act(() => {
-        result.current.subSelectionOperations.removeInstance(unit.id, removedInstanceId);
+        result.current.commands.subSelectionOperations.removeInstance(unit.id, removedInstanceId);
       });
 
       expect(childSelectionsOfUnit(result).map(item => item.id)).toEqual([survivingInstanceId]);
@@ -409,10 +409,10 @@ describe('useRoster Hook', () => {
 
   it('keeps selectedRosterSelection in sync with the roster tree (ID-based)', () => {
     const mockSave = vi.fn();
-    const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
     act(() => {
-      result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+      result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
     });
 
     const unit = result.current.roster.forces[0].selections[0];
@@ -420,7 +420,7 @@ describe('useRoster Hook', () => {
 
     // Nach einer Mutation zeigt die Auswahl auf den aktualisierten Knoten aus dem Roster
     act(() => {
-      result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
+      result.current.commands.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
     });
 
     expect(result.current.selectedRosterSelection).toBe(result.current.roster.forces[0].selections[0]);
@@ -428,38 +428,38 @@ describe('useRoster Hook', () => {
 
     // Entfernen der Einheit setzt die Auswahl zurück
     act(() => {
-      result.current.removeUnit(unit.id);
+      result.current.commands.removeUnit(unit.id);
     });
     expect(result.current.selectedRosterSelection).toBe(null);
   });
 
   describe('Undo/Redo', () => {
     it('reports no undo/redo history right after initialization', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       expect(result.current.canUndo).toBe(false);
       expect(result.current.canRedo).toBe(false);
     });
 
     it('undo reverts addUnit and redo restores it', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       expect(result.current.roster.forces[0].selections.length).toBe(1);
       expect(result.current.canUndo).toBe(true);
       expect(result.current.canRedo).toBe(false);
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.forces[0].selections.length).toBe(0);
       expect(result.current.canUndo).toBe(false);
       expect(result.current.canRedo).toBe(true);
 
       act(() => {
-        result.current.redo();
+        result.current.commands.redo();
       });
       expect(result.current.roster.forces[0].selections.length).toBe(1);
       expect(result.current.roster.forces[0].selections[0].name).toBe('Space Marine');
@@ -472,15 +472,15 @@ describe('useRoster Hook', () => {
         ...initialRoster,
         forces: [{ selections: [{ id: 'sel-1', name: 'Space Marine' }] }]
       };
-      const { result } = renderHook(() => useRoster(rosterWithUnit, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(rosterWithUnit, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.removeUnit('sel-1');
+        result.current.commands.removeUnit('sel-1');
       });
       expect(result.current.roster.forces[0].selections.length).toBe(0);
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.forces[0].selections.length).toBe(1);
       expect(result.current.roster.forces[0].selections[0].id).toBe('sel-1');
@@ -491,83 +491,83 @@ describe('useRoster Hook', () => {
         ...initialRoster,
         forces: [{ selections: [{ id: 'sel-1', name: 'Space Marine', selections: [] }] }]
       };
-      const { result } = renderHook(() => useRoster(rosterWithUnit, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(rosterWithUnit, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.copyUnit('sel-1');
+        result.current.commands.copyUnit('sel-1');
       });
       expect(result.current.roster.forces[0].selections.length).toBe(2);
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.forces[0].selections.length).toBe(1);
     });
 
     it('undo reverts a sub-selection count change', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       const unit = result.current.roster.forces[0].selections[0];
 
       act(() => {
-        result.current.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
+        result.current.commands.subSelectionOperations.increaseCount(unit.id, { id: 'opt-1', name: 'Bolter' });
       });
       expect(result.current.roster.forces[0].selections[0].selections.length).toBe(1);
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.forces[0].selections[0].selections.length).toBe(0);
     });
 
     it('undo reverts updateRosterName', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.updateRosterName('New Roster Name');
+        result.current.commands.updateRosterName('New Roster Name');
       });
       expect(result.current.roster.name).toBe('New Roster Name');
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.name).toBe(initialRoster.name);
     });
 
     it('a new change after undo discards the redo history', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.canRedo).toBe(true);
 
       act(() => {
-        result.current.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
       });
       expect(result.current.canRedo).toBe(false);
       expect(result.current.roster.forces[0].selections[0].name).toBe('Terminator');
     });
 
     it('supports an unbounded number of undo steps', () => {
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       for (let i = 0; i < 20; i++) {
         act(() => {
-          result.current.addUnit({ id: `entry-${i}`, name: `Unit ${i}` }, 'cat-1');
+          result.current.commands.addUnit({ id: `entry-${i}`, name: `Unit ${i}` }, 'cat-1');
         });
       }
       expect(result.current.roster.forces[0].selections.length).toBe(20);
 
       for (let i = 0; i < 20; i++) {
         act(() => {
-          result.current.undo();
+          result.current.commands.undo();
         });
       }
       expect(result.current.roster.forces[0].selections.length).toBe(0);
@@ -577,7 +577,7 @@ describe('useRoster Hook', () => {
     it('persists the roster via autosave after an undo', () => {
       vi.useFakeTimers();
       const mockSave = vi.fn();
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
       act(() => {
         vi.advanceTimersByTime(200);
@@ -585,7 +585,7 @@ describe('useRoster Hook', () => {
       mockSave.mockClear();
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       act(() => {
         vi.advanceTimersByTime(200);
@@ -593,7 +593,7 @@ describe('useRoster Hook', () => {
       mockSave.mockClear();
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       act(() => {
         vi.advanceTimersByTime(200);
@@ -608,13 +608,13 @@ describe('useRoster Hook', () => {
     it('persists the roster via autosave after a redo', () => {
       vi.useFakeTimers();
       const mockSave = vi.fn();
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, mockSave));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       act(() => {
         vi.advanceTimersByTime(200);
@@ -622,7 +622,7 @@ describe('useRoster Hook', () => {
       mockSave.mockClear();
 
       act(() => {
-        result.current.redo();
+        result.current.commands.redo();
       });
       act(() => {
         vi.advanceTimersByTime(200);
@@ -638,18 +638,18 @@ describe('useRoster Hook', () => {
       vi.useFakeTimers();
       syncRosterSelectionsWithSystem.mockImplementationOnce(roster => ({ ...roster }));
 
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       // Die Korrektur beim ersten Effekt-Durchlauf darf keinen Undo-Schritt erzeugen
       expect(result.current.canUndo).toBe(false);
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: 'Space Marine' }, 'cat-1');
       });
       expect(result.current.canUndo).toBe(true);
 
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
 
       // Zurück auf den (bereits korrigierten) Ausgangszustand, keine Korrektur rückgängig zu machen
@@ -683,10 +683,10 @@ describe('useRoster Hook', () => {
         roster => (catalogueHasChanged ? renameStaleUnits(roster) : roster)
       );
 
-      const { result } = renderHook(() => useRoster(initialRoster, mockSystem, vi.fn()));
+      const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
       act(() => {
-        result.current.addUnit({ id: 'entry-1', name: STALE_NAME }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-1', name: STALE_NAME }, 'cat-1');
       });
 
       // Der Zustand, wie er in diesem Moment aufgezeichnet wurde
@@ -697,7 +697,7 @@ describe('useRoster Hook', () => {
       // Ein Katalog-Update lässt den Abgleich bei der nächsten Änderung greifen
       catalogueHasChanged = true;
       act(() => {
-        result.current.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
+        result.current.commands.addUnit({ id: 'entry-2', name: 'Terminator' }, 'cat-1');
       });
       expect(result.current.roster.forces[0].selections[0].name).toBe(CURRENT_NAME);
 
@@ -707,7 +707,7 @@ describe('useRoster Hook', () => {
 
       // Und ein Undo führt genau auf diesen aufgezeichneten Umfang zurück.
       act(() => {
-        result.current.undo();
+        result.current.commands.undo();
       });
       expect(result.current.roster.forces[0].selections.length)
         .toBe(recordedSnapshot.forces[0].selections.length);
@@ -721,7 +721,7 @@ describe('useRoster Hook', () => {
       const reportError = vi.fn();
       const failingSave = vi.fn().mockRejectedValue(new Error('QuotaExceededError'));
 
-      renderHook(() => useRoster(initialRoster, mockSystem, failingSave, reportError));
+      renderHook(() => useRosterState(initialRoster, mockSystem, failingSave, reportError));
 
       await vi.waitFor(() => {
         expect(reportError).toHaveBeenCalledWith(t(PERSISTENCE_FAILURE_MESSAGE_KEY.roster));
@@ -736,7 +736,7 @@ describe('useRoster Hook', () => {
         throw new Error('DB blockiert');
       });
 
-      renderHook(() => useRoster(initialRoster, mockSystem, throwingSave, reportError));
+      renderHook(() => useRosterState(initialRoster, mockSystem, throwingSave, reportError));
 
       await vi.waitFor(() => {
         expect(reportError).toHaveBeenCalledWith(t(PERSISTENCE_FAILURE_MESSAGE_KEY.roster));
@@ -748,7 +748,7 @@ describe('useRoster Hook', () => {
       const reportError = vi.fn();
       const succeedingSave = vi.fn().mockResolvedValue(undefined);
 
-      renderHook(() => useRoster(initialRoster, mockSystem, succeedingSave, reportError));
+      renderHook(() => useRosterState(initialRoster, mockSystem, succeedingSave, reportError));
 
       await vi.waitFor(() => {
         expect(succeedingSave).toHaveBeenCalled();

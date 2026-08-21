@@ -1,9 +1,9 @@
 /**
- * Issue 0121, Task 5 — `useRoster` wechselt den Validierungspfad vom Solver
+ * Issue 0121, Task 5 — `useRosterState` wechselt den Validierungspfad vom Solver
  * auf den Evaluator-Bericht (test-first; die neue Implementierung existiert
  * noch nicht).
  *
- * Intention: `useRoster(initialRoster, system, …)` (Signatur bleibt) liefert
+ * Intention: `useRosterState(initialRoster, system, …)` (Signatur bleibt) liefert
  * statt der Solver-`validationErrors` künftig
  * - `violations`: die Evaluator-Verletzungen des aktuellen Rosters
  *   (Berichtsform der Fassade: origin/severity/anchor/limitId/limit/actual/
@@ -21,7 +21,7 @@
  * max 1 je Kontingent → genau eine Verletzung, Kosten 20 pts; ohne die
  * Auswahl → keine Verletzung, Kosten 0 pts).
  *
- * Test-Harness-Entscheidung (wie im bestehenden `useRoster.test.js`): die
+ * Test-Harness-Entscheidung (wie im bestehenden `useRosterState.commands.test.js`): die
  * Solver-Fassade wird gestubbt (Abgleich = Identität, Kosten/Validierung
  * inert), damit ein noch vorhandener Alt-Pfad am synthetischen System nicht
  * scheitert — der Evaluator-Pfad läuft ECHT. Ist der Solver-Import aus dem
@@ -30,7 +30,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRoster } from './useRoster';
+import { useRosterState } from './useRosterState';
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
@@ -117,23 +117,23 @@ function appRoster() {
 }
 
 function renderRoster() {
-  return renderHook(() => useRoster(appRoster(), appSystem(), vi.fn()));
+  return renderHook(() => useRosterState(appRoster(), appSystem(), vi.fn()));
 }
 
-describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 0121, Task 5)', () => {
+describe('useRosterState: Evaluator-Ergebnis statt Solver-validationErrors (Issue 0121, Task 5)', () => {
   it('liefert violations/slots/costTotals in den vertraglichen Formen', () => {
     const { result } = renderRoster();
 
-    expect(Array.isArray(result.current.violations)).toBe(true);
-    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
-    expect(result.current.costTotals).toBeTypeOf('object');
-    expect(result.current.slots.pathBySelectionId).toBeInstanceOf(Map);
+    expect(Array.isArray(result.current.report.violations)).toBe(true);
+    expect(result.current.report.slots.capabilities).toBeInstanceOf(Map);
+    expect(result.current.report.costTotals).toBeTypeOf('object');
+    expect(result.current.report.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 
   it('eine echte Grenzverletzung des Rosters erscheint in violations (max 1 je Kontingent, gewählt 2)', () => {
     const { result } = renderRoster();
 
-    const violation = result.current.violations.find(
+    const violation = result.current.report.violations.find(
       entry => entry.limitId === WARRIOR_MAX_LIMIT_ID,
     );
     expect(violation, 'Verletzung der max-1-Grenze').toBeDefined();
@@ -149,10 +149,10 @@ describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 012
   it('slots.capabilities führt den belegten Slot der Auswahl unter dem Pfad aus slots.pathBySelectionId', () => {
     const { result } = renderRoster();
 
-    const path = result.current.slots.pathBySelectionId.get('sel-warrior');
+    const path = result.current.report.slots.pathBySelectionId.get('sel-warrior');
     expect(path, 'Slot-Pfad für sel-warrior').toBeDefined();
-    expect(result.current.slots.capabilities.has(path)).toBe(true);
-    const capability = result.current.slots.capabilities.get(path);
+    expect(result.current.report.slots.capabilities.has(path)).toBe(true);
+    const capability = result.current.report.slots.capabilities.get(path);
     expect(capability.defId).toBe(WARRIOR_ID);
     expect(capability.anchorKind).toBe('occupied');
   });
@@ -160,27 +160,27 @@ describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 012
   it('costTotals summiert je deklarierter Kostenart (Warrior ×2 × 10 pts = 20)', () => {
     const { result } = renderRoster();
 
-    expect(result.current.costTotals).toEqual({ [COST_TYPE_ID]: 2 * WARRIOR_POINTS });
+    expect(result.current.report.costTotals).toEqual({ [COST_TYPE_ID]: 2 * WARRIOR_POINTS });
   });
 
   it('nach removeUnit über die Hook-API aktualisieren sich violations und costTotals', () => {
     const { result } = renderRoster();
     expect(
-      result.current.violations.some(entry => entry.limitId === WARRIOR_MAX_LIMIT_ID),
+      result.current.report.violations.some(entry => entry.limitId === WARRIOR_MAX_LIMIT_ID),
     ).toBe(true);
 
     act(() => {
-      result.current.removeUnit('sel-warrior');
+      result.current.commands.removeUnit('sel-warrior');
     });
 
     // Die Verletzung ist behoben …
     expect(
-      result.current.violations.some(entry => entry.limitId === WARRIOR_MAX_LIMIT_ID),
+      result.current.report.violations.some(entry => entry.limitId === WARRIOR_MAX_LIMIT_ID),
     ).toBe(false);
     // … und die Kostensumme folgt dem neuen Roster: die deklarierte Kostenart
     // bleibt geführt, ihr Wert fällt auf 0 (Rand: Summe ohne Vorkommen).
-    expect(result.current.costTotals).toEqual({ [COST_TYPE_ID]: 0 });
+    expect(result.current.report.costTotals).toEqual({ [COST_TYPE_ID]: 0 });
     // Die entfernte Auswahl hat keinen Slot-Pfad mehr.
-    expect(result.current.slots.pathBySelectionId.has('sel-warrior')).toBe(false);
+    expect(result.current.report.slots.pathBySelectionId.has('sel-warrior')).toBe(false);
   });
 });

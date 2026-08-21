@@ -17,8 +17,6 @@
  * ADR-0038 sein Versprechen halten — ein Verbraucher, der bloß einen Knopf
  * auslöst, rendert bei einer Roster-Bearbeitung nicht neu.
  *
- * `useRoster` in `src/ui/hooks/` ist die flache Sicht auf denselben Zustand und
- * bleibt der Aufrufer für die noch nicht umgestellten Komponenten.
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';

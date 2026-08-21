@@ -10,13 +10,28 @@ roster contexts. It sits **above** `src/ui/components/` in the UI layer of ADR-0
 never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
-  bundles split by how often they change. `useRoster` in `src/ui/hooks/` is only the flat view onto
-  it — change the behaviour here, not there.
+  bundles split by how often they change. The flat view `useRoster` in `src/ui/hooks/` is gone
+  (Issue 0175): consumers and tests read `roster`, `report.*`, `commands.*` off the node itself.
 - The `commands` bundle is identity-stable for the hook's whole lifetime: implementations are
   rebuilt each render into `currentCommandsRef`, the exported functions are `useMemo(…, [])`
   wrappers calling through it. Returning a freshly built command object (or memoizing it on
   `roster`) silently breaks `RosterCommandsContext` and is the mistake a change here is most
   likely to make; `useRosterState.test.js` and `rosterContexts.test.jsx` pin it.
+- The node's own suite is `useRosterState.test.js` plus `useRosterState.<topic>.test.js`
+  (`commands`, `evaluator`, `mandatoryAutoAdd`, `costedMandatoryAutoAdd`, `nestedMandatoryGroups`,
+  `recruitCostAgreement`). A topic file that drives the **production seam** — real catalogue XML,
+  unmocked `resolveEntry`/`createSelectionFromDef`, the real evaluation — loads its fixture with
+  `fs.readFileSync` + `processImportedData` and builds the roster with `buildRoster`; nothing about
+  roster or catalogue is hand-built. `costedMandatoryAutoAdd` is synthetic-but-shape-faithful,
+  `nestedMandatoryGroups` reads `src/domain/evaluator/__fixtures__/whfb6-definitive/`.
+  Test titles here are English, unlike `src/domain/*`.
+- `isFreshRoster` (the node's fifth argument) gates the automatic mandatory list-rule addition
+  (Issue 0138/0140, §9.9): omit it or pass `false` to keep that effect out of a case about
+  `addUnit` or another seam, pass `true` only where the fresh-roster auto-add is the point.
+- `commands.addUnit(entry, categoryId, targetForceId?)` is the recruitment call the dialog makes.
+  A case that measures what recruiting produces calls it inside `act(...)` and reads
+  `result.current.roster.forces[0].selections`, never a lower-level factory (that is
+  `src/domain/roster`).
 - Proving "does not render again" needs a `memo`-wrapped consumer; without it the consumer
   re-renders because its parent did and the test proves nothing.
 - `rosterContexts.jsx` passes `commands` through **unchanged**; only the report context memoizes

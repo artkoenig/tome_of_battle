@@ -87,7 +87,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   from before the marker has none, differs, and is re-parsed exactly once.
 - A change to the persisted shape in `src/data/db/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
-- The only automatic, choice-free write into a roster is `useRoster.js`'s fresh-roster effect over
+- The only automatic, choice-free write into a roster is `useRosterState.js`'s fresh-roster effect over
   `findMissingMandatoryListRules` (`src/domain/evaluation/`, report-driven) — gated on `isFreshRoster`,
   ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
   Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans
