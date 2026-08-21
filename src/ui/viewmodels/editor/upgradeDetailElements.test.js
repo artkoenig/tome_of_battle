@@ -1,7 +1,4 @@
-import fs from 'fs';
-import path from 'path';
 import { describe, it, expect } from 'vitest';
-import { processImportedData } from '../../../data/parser/xmlParser';
 import { publicationRefOf, upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
 /**
@@ -107,55 +104,12 @@ describe('upgradeDetailElementsOf', () => {
   });
 });
 
-describe('upgradeDetailElementsOf am eingefrorenen Korpus', () => {
-  const FIXTURE_DIR = path.resolve(__dirname, '../../../domain/evaluator/__fixtures__/whfb6-definitive');
-  const GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
-  const CAT = 'Vampire Counts (6th definitive edition).cat';
-
-  /**
-   * Vier Aufwertungen dieses Armeebuchs haengen ihre Beschreibung an eine
-   * gleichnamige, von keinem `infoLink` erreichte Regel. Sie sind der Fall, den
-   * AC4 unveraendert verlangt.
-   */
-  let parsed = null;
-  /** Der Korpus wird einmal je Datei geparst — der Parse dominiert die Laufzeit. */
-  const loadVampireCounts = () => {
-    parsed ??= processImportedData(
-      [{ name: GST, content: fs.readFileSync(path.join(FIXTURE_DIR, GST), 'utf8') }],
-      [{ name: CAT, content: fs.readFileSync(path.join(FIXTURE_DIR, CAT), 'utf8') }],
-    ).system;
-    return parsed;
-  };
-
-  it('zeigt die Beschreibung der vier unverlinkten Regeln des Vampirfuersten-Buchs', () => {
-    const system = loadVampireCounts();
-    const catalogueId = system.catalogues[0].id;
-
-    const textOf = (name) => upgradeDetailElementsOf(
-      { name, infoElements: [], source: null }, system, catalogueId,
-    )[0];
-
-    expect(textOf('Frostblade')).toMatchObject({
-      labelKey: 'editor.details.description',
-      text: expect.stringContaining('FROSTBLADE 100 points'),
-      // Die Regel haengt an keinem Traeger dieses Slots und nennt fuer ihn
-      // deshalb auch keine Buchquelle.
-      source: null,
-    });
-    for (const name of ['Bloodlines', 'Special Characters', 'Experimental rules']) {
-      expect(textOf(name)?.text, name).toEqual(expect.any(String));
-    }
-  });
-
-  it('greift nicht, wo der Slot einen eigenen Regeltext traegt — und nicht ohne Rahmen', () => {
-    const system = loadVampireCounts();
-
-    const withOwnRule = upgradeDetailElementsOf(
-      capabilityOf({ name: 'Frostblade', infoElements: [rule({ name: 'Frostblade', text: 'Eigener Text.' })] }),
-      system, system.catalogues[0].id,
-    );
-    expect(withOwnRule.map(e => e.text)).toEqual(['Eigener Text.']);
-
+describe('upgradeDetailElementsOf ohne Rahmen', () => {
+  it('sucht keine gleichnamige Regel mehr — ein Slot ohne Regelelement hat keinen Detailtext', () => {
+    // Den Rueckfall auf die gleichnamige Regel des eigenen Katalogs traegt seit
+    // Issue 0173 der Bericht: er steht als `kind: 'rule'` schon in
+    // `infoElements` (`domain/evaluator/infoProjection.namedRuleFallback.test.js`).
+    // Die Oberflaeche greift dafuer nicht mehr in den Katalog.
     expect(upgradeDetailElementsOf(capabilityOf({ name: 'Frostblade' }))).toEqual([]);
   });
 });

@@ -94,6 +94,68 @@ export function createPublicationRegistry(publications) {
 /** Ein Datensatz ohne Quellen-Deklarationen — der Rueckfall fuer Aufrufer ohne. */
 const EMPTY_PUBLICATION_REGISTRY = createPublicationRegistry([]);
 
+/** Ein Regelname auf das heruntergebrochen, was ein Katalogautor frei variiert: Schreibung und Rand. */
+const ruleNameKeyOf = name => (name || '').toLowerCase().trim();
+
+/**
+ * Ein Nachschlagewerk der **gleichnamigen Regeln** je Dokument: zu einem Namen
+ * die Regel, die ein Dokument des Datensatzes unter genau diesem Namen deklariert.
+ *
+ * Es traegt den einen Rueckfall der Info-Projektion (Issue 0173). Der Korpus
+ * fuehrt Regeln, die kein `infoLink` je erreicht: ein Armeebuch legt den Text
+ * eines magischen Gegenstands als *gleichnamige* geteilte Regel ab und verlinkt
+ * sie nicht (`Frostblade` im Buch der Vampirfuersten ist eine von vieren dort).
+ * Die Struktur sagt an dieser Stelle nichts, also bleibt der Name der einzige
+ * Anker — aber als **Gleichheit** von Namen innerhalb eines bekannten Katalogs,
+ * nie als Aehnlichkeit: gesucht wird erst im Katalog, der die Definition des
+ * Slots deklariert, dann im Spielsystem, und erst danach im Rest. Zwei
+ * gleichnamige Regeln zweier Armeebuecher entscheiden damit nicht per
+ * Katalogreihenfolge.
+ *
+ * Wie die beiden Registries darueber **einmal je Bericht** gebaut.
+ *
+ * @param {ReadonlyArray<{ id: string|null, infos?: ReadonlyArray<object> }>} documents
+ *   die Dokumente des Datensatzes (Spielsystem und Kataloge).
+ * @param {{ gameSystemId?: string|null, sourceIdByDefId?: Map<string, string>|null }} [scope]
+ * @returns {{ namedRuleFor: (def: { id: string }, name: string|null) => object|null }}
+ */
+export function createNamedRuleRegistry(documents, { gameSystemId = null, sourceIdByDefId = null } = {}) {
+  /** @type {Map<string, Map<string, object>>} */
+  const rulesByDocument = new Map();
+  for (const document of documents) {
+    if (document.id === null || document.id === undefined) continue;
+    const byName = new Map();
+    for (const info of document.infos ?? []) {
+      if (info.kind !== InfoElementKind.RULE) continue;
+      const key = ruleNameKeyOf(info.name);
+      // Der erste Treffer eines Dokuments gilt — dieselbe Dokumentreihenfolge,
+      // die auch sonst entscheidet.
+      if (key && !byName.has(key)) byName.set(key, info);
+    }
+    rulesByDocument.set(document.id, byName);
+  }
+  const documentOrder = [...rulesByDocument.keys()];
+
+  return Object.freeze({
+    namedRuleFor(def, name) {
+      const key = ruleNameKeyOf(name);
+      if (!key) return null;
+      const ownCatalogueId = sourceIdByDefId?.get(def.id) ?? null;
+      const seen = new Set();
+      for (const documentId of [ownCatalogueId, gameSystemId, ...documentOrder]) {
+        if (documentId === null || seen.has(documentId)) continue;
+        seen.add(documentId);
+        const hit = rulesByDocument.get(documentId)?.get(key) ?? null;
+        if (hit !== null) return hit;
+      }
+      return null;
+    },
+  });
+}
+
+/** Ein Datensatz ohne Dokumente — der Rueckfall fuer Aufrufer ohne. */
+const EMPTY_NAMED_RULE_REGISTRY = createNamedRuleRegistry([]);
+
 /**
  * Die **Buchquelle** eines Eintrags: Buch und Seite, wie sie das Datenformat
  * fuehrt (`publicationId` + `page`, `docs/battlescribe-data-format.md` §5.2 und
@@ -252,12 +314,45 @@ function collectInheritedInfoElements(node, context, entries) {
  * @param {{ publicationNameOf: Function }} [publicationRegistry]
  *   das Nachschlagewerk aus {@link createPublicationRegistry}. Fehlt es, bleibt
  *   jeder Klartext-Name einer Buchquelle `null`; Id und Seite stehen trotzdem.
+ * @param {{ namedRuleFor: Function }} [namedRuleRegistry]
+ *   das Nachschlagewerk aus {@link createNamedRuleRegistry} fuer den Rueckfall
+ *   auf die gleichnamige Regel. Fehlt es, entfaellt der Rueckfall.
  * @returns {Array<object>} die geordnete Liste der Eintraege.
  */
-export function infoElementsOf(node, effective, registry, publicationRegistry = EMPTY_PUBLICATION_REGISTRY) {
+export function infoElementsOf(
+  node,
+  effective,
+  registry,
+  publicationRegistry = EMPTY_PUBLICATION_REGISTRY,
+  namedRuleRegistry = EMPTY_NAMED_RULE_REGISTRY,
+) {
   const entries = [];
   const context = { effective, registry, publicationRegistry };
   collectOwnInfoElements(node, context, entries);
   collectInheritedInfoElements(node, context, entries);
+  appendNamedRuleFallback(node, effective, namedRuleRegistry, entries);
   return entries;
+}
+
+/**
+ * Der eine **Rueckfall** der Projektion: gilt fuer einen Slot ueberhaupt kein
+ * Regeltext, dann gilt die *gleichnamige* Regel seines eigenen Katalogs
+ * ({@link createNamedRuleRegistry}). Sie steht hier, weil die Oberflaeche
+ * andernfalls ein zweites Mal in den Katalog greifen muesste (ADR-0034) — und
+ * dort auch nur eine von zwei Stellen sie faende (Issue 0173).
+ *
+ * Der Eintrag traegt **keine** Buchquelle: die Regel haengt an keinem Traeger
+ * dieses Slots, also nennt sie auch keine Quelle fuer ihn.
+ */
+function appendNamedRuleFallback(node, effective, namedRuleRegistry, entries) {
+  if (entries.some(entry => entry.kind === InfoElementKind.RULE)) return;
+  const rule = namedRuleRegistry.namedRuleFor(node.def, effective.nameOf(node));
+  if (rule === null || !rule.text) return;
+  entries.push({
+    kind: InfoElementKind.RULE,
+    id: rule.id,
+    name: rule.name,
+    source: null,
+    text: rule.text,
+  });
 }

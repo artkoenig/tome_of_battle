@@ -95,6 +95,15 @@ means; it outranks the ADRs where the two disagree.
   A change that widens a traversal needs that number checked.
   `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser
   (Puppeteer) and shows how far jsdom's XML reader skews the jsdom figure.
+- `infoProjection.js` carries **one** lookup that is not structural: a slot with no rule element at
+  all takes the description of the *equally* named rule of its own catalogue
+  (`createNamedRuleRegistry`, own catalogue → game system → the rest; Issue 0173). Real books
+  declare a magic item's text as an unlinked shared rule — four in the Vampire Counts book alone.
+  The registry is built once per report from the dataset's `documents` (they reach `buildReport`
+  as the `documents` extra, indexed by `sourceIdByDefId`); the fallback entry carries **no**
+  `source`, since the rule hangs on no carrier of the slot. It belongs here and not in the UI:
+  the detail block and the unit chips both read `capability.infoElements`, and a UI-side lookup
+  reached only one of them.
 - Report messages are projected to text elsewhere (`src/ui/i18n/violationMessages.js`); a new
   violation kind is only half-done inside this folder.
 - The E2E fixture corpus `src/domain/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18

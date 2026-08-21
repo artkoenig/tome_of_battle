@@ -52,7 +52,7 @@
 import { AnchorKind, ConstraintKind, DefinitionKind, LimitMeasure, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
-import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf, sourceOf } from './infoProjection.js';
+import { createNamedRuleRegistry, createProfileTypeRegistry, createPublicationRegistry, infoElementsOf, sourceOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
@@ -96,6 +96,9 @@ const NO_ANCHOR_OCCUPANCIES = new Map();
 /** Ohne Katalog-Bezugsrahmen ist keine Herkunft eine Bibliothek und kein Kontingent-Buch bekannt. */
 const NO_LIBRARY_CATALOGUES = Object.freeze(new Set());
 const NO_FORCE_CATALOGUES = Object.freeze(new Map());
+
+/** Ein Bericht ohne Dokumente des Datensatzes — dann entfaellt der Regel-Rueckfall. */
+const NO_DOCUMENTS = Object.freeze([]);
 
 /**
  * Projiziert ein Constraint-Ergebnis auf eine **abgeleitete** Meldung: die
@@ -631,7 +634,7 @@ function headroomOf(maxResult) {
  * den drei anderen unabhaengig und schliesst keines aus; bei konvergierenden Daten
  * ist es an jedem Slot `false`.
  */
-function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies, groupBehavior, catalogueOrigin }) {
+function toCapability(node, { resultsByAnchor, effective, unstableNodes, profileTypeRegistry, publicationRegistry, namedRuleRegistry, costProjection, raiseCostProjection, sourceIdByDefId, anchorOccupancies, groupBehavior, catalogueOrigin }) {
   const minResult = findResult(resultsByAnchor, node, ConstraintKind.MIN);
   const maxResult = findResult(resultsByAnchor, node, ConstraintKind.MAX);
   const effectiveMax = maxResult === null ? null : maxResult.bound;
@@ -719,7 +722,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     isHidden: effective.isHidden(node),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
-    infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry),
+    infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry, namedRuleRegistry),
     // Die **eigene** Buchquelle des Slots (Buch und Seite seiner Definition),
     // gelesen wie die eines Info-Elements: erst der Traeger, dann sein Inhalt.
     // Sie ist die Quellenangabe eines Eintrags, der selbst weder Profil noch
@@ -776,7 +779,7 @@ function createCatalogueOrigin(root, { libraryCatalogueIds, gameSystemId, primar
  * @param {import('./effectiveState.js').EffectiveState} effective  effektiver Zustand.
  * @param {object[]} results  Ergebnisse von `evaluateConstraints`.
  * @param {object[]} diagnostics  alle waehrend der Auswertung gesammelten Diagnosen.
- * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number>, raiseMembersOf: (node: object) => ReadonlyArray<object> } | null, libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string> }} [extras]
+ * @param {{ budgetViolations?: object[], unstableNodes?: Set<object>, profileTypes?: object[], publications?: object[], categoryIds?: Set<string>, declaredCostTypeIds?: string[], sourceIdByDefId?: Map<string, string>, categoryAnchorOccupancies?: Map<object, number>, raiseCostProjection?: { raiseCostsOf: (node: object) => Record<string, number>, raiseMembersOf: (node: object) => ReadonlyArray<object> } | null, libraryCatalogueIds?: Set<string>, gameSystemId?: string|null, primaryCatalogueByForceDefId?: Map<string, string>, documents?: object[] }} [extras]
  *   `budgetViolations`: die roster-weiten Budget-Verletzungen (`budget.js`, Regel
  *   „Armee zu teuer") in Constraint-Ergebnis-Form. Sie fliessen in **dieselbe**
  *   `violations`-Liste und durch **dieselbe** Projektion wie die Katalog-Grenzen,
@@ -823,6 +826,7 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     libraryCatalogueIds = NO_LIBRARY_CATALOGUES,
     gameSystemId = null,
     primaryCatalogueByForceDefId = NO_FORCE_CATALOGUES,
+    documents = NO_DOCUMENTS,
   } = extras;
 
   // Einmal je Bericht gebaut, von jedem Slot gelesen — nicht je Slot erneut.
@@ -833,6 +837,10 @@ export function buildReport(root, effective, results, diagnostics, extras = {}) 
     unstableNodes,
     profileTypeRegistry: createProfileTypeRegistry(profileTypes),
     publicationRegistry: createPublicationRegistry(publications),
+    // Der eine Rueckfall der Info-Projektion (Issue 0173): zu einem Slot ohne
+    // jeden Regeltext die gleichnamige Regel seines eigenen Katalogs. Der
+    // Herkunftsindex sagt, welcher Katalog das ist.
+    namedRuleRegistry: createNamedRuleRegistry(documents, { gameSystemId, sourceIdByDefId }),
     costProjection,
     raiseCostProjection,
     sourceIdByDefId,

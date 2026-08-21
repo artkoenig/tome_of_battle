@@ -47,7 +47,7 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
     return resolveListRuleGroupFromReport(slots, forcePath, categoryId, {
       selectionByPath,
       entryOf: (capability) => capabilityEntryOf(system, capability, activeCatalogue?.id),
-      detailsOf: (capability) => upgradeDetailElementsOf(capability, system, activeCatalogue?.id ?? null),
+      detailsOf: (capability) => upgradeDetailElementsOf(capability),
     });
   }, [force, slots, forcePath, categoryId, system, activeCatalogue]);
 

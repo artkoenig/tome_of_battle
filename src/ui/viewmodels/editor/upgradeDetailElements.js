@@ -1,4 +1,4 @@
-import { findRuleByName, UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
+import { UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
 
 /**
  * Der Detailblock einer Aufwertung als **fertige Elementliste** (ADR-0038):
@@ -8,17 +8,12 @@ import { findRuleByName, UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster
  * mehr ab.
  *
  * Die Quelle ist die **Info-Projektion des Slots** (`capability.infoElements`,
- * ADR-0034) samt seiner eigenen Buchquelle (`capability.source`). Die frueher
- * hier haengende Namens*aehnlichkeit* — Teilstring, letzte zehn Zeichen, ein fest
- * verdrahteter `waaagh`-Fall, und der erste Treffer ueber alle Kataloge hinweg —
- * ist ersatzlos entfallen: sie verwechselte zwei gleichnamige Regeln aus
- * verschiedenen Katalogen.
- *
- * Was bleibt, ist ein **Rueckfall** fuer den Fall, den der Katalog strukturell
- * nicht verbindet: traegt der Slot ueberhaupt keinen Regeltext, gilt die
- * *gleichnamige* Regel seines eigenen Katalogs (`findRuleByName`). Diese Regeln
- * gibt es real — das Armeebuch der Vampirfuersten legt vier davon ohne jeden
- * `infoLink` ab —, und ohne den Rueckfall verloere die Anzeige ihre Beschreibung.
+ * ADR-0034) samt seiner eigenen Buchquelle (`capability.source`) — und sonst
+ * nichts: hier wird keine Regel mehr ueber ihren Namen gesucht. Weder die
+ * frueher hier haengende Namens*aehnlichkeit* noch der Rueckfall auf die
+ * *gleichnamige* Regel des eigenen Katalogs stehen noch in der Oberflaeche. Den
+ * Rueckfall traegt der Bericht (`domain/evaluator/infoProjection.js`,
+ * Issue 0173), damit Detailblock und Chips ihn aus derselben Quelle bekommen.
  */
 
 /** Die Beschriftungen einer Zeile des Detailblocks, als i18n-Schluessel. */
@@ -70,14 +65,11 @@ const isUpgradeProfile = (element) => {
  * Der Detailblock eines Slots als Liste von Zeilen.
  *
  * @param {Object|null|undefined} capability der Faehigkeitsdatensatz des Slots.
- * @param {Object|null} [system] der Katalograhmen — nur fuer den Rueckfall auf die
- *   gleichnamige Regel. Ohne ihn entfaellt der Rueckfall.
- * @param {string|null} [catalogueId] der Katalog, in dem der Rueckfall zuerst sucht.
  * @returns {Array<{ key: string, kind: 'entry'|'source', labelKey: string,
  *   labelParams: Object|undefined, text: string|null, source: string|null }>|null}
  *   `null`, wo es gar keinen Slot gibt — dann gibt es auch keinen Block.
  */
-export const upgradeDetailElementsOf = (capability, system = null, catalogueId = null) => {
+export const upgradeDetailElementsOf = (capability) => {
   if (!capability) return null;
   const infoElements = capability.infoElements ?? [];
   const slotName = normalizeName(capability.name);
@@ -105,23 +97,6 @@ export const upgradeDetailElementsOf = (capability, system = null, catalogueId =
       });
       if (ref) shownRefs.add(ref);
     });
-
-  // 1b. Rueckfall: kein Regeltext am Slot, aber eine gleichnamige Regel im
-  // Katalog. Ihre Buchquelle bleibt aussen vor — die Regel haengt an keinem
-  // Traeger dieses Slots, also nennt sie auch keine Quelle fuer ihn.
-  if (!infoElements.some(element => element.kind === 'rule')) {
-    const namedRule = findRuleByName(system, capability.name, catalogueId);
-    if (namedRule?.description) {
-      elements.push({
-        key: 'named-rule',
-        kind: 'entry',
-        labelKey: LabelKey.DESCRIPTION,
-        labelParams: undefined,
-        text: namedRule.description,
-        source: null,
-      });
-    }
-  }
 
   // 2. Sonderregeln & Profilwerte
   infoElements
