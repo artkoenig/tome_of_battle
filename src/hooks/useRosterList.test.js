@@ -7,7 +7,7 @@ import {
   importRosterFromXml,
   MissingSystemError,
 } from '../roster/rosterSerialization';
-import { readRosterText, buildRosterFile } from '../services/rosterTransfer';
+import { readRosterText, buildRosterFile, RosterFileError } from '../services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 
 vi.mock('../db/database', () => ({
@@ -15,18 +15,17 @@ vi.mock('../db/database', () => ({
   deleteRoster: vi.fn().mockResolvedValue(null),
 }));
 
-const { MissingSystemErrorMock } = vi.hoisted(() => {
-  class MissingSystemErrorMock extends Error {}
-  return { MissingSystemErrorMock };
-});
-
-vi.mock('../roster/rosterSerialization', () => ({
-  MissingSystemError: MissingSystemErrorMock,
+// Die Fehlerklassen bleiben echt: sie tragen die `messageKey`/`messageParams`
+// der Fachlogik, und nur so prüft der Toast-Text wirklich, dass die Oberfläche
+// sie übersetzt statt den Schlüssel durchzureichen.
+vi.mock('../roster/rosterSerialization', async (importOriginal) => ({
+  ...await importOriginal(),
   exportRosterToXml: vi.fn(() => '<xml/>'),
   importRosterFromXml: vi.fn(),
 }));
 
-vi.mock('../services/rosterTransfer', () => ({
+vi.mock('../services/rosterTransfer', async (importOriginal) => ({
+  ...await importOriginal(),
   readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));
@@ -223,15 +222,58 @@ describe('useRosterList — Import', () => {
     expect(deps.reloadData).toHaveBeenCalled();
   });
 
-  it('meldet ein fehlendes Spielsystem über die MissingSystemError-Meldung', async () => {
-    readRosterText.mockRejectedValueOnce(new MissingSystemError('System X fehlt'));
+  it('formuliert ein fehlendes Spielsystem als übersetzten Text, nicht als Schlüssel', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    importRosterFromXml.mockImplementationOnce(() => {
+      throw new MissingSystemError('System X', 'sys-x');
+    });
     const { result, deps } = setup();
 
     await act(async () => {
       await result.current.importRoster(new Blob());
     });
 
-    expect(deps.showToast).toHaveBeenCalledWith('System X fehlt', 'error');
+    expect(deps.showToast).toHaveBeenCalledWith(
+      'Das Spielsystem "System X" (ID: sys-x) fehlt. Bitte importiere es zuerst.',
+      'error',
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('formuliert ein ungültiges Wurzelelement als übersetzten Text', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    importRosterFromXml.mockImplementationOnce(() => {
+      throw new RosterFileError('serialization.invalidFormat');
+    });
+    const { result, deps } = setup();
+
+    await act(async () => {
+      await result.current.importRoster(new Blob());
+    });
+
+    expect(deps.showToast).toHaveBeenCalledWith(
+      'Fehler beim Importieren: Ungültiges Dateiformat: Das Wurzelelement muss <roster> sein.',
+      'error',
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('formuliert ein beschädigtes Archiv als übersetzten Text mit technischer Ergänzung', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    readRosterText.mockRejectedValueOnce(
+      new RosterFileError('serialization.damagedArchive', null, 'zip: end of central directory not found'),
+    );
+    const { result, deps } = setup();
+
+    await act(async () => {
+      await result.current.importRoster(new Blob());
+    });
+
+    expect(deps.showToast).toHaveBeenCalledWith(
+      'Fehler beim Importieren: Die Datei ist ein beschädigtes ZIP-Archiv und konnte nicht entpackt werden. (zip: end of central directory not found)',
+      'error',
+    );
+    consoleErrorSpy.mockRestore();
   });
 
   it('meldet ein ungültiges Dateiformat generisch', async () => {
@@ -258,6 +300,24 @@ describe('useRosterList — Export', () => {
 
     expect(deps.showToast).toHaveBeenCalledWith(expect.stringContaining('Der Export kann nicht durchgeführt werden.'), 'error');
     expect(exportRosterToXml).not.toHaveBeenCalled();
+  });
+
+  it('formuliert einen Fehler des Datei-Austauschs als übersetzten Text', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    buildRosterFile.mockRejectedValueOnce(
+      new RosterFileError('serialization.damagedArchive', null, 'zip: write failed'),
+    );
+    const { result, deps } = setup();
+
+    await act(async () => {
+      await result.current.exportRoster(roster);
+    });
+
+    expect(deps.showToast).toHaveBeenCalledWith(
+      'Fehler beim Exportieren: Die Datei ist ein beschädigtes ZIP-Archiv und konnte nicht entpackt werden. (zip: write failed)',
+      'error',
+    );
+    consoleErrorSpy.mockRestore();
   });
 
   it('serialisiert und stößt den Download an', async () => {

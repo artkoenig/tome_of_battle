@@ -84,6 +84,12 @@ paths:
 - Text never appears literally in a component: it goes through `src/i18n/` (own solution, no
   library, ADR 0026) with entries in both `locales/de.json` and `locales/en.json`. A missing `en`
   key does not fail a test — it fails silently for the user.
+- `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
+  `messageParams`/`detail` error from `src/roster/` or `src/services/` into text. A test of that
+  path mocks those modules with `importOriginal()` spread (`vi.mock(mod, async (importOriginal) =>
+  ({ ...await importOriginal(), fn: vi.fn() }))`) so `MissingSystemError`/`RosterFileError` stay
+  real and carry their keys, and asserts on the German toast text — a hand-built error with a
+  ready-made `message` passes even when the translation step is gone.
 - The Puppeteer app E2E (`node e2e/ui.test.js`) is outside `forge-test`. Run it by hand for a
   change here; it is what catches a view that no longer renders.
 - After a user-visible change, take a screenshot of the affected view and send it to the user
