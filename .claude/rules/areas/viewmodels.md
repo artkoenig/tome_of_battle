@@ -12,6 +12,16 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
   bundles split by how often they change. The flat view `useRoster` in `src/ui/hooks/` is gone
   (Issue 0175): consumers and tests read `roster`, `report.*`, `commands.*` off the node itself.
+- The state node is cut along the same 300-line rule (Issue 0176): `rosterCommands.js`
+  (`createRosterCommands` — the write commands as a plain per-render factory over roster, report
+  slots and the state writers, plus `findTargetForce`), `useRosterPersistence.js` (catalogue sync,
+  the 150 ms autosave, the unmount flush, and `saveNow` for the explicit save),
+  `useMandatoryListRuleAutoAdd.js` (the fresh-roster §9.9 effect) and `rosterSelectionFactory.js`
+  (`catalogueIdOfForce`, `catalogueIdContaining`, `createSelectionFactory`). `useRosterState.js` is
+  the state apparatus and the identity-stable command wrappers, nothing else. A command test needs
+  no React and no catalogue: an entry without a `targetId` resolves to itself, so a fake `slots`
+  stub and a `setRoster` that applies the updater to a local roster pin the whole write path in
+  milliseconds.
 - The `commands` bundle is identity-stable for the hook's whole lifetime: implementations are
   rebuilt each render into `currentCommandsRef`, the exported functions are `useMemo(…, [])`
   wrappers calling through it. Returning a freshly built command object (or memoizing it on
