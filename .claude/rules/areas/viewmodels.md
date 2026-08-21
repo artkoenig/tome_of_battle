@@ -96,8 +96,7 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   folder because `src/domain/evaluation/` may not import `src/domain/roster/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
-  on an import of them from `src/ui/components/`. The cost-budget helpers live in
-  `useSelectionConfigurator.js` next to the row derivations it shares with `useOptionGroup`.
+  on an import of them from `src/ui/components/`.
 - A section ViewModel derives what the editor used to thread through as props (`costTypeLabel`,
   `remainingPoints`, `extraResources`, the force path from `report.slots.pathOfForce(...)` — never the
   roster's input index). What stays a prop is only what the caller knows: `force`/`forceId`,
@@ -116,11 +115,19 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   fail on the icons of a component it never renders. `sectionHarnessBase.jsx` holds the shared
   pieces, including the inversions a flat prop set needs (`costTypeLabel`, `remainingPoints`,
   `extraResources`, list-rule `states`).
-- `useOptionGroup` imports `optionDescriptionOf`, `resolveRowSelectionId` and `subSelectionCountOf`
-  from `useSelectionConfigurator.js` — the configurator owns the row derivations both share.
+- No file under `src/ui/viewmodels/` may exceed 300 lines (Issue 0176). The configurator is cut
+  along that line into four modules, each with its own test file next to it:
+  `editor/optionRowDerivations.js` (`findSelectionById`, `resolveRowSelectionId`,
+  `subSelectionCountOf`, `optionDescriptionOf` — the row derivations `useOptionGroup` shares),
+  `editor/costBudgets.js` (`costBudgetTextsOf`, `hasExceededCostBudget`),
+  `editor/standaloneRow.js` (`buildStandaloneSection`) and `editor/configuratorSections.js`
+  (`buildSections`, `holdsSelection`, `isRoleGroupName`). `useSelectionConfigurator.js` is the hook
+  and nothing else. `buildSections`/`buildStandaloneSection` take the hook's memo bundle as a
+  `context` argument (`{ slots, system, activeCatalogueId, costTypeId, costTypeLabel,
+  subSelectionOperations }`) — pure functions, testable without a provider.
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
-  reintroduce it (`useSelectionConfigurator.test.jsx` pins the case).
+  reintroduce it (`editor/optionRowDerivations.test.js` pins the case).
 - The report the context carries is `useRosterReportModel` (`src/domain/evaluation/rosterReport.js`),
   referentially stable per `(system, roster)`. A new derived field belongs in that bundle,
   memoized, or it destroys the stability every consumer depends on.

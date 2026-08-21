@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
-import { useSelectionConfigurator, optionDescriptionOf, resolveRowSelectionId, subSelectionCountOf } from './useSelectionConfigurator';
+import { useSelectionConfigurator } from './useSelectionConfigurator';
 import {
   createRosterProviderWrapper,
   createEmptyRosterReport,
@@ -105,47 +105,5 @@ describe('useSelectionConfigurator', () => {
 
     expect(result.current.sections[0].descText).toBe('RICHTIG: der Segen dieses Katalogs');
     expect(result.current.sections[0].descText).not.toContain('FALSCH');
-  });
-});
-
-describe('optionDescriptionOf', () => {
-  it('setzt Regeltext, Aufwertungs-Profil und Buchquelle aus der Info-Projektion zusammen', () => {
-    const text = optionDescriptionOf({
-      infoElements: [
-        { kind: 'rule', name: 'Segen', text: 'Rettungswurf 5+', source: { publicationName: 'Armeebuch', page: '12' } },
-        {
-          kind: 'profile', name: 'Lanze', profileTypeName: 'Weapon',
-          characteristics: [{ name: 'S', value: '+2' }, { name: 'AP', value: null }], source: null,
-        },
-        { kind: 'profile', name: 'Ritter', profileTypeName: 'Model', characteristics: [{ name: 'M', value: '4' }] },
-      ],
-    });
-
-    expect(text).toBe('Rettungswurf 5+ Armeebuch 12 | Lanze (S: +2)');
-  });
-
-  it('bleibt leer, wenn der Slot nichts anzuzeigen hat', () => {
-    expect(optionDescriptionOf(undefined)).toBe('');
-    expect(optionDescriptionOf({ infoElements: [] })).toBe('');
-  });
-});
-
-describe('Zeile → Roster-Selektion (vormals optionNesting)', () => {
-  const unit = {
-    id: 'unit-1',
-    selections: [{ id: 'row-1', entryLinkId: 'el-lance', number: 1, selections: [] }],
-  };
-
-  it('findet die Selektion, für die eine gewählte Zeile steht', () => {
-    expect(resolveRowSelectionId(unit, null, { id: 'el-lance' }, { id: 'el-lance' })).toBe('row-1');
-  });
-
-  it('gibt null zurück, solange die Zeile nicht gewählt ist', () => {
-    expect(resolveRowSelectionId(unit, null, { id: 'el-shield' }, { id: 'el-shield' })).toBeNull();
-  });
-
-  it('zählt eine Option im ganzen Teilbaum', () => {
-    expect(subSelectionCountOf(unit, 'el-lance')).toBe(1);
-    expect(subSelectionCountOf(unit, 'el-shield')).toBe(0);
   });
 });

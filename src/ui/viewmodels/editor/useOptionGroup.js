@@ -10,9 +10,8 @@ import {
   optionDescriptionOf,
   resolveRowSelectionId,
   subSelectionCountOf,
-  costBudgetTextsOf,
-  hasExceededCostBudget,
-} from './useSelectionConfigurator';
+} from './optionRowDerivations.js';
+import { costBudgetTextsOf, hasExceededCostBudget } from './costBudgets.js';
 
 /**
  * ViewModel einer Options-Gruppe (ADR-0038; ADR-0035/0036).
