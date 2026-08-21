@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/forge-work-0161-bmddpn
+pr: 253
 ---
 
 # Schichtgrenzen als maschinelle Regeln, zunächst warnend

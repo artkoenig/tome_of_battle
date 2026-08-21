@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/forge-work-0162-bmddpn
+pr: 254
 ---
 
 # useRoster aufspalten: Roster-Zustand, Kommando-Kontext, Bericht-Kontext
