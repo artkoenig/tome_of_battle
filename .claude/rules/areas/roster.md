@@ -35,6 +35,17 @@ evaluator. `src/db/` persists it in IndexedDB.
   a module.
 - `evaluateAppRoster` in `src/evaluation/` is the single memoized seam; adding a second call path
   into the evaluator silently defeats `evaluationCache.js`.
+- `evaluationCache.js` caches on **three** levels, all WeakMaps over object identity: the prepared
+  dataset per system object, the description per prepared dataset, and the whole report per
+  `(system, roster)` pair. So anything that hands the app a *new* system object — a re-parse, a
+  catalog update, a fresh read from IndexedDB — throws all three away. That is why the start
+  migration must not re-parse a system it has no reason to re-parse.
+- A stored system carries `parserVersion` (`src/parser/parserVersion.js`), stamped by
+  `processImportedData`, i.e. on every path into the DB: file import, bundle import, catalog
+  update. `runSystemMigrations` re-parses only where the marker differs from `PARSER_VERSION`, and
+  passes an up-to-date system through **by identity**. Change what `src/parser/` makes of the same
+  XML and you must raise `PARSER_VERSION` — otherwise users keep the old parse forever. A system
+  from before the marker has none, differs, and is re-parsed exactly once.
 - A change to the persisted shape in `src/db/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
 - The only automatic, choice-free write into a roster is `useRoster.js`'s fresh-roster effect over

@@ -107,16 +107,20 @@ describe('useAppData — Neuladen', () => {
     expect(result.current.rosters).toContainEqual(nextRoster);
   });
 
-  it('lädt bei loadAllData erneut aus der DB', async () => {
+  // Issue 0168: der Wiedereintritt ist ein eigener Aufruf und liest nur lokal —
+  // keine Start-Migration, kein Katalog-Abgleich, kein Neu-Parse.
+  it('lädt bei reloadData erneut aus der DB, ohne die Start-Migration zu wiederholen', async () => {
     const { result } = renderAppData();
     await waitFor(() => expect(result.current.isDataLoaded).toBe(true));
     getAllRosters.mockClear();
+    runSystemMigrations.mockClear();
 
     await act(async () => {
-      await result.current.loadAllData();
+      await result.current.reloadData();
     });
 
     expect(getAllRosters).toHaveBeenCalled();
+    expect(runSystemMigrations).not.toHaveBeenCalled();
   });
 });
 

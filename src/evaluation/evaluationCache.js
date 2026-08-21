@@ -11,7 +11,10 @@
  * war genau das). Eine Naht, die es nur einmal gibt, kann nicht auseinander
  * laufen.
  *
- * Zwei WeakMaps ueber Objektidentitaeten tragen den Cache:
+ * Drei WeakMaps ueber Objektidentitaeten tragen den Cache:
+ * - der Bericht selbst haengt am Paar (System, Roster) und wird je Paar genau
+ *   einmal gerechnet — auch ueber einen Ansichtswechsel hinweg, der jedes
+ *   `useMemo` verwirft (Issue 0168);
  * - der Katalog-Vorlauf (`prepareDataset`) laeuft **genau einmal je
  *   System-Objekt** (Kriterium 8) — ein neues System-Objekt (Neuladen aus der
  *   DB, Katalog-Update) loest genau eine neue Vorbereitung aus;
@@ -58,6 +61,23 @@ const preparedBySystem = new WeakMap();
 
 /** Datensatz-Beschreibung je aufbereitetem Datensatz (genau ein Lauf). */
 const describedByDataset = new WeakMap();
+
+/**
+ * Der Bericht je Paar (System-Objekt, Roster-Objekt) — genau **eine**
+ * Auswertung je Paar, ueber alle Aufrufer und alle Hook-Instanzen hinweg
+ * (Issue 0168). `useEvaluation` memoisiert nur innerhalb einer Montierung; ein
+ * Ansichtswechsel wirft dieses `useMemo` weg, und ohne diese Ebene wertete die
+ * naechste Ansicht dasselbe unveraenderte Roster erneut aus und lieferte einen
+ * neuen Bericht — jede nachgelagerte Ableitung ueber Objektidentitaet rechnete
+ * mit.
+ *
+ * Aeussere Map ueber die System-Identitaet, innere ueber die Roster-Identitaet,
+ * beide schwach: eine Bearbeitung erzeugt ein neues Roster-Objekt, und der
+ * Eintrag des alten faellt mit ihm weg.
+ *
+ * @type {WeakMap<object, WeakMap<object, AppEvaluation>>}
+ */
+const reportsBySystemAndRoster = new WeakMap();
 
 /**
  * Das eine, eingefrorene Leer-Ergebnis der App-Auswertung: referenzstabil ueber
@@ -112,10 +132,19 @@ function preparedDatasetOf(system) {
 export function evaluateAppRoster(system, roster) {
   const prepared = preparedDatasetOf(system);
   if (prepared === null || roster === null || roster === undefined) return EMPTY_RESULT;
+
+  let byRoster = reportsBySystemAndRoster.get(system);
+  if (byRoster === undefined) {
+    byRoster = new WeakMap();
+    reportsBySystemAndRoster.set(system, byRoster);
+  }
+  const cached = byRoster.get(roster);
+  if (cached !== undefined) return cached;
+
   const { evalRoster, pathBySelectionId, pathByForceId } = toEvaluatorRoster(roster);
   const report = evaluate(prepared, evalRoster);
   const paths = correctedPathsOf(roster, { pathBySelectionId, pathByForceId }, report.diagnostics);
-  return {
+  const evaluation = {
     violations: report.violations,
     capabilities: report.capabilities,
     description: descriptionOf(prepared),
@@ -124,6 +153,8 @@ export function evaluateAppRoster(system, roster) {
     pathByForceId: paths.pathByForceId,
     diagnostics: report.diagnostics,
   };
+  byRoster.set(roster, evaluation);
+  return evaluation;
 }
 
 /**

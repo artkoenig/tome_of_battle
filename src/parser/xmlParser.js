@@ -1,4 +1,5 @@
 import { AttributeName, SelectionEntryKind } from './schema/battlescribeSchema.generated.js';
+import { PARSER_VERSION } from './parserVersion.js';
 
 /**
  * Helper to get direct children of an element by tag name
@@ -665,6 +666,9 @@ export function processImportedData(gstFiles, catFiles) {
 
   // Index everything for easy lookup
   const systemsData = {
+    // Der Stand des Parsers, der dieses Objekt erzeugt hat. Die Start-Migration
+    // liest ihn und parst nur neu, wenn er vom aktuellen abweicht.
+    parserVersion: PARSER_VERSION,
     id: parsedGst.id,
     name: parsedGst.name,
     revision: parsedGst.revision,

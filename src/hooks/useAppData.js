@@ -86,13 +86,27 @@ export default function useAppData({ showToast, navigate }) {
     setIsDataLoaded(true);
   };
 
-  // Reloads everything and also waits for the catalog refresh. Used by callers that
-  // are not gated behind a loading overlay (tab switches, roster CRUD), where waiting
-  // for the network round-trip is acceptable.
-  const loadAllData = async () => {
+  // Der **Startlauf**, und nur er: einmal aus der DB lesen, dann die
+  // Start-Migration samt Katalog-Abgleich (Netz) laufen lassen. Beides gehoert
+  // zum Hochfahren der App und zu keinem spaeteren Ereignis — vor Issue 0168
+  // hing genau dieser Lauf an jedem Navigationsklick und parste dabei saemtliche
+  // gespeicherten Kataloge neu.
+  const runStartupLoad = async () => {
     try {
       const dbSystems = await loadLocalData();
       await refreshCatalogInBackground(dbSystems);
+    } catch (e) {
+      reportLoadFailure(e);
+    }
+  };
+
+  // Der **Wiedereintritt**: ein erneutes Lesen aus der IndexedDB, mehr nicht.
+  // Kein Netz, keine Migration, kein Neu-Parse. Das ist, was ein Aufrufer nach
+  // einer Schreiboperation braucht, die nicht ueber den Meldekanal laeuft
+  // (Roster-Import, Loeschen einer Liste).
+  const reloadData = async () => {
+    try {
+      await loadLocalData();
     } catch (e) {
       reportLoadFailure(e);
     }
@@ -115,15 +129,15 @@ export default function useAppData({ showToast, navigate }) {
     refreshCatalogInBackground(dbSystems);
   };
 
-  // `loadAllData` schließt über die pro Render neu erzeugten Callbacks
+  // `runStartupLoad` schließt über die pro Render neu erzeugten Callbacks
   // (showToast/navigate). Ein Ref hält stets die jüngste Fassung, damit der
-  // einmalige Ladelauf beim Mounten sie aufrufen kann, ohne `loadAllData` als
+  // einmalige Ladelauf beim Mounten sie aufrufen kann, ohne `runStartupLoad` als
   // Effekt-Abhängigkeit zu führen — das würde den Ladelauf endlos wiederholen.
-  const loadAllDataRef = useRef(loadAllData);
-  loadAllDataRef.current = loadAllData;
+  const runStartupLoadRef = useRef(runStartupLoad);
+  runStartupLoadRef.current = runStartupLoad;
 
   useEffect(() => {
-    loadAllDataRef.current();
+    runStartupLoadRef.current();
   }, []);
 
   // Die eine Verdrahtung des Änderungs-Kanals der Datenschicht (ADR-0037,
@@ -145,5 +159,5 @@ export default function useAppData({ showToast, navigate }) {
     }
   }), []);
 
-  return { systems, rosters, isDataLoaded, setRosters, loadAllData, handleSystemImported };
+  return { systems, rosters, isDataLoaded, setRosters, reloadData, handleSystemImported };
 }

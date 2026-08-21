@@ -1,5 +1,6 @@
 import { saveSystem } from './database';
 import { processImportedData } from '../parser/xmlParser';
+import { PARSER_VERSION } from '../parser/parserVersion';
 import {
   loadCatalogIndex,
   updateSystemFromCatalogIndex,
@@ -8,6 +9,24 @@ import {
 
 function hasStoredXml(system) {
   return Boolean(system.rawXmls?.gst?.length);
+}
+
+/**
+ * Whether a stored system was produced by a parser older than the current one.
+ *
+ * This is the whole point of the marker (Issue 0168): without it every migration
+ * run re-parsed every stored catalogue — megabytes of XML — and handed the app a
+ * brand-new system object, which invalidated the identity-keyed evaluation cache
+ * (`src/evaluation/evaluationCache.js`) along the way. A system stored before the
+ * marker existed carries no `parserVersion`, differs from the current one and is
+ * therefore re-parsed exactly once; the write that follows stamps the marker, so
+ * the next start leaves it alone.
+ *
+ * @param {{ parserVersion?: number }} system
+ * @returns {boolean}
+ */
+function isStaleParse(system) {
+  return system.parserVersion !== PARSER_VERSION;
 }
 
 /**
@@ -48,7 +67,10 @@ async function updateStoredSystemFromItsSource(system, fetchText) {
  * for testability): an outdated system is refreshed to the newer revision without
  * asking. Both configured sources are updated symmetrically — each system against its
  * own source (ADR 0018). A failed or unavailable update is invisible to the user — the
- * stored data is kept and merely re-parsed with the current parser instead.
+ * stored data is kept and, **only if it was parsed by an older parser**
+ * (`parserVersion`, Issue 0168), re-parsed with the current one instead. A system
+ * already at the current parser stand is passed through untouched, object identity
+ * included.
  *
  * Only a failed *re-processing* of an already-stored system is reported via
  * `failures`; a failed catalog *fetch* never is. When no `fetchText` is injected,
@@ -91,6 +113,14 @@ export async function runSystemMigrations(systems, fetchText = null) {
     if (updatedSystem) {
       await saveSystem(updatedSystem);
       migratedSystems.push(updatedSystem);
+      continue;
+    }
+
+    // Ein System, das der aktuelle Parser erzeugt hat, ist bereits aktuell: kein
+    // Neu-Parse, kein Schreibvorgang, und — entscheidend — dieselbe
+    // Objektidentitaet, damit der Auswertungs-Cache weiter trifft.
+    if (!isStaleParse(system)) {
+      migratedSystems.push(system);
       continue;
     }
 

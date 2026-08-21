@@ -16,6 +16,13 @@ paths:
   (`services/dataEvents.js`): a write through `src/services/` announces itself there and the one
   roster list follows. A screen that wants to see a foreign save subscribes nowhere — it reads
   the list it already gets.
+- `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
+  `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
+  catalog refresh; `reloadData` — the one it hands out, and what `useRosterList` gets as its
+  `reloadData` — reads IndexedDB and nothing else. Hanging the start run off an event that repeats
+  (a nav click, a save) re-parses every stored catalogue and drops the evaluation cache with it.
+- Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
+  systems are already in state and roster writes arrive over the data channel.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
   pair is an incomplete change.
 - **The ViewModel pattern (ADR-0038), and it is blocking since Issue 0166.** Every UI building

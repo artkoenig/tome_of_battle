@@ -45,7 +45,7 @@ export default function App() {
     rosters,
     isDataLoaded,
     setRosters,
-    loadAllData,
+    reloadData,
     handleSystemImported,
   } = useAppData({ showToast, navigate });
 
@@ -77,7 +77,7 @@ export default function App() {
     systems,
     rosters,
     setRosters,
-    reloadData: loadAllData,
+    reloadData,
     navigate,
     showToast,
   });
@@ -116,19 +116,24 @@ export default function App() {
             </button>
           )}
 
+          {/* Ein Navigationsklick wechselt nur die Ansicht. Er liest nicht neu und
+              stösst keine Start-Migration an (Issue 0168): die Systeme stehen bereits
+              im Zustand, und Roster-Änderungen kommen über den Meldekanal der
+              Datenschicht (ADR-0037). Das frühere `loadAllData()` an dieser Stelle
+              parste bei jedem Klick sämtliche Kataloge neu. */}
           {systems.length > 0 && (
             <div className="desktop-nav-actions">
               <button
                 data-testid="nav-rosters"
                 className={view === VIEWS.ROSTERS ? 'btn-primary' : ''}
-                onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
+                onClick={() => { navigate(VIEWS.ROSTERS); }}
               >
                 <FolderOpen size={18} /> {t('app.nav.rosters')}
               </button>
               <button
                 data-testid="nav-importer"
                 className={view === VIEWS.IMPORTER ? 'btn-primary' : ''}
-                onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}
+                onClick={() => { navigate(VIEWS.IMPORTER); }}
               >
                 <BookOpen size={18} /> {t('app.nav.importer')}
               </button>
@@ -183,7 +188,7 @@ export default function App() {
               <RosterEditor
                 system={selectedSystem}
                 roster={selectedRoster}
-                onBack={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}
+                onBack={() => { navigate(VIEWS.ROSTERS); }}
                 onPlay={playRoster}
                 onExportRoster={exportRoster}
                 onReportError={reportError}
@@ -219,11 +224,11 @@ export default function App() {
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
         <nav className="mobile-bottom-nav mobile-only">
-          <button data-testid="nav-rosters" className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); loadAllData(); }}>
+          <button data-testid="nav-rosters" className={`mobile-nav-btn ${view === VIEWS.ROSTERS ? 'active' : ''}`} onClick={() => { navigate(VIEWS.ROSTERS); }}>
             <FolderOpen size={20} />
             <span>{t('app.nav.rosters')}</span>
           </button>
-          <button data-testid="nav-importer" className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); loadAllData(); }}>
+          <button data-testid="nav-importer" className={`mobile-nav-btn ${view === VIEWS.IMPORTER ? 'active' : ''}`} onClick={() => { navigate(VIEWS.IMPORTER); }}>
             <BookOpen size={20} />
             <span>{t('app.nav.importer')}</span>
           </button>
