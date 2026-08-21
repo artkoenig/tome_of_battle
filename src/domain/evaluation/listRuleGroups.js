@@ -53,14 +53,17 @@ function categoryCandidatesOf(slots, forcePath, categoryId) {
  * @param {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts.
  * @param {string|null|undefined} forcePath  Slot-Pfad des Kontingents.
  * @param {string} categoryId
- * @param {{ selectionByPath?: Map<string, object>, entryOf?: (capability: object) => object|null }} [context]
+ * @param {{ selectionByPath?: Map<string, object>, entryOf?: (capability: object) => object|null,
+ *   detailsOf?: (capability: object) => Array<object>|null }} [context]
  *   `selectionByPath`: die App-Selektionen dieses Kontingents unter ihrem
  *   Slot-Pfad (aus `pathBySelectionId`) — sie machen einen Slot „angehakt".
  *   `entryOf`: der Katalog-Eintrag einer Definition für das Schreibmodell.
+ *   `detailsOf`: der Detailblock eines Slots, aus seiner Info-Projektion — die
+ *   Anzeigeschicht reicht ihn herein, weil sie ihn übersetzt rendert.
  * @returns {{ isListRuleGroup: boolean, states: object[] }}
  */
 export function resolveListRuleGroupFromReport(slots, forcePath, categoryId, context = {}) {
-  const { selectionByPath = new Map(), entryOf = () => null } = context;
+  const { selectionByPath = new Map(), entryOf = () => null, detailsOf = () => null } = context;
   const candidates = categoryCandidatesOf(slots, forcePath, categoryId);
   const occupied = candidates.filter(({ path }) => selectionByPath.has(path));
   // Belegtes schlaegt Angebot: was schon in der Kategorie steht, entscheidet
@@ -88,6 +91,9 @@ export function resolveListRuleGroupFromReport(slots, forcePath, categoryId, con
       // ohnehin erst nach dem Anhaken.
       isContainer: slots.childSlotsOf(path).length > 0,
       mandatory: capability.isMandatoryListRule === true,
+      // Der Detailblock der Zeile — die Anzeigeschicht leitet ihn aus der
+      // Info-Projektion des Slots ab (`capability.infoElements`, ADR-0034).
+      details: detailsOf(capability),
     };
   });
 

@@ -192,7 +192,7 @@ export default function Importer({ systems = [], onSystemImported, onReportError
                         {sys.name}
                       </h4>
                       <span className="text-dim imported-system-catalogue-count">
-                        {t('importer.factionCataloguesLoaded', { count: sys.catalogues?.length || 0 })}
+                        {t('importer.factionCataloguesLoaded', { count: importer.catalogueCounts.get(sys.id) ?? 0 })}
                       </span>
                     </div>
                   </div>

@@ -4,6 +4,7 @@ import {
   resolveCostLimitTypeId, resolveCostLimitLabel,
 } from '../../../domain/roster';
 import { classifyGroupItem } from './selectionBehavior.js';
+import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 import {
   optionDescriptionOf,
@@ -175,6 +176,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
           points: capability.costs?.[costTypeId] ?? 0,
           costTypeLabel,
           descText: optionDescriptionOf(capability),
+          detailElements: upgradeDetailElementsOf(capability),
           isBinary,
           isRadio,
           radioName: `${selection.id}-${group.name}`,

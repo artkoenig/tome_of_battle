@@ -98,4 +98,23 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
 
     expect(result).toEqual({ isListRuleGroup: false, states: [] });
   });
+
+  it('reicht den Detailblock einer Zeile aus `detailsOf` durch — je Slot dessen eigener', () => {
+    const detailsOf = (capability) => [{ key: 'rule-0', text: `Text zu ${capability.name}` }];
+    const { states } = resolveListRuleGroupFromReport(
+      SlotIndex.fromMaps({ capabilities: reportCapabilities() }), '0', CATEGORY, { detailsOf },
+    );
+
+    const byName = stateByName(states);
+    expect(byName.get('Pflichtregel').details).toEqual([{ key: 'rule-0', text: 'Text zu Pflichtregel' }]);
+    expect(byName.get('Freie Regel').details).toEqual([{ key: 'rule-0', text: 'Text zu Freie Regel' }]);
+  });
+
+  it('laesst den Detailblock ohne `detailsOf` `null` — die Anzeigeschicht reicht ihn herein', () => {
+    const { states } = resolveListRuleGroupFromReport(
+      SlotIndex.fromMaps({ capabilities: reportCapabilities() }), '0', CATEGORY,
+    );
+
+    expect(states.every((state) => state.details === null)).toBe(true);
+  });
 });

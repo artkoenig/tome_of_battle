@@ -6,6 +6,7 @@ import {
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../../domain/roster';
 import { useRosterReport } from '../rosterContexts';
+import { publicationRefOf, upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
 /**
  * ViewModel der Chip-Reihen einer Einheit (ADR-0038).
@@ -44,6 +45,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
           name: subSel.name,
           number: subSel.number || 1,
           resolved: resolved,
+          capability: slots.slotOfSelection(subSel) ?? null,
         });
         collect(subSel);
       }
@@ -53,27 +55,17 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
   return list;
 };
 
-/** Die Regeln, die der Katalog unter dem Namen des Eintrags führt. */
-const rulesOf = (res, system) => {
-  let rules = res.rules || [];
-  if (rules.length === 0 && res.name) {
-    const lowerName = res.name.toLowerCase().trim();
-    let foundRule = system?.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-    if (!foundRule) {
-      for (const cat of system?.catalogues || []) {
-        foundRule = cat.sharedRules?.find(r => r.name?.toLowerCase().trim() === lowerName);
-        if (foundRule) break;
-      }
-    }
-    if (foundRule) rules = [foundRule];
-  }
-  return rules;
-};
+/** Die Regeltexte der Info-Projektion eines Slots (`kind: 'rule'`). */
+const ruleElementsOf = (capability) =>
+  (capability?.infoElements ?? []).filter(element => element.kind === 'rule');
 
-const hasLore = (res, system) => {
-  if (!res) return false;
-  return rulesOf(res, system).some(r => r.description && r.description.trim());
-};
+/**
+ * Ob die Aufwertung einen eigenen Regeltext mitbringt — gefragt wird der
+ * Bericht (`capability.infoElements`), nicht mehr der Katalog unter dem Namen
+ * des Eintrags.
+ */
+const hasLore = (capability) =>
+  ruleElementsOf(capability).some(rule => rule.text && rule.text.trim());
 
 /**
  * Die Aufwertungen, die als Chip erscheinen: die gewählten Unter-Auswahlen ohne
@@ -103,15 +95,15 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
            p.includes(s);
   };
 
-  const hasOwnValue = (res) => {
+  const hasOwnValue = (res, capability) => {
     if (!res) return false;
     const hasCost = (res.costs || []).some(c => Math.abs(parseFloat(c.value) || 0) > 0);
     const hasProfile = (res.profiles || []).length > 0;
-    return hasCost || hasProfile || hasLore(res, system);
+    return hasCost || hasProfile || hasLore(capability);
   };
 
-  const isEmptyWrapper = (res) => {
-    if (!res || hasOwnValue(res)) return false;
+  const isEmptyWrapper = (res, capability) => {
+    if (!res || hasOwnValue(res, capability)) return false;
     const childCount = (res.selectionEntries?.length || 0) +
                        (res.entryLinks?.length || 0) +
                        (res.selectionEntryGroups?.length || 0);
@@ -120,41 +112,41 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
 
   return getSelectedUpgrades(sel, system, activeCatalogueId, slots).filter(upgrade => {
     const res = upgrade.resolved;
-    if (isEmptyWrapper(res)) return false;
+    if (isEmptyWrapper(res, upgrade.capability)) return false;
     const name = upgrade.name || res?.name;
-    const inTable = profileElementsOf(slots.slotOfSelection({ id: upgrade.id })).some(p => tableProfileIds.has(p.id)) ||
+    const inTable = profileElementsOf(upgrade.capability).some(p => tableProfileIds.has(p.id)) ||
                     (name && tableProfiles.some(p => isNameMatch(name, p.name)));
     if (!inTable) return true;
-    return hasLore(res, system);
+    return hasLore(upgrade.capability);
   });
 };
 
-const getUpgradeDescription = (res, system) => {
-  if (!res) return '';
+/**
+ * Der Kurztext eines Aufwertungs-Chips — aus der Info-Projektion des Slots
+ * (`capability.infoElements`) und seiner eigenen Buchquelle
+ * (`capability.source`), nie aus einem zweiten Katalog-Durchlauf.
+ */
+const getUpgradeDescription = (capability) => {
+  if (!capability) return '';
   const descriptions = [];
+  const suffixOf = (source) => {
+    const ref = publicationRefOf(source);
+    return ref ? ` ${ref}` : '';
+  };
 
-  rulesOf(res, system).forEach(r => {
-    if (r.description) {
-      const ref = r.publicationRef ? ` ${r.publicationRef}` : '';
-      descriptions.push(`${r.description}${ref}`);
-    }
+  ruleElementsOf(capability).forEach(rule => {
+    if (rule.text) descriptions.push(`${rule.text}${suffixOf(rule.source)}`);
   });
-  if (res.profiles && res.profiles.length > 0) {
-    const upgradeProfiles = res.profiles.filter(p => {
-      const typeLower = p.profileTypeName?.toLowerCase() || '';
-      return UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k));
+  profileElementsOf(capability).forEach(profile => {
+    const typeLower = profile.profileTypeName?.toLowerCase() || '';
+    if (!UPGRADE_DETAILS_KEYWORDS.some(k => typeLower.includes(k))) return;
+    (profile.characteristics ?? []).forEach(c => {
+      if (c.value) descriptions.push(`${c.name}: ${c.value}${suffixOf(profile.source)}`);
     });
-    upgradeProfiles.forEach(p => {
-      p.characteristics?.forEach(c => {
-        if (c.value) {
-          const ref = p.publicationRef ? ` ${p.publicationRef}` : '';
-          descriptions.push(`${c.name}: ${c.value}${ref}`);
-        }
-      });
-    });
-  }
-  if (descriptions.length === 0 && res.publicationRef) {
-    descriptions.push(res.publicationRef);
+  });
+  if (descriptions.length === 0) {
+    const ownRef = publicationRefOf(capability.source);
+    if (ownRef) descriptions.push(ownRef);
   }
   return descriptions.join(' | ');
 };
@@ -178,7 +170,8 @@ export function useUnitChips({ selection }) {
       number: upgrade.number,
       resolved: upgrade.resolved,
       chipName: upgrade.resolved?.name || upgrade.name,
-      descText: getUpgradeDescription(upgrade.resolved, system),
+      descText: getUpgradeDescription(upgrade.capability),
+      detailElements: upgradeDetailElementsOf(upgrade.capability),
     }));
 
     // Die Regeln kommen aus der Info-Projektion des Slots

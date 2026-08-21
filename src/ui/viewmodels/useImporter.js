@@ -392,8 +392,16 @@ export function useImporter({ systems = [], onSystemImported, onReportError } = 
     };
   }, [availableSystems, selectedBundleSysId, selectedCats, systems, t, language]);
 
+  // Wie viele Kataloge ein installiertes Spielsystem mitbringt — die Liste
+  // zeigt die Zahl, leitet sie aber nicht im Render ab (ADR-0038).
+  const catalogueCounts = useMemo(
+    () => new Map(systems.map(system => [system.id, system.catalogues?.length ?? 0])),
+    [systems]
+  );
+
   return {
     systems,
+    catalogueCounts,
     availableSystems,
     selectedBundleSysId,
     bundle,

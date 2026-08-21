@@ -52,7 +52,7 @@
 import { AnchorKind, ConstraintKind, DefinitionKind, LimitMeasure, ScopeKeyword, isAuthorMessageAnchorKind } from './model.js';
 import { selectableSlotsOf, pathOf, frameKeyOf } from './evalTree.js';
 import { buildCostProjection } from './costProjection.js';
-import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf } from './infoProjection.js';
+import { createProfileTypeRegistry, createPublicationRegistry, infoElementsOf, sourceOf } from './infoProjection.js';
 import { renderedAuthorMessagesOf } from './authorMessages.js';
 import { classifyDerivedViolation, classifyAuthorMessage, classifyHiddenSelection } from './violationClassification.js';
 import { causesFieldOf } from './causes.js';
@@ -720,6 +720,12 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
     infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry),
+    // Die **eigene** Buchquelle des Slots (Buch und Seite seiner Definition),
+    // gelesen wie die eines Info-Elements: erst der Traeger, dann sein Inhalt.
+    // Sie ist die Quellenangabe eines Eintrags, der selbst weder Profil noch
+    // Regeltext traegt — ohne sie muesste die Oberflaeche dafuer ein zweites Mal
+    // in den Katalog greifen (ADR-0034). `null`, wo weder Buch noch Seite steht.
+    source: node.def ? sourceOf(node.def, publicationRegistry) : null,
   };
 }
 

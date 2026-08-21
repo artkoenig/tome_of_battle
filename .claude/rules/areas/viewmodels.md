@@ -72,8 +72,14 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
   `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
-  `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
-  entry and `system`, and the component renders the detail block.
+  `components/editor/upgradeDetails.jsx` (it returns JSX).
+- The detail block of an upgrade is derived here, by `editor/upgradeDetailElements.js`
+  (`upgradeDetailElementsOf(capability)`), out of `capability.infoElements` and `capability.source`
+  alone (Issue 0173). Every row hook that offers an info tooltip puts the finished list on the row
+  as `detailElements`; `renderUpgradeDetails(elements)` in the component only renders it and takes
+  no `system`. The old name-similarity lookup against `system.sharedRules` (lowercased, trimmed,
+  substring, last-ten-characters, a hard-wired `waaagh` case) is gone — do not reintroduce it.
+  `publicationRefOf(source)` next to it is the one place the `[Book, S. 44]` form is written.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
   (`src/domain/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
   `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back

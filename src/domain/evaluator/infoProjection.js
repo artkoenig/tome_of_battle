@@ -107,7 +107,7 @@ const EMPTY_PUBLICATION_REGISTRY = createPublicationRegistry([]);
  * `<publication>`-Deklarationen des Datensatzes und nur von dort; ist die Id dort
  * unbekannt, bleibt der Name ehrlich `null` statt erfunden.
  */
-function sourceOf(carrier, registry) {
+export function sourceOf(carrier, registry) {
   const content = contentOf(carrier);
   const publicationId = carrier.publicationId ?? content.publicationId ?? null;
   const page = carrier.page ?? content.page ?? null;

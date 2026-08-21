@@ -7,6 +7,7 @@ import {
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../../domain/roster';
 import { classifyStandaloneOption } from './selectionBehavior.js';
+import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**
@@ -151,7 +152,7 @@ const sourceSuffixOf = (source) => {
  * ihres Slots** (`capability.infoElements`, ADR-0034).
  *
  * Der frühere namensbasierte Regel-Lookup (der Name der Option gegen die
- * `sharedRules` des Systems und aller Kataloge) ist ersatzlos entfallen: er
+ * geteilten Regeln des Systems und aller Kataloge) ist ersatzlos entfallen: er
  * verwechselte zwei gleichnamige Regeln aus verschiedenen Katalogen, weil er den
  * ersten Treffer nahm. Der Bericht verankert die Regel dagegen am Slot und weiß
  * damit, welche gemeint ist.
@@ -455,6 +456,7 @@ export function useSelectionConfigurator({ selection }) {
         costTypeLabel,
         costBudgets: costBudgetTextsOf(capability, system),
         descText: optionDescriptionOf(capability),
+        detailElements: upgradeDetailElementsOf(capability),
         resolved,
         isSubUnitWithOwnOptions,
         isBinary,
