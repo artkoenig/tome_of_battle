@@ -33,6 +33,8 @@ Umbau:
 Weg 1 ist der vorgeschlagene: er hält die Richtung UI → Fachlogik → Daten
 sauber und kostet eine Signatur.
 
+**Entschieden: Weg 1.** Der Bericht wird hereingereicht; AC3 entfällt damit.
+
 ## Acceptance criteria
 
 - AC1 Die Entscheidung steht als Nachtrag zu ADR-0030 und ADR-0037 oder als eigener ADR, mit Zeile in `docs/adr/README.md`.
