@@ -1,8 +1,8 @@
 /**
  * Issue 0121, Task 7 — rosterSerialization: der Text-Export
- * (`exportRosterToXml(roster, system)`, Signatur bleibt) speist die
+ * (`exportRosterToXml(roster, system, report)`) speist die
  * Selektionsnamen aus den Slot-`name`s des Evaluator-Berichts und die Kosten
- * aus dem Bericht (intern via `evaluateAppRoster`) — KEIN
+ * aus dem hereingereichten Bericht (Issue 0174, ADR-0039) — KEIN
  * `getEffectiveName`/`getEffectiveSelectionName`, KEIN
  * `getSelectionTotalCost`/`getSelectionOwnCosts`/`calculateRosterCosts` aus
  * dem Solver mehr (test-first; die neue Implementierung existiert noch nicht).
@@ -29,6 +29,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { exportRosterToXml } from './rosterSerialization.js';
 import { prepareDataset, evaluate } from '../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../evaluation/rosterAdapter.js';
+import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -116,6 +117,17 @@ function appRoster() {
   };
 }
 
+/**
+ * Der Export mit dem hereingereichten Bericht (Issue 0174, ADR-0039): Roster
+ * und System werden einmal gebaut, damit `evaluateAppRoster` und der Export
+ * dasselbe Paar sehen.
+ */
+function exportOf() {
+  const roster = appRoster();
+  const system = appSystem();
+  return exportRosterToXml(roster, system, evaluateAppRoster(system, roster));
+}
+
 /** Auswertung ueber die ECHTE Fassade — die einzige Quelle der Erwartungen. */
 function reportOf() {
   const prepared = prepareDataset({ gameSystem: GAME_SYSTEM_XML, catalogues: [CATALOGUE_XML] });
@@ -129,8 +141,8 @@ describe('exportRosterToXml: Namen und Kosten aus dem Evaluator-Bericht (Issue 0
     vi.clearAllMocks();
   });
 
-  it('die Signatur bleibt: (roster, system) → synchroner XML-Text', () => {
-    const xml = exportRosterToXml(appRoster(), appSystem());
+  it('die Signatur ist (roster, system, report) → synchroner XML-Text', () => {
+    const xml = exportOf();
 
     expect(typeof xml).toBe('string');
     expect(xml).toContain('<roster ');
@@ -142,7 +154,7 @@ describe('exportRosterToXml: Namen und Kosten aus dem Evaluator-Bericht (Issue 0
     const capability = report.capabilities.get(pathBySelectionId.get('sel-warrior'));
     expect(capability.name).toBe(EFFECTIVE_NAME);
 
-    const xml = exportRosterToXml(appRoster(), appSystem());
+    const xml = exportOf();
 
     expect(xml).toContain(`name="${EFFECTIVE_NAME}"`);
     expect(xml).not.toContain('POISON-NAME');
@@ -156,7 +168,7 @@ describe('exportRosterToXml: Namen und Kosten aus dem Evaluator-Bericht (Issue 0
     const capability = report.capabilities.get(pathBySelectionId.get('sel-warrior'));
     expect(capability.totalCosts).toMatchObject({ [COST_TYPE_ID]: 20 });
 
-    const xml = exportRosterToXml(appRoster(), appSystem());
+    const xml = exportOf();
 
     // Beide Kostenstellen — der Roster-Summenblock und die <cost> der
     // Selektion — tragen den Berichtswert 20.
@@ -166,7 +178,7 @@ describe('exportRosterToXml: Namen und Kosten aus dem Evaluator-Bericht (Issue 0
   });
 
   it('das eingestellte Kostenlimit des Rosters bleibt im costLimits-Block (1000)', () => {
-    const xml = exportRosterToXml(appRoster(), appSystem());
+    const xml = exportOf();
 
     expect(xml).toContain(`typeId="${COST_TYPE_ID}" value="1000"`);
   });

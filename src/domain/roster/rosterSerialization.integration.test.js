@@ -118,7 +118,7 @@ describe.each(ARMIES)('Real-catalogue round-trip: $label', ({ cat, fixture }) =>
     const roster = importFixture(system, fixture);
     const initialErrors = errorCount(roster, system);
 
-    const xml = exportRosterToXml(roster, system);
+    const xml = exportRosterToXml(roster, system, evaluateAppRoster(system, roster));
     const reImported = importRosterFromXml(xml, [system]);
     const reconciled = reconcileImportedSelectionIds(reImported, system);
     const roundTripped = syncRosterSelectionsWithSystem(reconciled, system);

@@ -210,6 +210,18 @@ module.exports = {
       to: { path: EVALUATOR_LAYER },
     },
     {
+      name: 'roster-keine-evaluation-abhaengigkeit',
+      comment:
+        'Das Schreibmodell src/domain/roster/ erreicht den Evaluator auch nicht mittelbar ' +
+        'ueber die Auswertungs-Bruecke src/domain/evaluation/ (Issue 0174, ADR-0039): ' +
+        'wer den Bericht braucht -- der .ros-Export --, bekommt ihn hereingereicht. ' +
+        'Testdateien sind ausgenommen wie bei roster-keine-evaluator-abhaengigkeit: ' +
+        'ein Fall, der eine Kostensumme braucht, ruft evaluateAppRoster selbst.',
+      severity: 'error',
+      from: { path: ROSTER_LAYER, pathNot: TEST_FILE },
+      to: { path: EVALUATION_LAYER },
+    },
+    {
       name: 'evaluation-keine-roster-abhaengigkeit',
       comment:
         'Die Auswertungs-Bruecke src/domain/evaluation/ uebersetzt nur App-Roster -> ' +

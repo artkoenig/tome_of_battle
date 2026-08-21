@@ -58,8 +58,12 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   `RosterFileError` from `src/data/services/rosterTransfer.js`); `describeRosterFileError` in
   `src/ui/hooks/useRosterList.js` is the one place that formulates them. A test here asserts on the
   key, never on German text.
-- `rosterSerialization.js` reads the report (`evaluateAppRoster`) for names and costs and only
-  produces/consumes XML **text**. Packing and unpacking the `.rosz` archive is file I/O and lives
+- `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
+  (Issue 0174, ADR-0039) — and only produces/consumes XML **text**. Nothing under
+  `src/domain/roster/` imports `src/domain/evaluation/` any more; the blocking depcruise rule
+  `roster-keine-evaluation-abhaengigkeit` (`error`) holds it, test files excepted, the same way
+  `roster-keine-evaluator-abhaengigkeit` does. The caller is `useRosterList.js`, in the UI layer,
+  which calls `evaluateAppRoster(system, roster)` itself. Packing and unpacking the `.rosz` archive is file I/O and lives
   in `src/data/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
   in `useRosterList.js`, because the data layer may not reach back into this one.
 - A UI behaviour model does not belong here: `classifyGroupItem`/`classifyStandaloneOption` moved

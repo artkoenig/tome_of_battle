@@ -5,6 +5,7 @@ import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
 } from '../../domain/roster/rosterSerialization';
 import { buildRoster } from '../../domain/roster/createRoster';
+import { evaluateAppRoster } from '../../domain/evaluation/evaluationCache';
 import { VIEWS } from '../../shared/constants/views';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../domain/roster';
 import { t } from '../i18n/i18nStore';
@@ -203,7 +204,10 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         return;
       }
 
-      const xmlText = exportRosterToXml(roster, system);
+      // The write model does not evaluate (ADR-0039): the report is fetched here,
+      // in the UI layer, and handed in.
+      const report = evaluateAppRoster(system, roster);
+      const xmlText = exportRosterToXml(roster, system, report);
       const { blob, fileName } = await buildRosterFile(roster.name, xmlText);
 
       const url = URL.createObjectURL(blob);

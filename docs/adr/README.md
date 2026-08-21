@@ -47,3 +47,4 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 
 | 0037 | [Schichtenarchitektur UI → Fachlogik → Daten mit maschinell geprüfter Richtung](0037-schichtenarchitektur-ui-fachlogik-daten.md) | Accepted | 2026-08-20 |
 | 0038 | [Custom Hook als ViewModel je UI-Baustein, gespeist aus dem Auswertungsbericht](0038-custom-hooks-als-viewmodel-je-ui-baustein.md) | Accepted | 2026-08-20 |
+| 0039 | [Das Schreibmodell erreicht den Auswertungsbericht nur hereingereicht](0039-schreibmodell-erreicht-den-bericht-nur-hereingereicht.md) | Accepted | 2026-08-21 |
