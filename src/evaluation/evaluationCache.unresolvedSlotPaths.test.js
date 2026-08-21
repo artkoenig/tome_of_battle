@@ -144,8 +144,8 @@ function force(forceEntryId, selections) {
  * oder der Pfad ins Leere zeigt.
  */
 function capabilityFor(result, selectionId) {
-  const path = result.pathBySelectionId.get(selectionId);
-  return path === undefined ? undefined : result.capabilities.get(path);
+  const path = result.slots.pathBySelectionId.get(selectionId);
+  return path === undefined ? undefined : result.slots.capabilities.get(path);
 }
 
 const evaluateRoster = (roster) => evaluateAppRoster(appSystem(), roster);
@@ -188,7 +188,7 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     const result = evaluateRoster(rosterWithLostFirstSelection());
     expectUnresolved(result, ['entry-vanished']);
 
-    expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
   });
 
   it('auch die Kinder der unauflösbaren Auswahl haben keinen Pfad, die folgenden Geschwister bleiben richtig', () => {
@@ -201,8 +201,8 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     ]));
     expectUnresolved(result, ['entry-vanished']);
 
-    expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
-    expect(result.pathBySelectionId.has('sel-gone-child')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone-child')).toBe(false);
     expect(capabilityFor(result, 'sel-alpha')).toMatchObject({ defId: ALPHA_ID, name: 'Alpha' });
     expect(capabilityFor(result, 'sel-beta')).toMatchObject({ defId: BETA_ID, name: 'Beta' });
   });
@@ -220,7 +220,7 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     ]));
     expectUnresolved(result, ['opt-vanished']);
 
-    expect(result.pathBySelectionId.has('sel-opt-gone')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-opt-gone')).toBe(false);
     expect(capabilityFor(result, 'sel-warrior')).toMatchObject({ defId: WARRIOR_ID, name: 'Warrior' });
     expect(capabilityFor(result, 'sel-sword')).toMatchObject({
       defId: SWORD_ID,
@@ -247,8 +247,8 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     ]));
     expectUnresolved(result, ['entry-vanished-1', 'entry-vanished-2']);
 
-    expect(result.pathBySelectionId.has('sel-gone-1')).toBe(false);
-    expect(result.pathBySelectionId.has('sel-gone-2')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone-1')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone-2')).toBe(false);
     expect(capabilityFor(result, 'sel-alpha')).toMatchObject({ defId: ALPHA_ID, name: 'Alpha' });
     expect(capabilityFor(result, 'sel-beta')).toMatchObject({ defId: BETA_ID, name: 'Beta' });
   });
@@ -262,7 +262,7 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     ]));
     expectUnresolved(result, ['entry-vanished']);
 
-    expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
     expect(capabilityFor(result, 'sel-alpha')).toMatchObject({ defId: ALPHA_ID, name: 'Alpha' });
   });
 
@@ -273,7 +273,7 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
     ]));
     expectUnresolved(result, ['force-vanished']);
 
-    expect(result.pathBySelectionId.has('sel-in-gone-force')).toBe(false);
+    expect(result.slots.pathBySelectionId.has('sel-in-gone-force')).toBe(false);
     expect(capabilityFor(result, 'sel-beta')).toMatchObject({
       defId: BETA_ID,
       name: 'Beta',
@@ -300,7 +300,7 @@ describe('Slot-Pfade bei einer unauflösbaren Auswahl (Issue 0121, Task 12, Krit
       'sel-beta': BETA_ID,
     };
     // Genau die aufloesbaren Auswahlen haben einen Pfad …
-    expect([...result.pathBySelectionId.keys()].sort()).toEqual(Object.keys(expectedDefIdBySelectionId).sort());
+    expect([...result.slots.pathBySelectionId.keys()].sort()).toEqual(Object.keys(expectedDefIdBySelectionId).sort());
     // … und jeder Pfad fuehrt zu dem belegten Slot genau dieser Auswahl.
     for (const [selectionId, defId] of Object.entries(expectedDefIdBySelectionId)) {
       expect(capabilityFor(result, selectionId), selectionId).toMatchObject({ defId, anchorKind: 'occupied' });

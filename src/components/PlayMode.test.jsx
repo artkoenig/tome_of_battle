@@ -239,6 +239,7 @@ describe('PlayMode Component', () => {
     // Regel-Chips kommen seit Issue 0121, Task 7 aus der Info-Projektion des
     // Fähigkeitsdatensatzes (`capability.infoElements`).
     const capability = {
+      anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
       infoElements: [{ kind: 'rule', id: 'rule-direct', name: 'Direct Vow', text: 'Direct test description' }]
     };
 
@@ -351,6 +352,7 @@ describe('PlayMode Component', () => {
     // Solver-Profilsammlung oben speist nur noch den Chip-Filter der
     // Upgrade-Chips (bis Task 8).
     const capability = {
+      anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
       infoElements: [
         { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
         { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
@@ -431,6 +433,7 @@ describe('PlayMode Component', () => {
     });
 
     const capability = {
+      anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
       infoElements: [
         { kind: 'profile', id: 'p1', profileTypeName: 'Model', name: 'Warrior', characteristics: [{ name: 'M', value: '4' }, { name: 'WS', value: '4' }] },
         { kind: 'profile', id: 'p2', profileTypeName: 'Model', name: 'Warhorse', characteristics: [{ name: 'M', value: '8' }, { name: 'WS', value: '3' }] },
@@ -590,7 +593,7 @@ describe('PlayMode Component', () => {
         // Dass die Unter-Auswahl eine eigenstaendige Untereinheit ist, sagt der
         // Bericht (`capability.isIndependentSubUnit`, Issue 0156) — nicht mehr
         // der aufgeloeste Katalog-Eintrag.
-        capabilities={new Map([['0/0/0', { anchorKind: 'occupied', isIndependentSubUnit: true }]])}
+        capabilities={new Map([['0/0/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, isIndependentSubUnit: true }]])}
         pathBySelectionId={new Map([['sel-parent', '0/0'], ['sub-unit-1', '0/0/0']])}
         getUnitCurrentWounds={createWoundsReader({ 'sel-parent': 5, 'sub-unit-1': 3 })}
         handleAdjustWound={vi.fn()}

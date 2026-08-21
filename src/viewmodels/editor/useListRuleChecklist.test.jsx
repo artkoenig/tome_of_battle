@@ -22,6 +22,7 @@ const SYSTEM = {
 
 const ruleSlot = (over = {}) => ({
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   defId: 'e-switch',
   targetDefId: null,
   name: 'Schalter',

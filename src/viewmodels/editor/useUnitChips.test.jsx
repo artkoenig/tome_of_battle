@@ -44,14 +44,14 @@ const renderChips = ({ capabilities, selection = SELECTION }) =>
     }),
   });
 
-const unitSlot = (infoElements = []) => ({ anchorKind: 'occupied', name: 'Ritter', infoElements });
+const unitSlot = (infoElements = []) => ({ anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Ritter', infoElements });
 
 describe('useUnitChips', () => {
   it('zeigt die gewählten Aufwertungen und lässt einen wertlosen Behälter weg', () => {
     const capabilities = new Map([
       ['0/0', unitSlot()],
-      ['0/0/0', { anchorKind: 'occupied', name: 'Lanze', infoElements: [] }],
-      ['0/0/1', { anchorKind: 'occupied', name: 'Behälter', infoElements: [] }],
+      ['0/0/0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze', infoElements: [] }],
+      ['0/0/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Behälter', infoElements: [] }],
     ]);
 
     const { result } = renderChips({ capabilities });
@@ -64,8 +64,8 @@ describe('useUnitChips', () => {
       ['0/0', unitSlot([
         { kind: 'profile', id: 'prof-lance', profileTypeName: 'Weapon', name: 'Lanze', characteristics: [] },
       ])],
-      ['0/0/0', { anchorKind: 'occupied', name: 'Lanze', infoElements: [{ kind: 'profile', id: 'prof-lance', profileTypeName: 'Weapon', name: 'Lanze', characteristics: [] }] }],
-      ['0/0/1', { anchorKind: 'occupied', name: 'Behälter', infoElements: [] }],
+      ['0/0/0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze', infoElements: [{ kind: 'profile', id: 'prof-lance', profileTypeName: 'Weapon', name: 'Lanze', characteristics: [] }] }],
+      ['0/0/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Behälter', infoElements: [] }],
     ]);
 
     const { result } = renderChips({ capabilities });
@@ -76,8 +76,8 @@ describe('useUnitChips', () => {
   it('nimmt die Regel-Chips aus der Info-Projektion des Slots', () => {
     const capabilities = new Map([
       ['0/0', unitSlot([{ kind: 'rule', id: 'r1', name: 'Segen', text: 'Rettungswurf 5+' }])],
-      ['0/0/0', { anchorKind: 'occupied', name: 'Lanze', infoElements: [] }],
-      ['0/0/1', { anchorKind: 'occupied', name: 'Behälter', infoElements: [] }],
+      ['0/0/0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze', infoElements: [] }],
+      ['0/0/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Behälter', infoElements: [] }],
     ]);
 
     const { result } = renderChips({ capabilities });
@@ -88,8 +88,8 @@ describe('useUnitChips', () => {
   it('zeigt eine Regel nicht doppelt, wenn sie schon als Aufwertungs-Chip erscheint', () => {
     const capabilities = new Map([
       ['0/0', unitSlot([{ kind: 'rule', id: 'r-lance', name: 'Lanze', text: 'Beim Ansturm +2 Stärke' }])],
-      ['0/0/0', { anchorKind: 'occupied', name: 'Lanze', infoElements: [] }],
-      ['0/0/1', { anchorKind: 'occupied', name: 'Behälter', infoElements: [] }],
+      ['0/0/0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze', infoElements: [] }],
+      ['0/0/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Behälter', infoElements: [] }],
     ]);
 
     const { result } = renderChips({ capabilities });
@@ -101,8 +101,8 @@ describe('useUnitChips', () => {
   it('lässt die Untereinheit weg, die ihre eigene Karte trägt', () => {
     const capabilities = new Map([
       ['0/0', unitSlot()],
-      ['0/0/0', { anchorKind: 'occupied', name: 'Lanze', isIndependentSubUnit: true, infoElements: [] }],
-      ['0/0/1', { anchorKind: 'occupied', name: 'Behälter', infoElements: [] }],
+      ['0/0/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, name: 'Lanze', isIndependentSubUnit: true, infoElements: [] }],
+      ['0/0/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Behälter', infoElements: [] }],
     ]);
 
     const { result } = renderChips({ capabilities });

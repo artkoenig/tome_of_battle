@@ -4,12 +4,11 @@
  *
  * Intention:
  * - `evaluateAppRoster(system, roster)` liefert dieselbe Ergebnisform wie
- *   `useEvaluation` — `{ violations, capabilities, costTotals,
- *   pathBySelectionId }` — und ist AUSSERHALB von React aufrufbar (reine
+ *   `useEvaluation` — `{ violations, slots, costTotals }` — und ist AUSSERHALB von React aufrufbar (reine
  *   Funktion, kein Hook). Leer-/Fehlfälle wie `useEvaluation`: system
  *   null/undefined/ohne (vollständiges) `rawXmls` oder roster null/undefined
- *   → Leer-Ergebnis ohne Throw (violations `[]`, capabilities leere Map,
- *   costTotals `{}`, pathBySelectionId leere Map).
+ *   → Leer-Ergebnis ohne Throw (violations `[]`, leerer Slot-Index,
+ *   costTotals `{}`).
  * - `describeSystem(system)` liefert das `describeDataset`-Ergebnis
  *   (costTypes/catalogues/creatableForces) OHNE Roster; system null oder ohne
  *   rawXmls → `null`.
@@ -130,11 +129,11 @@ function appRoster() {
 /** Prueft das vertragliche Leer-Ergebnis (Formen wie useEvaluation). */
 function expectEmptyResult(result) {
   expect(result.violations).toEqual([]);
-  expect(result.capabilities).toBeInstanceOf(Map);
-  expect(result.capabilities.size).toBe(0);
+  expect(result.slots.capabilities).toBeInstanceOf(Map);
+  expect(result.slots.capabilities.size).toBe(0);
   expect(result.costTotals).toEqual({});
-  expect(result.pathBySelectionId).toBeInstanceOf(Map);
-  expect(result.pathBySelectionId.size).toBe(0);
+  expect(result.slots.pathBySelectionId).toBeInstanceOf(Map);
+  expect(result.slots.pathBySelectionId.size).toBe(0);
 }
 
 beforeEach(() => {
@@ -146,13 +145,13 @@ beforeEach(() => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('evaluateAppRoster: dieselbe Ergebnisform wie useEvaluation, ohne React', () => {
-  it('liefert violations/capabilities/costTotals/pathBySelectionId in den vertraglichen Formen', () => {
+  it('liefert violations/slots/costTotals in den vertraglichen Formen', () => {
     const result = evaluateAppRoster(appSystem(), appRoster());
 
     expect(Array.isArray(result.violations)).toBe(true);
-    expect(result.capabilities).toBeInstanceOf(Map);
+    expect(result.slots.capabilities).toBeInstanceOf(Map);
     expect(result.costTotals).toBeTypeOf('object');
-    expect(result.pathBySelectionId).toBeInstanceOf(Map);
+    expect(result.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 
   it('eine echte Verletzung des Datensatzes erscheint in violations (max 1, gewaehlt 2)', () => {
@@ -171,13 +170,13 @@ describe('evaluateAppRoster: dieselbe Ergebnisform wie useEvaluation, ohne React
     expect(result.costTotals).toEqual({ [COST_TYPE_ID]: 2 * WARRIOR_POINTS });
   });
 
-  it('capabilities fuehrt den belegten Slot unter dem Pfad aus pathBySelectionId', () => {
+  it('slots.capabilities fuehrt den belegten Slot unter dem Pfad aus slots.pathBySelectionId', () => {
     const result = evaluateAppRoster(appSystem(), appRoster());
 
-    const path = result.pathBySelectionId.get('sel-warrior');
+    const path = result.slots.pathBySelectionId.get('sel-warrior');
     expect(path, 'Pfad fuer sel-warrior').toBeDefined();
-    expect(result.capabilities.has(path)).toBe(true);
-    expect(result.capabilities.get(path)).toMatchObject({
+    expect(result.slots.capabilities.has(path)).toBe(true);
+    expect(result.slots.capabilities.get(path)).toMatchObject({
       defId: WARRIOR_ID,
       anchorKind: 'occupied',
     });
@@ -199,10 +198,10 @@ describe('evaluateAppRoster: dieselbe Ergebnisform wie useEvaluation, ohne React
       report.violations.map(entry => entry.limitId),
     );
     expect(result.costTotals).toEqual(report.costTotals);
-    expect([...result.capabilities.keys()].sort()).toEqual(
+    expect([...result.slots.capabilities.keys()].sort()).toEqual(
       [...report.capabilities.keys()].sort(),
     );
-    expect(result.pathBySelectionId).toEqual(pathBySelectionId);
+    expect(result.slots.pathBySelectionId).toEqual(pathBySelectionId);
   });
 });
 

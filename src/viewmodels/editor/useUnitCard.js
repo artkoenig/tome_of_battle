@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { childSelectionsOf, groupProfilesByType } from '../../roster';
-import { isIndependentSubUnitSlot } from '../../evaluation/slotLookups';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**
@@ -79,11 +78,10 @@ export function profileCellDisplayOf(characteristic) {
  * (`capability.isIndependentSubUnit`, Issue 0156) — die Karte löst dafür keinen
  * Katalog-Eintrag mehr auf.
  * @param {import('../../types.js').Selection} selection Wurzel der Karte
- * @param {Map<string, object>|null|undefined} capabilities Slot-Map des Berichts
- * @param {Map<string, string>|null|undefined} pathBySelectionId App-Selection-UUID → Slot-Pfad
+ * @param {import('../../evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
  * @returns {Set<string>}
  */
-export function collectCardSelectionIds(selection, capabilities, pathBySelectionId) {
+export function collectCardSelectionIds(selection, slots) {
   const cardSelectionIds = new Set();
   const addSubtree = (node) => {
     cardSelectionIds.add(node.id);
@@ -91,7 +89,7 @@ export function collectCardSelectionIds(selection, capabilities, pathBySelection
   };
   cardSelectionIds.add(selection.id);
   childSelectionsOf(selection)
-    .filter(child => !isIndependentSubUnitSlot(capabilities, pathBySelectionId, child))
+    .filter(child => !slots.isIndependentSubUnitSlot(child))
     .forEach(addSubtree);
   return cardSelectionIds;
 }
@@ -103,17 +101,15 @@ export function collectCardSelectionIds(selection, capabilities, pathBySelection
  * Kontingent- oder Kategorie-Ebene, synthetische Anker) und missgebildete
  * Einträge fallen heraus.
  * @param {object[]|null|undefined} violations Verletzungen der Evaluator-Fassade
- * @param {Map<string, string>|null|undefined} pathBySelectionId App-Selection-UUID → Slot-Pfad
+ * @param {import('../../evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
  * @param {import('../../types.js').Selection} selection Wurzel der Karte
- * @param {Map<string, object>|null|undefined} capabilities Slot-Map des Berichts
  * @returns {object[]}
  */
-export function selectionViolationsForCard(violations, pathBySelectionId, selection, capabilities) {
-  if (!pathBySelectionId) return [];
-  const cardSelectionIds = collectCardSelectionIds(selection, capabilities, pathBySelectionId);
+export function selectionViolationsForCard(violations, slots, selection) {
+  const cardSelectionIds = collectCardSelectionIds(selection, slots);
   const cardPaths = new Set();
   for (const selectionId of cardSelectionIds) {
-    const path = pathBySelectionId.get(selectionId);
+    const path = slots.pathOfSelection(selectionId);
     if (path !== undefined) cardPaths.add(path);
   }
   return (violations ?? []).filter(violation => cardPaths.has(violation?.anchor?.path));
@@ -157,16 +153,16 @@ export function parentSelectionIdOf(roster, childId) {
 export function useUnitCard({ selection, isSubUnit = false }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { removeUnit, copyUnit, subSelectionOperations } = useRosterCommands();
-  const { capabilities, pathBySelectionId, violations } = report;
+  const { slots, violations } = report;
 
   return useMemo(() => {
     // Der Fähigkeitsdatensatz des Slots dieser Auswahl (ADR-0034): Kosten
     // (`totalCosts`), Name und Profil-Sektion (`infoElements`) kommen aus dem
     // Bericht, aufgelöst über die Zuordnung Selection-UUID → Slot-Pfad.
-    const capability = capabilities?.get(pathBySelectionId?.get(selection.id));
+    const capability = slots.slotOfSelection(selection);
     const profileElements = (capability?.infoElements ?? []).filter(element => element.kind === 'profile');
     const parentSelectionId = isSubUnit ? parentSelectionIdOf(roster, selection.id) : null;
-    const cardViolations = selectionViolationsForCard(violations, pathBySelectionId, selection, capabilities);
+    const cardViolations = selectionViolationsForCard(violations, slots, selection);
 
     return {
       capability,
@@ -186,7 +182,7 @@ export function useUnitCard({ selection, isSubUnit = false }) {
       violations: cardViolations,
       hasError: cardViolations.length > 0,
       subUnits: (selection.selections || []).filter(
-        subSel => isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSel)
+        subSel => slots.isIndependentSubUnitSlot(subSel)
       ),
       // Eine Untereinheit löscht sich über ihren Träger, eine Einheit über das
       // Roster-Kommando; kopieren kann nur eine Einheit.
@@ -198,7 +194,7 @@ export function useUnitCard({ selection, isSubUnit = false }) {
     };
   }, [
     selection, isSubUnit, roster, system, activeCatalogue,
-    capabilities, pathBySelectionId, violations,
+    slots, violations,
     removeUnit, copyUnit, subSelectionOperations,
   ]);
 }

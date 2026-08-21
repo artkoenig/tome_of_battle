@@ -27,6 +27,7 @@ vi.mock('../../roster', () => ({
 const capabilitiesFor = ({ isListRule }) => new Map([
   ['0/0', {
     anchorKind: 'occupied',
+    isIndependentSubUnit: false,
     defId: 'entry-1',
     targetDefId: null,
     name: 'Ritter',
@@ -39,6 +40,9 @@ const capabilitiesFor = ({ isListRule }) => new Map([
   }],
   ['0/1', {
     anchorKind: 'categoryAnchor',
+    isHidden: false,
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     defId: 'link-core',
     targetDefId: 'cat-core',
     current: 1,
@@ -130,6 +134,9 @@ describe('RosterCategorySection', () => {
     const capabilities = new Map([
       ['0/1', {
         anchorKind: 'categoryAnchor',
+        isHidden: false,
+        isIndependentSubUnit: false,
+        primaryCategoryId: null,
         defId: 'link-core',
         targetDefId: 'cat-core',
         current: 1,

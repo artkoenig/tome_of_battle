@@ -7,7 +7,6 @@ import {
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../roster';
 import { classifyStandaloneOption } from './selectionBehavior.js';
-import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**
@@ -60,8 +59,8 @@ export function hasExceededCostBudget(capability) {
  * ViewModel des Auswahl-Konfigurators (ADR-0038; ADR-0035/0036).
  *
  * Die Gruppen-/Optionsliste entsteht aus den **Slots des Evaluator-Berichts**
- * unterhalb des Slot-Pfads der Selection (`pathBySelectionId` →
- * `capabilities`): belegte Slots, Pflicht-Phantome, Gruppen-Anker und
+ * unterhalb des Slot-Pfads der Selection (`slots.pathOfSelection` →
+ * `slots.slotAt`): belegte Slots, Pflicht-Phantome, Gruppen-Anker und
  * Angebots-Anker erscheinen; versteckte Slots (`isHidden`) und die Slots
  * fremder Selektionen erscheinen nicht. Zustand, Grenzen, Kosten und Namen
  * werden je Slot abgelesen (ADR-0035: Verfügbarkeit ist eine Eigenschaft des
@@ -186,7 +185,7 @@ export const optionDescriptionOf = (capability) => {
 export function useSelectionConfigurator({ selection }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { subSelectionOperations } = useRosterCommands();
-  const { capabilities, pathBySelectionId } = report;
+  const { slots } = report;
   const activeCatalogueId = activeCatalogue?.id ?? null;
 
   return useMemo(() => {
@@ -208,7 +207,7 @@ export function useSelectionConfigurator({ selection }) {
 
       const optionCapabilityByDefId = new Map();
       const groupAnchorByGroupKey = new Map();
-      for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
+      for (const { path, capability } of slots.childSlotsOf(framePath)) {
         if (capability.anchorKind === 'groupAnchor') {
           const anchorInfo = { sortIndex: capability.sortIndex, name: capability.name };
           // Der Anker eines verlinkten Ziels traegt zwei Ids (Link und aufgeloestes
@@ -327,7 +326,7 @@ export function useSelectionConfigurator({ selection }) {
       // Sicherheitsnetz: eine Kapazitaet des Berichts ohne Gegenstueck in der
       // Katalogstruktur erscheint wenigstens, hinter allen strukturell
       // einsortierten Abschnitten, in Berichtsreihenfolge.
-      for (const { path, capability } of childSlotsOf(capabilities, framePath)) {
+      for (const { path, capability } of slots.childSlotsOf(framePath)) {
         if (capability.isHidden) continue;
         if (!OPTION_ANCHOR_KINDS.has(capability.anchorKind)) continue;
         if (seenDefIds.has(capability.defId)) continue;
@@ -491,7 +490,7 @@ export function useSelectionConfigurator({ selection }) {
       };
     }
 
-    const selectionPath = pathBySelectionId?.get(selection.id);
+    const selectionPath = slots.pathOfSelection(selection.id);
     const sections = selectionPath === undefined ? [] : buildSections(selection, selectionPath);
 
     /**
@@ -501,7 +500,7 @@ export function useSelectionConfigurator({ selection }) {
      */
     const sectionsForRow = (rowSelectionId) => {
       if (!rowSelectionId) return [];
-      const childPath = pathBySelectionId?.get(rowSelectionId);
+      const childPath = slots.pathOfSelection(rowSelectionId);
       if (childPath === undefined) return [];
       const childSelection = findSelectionById(selection, rowSelectionId);
       if (!childSelection) return [];
@@ -511,6 +510,6 @@ export function useSelectionConfigurator({ selection }) {
     return { sections, sectionsForRow, system, costTypeLabel };
   }, [
     selection, roster, system, activeCatalogueId,
-    capabilities, pathBySelectionId, subSelectionOperations,
+    slots, subSelectionOperations,
   ]);
 }

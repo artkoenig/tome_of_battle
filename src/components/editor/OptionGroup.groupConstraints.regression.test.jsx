@@ -143,9 +143,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // (Teufelskreis). Da ein Modifier das Max über 1 heben KANN, muss die
     // Gruppe dennoch als Checkboxen rendern.
     const emptyCapabilities = capabilityMapOf([
-      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 0, isMaxRaisable: true },
-      { defId: 'opt-fullplate', anchorKind: 'offerAnchor', name: 'Volle Rüstung' },
-      { defId: 'opt-shield', anchorKind: 'offerAnchor', name: 'Schild' },
+      { defId: 'grp-armour', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Rüstung', effectiveMax: 1, current: 0, isMaxRaisable: true },
+      { defId: 'opt-fullplate', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Volle Rüstung' },
+      { defId: 'opt-shield', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Schild' },
     ]);
     const { unmount } = renderGroup(armourGroup, emptyCapabilities);
     expandGroup('Rüstung');
@@ -157,9 +157,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // darf sie NICHT verdrängen (die alte Radio-Logik hätte genau das getan).
     counts = { 'opt-fullplate': 1 };
     const occupiedCapabilities = capabilityMapOf([
-      { defId: 'grp-armour', anchorKind: 'groupAnchor', name: 'Rüstung', effectiveMax: 1, current: 1, isBlocked: true, isMaxRaisable: true },
-      { defId: 'opt-fullplate', anchorKind: 'occupied', name: 'Volle Rüstung', current: 1 },
-      { defId: 'opt-shield', anchorKind: 'offerAnchor', name: 'Schild' },
+      { defId: 'grp-armour', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Rüstung', effectiveMax: 1, current: 1, isBlocked: true, isMaxRaisable: true },
+      { defId: 'opt-fullplate', anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Volle Rüstung', current: 1 },
+      { defId: 'opt-shield', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Schild' },
     ]);
     renderGroup(armourGroup, occupiedCapabilities); // bestehende Auswahl → klappt automatisch auf
     fireEvent.click(rowOf('Schild'));
@@ -180,9 +180,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-sword', 'Schwert'), option('opt-axe', 'Axt')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
-      { defId: 'opt-sword', anchorKind: 'offerAnchor', name: 'Schwert' },
-      { defId: 'opt-axe', anchorKind: 'offerAnchor', name: 'Axt' },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'opt-sword', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Schwert' },
+      { defId: 'opt-axe', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Axt' },
     ]);
 
     renderGroup(weaponsGroup, capabilities);
@@ -200,8 +200,8 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-barding', 'Rossharnisch')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-mount', anchorKind: 'groupAnchor', name: 'Reittier-Panzerung', effectiveMax: 0, current: 0, isBlocked: true, isSingleChoice: true },
-      { defId: 'opt-barding', anchorKind: 'offerAnchor', name: 'Rossharnisch' },
+      { defId: 'grp-mount', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Reittier-Panzerung', effectiveMax: 0, current: 0, isBlocked: true, isSingleChoice: true },
+      { defId: 'opt-barding', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Rossharnisch' },
     ]);
 
     renderGroup(mountGroup, capabilities);
@@ -222,9 +222,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-flail', 'Flegel'), option('opt-lance', 'Lanze')],
     };
     const emptyCapabilities = capabilityMapOf([
-      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
-      { defId: 'opt-flail', anchorKind: 'offerAnchor', name: 'Flegel' },
-      { defId: 'opt-lance', anchorKind: 'offerAnchor', name: 'Lanze' },
+      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Magische Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'opt-flail', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Flegel' },
+      { defId: 'opt-lance', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze' },
     ]);
 
     const { unmount } = renderGroup(magicWeapons, emptyCapabilities);
@@ -237,9 +237,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
     // Flegel ist gewählt; das Anwählen der Lanze verdrängt ihn (Ausschluss).
     counts = { 'opt-flail': 1 };
     const occupiedCapabilities = capabilityMapOf([
-      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', name: 'Magische Waffen', effectiveMax: 1, current: 1, isBlocked: true, isSingleChoice: true },
-      { defId: 'opt-flail', anchorKind: 'occupied', name: 'Flegel', current: 1 },
-      { defId: 'opt-lance', anchorKind: 'offerAnchor', name: 'Lanze' },
+      { defId: 'grp-magic-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Magische Waffen', effectiveMax: 1, current: 1, isBlocked: true, isSingleChoice: true },
+      { defId: 'opt-flail', anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Flegel', current: 1 },
+      { defId: 'opt-lance', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Lanze' },
     ]);
     renderGroup(magicWeapons, occupiedCapabilities); // bestehende Auswahl → offen
     fireEvent.click(rowOf('Lanze'));
@@ -261,9 +261,9 @@ describe('Issue 57 — konsolidierte Regression: bedingte Gruppen-Constraints (B
       items: [option('opt-scroll', 'Bannrolle'), option('opt-wand', 'Grauer Stab')],
     };
     const capabilities = capabilityMapOf([
-      { defId: 'grp-arcane', anchorKind: 'groupAnchor', name: 'Arkane Gegenstände', effectiveMax: 1, current: 0, isSingleChoice: true },
-      { defId: 'opt-scroll', anchorKind: 'offerAnchor', name: 'Bannrolle', isRepeatableWithinGroup: true },
-      { defId: 'opt-wand', anchorKind: 'offerAnchor', name: 'Grauer Stab' },
+      { defId: 'grp-arcane', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Arkane Gegenstände', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'opt-scroll', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Bannrolle', isRepeatableWithinGroup: true },
+      { defId: 'opt-wand', anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Grauer Stab' },
     ]);
 
     renderGroup(arcaneItems, capabilities);

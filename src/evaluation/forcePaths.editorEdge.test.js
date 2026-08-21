@@ -145,8 +145,8 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
 
     expect(result.diagnostics).toEqual([]);
-    expect(result.pathByForceId).toBeInstanceOf(Map);
-    expect([...result.pathByForceId.entries()]).toEqual([
+    expect(result.slots.pathByForceId).toBeInstanceOf(Map);
+    expect([...result.slots.pathByForceId.entries()]).toEqual([
       ['force-uuid-a', '0'],
       ['force-uuid-b', '1'],
       ['force-uuid-c', '2'],
@@ -159,9 +159,9 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
       force('force-uuid-b', SECOND_FORCE_DEF_ID),
     ]));
 
-    expect(result.capabilities.get(result.pathByForceId.get('force-uuid-a')))
+    expect(result.slots.capabilities.get(result.slots.pathByForceId.get('force-uuid-a')))
       .toMatchObject({ defId: FIRST_FORCE_DEF_ID, name: 'Main Force' });
-    expect(result.capabilities.get(result.pathByForceId.get('force-uuid-b')))
+    expect(result.slots.capabilities.get(result.slots.pathByForceId.get('force-uuid-b')))
       .toMatchObject({ defId: SECOND_FORCE_DEF_ID, name: 'Second Force' });
   });
 
@@ -172,9 +172,9 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
     expectUnresolved(result, ['force-vanished']);
 
-    const secondPath = result.pathByForceId.get('force-uuid-b');
+    const secondPath = result.slots.pathByForceId.get('force-uuid-b');
     expect(secondPath).toBe('0');
-    expect(result.capabilities.get(secondPath))
+    expect(result.slots.capabilities.get(secondPath))
       .toMatchObject({ defId: SECOND_FORCE_DEF_ID, name: 'Second Force' });
   });
 
@@ -185,7 +185,7 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
     expectUnresolved(result, ['force-vanished']);
 
-    expect(result.pathByForceId.has('force-uuid-gone')).toBe(false);
+    expect(result.slots.pathByForceId.has('force-uuid-gone')).toBe(false);
   });
 
   it('Rand: MEHRERE unaufloesbare Kontingente — die uebrigen ruecken zusammen auf', () => {
@@ -197,7 +197,7 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
     expectUnresolved(result, ['force-vanished-1', 'force-vanished-2']);
 
-    expect([...result.pathByForceId.entries()]).toEqual([
+    expect([...result.slots.pathByForceId.entries()]).toEqual([
       ['force-uuid-a', '0'],
       ['force-uuid-b', '1'],
     ]);
@@ -210,7 +210,7 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
     expectUnresolved(result, ['force-vanished']);
 
-    expect([...result.pathByForceId.entries()]).toEqual([['force-uuid-a', '0']]);
+    expect([...result.slots.pathByForceId.entries()]).toEqual([['force-uuid-a', '0']]);
   });
 
   it('Rand: JEDES Kontingent unaufloesbar — die Map ist leer', () => {
@@ -220,22 +220,22 @@ describe.each(EDGES)('pathByForceId — Rand: %s (Issue 0121, Task 18)', (_name,
     ]));
     expectUnresolved(result, ['force-vanished-1', 'force-vanished-2']);
 
-    expect(result.pathByForceId).toBeInstanceOf(Map);
-    expect(result.pathByForceId.size).toBe(0);
+    expect(result.slots.pathByForceId).toBeInstanceOf(Map);
+    expect(result.slots.pathByForceId.size).toBe(0);
   });
 
   it('Rand: Roster ohne Kontingente — leere Map, kein Throw', () => {
     const result = evaluateRoster(appRoster([]));
 
-    expect(result.pathByForceId).toBeInstanceOf(Map);
-    expect(result.pathByForceId.size).toBe(0);
+    expect(result.slots.pathByForceId).toBeInstanceOf(Map);
+    expect(result.slots.pathByForceId.size).toBe(0);
   });
 
   it('Rand: roster null (Leer-Ergebnis) — leere Map, kein Throw', () => {
     const result = evaluateAtEdge(appSystem(), null);
 
-    expect(result.pathByForceId).toBeInstanceOf(Map);
-    expect(result.pathByForceId.size).toBe(0);
+    expect(result.slots.pathByForceId).toBeInstanceOf(Map);
+    expect(result.slots.pathByForceId.size).toBe(0);
   });
 });
 
@@ -257,8 +257,8 @@ describe('Editor-Rand und Export-Rand liefern dieselbe Kontingent-Zuordnung (Iss
 
     // Erst der Gegenstand (sonst waeren zwei fehlende Zuordnungen „gleich"),
     // dann die Gleichheit.
-    expect(fromEditor.pathByForceId?.size).toBe(1);
-    expect(fromEditor.pathByForceId).toEqual(fromExport.pathByForceId);
+    expect(fromEditor.slots.pathByForceId?.size).toBe(1);
+    expect(fromEditor.slots.pathByForceId).toEqual(fromExport.slots.pathByForceId);
   });
 
   it('ohne Diagnose: identische pathByForceId (und nicht leer — der Vergleich hat Gegenstand)', () => {
@@ -268,7 +268,7 @@ describe('Editor-Rand und Export-Rand liefern dieselbe Kontingent-Zuordnung (Iss
     ]);
     const { fromEditor, fromExport } = bothEdges(buildRoster);
 
-    expect(fromEditor.pathByForceId.size).toBe(2);
-    expect(fromEditor.pathByForceId).toEqual(fromExport.pathByForceId);
+    expect(fromEditor.slots.pathByForceId.size).toBe(2);
+    expect(fromEditor.slots.pathByForceId).toEqual(fromExport.slots.pathByForceId);
   });
 });

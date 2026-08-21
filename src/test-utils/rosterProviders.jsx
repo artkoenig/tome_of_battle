@@ -5,6 +5,7 @@ import {
   RosterCommandsProvider,
   RosterReportProvider,
 } from '../viewmodels/rosterContexts';
+import { SlotIndex } from '../evaluation/slotIndex';
 
 /**
  * Test-Wrapper für die zwei Roster-Kontexte (ADR-0038, Issue 0162).
@@ -15,18 +16,26 @@ import {
  * um die es ihm geht.
  */
 
-/** Ein Bericht in der Form, die der Editor erwartet — durchweg leer. */
+/**
+ * Ein Bericht in der Form, die der Editor erwartet — durchweg leer.
+ *
+ * Die **eine** Stelle, an der eine handgebaute Slot-Map zum Bericht wird: die
+ * drei Karten `capabilities`, `pathBySelectionId` und `pathByForceId` darf ein
+ * Test weiterhin einzeln angeben, gebündelt werden sie hier über
+ * `SlotIndex.fromMaps` (Issue 0170). Damit prüft dieselbe Naht jedes Fixture:
+ * ein Slot ohne die Anzeige-Felder fällt hier auf, nicht drei Schichten später
+ * als stilles `false`.
+ */
 export function createEmptyRosterReport(overrides = {}) {
+  const { capabilities, pathBySelectionId, pathByForceId, ...rest } = overrides;
   return {
     violations: [],
-    capabilities: new Map(),
+    slots: SlotIndex.fromMaps({ capabilities, pathBySelectionId, pathByForceId }),
     description: null,
     costTotals: {},
-    pathBySelectionId: new Map(),
-    pathByForceId: new Map(),
     diagnostics: [],
     unresolvedSelections: [],
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -56,10 +65,13 @@ export function createNoopRosterCommands(overrides = {}) {
  * selbst setzt.
  * @param {{ report?: Object, roster?: Object|null, commands?: Object, children: React.ReactNode }} props
  */
+/** Ein Bericht, der noch keinen Slot-Index traegt, geht durch den Fixture-Bau. */
+const reportOf = (report) => (report?.slots ? report : createEmptyRosterReport(report ?? {}));
+
 export function RosterProviders({ report, roster = null, system = null, activeCatalogue = null, commands, children }) {
   return (
     <RosterCommandsProvider commands={commands ?? createNoopRosterCommands()}>
-      <RosterReportProvider report={report ?? createEmptyRosterReport()} roster={roster} system={system} activeCatalogue={activeCatalogue}>
+      <RosterReportProvider report={reportOf(report)} roster={roster} system={system} activeCatalogue={activeCatalogue}>
         {children}
       </RosterReportProvider>
     </RosterCommandsProvider>

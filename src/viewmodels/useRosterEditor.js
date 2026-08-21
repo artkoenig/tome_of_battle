@@ -92,7 +92,7 @@ export function useRosterEditor({ system, initialRoster, onPlay, onExportRoster,
       // nie aus dem Schleifenindex (Issue 0164, Task 21).
       forces: roster.forces.map(force => ({
         force,
-        forcePath: report.pathByForceId?.get(force.id) ?? null,
+        forcePath: report.slots.pathOfForce(force.id),
       })),
     };
   }, [roster, system, report]);

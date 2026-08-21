@@ -25,8 +25,8 @@
  *
  * Exporte:
  * - `evaluateAppRoster(system, roster)` — die App-Auswertung als reine
- *   Funktion: `{ violations, capabilities, description, costTotals,
- *   pathBySelectionId, pathByForceId, diagnostics }`. Leer-/Fehlfaelle (system
+ *   Funktion: `{ violations, slots, description, costTotals, diagnostics }`.
+ *   Leer-/Fehlfaelle (system
  *   null/undefined/ohne vollstaendiges `rawXmls`, roster null/undefined)
  *   ergeben ohne Throw das referenzstabile Leer-Ergebnis.
  * - `describeSystem(system)` — die Datensatz-Beschreibung ohne Roster
@@ -36,18 +36,20 @@
 
 import { prepareDataset, evaluate, describeDataset } from '../evaluator/evaluator.js';
 import { toEvaluatorRoster, slotPathsOf } from './rosterAdapter.js';
+import { SlotIndex, EMPTY_SLOT_INDEX } from './slotIndex.js';
 
 /**
  * Das Ergebnis der App-Auswertung — die Form, die die ganze Oberflaeche liest.
  *
  * @typedef {Object} AppEvaluation
  * @property {ReadonlyArray<object>} violations  Verletzungen aus dem Bericht der Fassade.
- * @property {Map<string, object>} capabilities  Faehigkeitsdatensaetze je Slot-Pfad.
+ * @property {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts
+ *   als **ein** Wertobjekt (Issue 0170): die Faehigkeitsdatensaetze je Slot-Pfad
+ *   und die beiden Pfadzuordnungen, die in sie hineinfuehren, samt der reinen
+ *   Lookups darauf. Die drei Strukturen reist niemand mehr einzeln.
  * @property {{ costTypes: object[], catalogues: object[], creatableForces: object[], diagnostics: object[] } | null} description
  *   Beschreibung des Datensatzes (`describeDataset`); `null` im Leerfall.
  * @property {Readonly<Record<string, number>>} costTotals  Kostensumme je deklarierter Kostenart.
- * @property {Map<string, string>} pathBySelectionId  App-Selection-UUID → Slot-Pfad.
- * @property {Map<string, string>} pathByForceId  App-Force-UUID → Slot-Pfad.
  * @property {ReadonlyArray<object>} diagnostics  Datensatz-Befunde des Berichts
  *   (z. B. `unresolvedDefinition`), aus denen die Oberflaeche die Meldung fuer
  *   nicht mehr auffindbare Auswahlen ableitet.
@@ -87,11 +89,9 @@ const reportsBySystemAndRoster = new WeakMap();
  */
 const EMPTY_RESULT = Object.freeze({
   violations: Object.freeze([]),
-  capabilities: new Map(),
+  slots: EMPTY_SLOT_INDEX,
   description: null,
   costTotals: Object.freeze({}),
-  pathBySelectionId: new Map(),
-  pathByForceId: new Map(),
   diagnostics: Object.freeze([]),
 });
 
@@ -146,11 +146,9 @@ export function evaluateAppRoster(system, roster) {
   const paths = correctedPathsOf(roster, { pathBySelectionId, pathByForceId }, report.diagnostics);
   const evaluation = {
     violations: report.violations,
-    capabilities: report.capabilities,
+    slots: SlotIndex.fromReport(report, paths),
     description: descriptionOf(prepared),
     costTotals: report.costTotals,
-    pathBySelectionId: paths.pathBySelectionId,
-    pathByForceId: paths.pathByForceId,
     diagnostics: report.diagnostics,
   };
   byRoster.set(roster, evaluation);

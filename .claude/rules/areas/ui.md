@@ -101,9 +101,10 @@ paths:
   slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
   `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`, plus
   `isHidden`, `primaryCategoryId` and the info projection `infoElements`. Read them
-  through `src/evaluation/slotLookups.js` (`slotOfSelection`, `isIndependentSubUnitSlot`,
-  `childSlotsOf`, `findCategoryAnchorSlot`, `hasUnitSlotsInCategory`), or through the derivations
-  next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`).
+  through `report.slots`, the `SlotIndex` of `src/evaluation/slotIndex.js` (`slotOfSelection`,
+  `isIndependentSubUnitSlot`, `childSlotsOf`, `findCategoryAnchorSlot`, `hasUnitSlotsInCategory`),
+  or through the derivations next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`), which
+  take that index rather than a bare `capabilities` map.
   `resolveEntry`/`findEntryInSystem` stay only for detail texts and
   for the entry the **write** path hands to `addUnit`.
 - The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
@@ -115,14 +116,17 @@ paths:
   `categoryAnchor`'s `isHidden` (hidden plus nothing selected → no section) and whether any
   `occupied`/`offerAnchor`/`mandatoryPhantom` slot names the category as its `primaryCategoryId`
   (none and nothing selected → a rule keyword, no section). A hand-built `capabilities` fixture
-  that omits either makes the whole section vanish.
+  that omits either used to make the whole section vanish; since Issue 0170
+  `SlotIndex.fromMaps` rejects such a slot outright.
 - Profiles and rule texts of a card, its chips and the play view all come from one place —
   `capability.infoElements` (`kind: 'profile' | 'rule'`) — so the chip filter ("this upgrade is
   already in a table") matches the table by profile **id**. A component that resolves its slot
-  from `capabilities` + `pathBySelectionId` also accepts a directly handed `capability`; pass it
+  from the report's `slots` index also accepts a directly handed `capability`; pass it
   down to `UnitUpgradesChips`/`UnitRulesChips`, or the chips find no table and stop filtering.
-- A component test that hand-builds a `capabilities` Map must carry those fields too — a missing
-  one reads as `false` and silently changes what renders (a sub-unit loses its card, a checklist
-  becomes a unit list). Give every slot of the fixture the fields its screen reads.
+- A component test that hand-builds a `capabilities` Map must carry `isHidden`,
+  `isIndependentSubUnit` and `primaryCategoryId` on every slot — `SlotIndex.fromMaps` (through
+  `createEmptyRosterReport`/the harnesses) throws otherwise, instead of letting a missing field read
+  as `false` and silently change what renders (a sub-unit loses its card, a checklist becomes a
+  unit list). Give every slot of the fixture the fields its screen reads.
 - The repo language is mixed by intent: docs, issues and commit messages in German, code and
   identifiers in English.

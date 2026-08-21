@@ -13,7 +13,7 @@ import { withChangedOptionCount } from '../../roster/subSelectionEditing.js';
 import { getUnitOptions } from '../../roster/optionsCollector.js';
 import { prepareDataset, evaluate } from '../../evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../evaluation/rosterAdapter.js';
-import { findChildSlot } from '../../evaluation/slotLookups.js';
+import { SlotIndex } from '../../evaluation/slotIndex.js';
 
 /**
  * Issue 0131, Kriterium 3 — „Eine verschachtelte Mitgliedsgruppe verhaelt sich
@@ -154,7 +154,7 @@ function buildRoster(unitId) {
   const offer = evaluate(prepared, adapted.evalRoster).capabilities;
   const unit = createSelectionFromDef({
     system, resolveEntry, catalogueId, entry, categoryId: 'characters',
-    mandatoryMembers: findChildSlot(offer, adapted.pathByForceId.get('force-1'), entry.id)?.raiseMembers ?? [],
+    mandatoryMembers: SlotIndex.fromMaps({ capabilities: offer }).findChildSlot(adapted.pathByForceId.get('force-1'), entry.id)?.raiseMembers ?? [],
   });
   return {
     catalogueId,

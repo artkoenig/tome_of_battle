@@ -97,9 +97,9 @@ export function exportRosterToXml(roster, system) {
   const systemName = system?.name || 'Unbekanntes System';
   const systemId = system?.id || roster.systemId;
 
-  const { costTotals, capabilities, pathBySelectionId } = evaluateAppRoster(system, roster);
+  const { costTotals, slots } = evaluateAppRoster(system, roster);
   // Shared report context so per-selection names/costs match the total block exactly.
-  const ctx = { system, capabilities, pathBySelectionId };
+  const ctx = { system, slots };
 
   let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
   xml += `<roster id="${escapeXml(roster.id)}" name="${escapeXml(roster.name)}" battleScribeVersion="2.03" gameSystemId="${escapeXml(systemId)}" gameSystemRevision="1" gameSystemName="${escapeXml(systemName)}" xmlns="http://www.battlescribe.net/schema/rosterSchema">\n`;
@@ -159,7 +159,7 @@ export function exportRosterToXml(roster, system) {
  * Helper to recursively serialize roster selections.
  *
  * Name und Kosten kommen aus dem Fähigkeitsdatensatz des Slots der Selektion
- * (Evaluator-Bericht, aufgelöst über `pathBySelectionId`): der Name ist der
+ * (Evaluator-Bericht, aufgelöst über den Slot-Index): der Name ist der
  * **effektive** Slot-Name, die <cost>-Zeile der eigene, modifikator-bewusste
  * Beitrag der Selektion (`capability.costs` je Instanz × absolute `number`) —
  * die flache Summe aller Selektionskosten deckt sich mit dem Summenblock des
@@ -167,10 +167,10 @@ export function exportRosterToXml(roster, system) {
  * aus dem Katalog abgeleitet (Struktur, bis Task 8 Solver-basiert).
  */
 function serializeSelection(sel, indent, ctx, currentCatalogueId) {
-  const { system, capabilities, pathBySelectionId } = ctx;
+  const { system, slots } = ctx;
   const ind = ' '.repeat(indent);
 
-  const capability = capabilities.get(pathBySelectionId.get(sel.id));
+  const capability = slots.slotOfSelection(sel);
   const entryId = sel.selectionEntryId || '';
   const entryLinkId = sel.entryLinkId || '';
   const count = sel.number || 1;

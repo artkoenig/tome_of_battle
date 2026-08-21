@@ -56,6 +56,8 @@ function makeRoster() {
 function categoryAnchor(path, name, overrides = {}) {
   return [path, {
     anchorKind: 'categoryAnchor',
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     defId: `cl-${name.toLowerCase()}`,
     targetDefId: `cat-${name.toLowerCase()}`,
     name,
@@ -75,12 +77,12 @@ function categoryAnchor(path, name, overrides = {}) {
  */
 function twoForceCapabilities() {
   return new Map([
-    ['0', { anchorKind: 'occupied', defId: 'fe-main', name: 'Main Force' }],
+    ['0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'fe-main', name: 'Main Force' }],
     categoryAnchor('0/0', 'Core', { current: 2, effectiveMin: 2, effectiveMax: 3 }),
-    ['0/1', { anchorKind: 'offerAnchor', defId: 'entry-alpha', name: 'Alpha' }],
-    ['1', { anchorKind: 'occupied', defId: 'fe-second', name: 'Second Force' }],
+    ['0/1', { anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'entry-alpha', name: 'Alpha' }],
+    ['1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'fe-second', name: 'Second Force' }],
     categoryAnchor('1/0', 'Rare', { current: 1, effectiveMax: 4 }),
-    ['1/1', { anchorKind: 'offerAnchor', defId: 'entry-alpha', name: 'Alpha' }],
+    ['1/1', { anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'entry-alpha', name: 'Alpha' }],
   ]);
 }
 
@@ -156,9 +158,9 @@ describe('RosterSidebar: die Anforderungen kommen vom uebergebenen Kontingent-Pf
 
   it('Rand: Praefix-Verwechslung — "1" darf nicht die Anker von "10" einsammeln', () => {
     const capabilities = new Map([
-      ['1', { anchorKind: 'occupied', defId: 'fe-second', name: 'Second Force' }],
+      ['1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'fe-second', name: 'Second Force' }],
       categoryAnchor('1/0', 'Rare'),
-      ['10', { anchorKind: 'occupied', defId: 'fe-eleventh', name: 'Eleventh Force' }],
+      ['10', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, defId: 'fe-eleventh', name: 'Eleventh Force' }],
       categoryAnchor('10/0', 'Fremd'),
     ]);
 

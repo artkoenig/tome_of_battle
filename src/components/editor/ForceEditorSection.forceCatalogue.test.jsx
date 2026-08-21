@@ -71,6 +71,7 @@ const roster = { catalogueId: PRIMARY_CATALOGUE_ID, costLimitType: 'cost-pts' };
 const capabilities = new Map([
   ['0/0', {
     anchorKind: 'offerAnchor',
+    isIndependentSubUnit: false,
     defId: 'entry-own',
     targetDefId: null,
     name: 'Irgendwas',

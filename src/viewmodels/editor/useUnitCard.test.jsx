@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlotIndex } from '../../evaluation/slotIndex';
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
@@ -31,6 +32,9 @@ const ROSTER = {
 const capabilities = () => new Map([
   ['0/0', {
     anchorKind: 'occupied',
+    isHidden: false,
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     name: 'Ritter der Herrin',
     totalCosts: { pts: 120 },
     infoElements: [
@@ -38,8 +42,8 @@ const capabilities = () => new Map([
       { kind: 'rule', id: 'r1', name: 'Segen', text: 'Rettungswurf 5+' },
     ],
   }],
-  ['0/0/0', { anchorKind: 'occupied', name: 'Streitross', isIndependentSubUnit: false }],
-  ['0/0/1', { anchorKind: 'occupied', name: 'Knappe', isIndependentSubUnit: true }],
+  ['0/0/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, name: 'Streitross', isIndependentSubUnit: false }],
+  ['0/0/1', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, name: 'Knappe', isIndependentSubUnit: true }],
 ]);
 
 const pathBySelectionId = () => new Map([['sel-1', '0/0'], ['sub-1', '0/0/0'], ['sub-2', '0/0/1']]);
@@ -127,7 +131,7 @@ describe('useUnitCard', () => {
 
 describe('Zuordnung Verletzung → Karte', () => {
   it('sammelt den Teilbaum ohne die Teilbäume der eigenständigen Untereinheiten', () => {
-    const ids = collectCardSelectionIds(KNIGHT, capabilities(), pathBySelectionId());
+    const ids = collectCardSelectionIds(KNIGHT, SlotIndex.fromMaps({ capabilities: capabilities(), pathBySelectionId: pathBySelectionId() }));
 
     expect([...ids].sort()).toEqual(['sel-1', 'sub-1']);
   });
@@ -136,7 +140,7 @@ describe('Zuordnung Verletzung → Karte', () => {
     const rosterLevel = { origin: 'authorMessage', anchor: { path: null, anchorKind: 'roster' } };
     const malformed = { origin: 'authorMessage' };
 
-    expect(selectionViolationsForCard([rosterLevel, malformed], pathBySelectionId(), KNIGHT, capabilities())).toEqual([]);
+    expect(selectionViolationsForCard([rosterLevel, malformed], SlotIndex.fromMaps({ capabilities: capabilities(), pathBySelectionId: pathBySelectionId() }), KNIGHT)).toEqual([]);
   });
 
   it('findet den Träger einer Unter-Auswahl im Roster', () => {

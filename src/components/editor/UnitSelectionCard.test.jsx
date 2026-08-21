@@ -71,6 +71,9 @@ vi.mock('../../roster', async () => ({
 const capabilitiesWith = ({ profiles = [], rules = [], totalCosts = { pts: 120 } } = {}) =>
   new Map([['0/0', {
     anchorKind: 'occupied',
+    isHidden: false,
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     totalCosts,
     infoElements: [
       ...profiles.map(profile => ({ kind: 'profile', ...profile })),

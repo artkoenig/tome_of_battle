@@ -20,6 +20,8 @@ const SYSTEM = { categoryEntries: [{ id: CATEGORY, name: 'Kern' }] };
 
 const anchor = (over = {}) => ({
   anchorKind: 'categoryAnchor',
+  isIndependentSubUnit: false,
+  primaryCategoryId: null,
   defId: CATEGORY,
   targetDefId: null,
   name: 'Kern',
@@ -32,6 +34,7 @@ const anchor = (over = {}) => ({
 
 const unitSlot = (over = {}) => ({
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   defId: 'e-knight',
   name: 'Ritter',
   isHidden: false,

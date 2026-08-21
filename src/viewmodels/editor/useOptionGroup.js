@@ -4,7 +4,6 @@ import {
   resolveCostLimitTypeId, resolveCostLimitLabel,
 } from '../../roster';
 import { classifyGroupItem } from './selectionBehavior.js';
-import { findChildSlot } from '../../evaluation/slotLookups';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 import {
   optionDescriptionOf,
@@ -37,7 +36,7 @@ import {
 export function useOptionGroup({ group, selection, selectionPath = null, hasSelectedDescendant = false }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { subSelectionOperations } = useRosterCommands();
-  const { capabilities } = report;
+  const { slots } = report;
   const activeCatalogueId = activeCatalogue?.id ?? null;
 
   const model = useMemo(() => {
@@ -54,14 +53,14 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
     // Ein Item ohne Slot oder mit verstecktem Slot erscheint nicht (ADR-0035).
     const found = (group.items || [])
       .map(item => {
-        const capability = findChildSlot(capabilities, selectionPath, item.option.id);
+        const capability = slots.findChildSlot(selectionPath, item.option.id);
         if (!capability || capability.isHidden) return null;
         return { item, capability, count: countOf(item.option, capability) };
       })
       .filter(Boolean);
 
     // Gruppen-Grenze **und** Wahlverhalten aus dem Gruppen-Anker des Berichts.
-    const groupCapability = findChildSlot(capabilities, selectionPath, group.id);
+    const groupCapability = slots.findChildSlot(selectionPath, group.id);
     const effectiveGroupMax = groupCapability?.effectiveMax ?? Infinity;
     const isGroupMaxRaisable = groupCapability?.isMaxRaisable === true;
     const groupSingleChoice = groupCapability?.isSingleChoice === true;
@@ -228,7 +227,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
     };
   }, [
     group, selection, selectionPath, roster, system, activeCatalogueId,
-    capabilities, subSelectionOperations,
+    slots, subSelectionOperations,
   ]);
 
   // Start expanded when the group already holds a selection, so choices made

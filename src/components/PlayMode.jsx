@@ -95,8 +95,7 @@ export default function PlayMode({ system, roster: initialRoster, onBack, onRepo
                     system={system}
                     roster={play.roster}
                     costTypes={play.costTypes}
-                    capabilities={play.report.capabilities}
-                    pathBySelectionId={play.report.pathBySelectionId}
+                    slots={play.report.slots}
                     getUnitCurrentWounds={play.getUnitCurrentWounds}
                     handleAdjustWound={play.adjustWound}
                     handleMouseEnter={play.showTooltip}

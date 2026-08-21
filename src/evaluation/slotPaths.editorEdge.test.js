@@ -176,8 +176,8 @@ const EDGES = [
  * wird oder der Pfad ins Leere zeigt.
  */
 function capabilityFor(result, selectionId) {
-  const path = result.pathBySelectionId.get(selectionId);
-  return path === undefined ? undefined : result.capabilities.get(path);
+  const path = result.slots.pathBySelectionId.get(selectionId);
+  return path === undefined ? undefined : result.slots.capabilities.get(path);
 }
 
 /** Vorbedingung jedes Falls: die Engine meldet die Diagnose wirklich. */
@@ -227,7 +227,7 @@ describe.each(EDGES)(
       const result = evaluateRoster(rosterWithLostFirstSelection());
       expectUnresolved(result, ['entry-vanished']);
 
-      expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
     });
 
     it('jede aufloesbare Auswahl hinter der verlorenen zeigt auf IHREN Datensatz — Name, Kosten, Verfuegbarkeit', () => {
@@ -248,8 +248,8 @@ describe.each(EDGES)(
       ]));
       expectUnresolved(result, ['entry-vanished']);
 
-      expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
-      expect(result.pathBySelectionId.has('sel-gone-child')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone-child')).toBe(false);
       expect(capabilityFor(result, 'sel-alpha')).toMatchObject(ALPHA_FACTS);
       expect(capabilityFor(result, 'sel-beta')).toMatchObject(BETA_FACTS);
     });
@@ -267,7 +267,7 @@ describe.each(EDGES)(
       ]));
       expectUnresolved(result, ['opt-vanished']);
 
-      expect(result.pathBySelectionId.has('sel-opt-gone')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-opt-gone')).toBe(false);
       expect(capabilityFor(result, 'sel-sword')).toMatchObject({
         defId: SWORD_ID,
         name: 'Sword',
@@ -290,7 +290,7 @@ describe.each(EDGES)(
       ]));
       expectUnresolved(result, ['entry-vanished']);
 
-      expect(result.pathBySelectionId.has('sel-gone')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone')).toBe(false);
       expect(capabilityFor(result, 'sel-alpha')).toMatchObject(ALPHA_FACTS);
     });
 
@@ -305,8 +305,8 @@ describe.each(EDGES)(
       ]));
       expectUnresolved(result, ['entry-vanished-1', 'entry-vanished-2']);
 
-      expect(result.pathBySelectionId.has('sel-gone-1')).toBe(false);
-      expect(result.pathBySelectionId.has('sel-gone-2')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone-1')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-gone-2')).toBe(false);
       expect(capabilityFor(result, 'sel-alpha')).toMatchObject(ALPHA_FACTS);
       expect(capabilityFor(result, 'sel-beta')).toMatchObject(BETA_FACTS);
     });
@@ -318,7 +318,7 @@ describe.each(EDGES)(
       ]));
       expectUnresolved(result, ['force-vanished']);
 
-      expect(result.pathBySelectionId.has('sel-in-gone-force')).toBe(false);
+      expect(result.slots.pathBySelectionId.has('sel-in-gone-force')).toBe(false);
       expect(capabilityFor(result, 'sel-beta')).toMatchObject(BETA_FACTS);
     });
 
@@ -340,7 +340,7 @@ describe.each(EDGES)(
         'sel-sword': SWORD_ID,
         'sel-beta': BETA_ID,
       };
-      expect([...result.pathBySelectionId.keys()].sort())
+      expect([...result.slots.pathBySelectionId.keys()].sort())
         .toEqual(Object.keys(expectedDefIdBySelectionId).sort());
       for (const [selectionId, defId] of Object.entries(expectedDefIdBySelectionId)) {
         expect(capabilityFor(result, selectionId), selectionId)
@@ -396,7 +396,7 @@ describe('Editor-Rand und Export-Rand liefern dieselbe Zuordnung (Issue 0121, Ta
     const { fromEditor, fromExport } = bothEdges(buildRoster);
     expectUnresolved(fromEditor, ['entry-vanished']);
 
-    expect(fromEditor.pathBySelectionId).toEqual(fromExport.pathBySelectionId);
+    expect(fromEditor.slots.pathBySelectionId).toEqual(fromExport.slots.pathBySelectionId);
   });
 
   it('mit unaufloesbarem Kontingent: identische pathBySelectionId', () => {
@@ -407,7 +407,7 @@ describe('Editor-Rand und Export-Rand liefern dieselbe Zuordnung (Issue 0121, Ta
     const { fromEditor, fromExport } = bothEdges(buildRoster);
     expectUnresolved(fromEditor, ['force-vanished']);
 
-    expect(fromEditor.pathBySelectionId).toEqual(fromExport.pathBySelectionId);
+    expect(fromEditor.slots.pathBySelectionId).toEqual(fromExport.slots.pathBySelectionId);
   });
 
   it('ohne Diagnose: identische pathBySelectionId (und nicht leer — der Vergleich hat Gegenstand)', () => {
@@ -419,7 +419,7 @@ describe('Editor-Rand und Export-Rand liefern dieselbe Zuordnung (Issue 0121, Ta
     ]);
     const { fromEditor, fromExport } = bothEdges(buildRoster);
 
-    expect(fromEditor.pathBySelectionId.size).toBeGreaterThan(0);
-    expect(fromEditor.pathBySelectionId).toEqual(fromExport.pathBySelectionId);
+    expect(fromEditor.slots.pathBySelectionId.size).toBeGreaterThan(0);
+    expect(fromEditor.slots.pathBySelectionId).toEqual(fromExport.slots.pathBySelectionId);
   });
 });

@@ -24,14 +24,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import {
-  resolveEntry, findEntryInSystem, syncRosterSelectionsWithSystem,
+  resolveEntry, syncRosterSelectionsWithSystem,
   childSelectionsOf, findSelectionInRoster, findForceContainingSelection,
   mapSelectionTree, replaceSelectionById,
   createSelectionFromDef as buildSelectionFromDef,
   withAddedInstance, withoutInstance, withChangedOptionCount
 } from '../roster';
 import { findMissingMandatoryListRules } from '../evaluation/mandatoryListRules';
-import { findChildSlot, findDescendantSlot } from '../evaluation/slotLookups';
+import { findCapabilityEntry } from './capabilityEntries';
 import { useRosterReportModel } from '../evaluation/rosterReport';
 import { useUndoableState } from '../hooks/useUndoableState';
 import {
@@ -94,7 +94,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
   // liest `costTotals` bzw. die Fähigkeitsdatensätze.
   const report = useRosterReportModel(system, roster);
-  const { capabilities, pathBySelectionId, pathByForceId } = report;
+  const { slots } = report;
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt
   // eine (schnell veraltende) Objektreferenz zu halten.
@@ -199,11 +199,11 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
 
   /** Die Pflicht-Mitglieder, die der Bericht dem Angebot `defId` unter `forceId` gibt. */
   const raiseMembersInForce = (forceId, defId) =>
-    findChildSlot(capabilities, pathByForceId?.get(forceId), defId)?.raiseMembers ?? [];
+    slots.findChildSlot(slots.pathOfForce(forceId), defId)?.raiseMembers ?? [];
 
   /** Dieselbe Frage unterhalb einer Einheit: eine Option hängt ggf. unter einem Gruppen-Anker. */
   const raiseMembersUnderSelection = (selectionId, defId) =>
-    findDescendantSlot(capabilities, pathBySelectionId?.get(selectionId), defId)?.raiseMembers ?? [];
+    slots.findDescendantSlot(slots.pathOfSelection(selectionId), defId)?.raiseMembers ?? [];
 
   // Automatisches Setzen eindeutiger Pflicht-Listenregeln (Issue 0138, §9.9):
   // gated auf `isFreshRoster`, damit ein bereits bestehendes Roster nie
@@ -233,8 +233,8 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
       const carriedEntryIds = new Set(
         childSelectionsOf(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
       );
-      const missing = findMissingMandatoryListRules(capabilities, pathByForceId?.get(force.id), {
-        entryOf: (capability) => findEntryInSystem(system, capability.defId, catalogueId),
+      const missing = findMissingMandatoryListRules(slots, slots.pathOfForce(force.id), {
+        entryOf: (capability) => findCapabilityEntry(system, capability, catalogueId),
         skipResolvedIds: claimedResolvedIds,
       }).filter(({ entry, defId }) => entry && !carriedEntryIds.has(defId));
       if (missing.length === 0) return force;
@@ -253,7 +253,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
     if (anyAdded) {
       replaceRoster({ ...roster, forces: updatedForces });
     }
-  }, [roster, system, isFreshRoster, replaceRoster, capabilities, pathByForceId]);
+  }, [roster, system, isFreshRoster, replaceRoster, slots]);
 
   /**
    * Hebt `entry` in genau ein Kontingent aus.

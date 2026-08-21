@@ -17,6 +17,8 @@ vi.mock('../../roster', () => ({
 const ARMY_WIDE_CAPABILITIES = new Map([
   ['0/0', {
     anchorKind: 'occupied',
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     defId: 'entry-army',
     targetDefId: null,
     name: 'Blutlinie',

@@ -5,6 +5,7 @@ import SelectionConfigurator from '../components/editor/SelectionConfigurator';
 import OptionGroup from '../components/editor/OptionGroup';
 import { UnitUpgradesChips, UnitRulesChips } from '../components/editor/UnitChips';
 import PlayUnitDetails from '../components/play/PlayUnitDetails';
+import { SlotIndex } from '../evaluation/slotIndex';
 import { RosterProviders, createEmptyRosterReport, createNoopRosterCommands } from './rosterProviders';
 
 /**
@@ -163,8 +164,7 @@ export function PlayUnitDetailsHarness({ capability, capabilities, pathBySelecti
         system={system}
         roster={roster}
         capability={capability}
-        capabilities={slots.capabilities}
-        pathBySelectionId={slots.pathBySelectionId}
+        slots={SlotIndex.fromMaps(slots)}
       />
     ),
   });

@@ -19,7 +19,9 @@ const SELECTION_PATH = '0/0';
 const ROSTER = { costLimitType: 'pts', catalogueId: 'cat-main', forces: [] };
 
 const slot = (overrides) => ({
-  anchorKind: 'offerAnchor', defId: null, targetDefId: null,
+  anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
+  primaryCategoryId: null, defId: null, targetDefId: null,
   costs: {}, effectiveMin: null, effectiveMax: null, current: 0,
   isMandatoryUnmet: false, isBlocked: false, isHidden: false,
   isSingleChoice: false, isMaxRaisable: false, isRepeatableWithinGroup: false,
@@ -58,7 +60,7 @@ const WEAPONS = {
 describe('useOptionGroup', () => {
   it('bildet je Struktur-Item die Zeile seines Slots und lässt versteckte weg', () => {
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 2, current: 0 },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 2, current: 0 },
       { defId: 'opt-sword', name: 'Schwert', costs: { pts: 3 } },
       { defId: 'opt-axe', name: 'Axt', isHidden: true },
     ]);
@@ -71,12 +73,12 @@ describe('useOptionGroup', () => {
 
   it('zeigt den Live-Zähler einer Mehrfachauswahl und „Max: N" bei echter Einzelwahl', () => {
     const many = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 2, current: 1 },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 2, current: 1 },
       { defId: 'opt-sword', name: 'Schwert' },
       { defId: 'opt-axe', name: 'Axt' },
     ]);
     const single = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
       { defId: 'opt-sword', name: 'Schwert' },
       { defId: 'opt-axe', name: 'Axt' },
     ]);
@@ -87,12 +89,12 @@ describe('useOptionGroup', () => {
 
   it('macht aus einer echten Einzelwahl Radios und aus einer max-hebbaren Gruppe Kästchen', () => {
     const single = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 0, isSingleChoice: true },
       { defId: 'opt-sword', name: 'Schwert', effectiveMax: 1 },
       { defId: 'opt-axe', name: 'Axt', effectiveMax: 1 },
     ]);
     const raisable = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 0, isMaxRaisable: true },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 0, isMaxRaisable: true },
       { defId: 'opt-sword', name: 'Schwert', effectiveMax: 1 },
       { defId: 'opt-axe', name: 'Axt', effectiveMax: 1 },
     ]);
@@ -103,7 +105,7 @@ describe('useOptionGroup', () => {
 
   it('meldet den Gruppen-Fehler des Ankers', () => {
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 2 },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 2 },
       { defId: 'opt-sword', name: 'Schwert' },
       { defId: 'opt-axe', name: 'Axt' },
     ]);
@@ -113,8 +115,8 @@ describe('useOptionGroup', () => {
 
   it('startet aufgeklappt, sobald die Gruppe oder eine gehaltene Gruppe etwas trägt', () => {
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 2, current: 1 },
-      { defId: 'opt-sword', anchorKind: 'occupied', name: 'Schwert' },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 2, current: 1 },
+      { defId: 'opt-sword', anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Schwert' },
       { defId: 'opt-axe', name: 'Axt' },
     ]);
 
@@ -127,7 +129,7 @@ describe('useOptionGroup', () => {
 
   it('klappt auf Verlangen um', () => {
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen' },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen' },
       { defId: 'opt-sword', name: 'Schwert' },
       { defId: 'opt-axe', name: 'Axt' },
     ]);
@@ -142,8 +144,8 @@ describe('useOptionGroup', () => {
       addInstance: vi.fn(), removeInstance: vi.fn(), increaseCount: vi.fn(), decreaseCount: vi.fn(),
     };
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen', effectiveMax: 1, current: 1, isSingleChoice: true },
-      { defId: 'opt-sword', anchorKind: 'occupied', name: 'Schwert', effectiveMax: 1 },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 1, current: 1, isSingleChoice: true },
+      { defId: 'opt-sword', anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Schwert', effectiveMax: 1 },
       { defId: 'opt-axe', name: 'Axt', effectiveMax: 1 },
     ]);
 
@@ -163,7 +165,7 @@ describe('useOptionGroup', () => {
 
   it('nimmt die Beschreibung einer Zeile aus der Info-Projektion ihres Slots', () => {
     const capabilities = capabilitiesOf([
-      { defId: 'grp-weapons', anchorKind: 'groupAnchor', name: 'Waffen' },
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen' },
       {
         defId: 'opt-sword', name: 'Schwert',
         infoElements: [{ kind: 'rule', name: 'Schwert', text: 'Ein Schwert eben', source: null }],

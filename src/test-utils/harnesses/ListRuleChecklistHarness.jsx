@@ -17,6 +17,7 @@ const reportFromListRuleStates = (states, categoryId, forcePath) => {
     const path = `${forcePath}/${index}`;
     capabilities.set(path, {
       anchorKind: state.checked ? 'occupied' : 'offerAnchor',
+      isIndependentSubUnit: false,
       defId: state.entry?.id ?? state.resolvedId,
       targetDefId: state.resolvedId,
       name: state.name,
@@ -30,6 +31,8 @@ const reportFromListRuleStates = (states, categoryId, forcePath) => {
     if (state.isContainer) {
       capabilities.set(`${path}/0`, {
         anchorKind: 'offerAnchor', defId: `${state.resolvedId}-child`,
+        isIndependentSubUnit: false,
+        primaryCategoryId: null,
         name: `${state.name} option`, isHidden: false, raiseCosts: {},
       });
     }

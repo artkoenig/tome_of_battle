@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { resolveCostLimitLabel } from '../../roster';
 import { hasBlockingViolations, countBlockingViolations } from '../../evaluation/violationStats';
-import { categoryAnchorSlotsOf } from '../../evaluation/slotLookups';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { extraResourceTotalsOf } from '../../evaluation/costDisplays';
 import { useRosterReport } from '../rosterContexts';
 
@@ -16,7 +16,7 @@ import { useRosterReport } from '../rosterContexts';
  * aktuellem Stand (`current`) und den wirksamen Grenzen (`effectiveMin`/
  * `effectiveMax`; `null` = unbegrenzt).
  *
- * Der Slot-Pfad dieses Kontingents kommt aus `pathByForceId` des Berichts, nie
+ * Der Slot-Pfad dieses Kontingents kommt aus `pathOfForce` des Berichts-Index, nie
  * aus dem Eingabe-Index des Rosters (Issue 0121, Task 21). Der Index stimmt
  * nämlich nur, solange jede Kontingent-Definition auflöst: fällt die erste weg,
  * führt der Bericht unter `"0"` das **zweite** Kontingent, und ein festes
@@ -36,16 +36,17 @@ export function useRosterSidebar() {
   const { report, roster, system } = useRosterReport();
 
   return useMemo(() => {
+    const slots = report?.slots ?? EMPTY_SLOT_INDEX;
     const violations = report?.violations ?? [];
     const costTotals = report?.costTotals ?? {};
     const costLimitType = roster?.costLimitType;
     const forcePath = roster?.forces?.[0]
-      ? (report?.pathByForceId?.get(roster.forces[0].id) ?? null)
+      ? slots.pathOfForce(roster.forces[0].id)
       : null;
 
     const requirements = forcePath === null || forcePath === undefined
       ? []
-      : categoryAnchorSlotsOf(report?.capabilities, forcePath)
+      : slots.categoryAnchorSlotsOf(forcePath)
         .filter(({ capability }) => capability.isHidden !== true)
         .map(({ path, capability }) => ({
           key: path,

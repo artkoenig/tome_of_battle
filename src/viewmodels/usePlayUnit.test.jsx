@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { SlotIndex } from '../evaluation/slotIndex';
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 
@@ -8,7 +9,7 @@ import { usePlayUnit, maxWoundsOf, modelCountOf, profileTableHeadersOf } from '.
  * Issue 0165, AC1 and AC5 — the ViewModel of the play view's unit card.
  *
  * Everything the card shows comes from the report (ADR-0034), so the fixture is
- * a hand-built `capabilities` map plus `pathBySelectionId`. Wounds and model
+ * a hand-built `SlotIndex`. Wounds and model
  * count are the two answers that still resolve a catalogue entry; they get a
  * minimal hand-built system in the shape `findEntryInSystem` reads.
  *
@@ -33,6 +34,7 @@ const COST_TYPES = [{ id: 'pts', name: 'Punkte' }];
 
 const CAPABILITIES = new Map([
   ['f/0/u/0', {
+    anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
     name: 'Ritter des Gral',
     totalCosts: { pts: 240 },
     infoElements: [
@@ -40,8 +42,8 @@ const CAPABILITIES = new Map([
       { kind: 'rule', name: 'Furchtlos' },
     ],
   }],
-  ['f/0/u/0/s/0', { isIndependentSubUnit: true }],
-  ['f/0/u/0/s/1', { isIndependentSubUnit: false }],
+  ['f/0/u/0/s/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, isIndependentSubUnit: true }],
+  ['f/0/u/0/s/1', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, isIndependentSubUnit: false }],
 ]);
 
 const PATHS = new Map([
@@ -55,8 +57,7 @@ const renderUnit = (overrides = {}) => renderHook(() => usePlayUnit({
   system: null,
   roster: ROSTER,
   costTypes: COST_TYPES,
-  capabilities: CAPABILITIES,
-  pathBySelectionId: PATHS,
+  slots: SlotIndex.fromMaps({ capabilities: CAPABILITIES, pathBySelectionId: PATHS }),
   getUnitCurrentWounds: () => 1,
   ...overrides,
 }));
@@ -73,7 +74,7 @@ describe('usePlayUnit', () => {
   });
 
   it('keeps the stored name when the report knows no slot for the selection', () => {
-    const { result } = renderUnit({ capabilities: new Map(), pathBySelectionId: new Map() });
+    const { result } = renderUnit({ slots: SlotIndex.fromMaps() });
     expect(result.current.name).toBe('Ritter (gespeichert)');
     expect(result.current.totalCost).toBe(0);
   });

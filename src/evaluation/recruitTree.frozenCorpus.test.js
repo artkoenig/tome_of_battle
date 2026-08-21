@@ -6,7 +6,7 @@ import { resolveEntry } from '../roster/catalogResolver.js';
 import { createSelectionFromDef } from '../roster/selectionFactory.js';
 import { prepareDataset, evaluate } from '../evaluator/evaluator.js';
 import { toEvaluatorRoster } from './rosterAdapter.js';
-import { findChildSlot } from './slotLookups.js';
+import { SlotIndex } from './slotIndex.js';
 import EXPECTED_TREES from './__fixtures__/recruit-trees-pre-0157.json';
 
 /**
@@ -93,7 +93,7 @@ beforeAll(() => {
     for (const entry of (catalogue.selectionEntries || []).filter(e => e.type === 'unit')) {
       const unit = createSelectionFromDef({
         system, resolveEntry, catalogueId: catalogue.id, entry,
-        mandatoryMembers: findChildSlot(offer, offerForcePath, entry.id)?.raiseMembers ?? [],
+        mandatoryMembers: SlotIndex.fromMaps({ capabilities: offer }).findChildSlot(offerForcePath, entry.id)?.raiseMembers ?? [],
       });
       recruited.set(`${spec.cat} / ${entry.name}`, unit === null ? null : shapeOf(unit));
     }

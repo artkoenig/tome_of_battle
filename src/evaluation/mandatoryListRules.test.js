@@ -6,6 +6,7 @@
  * dem Nutzer aus dem Nichts erscheinen darf und was nicht.
  */
 import { describe, it, expect } from 'vitest';
+import { SlotIndex } from './slotIndex.js';
 import { findMissingMandatoryListRules } from './mandatoryListRules.js';
 
 /** Ein Faehigkeits-Datensatz des Berichts in der Lesart dieses Moduls. */
@@ -14,6 +15,7 @@ const capabilityOf = (overrides = {}) => ({
   defId: 'def',
   targetDefId: null,
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   isHidden: false,
   isListRule: true,
   isMandatoryListRule: true,
@@ -30,7 +32,7 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
       ['0/0', capabilityOf({ name: 'Pflichtregel', defId: 'rule-a' })],
     ]);
 
-    const missing = findMissingMandatoryListRules(capabilities, '0');
+    const missing = findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0');
 
     expect(namesOf(missing)).toEqual(['Pflichtregel']);
     expect(missing[0]).toMatchObject({ defId: 'rule-a', resolvedId: 'rule-a', categoryId: 'cat-rules' });
@@ -39,19 +41,19 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
   it('meldet auch ein Pflicht-Phantom der Wurzel — es haengt nicht am Kontingent', () => {
     const capabilities = new Map([
       ['0', capabilityOf({ name: 'Kontingent', anchorKind: 'occupied', isListRule: false, isMandatoryListRule: false })],
-      ['1', capabilityOf({ name: 'Wurzelpflicht', defId: 'rule-root', anchorKind: 'mandatoryPhantom' })],
+      ['1', capabilityOf({ name: 'Wurzelpflicht', defId: 'rule-root', anchorKind: 'mandatoryPhantom', })],
     ]);
 
-    expect(namesOf(findMissingMandatoryListRules(capabilities, '0'))).toEqual(['Wurzelpflicht']);
+    expect(namesOf(findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0'))).toEqual(['Wurzelpflicht']);
   });
 
   it('meldet keine Regel, die der Roster schon fuehrt — auch nicht ueber ihr Verweisziel', () => {
     const capabilities = new Map([
-      ['0/0', capabilityOf({ name: 'Belegte Regel', defId: 'link-a', targetDefId: 'rule-a', anchorKind: 'occupied' })],
+      ['0/0', capabilityOf({ name: 'Belegte Regel', defId: 'link-a', targetDefId: 'rule-a', anchorKind: 'occupied', })],
       ['0/1', capabilityOf({ name: 'Dasselbe Angebot', defId: 'rule-a' })],
     ]);
 
-    expect(findMissingMandatoryListRules(capabilities, '0')).toEqual([]);
+    expect(findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0')).toEqual([]);
   });
 
   it('meldet weder eine freie Listenregel noch eine ausgeblendete Pflicht', () => {
@@ -60,7 +62,7 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
       ['0/1', capabilityOf({ name: 'Versteckte Pflicht', defId: 'rule-hidden', isHidden: true })],
     ]);
 
-    expect(findMissingMandatoryListRules(capabilities, '0')).toEqual([]);
+    expect(findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0')).toEqual([]);
   });
 
   it('meldet nichts aus einem fremden Kontingent', () => {
@@ -69,15 +71,15 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
       ['1/0', capabilityOf({ name: 'Fremde Pflicht', defId: 'rule-b' })],
     ]);
 
-    expect(namesOf(findMissingMandatoryListRules(capabilities, '0'))).toEqual(['Eigene Pflicht']);
+    expect(namesOf(findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0'))).toEqual(['Eigene Pflicht']);
   });
 
   it('laesst eine armeeweite Pflicht aus, die ein frueheres Kontingent des Durchlaufs schon uebernommen hat', () => {
     const capabilities = new Map([
-      ['1', capabilityOf({ name: 'Wurzelpflicht', defId: 'rule-root', anchorKind: 'mandatoryPhantom' })],
+      ['1', capabilityOf({ name: 'Wurzelpflicht', defId: 'rule-root', anchorKind: 'mandatoryPhantom', })],
     ]);
 
-    const missing = findMissingMandatoryListRules(capabilities, '0', {
+    const missing = findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0', {
       skipResolvedIds: new Set(['rule-root']),
     });
 
@@ -89,7 +91,7 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
       ['0/0', capabilityOf({ name: 'Pflichtregel', defId: 'rule-a' })],
     ]);
 
-    const missing = findMissingMandatoryListRules(capabilities, '0', {
+    const missing = findMissingMandatoryListRules(SlotIndex.fromMaps({ capabilities }), '0', {
       entryOf: (capability) => ({ id: capability.defId }),
     });
 
@@ -97,7 +99,7 @@ describe('findMissingMandatoryListRules: was ein frisches Kontingent ungefragt e
   });
 
   it('meldet ohne Bericht nichts, statt zu werfen', () => {
-    expect(findMissingMandatoryListRules(null, '0')).toEqual([]);
-    expect(findMissingMandatoryListRules(new Map(), '0')).toEqual([]);
+    expect(findMissingMandatoryListRules(SlotIndex.fromMaps(), '0')).toEqual([]);
+    expect(findMissingMandatoryListRules(SlotIndex.fromMaps({}), '0')).toEqual([]);
   });
 });

@@ -19,6 +19,7 @@ const SYSTEM = {
 
 const offer = (over = {}) => ({
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   defId: 'e-knight',
   name: 'Ritter',
   isHidden: false,

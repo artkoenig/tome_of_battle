@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlotIndex } from '../evaluation/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
@@ -46,10 +47,8 @@ vi.mock('../viewmodels/useRosterState', () => ({
     report: {
       costs: { pts: 420 },
       violations: [],
-      capabilities: new Map(),
+      slots: SlotIndex.fromMaps(),
       costTotals: {},
-      pathBySelectionId: new Map(),
-      pathByForceId: new Map(),
       unresolvedSelections: [],
       description: null,
       diagnostics: [],

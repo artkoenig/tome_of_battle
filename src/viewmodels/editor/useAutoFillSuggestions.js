@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 
-import { findEntryInSystem, foreignCatalogueIdsOf, resolveCostLimitLabel } from '../../roster';
+import { foreignCatalogueIdsOf, resolveCostLimitLabel } from '../../roster';
+import { capabilityEntryOf } from '../capabilityEntries';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 
 /**
@@ -46,8 +48,7 @@ export const FILL_UP_WINDOW_POINTS = 50;
 export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { addUnit, subSelectionOperations } = useRosterCommands();
-  const capabilities = report?.capabilities;
-  const pathBySelectionId = report?.pathBySelectionId;
+  const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const costTotals = report?.costTotals ?? {};
 
   const force = useMemo(
@@ -68,11 +69,9 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
   // Rahmen-Auflösung: Slot-Pfad → App-Selection-UUID (Umkehrung des Adapters).
   const selectionIdByPath = useMemo(() => {
     const inverse = new Map();
-    if (pathBySelectionId) {
-      for (const [selectionId, path] of pathBySelectionId) inverse.set(path, selectionId);
-    }
+    for (const [selectionId, path] of slots.pathBySelectionId) inverse.set(path, selectionId);
     return inverse;
-  }, [pathBySelectionId]);
+  }, [slots]);
 
   // Das eigene Armeebuch ist das des Kontingents; ohne eigenes gilt der aktive
   // Katalog der Liste — dieselbe Rückfallregel wie im Aushebe-Dialog.
@@ -85,7 +84,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     if (costLimitTypeId === null || remainingPoints === null) return found;
     if (remainingPoints <= 0 || remainingPoints > FILL_UP_WINDOW_POINTS) return found;
 
-    for (const [path, capability] of capabilities ?? []) {
+    for (const [path, capability] of slots.capabilities) {
       if (!isSelectableSlot(capability)) continue;
       if (capability.isHidden || capability.isBlocked) continue;
       // Ein Panel füllt allein sein eigenes Kontingent auf: nur Slots aus dessen
@@ -104,13 +103,11 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     }
     found.sort((a, b) => b.cost - a.cost);
     return found;
-  }, [capabilities, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
+  }, [slots, costLimitTypeId, remainingPoints, forcePath, selectionIdByPath, foreignCatalogueIds]);
 
   const suggestions = useMemo(() => {
     // Der Katalogeintrag hinter einem Slot — für die bestehende Aushebe-Mechanik.
-    const entryFor = (capability) =>
-      findEntryInSystem(system, capability.defId, activeCatalogue?.id)
-        ?? { id: capability.defId, name: capability.name };
+    const entryFor = (capability) => capabilityEntryOf(system, capability, activeCatalogue?.id);
 
     /**
      * Die Anwenden-Aktion eines Vorschlags über die bestehende Mechanik — oder
@@ -135,7 +132,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
     const unitNameFor = (capability) => {
       const framePath = capability.frame?.path ?? null;
       if (framePath === null || framePath === forcePath) return null;
-      return capabilities?.get(framePath)?.name ?? null;
+      return slots.slotAt(framePath)?.name ?? null;
     };
 
     return collected.map(({ path, capability, cost }) => ({
@@ -145,7 +142,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
       unitName: unitNameFor(capability),
       apply: applyActionFor(capability),
     }));
-  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, capabilities, forceId]);
+  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, slots, forceId]);
 
   // Sichtbar an der Lücke: steht die Liste auf ihren letzten Punkten, steht das
   // Panel da — auch wenn gerade nichts hineinpasst. Ohne `forcePath` führt der

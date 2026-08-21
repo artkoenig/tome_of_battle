@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 
-import { findEntryInSystem, resolveCostLimitTypeId, resolveCostLimitLabel } from '../../roster';
-import { childSlotsOf } from '../../evaluation/slotLookups';
+import { resolveCostLimitTypeId, resolveCostLimitLabel } from '../../roster';
+import { capabilityEntryOf } from '../capabilityEntries';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 
 /**
@@ -37,7 +38,7 @@ const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPha
 export function useRecruitOffer({ forceId = null, forcePath = null, categoryId = null, entries = null }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { addUnit } = useRosterCommands();
-  const capabilities = report?.capabilities;
+  const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const costLimitType = resolveCostLimitTypeId(roster, system);
   const costTypeLabel = resolveCostLimitLabel(roster, system);
 
@@ -52,7 +53,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
 
     const seenDefIds = new Set();
     const candidates = [];
-    for (const { path, capability } of childSlotsOf(capabilities, forcePath)) {
+    for (const { path, capability } of slots.childSlotsOf(forcePath)) {
       if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
       if (capability.isHidden) continue;
       if (seenDefIds.has(capability.defId)) continue;
@@ -78,8 +79,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
         entry.id === capability.defId || entry.id === capability.targetDefId
         || (entry.targetId && entry.targetId === capability.targetDefId));
       if (fromEntries) return fromEntries;
-      return findEntryInSystem(system, capability.defId, activeCatalogue.id)
-        ?? { id: capability.defId, name: capability.name };
+      return capabilityEntryOf(system, capability, activeCatalogue.id);
     };
 
     return candidates.map(({ path, capability }) => ({
@@ -89,7 +89,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
       isBlocked: capability.isBlocked === true,
       entry: entryFor(capability),
     }));
-  }, [activeCatalogue, capabilities, forcePath, categoryId, entries, costLimitType, system]);
+  }, [activeCatalogue, slots, forcePath, categoryId, entries, costLimitType, system]);
 
   const candidates = useMemo(() => offers.map(offer => ({
     key: offer.key,

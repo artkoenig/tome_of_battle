@@ -27,8 +27,25 @@ evaluator. `src/db/` persists it in IndexedDB.
   `getSelectionTotalCost` / `computeRosterCounts` / `aggregateRosterCategoryCounts`, next to the
   earlier `getOptionDisplayCost` / `calculateRosterCosts` / `getExtraResourceTotals`). What is
   left of that file is `costTypeLabels.js` — the cost-type id and its label, nothing else. Their answers live in `src/evaluation/`
-  (`listRuleGroups.js`, `mandatoryListRules.js`, `costDisplays.js`, `slotLookups.js`) reading the
+  (`listRuleGroups.js`, `mandatoryListRules.js`, `costDisplays.js`, `slotIndex.js`) reading the
   report. A test that needs a roster cost total uses `evaluateAppRoster(system, roster).costTotals`.
+- The report's slot side is **one** value object since Issue 0170: `SlotIndex`
+  (`slotIndex.js`) holds `capabilities` + `pathBySelectionId` + `pathByForceId` and carries the
+  former `slotLookups.js` functions as methods (plus `slotAt`/`pathOfSelection`/`pathOfForce` and
+  `resolvedDefIdOf` beside it). `AppEvaluation` exposes it as `report.slots`; the three maps are no
+  longer report fields and nothing passes them around separately.
+- `SlotIndex.fromMaps({...})` is the one seam a hand-built fixture goes through, and it
+  **validates**: every capability must declare `isHidden`, `isIndependentSubUnit` (booleans) and
+  `primaryCategoryId` (string or null) — a missing one used to read as `false` and silently change
+  what renders. `fromReport` (production) checks nothing; the engine fills those for every slot.
+  Tests reach `fromMaps` through `createEmptyRosterReport` (`src/test-utils/rosterProviders.jsx`),
+  which still takes the three maps flat.
+- `evaluate` in the evaluator facade has its own identity cache (WeakMap over
+  `(prepared, evalRoster)`, `{ measure: true }` bypasses it). It does **not** help the app path:
+  `toEvaluatorRoster` builds a fresh `evalRoster` per call, so `evaluationCache.js` stays the seam.
+- `src/evaluation/` must not import `src/roster/` (oxlint, `error`). The helper that resolves a
+  capability back to its catalogue entry for the write path therefore lives in
+  `src/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here.
 - `getUnitOptions` takes no visibility context any more: it yields raw catalogue structure and the
   caller asks the report whether a slot is hidden.
 - No import of `src/evaluator/**` from `src/roster/**`, in either direction; the rule is blocking

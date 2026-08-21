@@ -112,7 +112,7 @@ function hasViolationWithLimitId(result, limitId) {
 
 /** True, wenn irgendein Slot des Ergebnisses diese defId als Angebots-Anker traegt. */
 function isOfferedAnywhere(result, defId) {
-  return [...result.capabilities.values()].some(
+  return [...result.slots.capabilities.values()].some(
     capability => capability.defId === defId && capability.anchorKind === 'offerAnchor',
   );
 }

@@ -40,6 +40,8 @@ const renderForce = ({ capabilities = new Map(), selections = [], catalogueId = 
 /** Ein armeeweiter Pflicht-Selektor: sichtbar, mit wirksamem Minimum, ohne Kontingent-Kategorie. */
 const armyWideSlot = (over = {}) => ({
   anchorKind: 'occupied',
+  isIndependentSubUnit: false,
+  primaryCategoryId: null,
   defId: 'e-bloodline',
   targetDefId: null,
   name: 'Blutlinie',

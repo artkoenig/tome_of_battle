@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlotIndex } from '../evaluation/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
@@ -101,13 +102,11 @@ vi.mock('../viewmodels/useRosterState', () => ({
     roster: mockRoster,
     report: {
       violations: mockViolations,
-      capabilities: new Map(),
+      slots: SlotIndex.fromMaps(),
       // Kosten kommen seit Issue 0121, Task 7 aus dem Bericht (costTotals);
       // der frühere Solver-Kostenpfad (`costs`) existiert im Hook nicht mehr.
       costTotals: mockCosts,
       description: null,
-      pathBySelectionId: new Map(),
-      pathByForceId: new Map(),
       unresolvedSelections: [],
       diagnostics: [],
     },

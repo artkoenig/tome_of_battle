@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf, findEntryInSystem, resolveEntry } from '../../roster';
+import { childSelectionsOf, resolveEntry } from '../../roster';
+import { capabilityEntryOf } from '../capabilityEntries';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { resolveListRuleGroupFromReport } from '../../evaluation/listRuleGroups';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 
@@ -28,8 +30,7 @@ import { useRosterReport, useRosterCommands } from '../rosterContexts';
 export function useListRuleChecklist({ forceId = null, forcePath = null, categoryId }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
   const { addUnit, removeUnit } = useRosterCommands();
-  const capabilities = report?.capabilities;
-  const pathBySelectionId = report?.pathBySelectionId;
+  const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const force = useMemo(
     () => roster?.forces?.find(candidate => candidate.id === forceId) ?? null,
     [roster, forceId]
@@ -38,15 +39,14 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
   const { isListRuleGroup, states } = useMemo(() => {
     const selectionByPath = new Map();
     for (const selection of childSelectionsOf(force)) {
-      const path = pathBySelectionId?.get(selection.id);
+      const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }
-    return resolveListRuleGroupFromReport(capabilities, forcePath, categoryId, {
+    return resolveListRuleGroupFromReport(slots, forcePath, categoryId, {
       selectionByPath,
-      entryOf: (capability) => findEntryInSystem(system, capability.defId, activeCatalogue?.id)
-        ?? { id: capability.defId, name: capability.name },
+      entryOf: (capability) => capabilityEntryOf(system, capability, activeCatalogue?.id),
     });
-  }, [force, pathBySelectionId, capabilities, forcePath, categoryId, system, activeCatalogue]);
+  }, [force, slots, forcePath, categoryId, system, activeCatalogue]);
 
   const rows = useMemo(() => states.map(state => {
     const isLocked = state.mandatory && state.checked;

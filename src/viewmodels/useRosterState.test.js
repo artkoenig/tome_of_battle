@@ -52,7 +52,7 @@ describe('useRosterState', () => {
     const { result } = renderHook(() => useRosterState(roster, system, vi.fn()));
 
     expect(result.current.roster.name).toBe('test roster');
-    expect(result.current.report.capabilities).toBeInstanceOf(Map);
+    expect(result.current.report.slots.capabilities).toBeInstanceOf(Map);
     expect(result.current.report.unresolvedSelections).toEqual([]);
     expect(result.current.selectedRosterSelection).toBeNull();
     expect(Object.keys(result.current.commands).sort()).toEqual([

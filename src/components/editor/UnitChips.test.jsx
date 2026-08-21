@@ -71,6 +71,7 @@ describe('UnitChips link resolution honors the whfb6 linking setting', () => {
     // Fähigkeitsdatensatzes (`capability.infoElements`), nicht mehr aus
     // `collectUnitProfilesAndRules`.
     const mappedRuleCapability = {
+      anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
       infoElements: [{ kind: 'rule', id: 'r1', name: RULE_NAME, text: 'A deadly blow' }],
     };
 

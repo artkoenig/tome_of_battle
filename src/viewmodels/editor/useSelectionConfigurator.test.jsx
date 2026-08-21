@@ -22,7 +22,8 @@ const SELECTION = { id: 'sel-1', name: 'Ritter', entryLinkId: 'el-1', number: 1,
 const ROSTER = { costLimitType: 'pts', catalogueId: 'cat-main', forces: [{ id: 'f1', selections: [SELECTION] }] };
 
 const slot = (overrides) => ({
-  anchorKind: 'offerAnchor', defId: null, targetDefId: null,
+  anchorKind: 'offerAnchor',
+  primaryCategoryId: null, defId: null, targetDefId: null,
   costs: {}, effectiveMin: null, effectiveMax: null, current: 0,
   isMandatoryUnmet: false, isBlocked: false, isHidden: false,
   isIndependentSubUnit: false, sortIndex: null, infoElements: [],

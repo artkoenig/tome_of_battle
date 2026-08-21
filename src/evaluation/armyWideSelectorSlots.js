@@ -10,7 +10,7 @@
  * Kontingents treffen. Die Oberflaeche wertete dafuer bisher Modifikatoren,
  * Bedingungen und Grenzen ein zweites Mal am Katalog aus.
  */
-import { childSlotsOf } from './slotLookups.js';
+import { resolvedDefIdOf } from './slotIndex.js';
 
 /** Die Ankerarten, deren Slots ueberhaupt ein Angebot des Kontingents sind. */
 const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
@@ -19,16 +19,16 @@ const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPha
  * Die Slots der armeeweiten Pflicht-Selektoren, je Definition genau einer, in
  * Slot-Reihenfolge des Berichts.
  *
- * @param {Map<string, object>|null|undefined} capabilities  Slot-Map des Berichts.
+ * @param {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts.
  * @param {string|null|undefined} forcePath  Slot-Pfad des Kontingents.
  * @param {Iterable<string>} forceCategoryIds  die Kategorien, die das Kontingent fuehrt.
  * @returns {object[]} die Faehigkeitsdatensaetze der Selektoren.
  */
-export function armyWideSelectorSlotsOf(capabilities, forcePath, forceCategoryIds) {
+export function armyWideSelectorSlotsOf(slots, forcePath, forceCategoryIds) {
   const offeredByCategory = new Set(forceCategoryIds ?? []);
   const seen = new Set();
   const selectors = [];
-  for (const { capability } of childSlotsOf(capabilities, forcePath)) {
+  for (const { capability } of slots.childSlotsOf(forcePath)) {
     if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
     if (capability.isHidden) continue;
     // Kein Minimum, keine Pflicht — und ohne Pflicht braucht es keinen eigenen
@@ -37,7 +37,7 @@ export function armyWideSelectorSlotsOf(capabilities, forcePath, forceCategoryId
     // Erreichbar ueber eine Kategorie des Kontingents? Dann erledigt deren
     // Abschnitt die Auswahl bereits (der haeufige Fall).
     if ((capability.categoryIds ?? []).some(categoryId => offeredByCategory.has(categoryId))) continue;
-    const resolvedId = capability.targetDefId ?? capability.defId;
+    const resolvedId = resolvedDefIdOf(capability);
     if (seen.has(resolvedId)) continue;
     seen.add(resolvedId);
     selectors.push(capability);

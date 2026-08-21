@@ -5,7 +5,6 @@ import {
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../roster';
-import { isIndependentSubUnitSlot, slotOfSelection } from '../../evaluation/slotLookups';
 import { useRosterReport } from '../rosterContexts';
 
 /**
@@ -15,7 +14,7 @@ import { useRosterReport } from '../rosterContexts';
  * gewählten Unter-Auswahlen ohne die eigenständigen Untereinheiten
  * (`capability.isIndependentSubUnit`) und die Info-Projektion des Slots
  * (`capability.infoElements`). Die Komponente bekommt fertige Chips und muss
- * weder `capabilities` noch `pathBySelectionId` kennen.
+ * den Slot-Index des Berichts nicht kennen.
  */
 
 /** Die Profil-Einträge der Info-Projektion eines Slots (`kind: 'profile'`). */
@@ -37,7 +36,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
       const entry = findEntryInSystem(system, entryId, activeCatalogueId);
       const resolved = resolveEntry(system, entry, activeCatalogueId);
 
-      const isIndependent = isIndependentSubUnitSlot(slots?.capabilities, slots?.pathBySelectionId, subSel);
+      const isIndependent = slots.isIndependentSubUnitSlot(subSel);
 
       if (resolved && !isIndependent) {
         list.push({
@@ -88,9 +87,7 @@ const hasLore = (res, system) => {
  * Profile, die unter einem anderen Namen tabelliert sind) der Name.
  */
 const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
-  const slotOf = (selectionId) =>
-    slotOfSelection(slots?.capabilities, slots?.pathBySelectionId, { id: selectionId });
-  const unitSlot = slots?.capability ?? slotOf(sel?.id);
+  const unitSlot = slots.slotOfSelection(sel);
   const tableProfiles = groupProfilesByType(profileElementsOf(unitSlot))
     .filter(g => !g.isModel).flatMap(g => g.profiles);
   const tableProfileIds = new Set(tableProfiles.map(p => p.id).filter(Boolean));
@@ -125,7 +122,7 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
     const res = upgrade.resolved;
     if (isEmptyWrapper(res)) return false;
     const name = upgrade.name || res?.name;
-    const inTable = profileElementsOf(slotOf(upgrade.id)).some(p => tableProfileIds.has(p.id)) ||
+    const inTable = profileElementsOf(slots.slotOfSelection({ id: upgrade.id })).some(p => tableProfileIds.has(p.id)) ||
                     (name && tableProfiles.some(p => isNameMatch(name, p.name)));
     if (!inTable) return true;
     return hasLore(res, system);
@@ -170,11 +167,10 @@ const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '
  */
 export function useUnitChips({ selection }) {
   const { report, system, activeCatalogue } = useRosterReport();
-  const { capabilities, pathBySelectionId } = report;
+  const { slots } = report;
   const activeCatalogueId = activeCatalogue?.id ?? null;
 
   return useMemo(() => {
-    const slots = { capabilities, pathBySelectionId };
     const selectedUpgrades = getSelectedUpgrades(selection, system, activeCatalogueId, slots);
     const upgrades = getVisibleUpgrades(selection, system, activeCatalogueId, slots).map(upgrade => ({
       id: upgrade.id,
@@ -190,7 +186,7 @@ export function useUnitChips({ selection }) {
     // samt der von belegten Unter-Auswahlen geerbten. Die Entdopplung gegen die
     // Aufwertungs-Chips läuft über die **gewählten** Unter-Auswahlen: eine
     // Regel, die schon als Aufwertungs-Chip erscheint, wird nicht doppelt gezeigt.
-    const slotCapability = slotOfSelection(capabilities, pathBySelectionId, selection);
+    const slotCapability = slots.slotOfSelection(selection);
     const upgradeChipNames = new Set(
       selectedUpgrades.map(u => normalizeChipName(u.name || u.resolved?.name)).filter(Boolean)
     );
@@ -204,5 +200,5 @@ export function useUnitChips({ selection }) {
       }));
 
     return { upgrades, rules, system };
-  }, [selection, system, activeCatalogueId, capabilities, pathBySelectionId]);
+  }, [selection, system, activeCatalogueId, slots]);
 }

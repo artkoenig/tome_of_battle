@@ -21,7 +21,7 @@ function ReportProbe() {
   const commands = useRosterCommands();
   return (
     <button type="button" data-testid="probe" onClick={() => commands.removeUnit('u1')}>
-      {roster?.name ?? 'no roster'} / {report.violations.length} / {report.capabilities.size}
+      {roster?.name ?? 'no roster'} / {report.violations.length} / {report.slots.capabilities.size}
     </button>
   );
 }
@@ -34,7 +34,9 @@ describe('renderWithRosterProviders', () => {
   });
 
   it('seeds the report and the roster a test hands it', () => {
-    const capabilities = new Map([['0', { defId: 'x' }]]);
+    const capabilities = new Map([['0', {
+      anchorKind: 'occupied', defId: 'x', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null,
+    }]]);
     renderWithRosterProviders(<ReportProbe />, {
       roster: { name: 'my list' },
       report: createEmptyRosterReport({ violations: [{ id: 'v1' }], capabilities }),

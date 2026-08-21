@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 
-import { findForceEntryById, findEntryInSystem, childSelectionsOf } from '../../roster';
+import { findForceEntryById, childSelectionsOf } from '../../roster';
 import { armyWideSelectorSlotsOf } from '../../evaluation/armyWideSelectorSlots';
+import { capabilityEntryOf } from '../capabilityEntries';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { useRosterReport } from '../rosterContexts';
 
 /**
@@ -28,7 +30,7 @@ import { useRosterReport } from '../rosterContexts';
  */
 export function useForceSection({ force, forcePath = null }) {
   const { report, roster, system } = useRosterReport();
-  const capabilities = report?.capabilities;
+  const slots = report?.slots ?? EMPTY_SLOT_INDEX;
 
   return useMemo(() => {
     const forceDefinition = findForceEntryById(system, force?.forceEntryId);
@@ -36,10 +38,9 @@ export function useForceSection({ force, forcePath = null }) {
     const forceCatalogueId = force?.catalogueId || roster?.catalogueId || null;
 
     const armyWideSelectorSlots = armyWideSelectorSlotsOf(
-      capabilities, forcePath, categoryLinks.map(link => link.targetId));
+      slots, forcePath, categoryLinks.map(link => link.targetId));
     const armyWideEntries = armyWideSelectorSlots.map(capability =>
-      findEntryInSystem(system, capability.defId, forceCatalogueId)
-      ?? { id: capability.defId, name: capability.name });
+      capabilityEntryOf(system, capability, forceCatalogueId));
     const armyWideSelectorIds = new Set(armyWideSelectorSlots.flatMap(capability =>
       [capability.defId, capability.targetDefId].filter(Boolean)));
     const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
@@ -50,5 +51,5 @@ export function useForceSection({ force, forcePath = null }) {
       !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
     return { categoryLinks, armyWideEntries, armyWideSelections, uncategorizedSelections };
-  }, [system, roster, capabilities, force, forcePath]);
+  }, [system, roster, slots, force, forcePath]);
 }

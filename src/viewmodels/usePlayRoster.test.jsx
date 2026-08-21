@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { SlotIndex } from '../evaluation/slotIndex';
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 
@@ -8,8 +9,7 @@ import { usePlayRoster, groupedPlaySelections } from './usePlayRoster';
  * Issue 0165, AC1 — the play shell's ViewModel.
  *
  * The grouping is the interesting derivation, and it reads the report, never a
- * catalogue walk (ADR-0034): a hand-built `capabilities` map plus
- * `pathBySelectionId` is therefore the whole fixture, and the hook cases run
+ * catalogue walk (ADR-0034): a hand-built `SlotIndex` is therefore the whole fixture, and the hook cases run
  * with `system = null` so the evaluation is the frozen empty result.
  */
 
@@ -42,20 +42,21 @@ const SYSTEM = {
   forceEntries: [{ id: 'fe1', name: 'Heer', categoryLinks: [{ targetId: 'core', name: 'Kern' }] }],
 };
 
+const CAPABILITIES = new Map([
+  ['f/0/u/0', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, totalCosts: { pts: 60 } }],
+  ['f/0/u/1', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, totalCosts: { pts: 240 } }],
+  ['f/0/u/2', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, totalCosts: { pts: 0 }, isListRule: true }],
+  ['f/0/u/3', { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, totalCosts: { pts: 30 } }],
+]);
+
 const REPORT = {
   description: { costTypes: [{ id: 'pts', name: 'Punkte' }] },
-  pathBySelectionId: new Map([
+  slots: SlotIndex.fromMaps({ capabilities: CAPABILITIES, pathBySelectionId: new Map([
     ['s-cheap', 'f/0/u/0'],
     ['s-dear', 'f/0/u/1'],
     ['s-rule', 'f/0/u/2'],
     ['s-loose', 'f/0/u/3'],
-  ]),
-  capabilities: new Map([
-    ['f/0/u/0', { totalCosts: { pts: 60 } }],
-    ['f/0/u/1', { totalCosts: { pts: 240 } }],
-    ['f/0/u/2', { totalCosts: { pts: 0 }, isListRule: true }],
-    ['f/0/u/3', { totalCosts: { pts: 30 } }],
-  ]),
+  ]) }),
   costTotals: { pts: 330 },
 };
 

@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { saveRoster } from '../services/rosterStore';
 import { findForceEntryById, childSelectionsOf } from '../roster';
-import { slotOfSelection } from '../evaluation/slotLookups';
 import { useEvaluation } from '../evaluation/useEvaluation';
 import { costLimitTypeIdOf, extraResourceTotalsOf } from '../evaluation/costDisplays';
 import usePlayState from '../hooks/usePlayState';
@@ -26,17 +25,17 @@ import { t as translate } from '../i18n/i18nStore';
  * (`capability.isListRule`, Issue 0156).
  */
 export function groupedPlaySelections(system, roster, report, t = translate) {
-  const { capabilities, description, pathBySelectionId } = report;
+  const { slots, description } = report;
   const groups = [];
   const costType = costLimitTypeIdOf(roster, description?.costTypes);
 
   const totalCostOf = (selection) =>
-    capabilities?.get(pathBySelectionId?.get(selection.id))?.totalCosts?.[costType] ?? 0;
+    slots.slotOfSelection(selection)?.totalCosts?.[costType] ?? 0;
   const sortedByCostDescending = (selections) =>
     [...selections].sort((a, b) => totalCostOf(b) - totalCostOf(a));
 
   const isBattlefieldSelection = (selection) =>
-    slotOfSelection(capabilities, pathBySelectionId, selection)?.isListRule !== true;
+    slots.slotOfSelection(selection)?.isListRule !== true;
 
   (roster?.forces ?? []).forEach(force => {
     const forceDef = findForceEntryById(system, force.forceEntryId);

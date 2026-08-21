@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlotIndex } from '../evaluation/slotIndex';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from './PlayMode';
@@ -67,8 +68,7 @@ const { evaluationStub } = vi.hoisted(() => ({
 
 vi.mock('../evaluation/useEvaluation', () => ({
   useEvaluation: () => evaluationStub.current ?? {
-    capabilities: new Map(),
-    pathBySelectionId: new Map(),
+    slots: SlotIndex.fromMaps(),
     costTotals: {},
     description: null,
     violations: [],
@@ -77,11 +77,13 @@ vi.mock('../evaluation/useEvaluation', () => ({
 
 /** Ein Bericht, der die genannten Selektionen als Listenregeln ausweist. */
 const reportMarkingListRules = (selectionIds, listRuleIds) => ({
-  capabilities: new Map(selectionIds.map((id, index) => [
-    `0/${index}`,
-    { anchorKind: 'occupied', isListRule: listRuleIds.includes(id), totalCosts: {}, infoElements: [] },
-  ])),
-  pathBySelectionId: new Map(selectionIds.map((id, index) => [id, `0/${index}`])),
+  slots: SlotIndex.fromMaps({
+    capabilities: new Map(selectionIds.map((id, index) => [
+      `0/${index}`,
+      { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, isListRule: listRuleIds.includes(id), totalCosts: {}, infoElements: [] },
+    ])),
+    pathBySelectionId: new Map(selectionIds.map((id, index) => [id, `0/${index}`])),
+  }),
   costTotals: {},
   description: null,
   violations: [],

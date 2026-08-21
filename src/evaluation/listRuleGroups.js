@@ -16,27 +16,24 @@
  * **Schreiben** braucht (Anhaken legt eine Selektion an), kommt über `entryOf`
  * von aussen; das ist Schreibmodell, kein Anzeigepfad.
  */
-import { childSlotsOf } from './slotLookups.js';
+import { resolvedDefIdOf } from './slotIndex.js';
 
 /** Die Ankerarten, deren Slots eine Kategorie überhaupt anbietet. */
 const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
-
-/** Die Definitions-Id, unter der eine Regel entdoppelt und wiedererkannt wird. */
-const resolvedIdOf = (capability) => capability.targetDefId ?? capability.defId;
 
 /**
  * Die angebotenen Slots einer Kategorie unter einem Kontingent, je Definition
  * genau einer — dieselbe Lesart wie im Aushebe-Dialog: Ankerart, Sichtbarkeit
  * und die **effektive** Primärkategorie des Berichts.
  */
-function categoryCandidatesOf(capabilities, forcePath, categoryId) {
+function categoryCandidatesOf(slots, forcePath, categoryId) {
   const seen = new Set();
   const candidates = [];
-  for (const { path, capability } of childSlotsOf(capabilities, forcePath)) {
+  for (const { path, capability } of slots.childSlotsOf(forcePath)) {
     if (!CANDIDATE_ANCHOR_KINDS.has(capability.anchorKind)) continue;
     if (capability.isHidden) continue;
     if (capability.primaryCategoryId !== categoryId) continue;
-    const resolvedId = resolvedIdOf(capability);
+    const resolvedId = resolvedDefIdOf(capability);
     if (seen.has(resolvedId)) continue;
     seen.add(resolvedId);
     candidates.push({ path, capability });
@@ -53,7 +50,7 @@ function categoryCandidatesOf(capabilities, forcePath, categoryId) {
  * Angebot. Eine gemischte Kategorie ist bewusst keine Listenregel-Gruppe.
  * `states` wird nur für eine echte Listenregel-Gruppe befüllt.
  *
- * @param {Map<string, object>|null|undefined} capabilities  Slot-Map des Berichts.
+ * @param {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts.
  * @param {string|null|undefined} forcePath  Slot-Pfad des Kontingents.
  * @param {string} categoryId
  * @param {{ selectionByPath?: Map<string, object>, entryOf?: (capability: object) => object|null }} [context]
@@ -62,9 +59,9 @@ function categoryCandidatesOf(capabilities, forcePath, categoryId) {
  *   `entryOf`: der Katalog-Eintrag einer Definition für das Schreibmodell.
  * @returns {{ isListRuleGroup: boolean, states: object[] }}
  */
-export function resolveListRuleGroupFromReport(capabilities, forcePath, categoryId, context = {}) {
+export function resolveListRuleGroupFromReport(slots, forcePath, categoryId, context = {}) {
   const { selectionByPath = new Map(), entryOf = () => null } = context;
-  const candidates = categoryCandidatesOf(capabilities, forcePath, categoryId);
+  const candidates = categoryCandidatesOf(slots, forcePath, categoryId);
   const occupied = candidates.filter(({ path }) => selectionByPath.has(path));
   // Belegtes schlaegt Angebot: was schon in der Kategorie steht, entscheidet
   // ueber ihre Art — genau wie zuvor die Selektionen der Kategorie.
@@ -79,7 +76,7 @@ export function resolveListRuleGroupFromReport(capabilities, forcePath, category
       entry: entryOf(capability),
       name: capability.name,
       categoryId,
-      resolvedId: resolvedIdOf(capability),
+      resolvedId: resolvedDefIdOf(capability),
       checked: selection !== null,
       selection,
       // Ein reiner Schalter ist die Regel, solange ihr wirksames Hoechstmass
@@ -89,7 +86,7 @@ export function resolveListRuleGroupFromReport(capabilities, forcePath, category
       // Behaelter-Regel: der belegte Slot fuehrt eigene Unter-Slots. Ein noch
       // nicht angehaktes Angebot hat keine — seine Unteroptionen erscheinen
       // ohnehin erst nach dem Anhaken.
-      isContainer: childSlotsOf(capabilities, path).length > 0,
+      isContainer: slots.childSlotsOf(path).length > 0,
       mandatory: capability.isMandatoryListRule === true,
     };
   });

@@ -39,6 +39,8 @@ function makeRoster() {
 function categoryAnchor(path, overrides = {}) {
   return [path, {
     anchorKind: 'categoryAnchor',
+    isIndependentSubUnit: false,
+    primaryCategoryId: null,
     defId: 'cl-core',
     targetDefId: 'cat-core',
     name: 'Core',

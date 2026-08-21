@@ -15,6 +15,8 @@ const SYSTEM = { costTypes: [{ id: 'pts', name: 'Pkt.' }, { id: 'cd', name: 'Ban
 
 const anchor = (over = {}) => ({
   anchorKind: 'categoryAnchor',
+  isIndependentSubUnit: false,
+  primaryCategoryId: null,
   defId: 'cat-core',
   name: 'Kern',
   isHidden: false,
@@ -66,7 +68,7 @@ describe('useRosterSidebar', () => {
       capabilities: new Map([
         ['0/0', anchor({ name: 'Kern', current: 2, effectiveMin: 1, effectiveMax: 3 })],
         ['0/1', anchor({ name: 'Versteckt', isHidden: true })],
-        ['0/2', { anchorKind: 'offerAnchor', name: 'Keine Kategorie' }],
+        ['0/2', { anchorKind: 'offerAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Keine Kategorie' }],
       ]),
     });
 

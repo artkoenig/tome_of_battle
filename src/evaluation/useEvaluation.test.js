@@ -6,8 +6,7 @@
  * dem App-Modell: `useEvaluation(system, roster)` bereitet die rohen XMLs des
  * Systems (`system.rawXmls`) einmal je System-Objektidentitaet auf
  * (`prepareDataset`), uebersetzt das App-Roster (`toEvaluatorRoster`) und
- * liefert `{ violations, capabilities, description, costTotals,
- * pathBySelectionId }`.
+ * liefert `{ violations, slots, description, costTotals }`.
  *
  * Massgebliche Regeln aus der Intention:
  * 1. Signatur: `useEvaluation(system, roster)` →
@@ -162,15 +161,15 @@ beforeEach(() => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('useEvaluation: Signatur', () => {
-  it('liefert { violations, capabilities, description, costTotals, pathBySelectionId } in den vertraglichen Formen', () => {
+  it('liefert { violations, slots, description, costTotals } in den vertraglichen Formen', () => {
     const { result } = renderEvaluation(appSystem(), appRoster());
 
     expect(Array.isArray(result.current.violations)).toBe(true);
-    expect(result.current.capabilities).toBeInstanceOf(Map);
+    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
     expect(result.current.description).toBeTypeOf('object');
     expect(result.current.description).not.toBeNull();
     expect(result.current.costTotals).toBeTypeOf('object');
-    expect(result.current.pathBySelectionId).toBeInstanceOf(Map);
+    expect(result.current.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 });
 
@@ -189,13 +188,13 @@ describe('useEvaluation: Auswertung des Systems und Rosters ueber die Fassade', 
     expect(violation).toMatchObject({ actual: 2, bound: 1 });
   });
 
-  it('capabilities fuehrt den belegten Slot der Auswahl unter dem Pfad aus pathBySelectionId', () => {
+  it('slots.capabilities fuehrt den belegten Slot der Auswahl unter dem Pfad aus slots.pathBySelectionId', () => {
     const { result } = renderEvaluation(appSystem(), appRoster());
 
-    const path = result.current.pathBySelectionId.get('sel-warrior');
+    const path = result.current.slots.pathBySelectionId.get('sel-warrior');
     expect(path, 'Pfad fuer sel-warrior').toBeDefined();
-    expect(result.current.capabilities.has(path)).toBe(true);
-    const capability = result.current.capabilities.get(path);
+    expect(result.current.slots.capabilities.has(path)).toBe(true);
+    const capability = result.current.slots.capabilities.get(path);
     expect(capability.defId).toBe(WARRIOR_ID);
     // „belegt": der Berichtswert von AnchorKind.OCCUPIED (Konvention wie in
     // `rosterAdapter.test.js`).
@@ -233,11 +232,11 @@ describe('useEvaluation: Auswertung des Systems und Rosters ueber die Fassade', 
       report.violations.map(entry => entry.limitId),
     );
     expect(result.current.costTotals).toEqual(report.costTotals);
-    expect([...result.current.capabilities.keys()].sort()).toEqual(
+    expect([...result.current.slots.capabilities.keys()].sort()).toEqual(
       [...report.capabilities.keys()].sort(),
     );
     expect(result.current.description).toEqual(description);
-    expect(result.current.pathBySelectionId).toEqual(pathBySelectionId);
+    expect(result.current.slots.pathBySelectionId).toEqual(pathBySelectionId);
   });
 });
 
@@ -307,12 +306,12 @@ describe('useEvaluation: evaluate ist je Roster-Objektidentitaet memoisiert', ()
 /** Prueft das vertragliche Leer-Ergebnis (Vertragsentscheidung: echte Maps). */
 function expectEmptyResult(result) {
   expect(result.violations).toEqual([]);
-  expect(result.capabilities).toBeInstanceOf(Map);
-  expect(result.capabilities.size).toBe(0);
+  expect(result.slots.capabilities).toBeInstanceOf(Map);
+  expect(result.slots.capabilities.size).toBe(0);
   expect(result.description).toBeNull();
   expect(result.costTotals).toEqual({});
-  expect(result.pathBySelectionId).toBeInstanceOf(Map);
-  expect(result.pathBySelectionId.size).toBe(0);
+  expect(result.slots.pathBySelectionId).toBeInstanceOf(Map);
+  expect(result.slots.pathBySelectionId.size).toBe(0);
 }
 
 describe('useEvaluation: leere Eingaben ergeben das stabile Leer-Ergebnis, ohne Throw', () => {

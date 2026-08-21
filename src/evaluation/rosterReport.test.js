@@ -58,8 +58,8 @@ describe('useRosterReportModel', () => {
 
     const { result } = renderHook(() => useRosterReportModel(system, roster));
 
-    expect(result.current.capabilities).toBeInstanceOf(Map);
-    expect(result.current.pathByForceId.size).toBeGreaterThan(0);
+    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
+    expect(result.current.slots.pathByForceId.size).toBeGreaterThan(0);
     expect(result.current.unresolvedSelections).toEqual([]);
   });
 

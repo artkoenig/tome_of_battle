@@ -42,10 +42,10 @@ describe('useRoster Hook', () => {
     expect(result.current.roster).toEqual(initialRoster);
     // Das System dieser Tests hat kein rawXmls → Leer-Ergebnis des Evaluators.
     expect(result.current.violations).toEqual([]);
-    expect(result.current.capabilities).toBeInstanceOf(Map);
+    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
     expect(result.current.description).toBe(null);
     expect(result.current.costTotals).toEqual({});
-    expect(result.current.pathBySelectionId).toBeInstanceOf(Map);
+    expect(result.current.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 
   it('debounces only the persistence, not the derived roster state', () => {

@@ -7,6 +7,7 @@
  * behauptet wird, faellt in der Oberfläche lautlos aus.
  */
 import { describe, it, expect } from 'vitest';
+import { SlotIndex } from './slotIndex.js';
 import { resolveListRuleGroupFromReport } from './listRuleGroups.js';
 
 const CATEGORY = 'cat-list-rules';
@@ -17,6 +18,7 @@ const capabilityOf = (overrides = {}) => ({
   defId: 'def',
   targetDefId: null,
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   isHidden: false,
   isListRule: true,
   isMandatoryListRule: false,
@@ -42,7 +44,7 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
   it('hakt genau die Regeln an, unter deren Slot-Pfad eine Selektion steht', () => {
     const selection = { selectionId: 's-1' };
     const { isListRuleGroup, states } = resolveListRuleGroupFromReport(
-      reportCapabilities(),
+      SlotIndex.fromMaps({ capabilities: reportCapabilities() }),
       '0',
       CATEGORY,
       { selectionByPath: new Map([['0/0', selection]]) },
@@ -57,13 +59,13 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
   });
 
   it('laesst ohne Selektionen jede Regel unangehakt', () => {
-    const { states } = resolveListRuleGroupFromReport(reportCapabilities(), '0', CATEGORY);
+    const { states } = resolveListRuleGroupFromReport(SlotIndex.fromMaps({ capabilities: reportCapabilities() }), '0', CATEGORY);
 
     expect(states.map((state) => state.checked)).toEqual([false, false]);
   });
 
   it('meldet als mandatory genau die Regeln mit isMandatoryListRule', () => {
-    const { states } = resolveListRuleGroupFromReport(reportCapabilities(), '0', CATEGORY);
+    const { states } = resolveListRuleGroupFromReport(SlotIndex.fromMaps({ capabilities: reportCapabilities() }), '0', CATEGORY);
 
     const byName = stateByName(states);
     expect(byName.get('Pflichtregel').mandatory).toBe(true);
@@ -71,7 +73,7 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
   });
 
   it('meldet als isContainer nur die Regel, deren Slot eigene Unter-Slots fuehrt', () => {
-    const { states } = resolveListRuleGroupFromReport(reportCapabilities(), '0', CATEGORY);
+    const { states } = resolveListRuleGroupFromReport(SlotIndex.fromMaps({ capabilities: reportCapabilities() }), '0', CATEGORY);
 
     const byName = stateByName(states);
     expect(byName.get('Pflichtregel').isContainer).toBe(true);
@@ -81,7 +83,7 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
   it('ist binaer bis zu einem wirksamen Hoechstmass von 1, darueber Mengen-Adder', () => {
     const capabilities = reportCapabilities();
     capabilities.set('0/2', capabilityOf({ name: 'Unbeschraenkt', defId: 'rule-c', effectiveMax: null }));
-    const { states } = resolveListRuleGroupFromReport(capabilities, '0', CATEGORY);
+    const { states } = resolveListRuleGroupFromReport(SlotIndex.fromMaps({ capabilities }), '0', CATEGORY);
 
     const byName = stateByName(states);
     expect(byName.get('Pflichtregel').isBinary).toBe(true);
@@ -92,7 +94,7 @@ describe('resolveListRuleGroupFromReport: Zustaende der Ankreuzliste', () => {
   it('liefert fuer eine Kategorie ohne reine Listenregeln keine Zustaende', () => {
     const capabilities = reportCapabilities();
     capabilities.set('0/1', capabilityOf({ name: 'Einheit', defId: 'unit', isListRule: false }));
-    const result = resolveListRuleGroupFromReport(capabilities, '0', CATEGORY);
+    const result = resolveListRuleGroupFromReport(SlotIndex.fromMaps({ capabilities }), '0', CATEGORY);
 
     expect(result).toEqual({ isListRuleGroup: false, states: [] });
   });

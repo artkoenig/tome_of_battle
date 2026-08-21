@@ -2,7 +2,7 @@
  * Issue 0133, Kriterium 1 — `sortIndex` wird von `catalogReader.js` gelesen
  * und als rein deskriptives Datenfeld (kein Gültigkeits-Urteil) durch
  * `evalTree.js`/`report.js` bis auf die `capabilities`/Slot-Objekte
- * durchgereicht, die `childSlotsOf` (`src/evaluation/slotLookups.js`) liefert.
+ * durchgereicht, die `SlotIndex#childSlotsOf` (`src/evaluation/slotIndex.js`) liefert.
  *
  * Kriterium 3 (Datenebene): `sortIndex` teilt sich einen gemeinsamen
  * Nummerierungsraum über Geschwister unterschiedlichen Typs hinweg — ein

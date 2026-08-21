@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf, findEntryInSystem } from '../../roster';
+import { childSelectionsOf } from '../../roster';
 import { resolveListRuleGroupFromReport } from '../../evaluation/listRuleGroups';
 import { isBlockingViolation } from '../../evaluation/violationStats';
-import { findCategoryAnchorSlot, hasUnitSlotsInCategory } from '../../evaluation/slotLookups';
+import { capabilityEntryOf } from '../capabilityEntries';
+import { EMPTY_SLOT_INDEX } from '../../evaluation/slotIndex';
 import { useRosterReport } from '../rosterContexts';
 
 /**
@@ -37,8 +38,7 @@ import { useRosterReport } from '../rosterContexts';
  */
 export function useCategorySection({ force, forcePath = null, categoryLink }) {
   const { report, system, activeCatalogue } = useRosterReport();
-  const capabilities = report?.capabilities;
-  const pathBySelectionId = report?.pathBySelectionId;
+  const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const categoryId = categoryLink?.targetId ?? null;
 
   return useMemo(() => {
@@ -46,25 +46,24 @@ export function useCategorySection({ force, forcePath = null, categoryLink }) {
     // verankert eine Kategorie an einem Slot mit `anchorKind: 'categoryAnchor'`,
     // dessen `defId` der `categoryLink` (verlinkter Fall) oder die Kategorie
     // selbst ist (unverlinkter Fall, `report.js`-Ankervertrag).
-    const categoryAnchor = findCategoryAnchorSlot(capabilities, forcePath, categoryId)
-      ?? findCategoryAnchorSlot(capabilities, forcePath, categoryLink?.id);
+    const categoryAnchor = slots.findCategoryAnchorSlot(forcePath, categoryId)
+      ?? slots.findCategoryAnchorSlot(forcePath, categoryLink?.id);
     const isHidden = categoryAnchor?.isHidden === true;
     const selections = childSelectionsOf(force).filter(s => s.category === categoryId);
 
     const selectionByPath = new Map();
     for (const selection of childSelectionsOf(force)) {
-      const path = pathBySelectionId?.get(selection.id);
+      const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }
     const { isListRuleGroup } = resolveListRuleGroupFromReport(
-      capabilities, forcePath, categoryId, {
+      slots, forcePath, categoryId, {
         selectionByPath,
-        entryOf: (capability) => findEntryInSystem(system, capability.defId, activeCatalogue?.id)
-          ?? { id: capability.defId, name: capability.name },
+        entryOf: (capability) => capabilityEntryOf(system, capability, activeCatalogue?.id),
       }
     );
 
-    const isPrimaryForAnyEntry = hasUnitSlotsInCategory(capabilities, forcePath, categoryId);
+    const isPrimaryForAnyEntry = slots.hasUnitSlotsInCategory(forcePath, categoryId);
     // Ausgeblendeter Anker ohne Auswahlen, oder gar kein Einheiten-Slot in der
     // Kategorie und ebenfalls nichts ausgewählt: keine Sektion.
     const isVisible = !(isHidden && selections.length === 0)
@@ -92,5 +91,5 @@ export function useCategorySection({ force, forcePath = null, categoryLink }) {
         hasErrors: categoryViolations.length > 0,
       },
     };
-  }, [report, capabilities, forcePath, categoryId, categoryLink, force, pathBySelectionId, system, activeCatalogue]);
+  }, [report, slots, forcePath, categoryId, categoryLink, force, system, activeCatalogue]);
 }

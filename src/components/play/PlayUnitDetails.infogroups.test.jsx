@@ -65,14 +65,13 @@ function makeProps() {
   };
 
   // Die echte Fassade liefert den Fähigkeitsdatensatz des Slots.
-  const { capabilities, pathBySelectionId } = evaluateAppRoster(system, roster);
+  const { slots } = evaluateAppRoster(system, roster);
 
   return {
     selection,
     system,
     roster,
-    capabilities,
-    pathBySelectionId,
+    slots,
     getUnitCurrentWounds: (_selectionId, totalMaxWounds) => totalMaxWounds,
     handleAdjustWound: vi.fn(),
     handleMouseEnter: vi.fn(),
@@ -87,7 +86,7 @@ describe('PlayUnitDetails infoGroup-bundled profiles', () => {
   it('renders a weapon profile that is bundled through an inline infoGroup', () => {
     const props = makeProps();
     // Guard gegen den echten Bericht: der Slot führt das gebündelte Profil.
-    const capability = props.capabilities.get(props.pathBySelectionId.get('sel-guardian'));
+    const capability = props.slots.slotOfSelection({ id: 'sel-guardian' });
     expect(capability?.infoElements).toEqual(expect.arrayContaining([
       expect.objectContaining({ kind: 'profile', name: 'Arcane Staff', profileTypeName: 'Weapon' }),
     ]));

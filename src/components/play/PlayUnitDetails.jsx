@@ -16,8 +16,7 @@ export default function PlayUnitDetails({
   roster,
   costTypes = null,
   capability = null,
-  capabilities = null,
-  pathBySelectionId = null,
+  slots,
   getUnitCurrentWounds,
   handleAdjustWound,
   handleMouseEnter,
@@ -29,8 +28,8 @@ export default function PlayUnitDetails({
 }) {
   const { t } = useTranslation();
   const unit = usePlayUnit({
-    selection, system, roster, costTypes, capability, capabilities,
-    pathBySelectionId, getUnitCurrentWounds, isSubUnit,
+    selection, system, roster, costTypes, capability, slots,
+    getUnitCurrentWounds, isSubUnit,
   });
 
   const openDetails = (title, breakdown) => {
@@ -209,8 +208,7 @@ export default function PlayUnitDetails({
                   system={system}
                   roster={roster}
                   costTypes={costTypes}
-                  capabilities={capabilities}
-                  pathBySelectionId={pathBySelectionId}
+                  slots={slots}
                   getUnitCurrentWounds={getUnitCurrentWounds}
                   handleAdjustWound={handleAdjustWound}
                   handleMouseEnter={handleMouseEnter}

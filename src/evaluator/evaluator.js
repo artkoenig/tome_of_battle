@@ -214,6 +214,51 @@ export { prepareDataset } from './datasetPreparation.js';
  *   **nachfolgenden** Geschwister.
  */
 export function evaluate(prepared, roster, options) {
+  // Identitaets-Cache (Issue 0170): derselbe aufbereitete Datensatz und dasselbe
+  // Roster-**Objekt** ergeben denselben Bericht, also wird er genau einmal
+  // gerechnet und danach unveraendert zurueckgegeben. Zwei WeakMaps ueber
+  // Objektidentitaeten halten ihn: aeussere ueber den Datensatz-Griff, innere
+  // ueber das Roster; beide halten nichts am Leben, was der Aufrufer nicht
+  // ohnehin haelt. Die Funktion bleibt beobachtbar rein — der Bericht haengt an
+  // nichts ausser diesen beiden Eingaben.
+  //
+  // Der **Mess-Modus** geht daran vorbei: `{ measure: true }` will die Laufzeit
+  // dieses Laufs sehen, und ein zurueckgegebener Bericht von vorhin haette
+  // keine.
+  if (options !== undefined && options !== null) return computeReport(prepared, roster, options);
+  if (prepared === null || typeof prepared !== 'object'
+    || roster === null || typeof roster !== 'object') {
+    return computeReport(prepared, roster, options);
+  }
+  let byRoster = reportsByDatasetAndRoster.get(prepared);
+  if (byRoster === undefined) {
+    byRoster = new WeakMap();
+    reportsByDatasetAndRoster.set(prepared, byRoster);
+  }
+  const cached = byRoster.get(roster);
+  if (cached !== undefined) return cached;
+  const report = computeReport(prepared, roster, options);
+  byRoster.set(roster, report);
+  return report;
+}
+
+/**
+ * Der Bericht je Paar (aufbereiteter Datensatz, Roster-Objekt).
+ *
+ * @type {WeakMap<object, WeakMap<object, object>>}
+ */
+const reportsByDatasetAndRoster = new WeakMap();
+
+/**
+ * Der eigentliche Auswertungslauf — alles, was {@link evaluate} beschreibt,
+ * ohne den Cache davor.
+ *
+ * @param {object} prepared
+ * @param {object} roster
+ * @param {{ measure?: boolean }} [options]
+ * @returns {object} der Bericht.
+ */
+function computeReport(prepared, roster, options) {
   // Der Messschreiber: ohne `{ measure: true }` ist er der Nicht-Messer, der
   // jeden Abschnitt schlicht ausfuehrt und nichts anhaengt (`measurement.js`).
   const measurement = measurementFor(options);

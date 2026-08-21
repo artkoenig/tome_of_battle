@@ -17,6 +17,9 @@
  * Selektion baut, wird von aussen ueber `entryOf` beigesteuert — das ist
  * Schreibpfad, kein Anzeigepfad.
  */
+
+import { resolvedDefIdOf } from './slotIndex.js';
+
 /** Der Trenner, mit dem ein Slot-Pfad seine Ebenen schreibt. */
 const PATH_SEPARATOR = '/';
 
@@ -27,9 +30,6 @@ const PATH_SEPARATOR = '/';
  * bereits — er fehlt per Definition nicht.
  */
 const MISSING_ANCHOR_KINDS = new Set(['offerAnchor', 'mandatoryPhantom']);
-
-/** Die Definitions-Id, unter der eine Regel wiedererkannt und entdoppelt wird. */
-const resolvedIdOf = (capability) => capability.targetDefId ?? capability.defId;
 
 /**
  * @typedef {Object} MissingMandatoryListRule
@@ -52,7 +52,7 @@ const resolvedIdOf = (capability) => capability.targetDefId ?? capability.defId;
  * belegt ist, faellt ueber ihre aufgeloeste Id heraus, auch wenn daneben noch
  * ein Angebots-Anker derselben Definition steht.
  *
- * @param {Map<string, object>|null|undefined} capabilities  Slot-Map des Berichts.
+ * @param {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts.
  * @param {string|null|undefined} forcePath  Slot-Pfad des Kontingents.
  * @param {{ entryOf?: (capability: object) => object|null, skipResolvedIds?: Set<string> }} [context]
  *   `skipResolvedIds`: Regeln, die ein frueher behandeltes Kontingent desselben
@@ -60,9 +60,10 @@ const resolvedIdOf = (capability) => capability.targetDefId ?? capability.defId;
  *   einmal gesetzt, nicht je Kontingent erneut.
  * @returns {MissingMandatoryListRule[]}
  */
-export function findMissingMandatoryListRules(capabilities, forcePath, context = {}) {
+export function findMissingMandatoryListRules(slots, forcePath, context = {}) {
   const { entryOf = () => null, skipResolvedIds = new Set() } = context;
-  if (!capabilities || capabilities.size === 0) return [];
+  const capabilities = slots.capabilities;
+  if (capabilities.size === 0) return [];
 
   // Was der Roster bereits fuehrt: eine armeeweite Pflicht (§9.9 misst in
   // `force`/`roster`) ist gefuehrt, sobald **irgendein** belegter Slot ihre
@@ -70,7 +71,7 @@ export function findMissingMandatoryListRules(capabilities, forcePath, context =
   // Geschwister-Vergleichs.
   const presentIds = new Set();
   for (const capability of capabilities.values()) {
-    if (capability.anchorKind === 'occupied') presentIds.add(resolvedIdOf(capability));
+    if (capability.anchorKind === 'occupied') presentIds.add(resolvedDefIdOf(capability));
   }
 
   // Die Slots, die fuer dieses Kontingent zaehlen: sein eigenes Angebot und die
@@ -93,7 +94,7 @@ export function findMissingMandatoryListRules(capabilities, forcePath, context =
     if (capability.isMandatoryListRule !== true) continue;
     if (capability.isHidden) continue;
 
-    const resolvedId = resolvedIdOf(capability);
+    const resolvedId = resolvedDefIdOf(capability);
     if (presentIds.has(resolvedId) || seen.has(resolvedId) || skipResolvedIds.has(resolvedId)) continue;
     seen.add(resolvedId);
 

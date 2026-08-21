@@ -31,11 +31,9 @@ export function useRoster(initialRoster, system, saveRosterCallback, reportError
   return {
     roster,
     violations: report.violations,
-    capabilities: report.capabilities,
+    slots: report.slots,
     description: report.description,
     costTotals: report.costTotals,
-    pathBySelectionId: report.pathBySelectionId,
-    pathByForceId: report.pathByForceId,
     unresolvedSelections: report.unresolvedSelections,
     selectedRosterSelection,
     setSelectedRosterSelection,

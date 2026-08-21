@@ -25,6 +25,7 @@ const SYSTEM = {
 
 const slot = (over = {}) => ({
   anchorKind: 'offerAnchor',
+  isIndependentSubUnit: false,
   defId: 'e-x',
   targetDefId: null,
   name: 'Irgendwas',
@@ -54,7 +55,7 @@ describe('useRecruitOffer', () => {
     const capabilities = new Map([
       ['0/0', slot({ defId: 'e-a', name: 'Bogen' })],
       ['0/1', slot({ defId: 'e-a', name: 'Bogen (zweiter Slot)' })],
-      ['0/2', slot({ defId: 'e-b', name: 'Anker', anchorKind: 'groupAnchor' })],
+      ['0/2', slot({ defId: 'e-b', name: 'Anker', anchorKind: 'groupAnchor', })],
       ['0/3', slot({ defId: 'e-c', name: 'Andere Kategorie', primaryCategoryId: 'cat-rare' })],
       ['0/4/0', slot({ defId: 'e-d', name: 'Enkel' })],
     ]);

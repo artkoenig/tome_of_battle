@@ -117,11 +117,11 @@ function systemWithoutGst() {
 /** Vorbedingung jedes Falls: es ist wirklich das Leer-Ergebnis. */
 function expectEmptyShape(result) {
   expect(result.violations).toEqual([]);
-  expect(result.capabilities.size).toBe(0);
+  expect(result.slots.capabilities.size).toBe(0);
   expect(result.description).toBeNull();
   expect(result.costTotals).toEqual({});
-  expect(result.pathBySelectionId.size).toBe(0);
-  expect(result.pathByForceId.size).toBe(0);
+  expect(result.slots.pathBySelectionId.size).toBe(0);
+  expect(result.slots.pathByForceId.size).toBe(0);
 }
 
 const hookResult = (system, roster) =>
@@ -199,7 +199,7 @@ describe('Leer-Ergebnis: dieselbe Referenz an jedem Rand (Issue 0121, Befund C)'
     const before = evaluateAppRoster(null, appRoster());
 
     const filled = evaluateAppRoster(appSystem(), appRoster());
-    expect(filled.capabilities.size).toBeGreaterThan(0);
+    expect(filled.slots.capabilities.size).toBeGreaterThan(0);
 
     const after = evaluateAppRoster(null, appRoster());
     const afterAtHook = hookResult(appSystem(), null);

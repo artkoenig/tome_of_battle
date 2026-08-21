@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlotIndex } from '../evaluation/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from './RosterEditor';
@@ -42,10 +43,12 @@ vi.mock('../viewmodels/useRosterState', () => ({
     report: {
       costs: { pts: 420 },
       violations: [],
-      capabilities: mockCapabilities,
+      slots: SlotIndex.fromMaps({
+        capabilities: mockCapabilities,
+        pathBySelectionId: new Map([['sel-unit', '0/1']]),
+        pathByForceId: new Map([['force-1', '0']]),
+      }),
       costTotals: {},
-      pathBySelectionId: new Map([['sel-unit', '0/1']]),
-      pathByForceId: new Map([['force-1', '0']]),
       unresolvedSelections: [],
       description: null,
       diagnostics: [],
@@ -99,6 +102,7 @@ vi.mock('../roster', async (importOriginal) => ({
 const mockCapabilities = new Map([
   ['0/0', {
     anchorKind: 'offerAnchor',
+    isIndependentSubUnit: false,
     defId: 'rule-entry-1',
     targetDefId: null,
     name: 'Allow experimental rules?',
@@ -111,6 +115,7 @@ const mockCapabilities = new Map([
   }],
   ['0/1', {
     anchorKind: 'occupied',
+    isIndependentSubUnit: false,
     defId: 'unit-entry-1',
     targetDefId: null,
     name: 'Knights Errant',

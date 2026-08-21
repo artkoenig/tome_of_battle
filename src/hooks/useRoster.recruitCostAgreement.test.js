@@ -95,9 +95,9 @@ const freshRoster = (system) => buildRoster(
 );
 
 /** Der Angebots-Anker des Helden unter dem Kontingent — was der Dialog anbietet. */
-const offerOf = ({ capabilities, pathByForceId }, forceId) => {
-  const forcePath = pathByForceId.get(forceId);
-  for (const [path, capability] of capabilities) {
+const offerOf = ({ slots }, forceId) => {
+  const forcePath = slots.pathOfForce(forceId);
+  for (const [path, capability] of slots.capabilities) {
     if (capability.defId === CHAMPION_ID && capability.anchorKind === 'offerAnchor'
       && path.startsWith(`${forcePath}/`)) {
       return capability;
@@ -127,8 +127,8 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
 
     const recruited = result.current.roster.forces[0].selections[0];
     expect(recruited.selectionEntryId).toBe(CHAMPION_ID);
-    const recruitedSlot = result.current.capabilities
-      .get(result.current.pathBySelectionId.get(recruited.id));
+    const recruitedSlot = result.current.slots.capabilities
+      .get(result.current.slots.pathBySelectionId.get(recruited.id));
     expect(recruitedSlot.totalCosts[PTS_ID]).toBe(RECRUITED_COST);
     // Eine Quelle: derselbe Bericht traegt beide Zahlen.
     expect(recruitedSlot.totalCosts[PTS_ID]).toBe(offer.raiseCosts[PTS_ID]);

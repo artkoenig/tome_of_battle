@@ -59,12 +59,19 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
   `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
   entry and `system`, and the component renders the detail block.
+- The report's slot side arrives as `report.slots`, one `SlotIndex`
+  (`src/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
+  `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back
+  to `EMPTY_SLOT_INDEX` and keeps `slots` (not the three maps) in its `useMemo` dependencies.
+- `capabilityEntries.js` here is the one place that resolves a slot back to its catalogue entry
+  (`findCapabilityEntry`, `capabilityEntryOf` with the `{ id, name }` stub). It lives in this
+  folder because `src/evaluation/` may not import `src/roster/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
   on an import of them from `src/components/`. The cost-budget helpers live in
   `useSelectionConfigurator.js` next to the row derivations it shares with `useOptionGroup`.
 - A section ViewModel derives what the editor used to thread through as props (`costTypeLabel`,
-  `remainingPoints`, `extraResources`, the force path from `report.pathByForceId` — never the
+  `remainingPoints`, `extraResources`, the force path from `report.slots.pathOfForce(...)` — never the
   roster's input index). What stays a prop is only what the caller knows: `force`/`forceId`,
   `forcePath`, `categoryLink`/`categoryId` and display state;
   `src/components/editor/sectionPropCount.test.js` pins the ceilings.
@@ -98,7 +105,9 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - `src/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
   `createRosterProviderWrapper`, `createEmptyRosterReport`, `createNoopRosterCommands`). Extend
   the empty report there when the report gains a field.
-- A hook test here builds its report by hand (`new Map()` of slots) and runs instantly; pin what
+- A hook test here builds its report by hand (`new Map()` of slots, folded into a `SlotIndex` by
+  `createEmptyRosterReport`) and runs instantly. Every slot of such a fixture must carry `isHidden`,
+  `isIndependentSubUnit` and `primaryCategoryId`, or `SlotIndex.fromMaps` throws. Pin what
   the derivation does, not what the engine computes. Where the hand-built system resolves no
   frame, `getUnitOptions` returns nothing and the configurator keeps every group anchor as an
   empty section — expect those in an assertion over `sections`.

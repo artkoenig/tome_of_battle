@@ -3,8 +3,8 @@ import {
   findEntryInSystem, resolveEntry,
   MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
 } from '../roster';
-import { isIndependentSubUnitSlot } from '../evaluation/slotLookups';
 import { costLimitLabelOf, costLimitTypeIdOf } from '../evaluation/costDisplays';
+import { EMPTY_SLOT_INDEX } from '../evaluation/slotIndex';
 import { profileCellDisplayOf } from './editor/useUnitCard';
 
 /**
@@ -108,8 +108,7 @@ export function profileTableHeadersOf(profiles) {
  *   roster: object|null,
  *   costTypes?: object[]|null,
  *   capability?: object|null,
- *   capabilities?: Map<string, object>|null,
- *   pathBySelectionId?: Map<string, string>|null,
+ *   slots?: import('../evaluation/slotIndex.js').SlotIndex,
  *   getUnitCurrentWounds: (selectionId: string, totalMaxWounds: number) => number,
  *   isSubUnit?: boolean,
  * }} args
@@ -121,8 +120,7 @@ export function usePlayUnit({
   roster,
   costTypes = null,
   capability = null,
-  capabilities = null,
-  pathBySelectionId = null,
+  slots = EMPTY_SLOT_INDEX,
   getUnitCurrentWounds,
   isSubUnit = false,
 }) {
@@ -133,12 +131,11 @@ export function usePlayUnit({
     // Unter-Auswahl eine ist, sagt der Bericht (`capability.isIndependentSubUnit`,
     // Issue 0156) — die Spielansicht löst dafür keinen Katalog-Eintrag auf.
     const subUnits = childSelectionsOf(selection).filter(subSelection =>
-      isIndependentSubUnitSlot(capabilities, pathBySelectionId, subSelection));
+      slots.isIndependentSubUnitSlot(subSelection));
 
     // Der Fähigkeitsdatensatz des Slots dieser Auswahl (ADR-0034): direkt
-    // gereicht (`capability`) oder über `capabilities` + `pathBySelectionId`.
-    const slotCapability = capability
-      ?? capabilities?.get(pathBySelectionId?.get(selection?.id));
+    // gereicht (`capability`) oder über den Slot-Index des Berichts.
+    const slotCapability = capability ?? slots.slotOfSelection(selection);
 
     // Profil-Tabellen aus der Info-Projektion des Berichts, gruppiert nach
     // Profiltyp: Statblock zuerst, weitere Typen als eigene Tabelle.
@@ -161,7 +158,7 @@ export function usePlayUnit({
       totalCost: slotCapability?.totalCosts?.[costLimitTypeIdOf(roster, costTypes)] ?? 0,
       costLabel: costLimitLabelOf(roster, costTypes),
     };
-  }, [selection, system, roster, costTypes, capability, capabilities, pathBySelectionId]);
+  }, [selection, system, roster, costTypes, capability, slots]);
 
   const currentWounds = getUnitCurrentWounds(selection.id, derived.totalMaxWounds);
 

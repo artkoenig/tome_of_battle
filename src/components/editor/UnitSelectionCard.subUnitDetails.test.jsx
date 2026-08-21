@@ -94,9 +94,9 @@ const groupSelection = () => ({
 // Beide Streitwagen sind eigenstaendige Untereinheiten, ihre Gruppe ist keine.
 const capabilities = () =>
   new Map([
-    ['0/0', { anchorKind: 'occupied', totalCosts: { pts: 134 }, isIndependentSubUnit: false, infoElements: [{ kind: 'profile', ...CHARIOT_PROFILE }] }],
-    ['0/0/0', { anchorKind: 'occupied', totalCosts: { pts: 74 }, isIndependentSubUnit: true, infoElements: [] }],
-    ['0/0/1', { anchorKind: 'occupied', totalCosts: { pts: 60 }, isIndependentSubUnit: true, infoElements: [] }],
+    ['0/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, totalCosts: { pts: 134 }, isIndependentSubUnit: false, infoElements: [{ kind: 'profile', ...CHARIOT_PROFILE }] }],
+    ['0/0/0', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, totalCosts: { pts: 74 }, isIndependentSubUnit: true, infoElements: [] }],
+    ['0/0/1', { anchorKind: 'occupied', isHidden: false, primaryCategoryId: null, totalCosts: { pts: 60 }, isIndependentSubUnit: true, infoElements: [] }],
   ]);
 
 function renderGroupCard() {

@@ -8,10 +8,10 @@
  * - `violations`: die Evaluator-Verletzungen des aktuellen Rosters
  *   (Berichtsform der Fassade: origin/severity/anchor/limitId/limit/actual/
  *   bound/…),
- * - `capabilities`: die Slot-Map des Berichts (Map Slot-Pfad → Datensatz),
+ * - `slots.capabilities`: die Slot-Map des Berichts (Map Slot-Pfad → Datensatz),
  * - `costTotals`: `Record<costTypeId, number>` — jede deklarierte Kostenart,
  *   auch ohne Vorkommen (Wert 0),
- * - `pathBySelectionId`: Map App-Selection-UUID → Slot-Pfad.
+ * - `slots.pathBySelectionId`: Map App-Selection-UUID → Slot-Pfad.
  * Nach einer Roster-Änderung über die vorhandene Hook-API (`removeUnit`)
  * aktualisieren sich `violations` und `costTotals`.
  *
@@ -121,13 +121,13 @@ function renderRoster() {
 }
 
 describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 0121, Task 5)', () => {
-  it('liefert violations/capabilities/costTotals/pathBySelectionId in den vertraglichen Formen', () => {
+  it('liefert violations/slots/costTotals in den vertraglichen Formen', () => {
     const { result } = renderRoster();
 
     expect(Array.isArray(result.current.violations)).toBe(true);
-    expect(result.current.capabilities).toBeInstanceOf(Map);
+    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
     expect(result.current.costTotals).toBeTypeOf('object');
-    expect(result.current.pathBySelectionId).toBeInstanceOf(Map);
+    expect(result.current.slots.pathBySelectionId).toBeInstanceOf(Map);
   });
 
   it('eine echte Grenzverletzung des Rosters erscheint in violations (max 1 je Kontingent, gewählt 2)', () => {
@@ -146,13 +146,13 @@ describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 012
     expect(violation.anchor).toMatchObject({ defId: WARRIOR_ID, name: 'Warrior' });
   });
 
-  it('capabilities führt den belegten Slot der Auswahl unter dem Pfad aus pathBySelectionId', () => {
+  it('slots.capabilities führt den belegten Slot der Auswahl unter dem Pfad aus slots.pathBySelectionId', () => {
     const { result } = renderRoster();
 
-    const path = result.current.pathBySelectionId.get('sel-warrior');
+    const path = result.current.slots.pathBySelectionId.get('sel-warrior');
     expect(path, 'Slot-Pfad für sel-warrior').toBeDefined();
-    expect(result.current.capabilities.has(path)).toBe(true);
-    const capability = result.current.capabilities.get(path);
+    expect(result.current.slots.capabilities.has(path)).toBe(true);
+    const capability = result.current.slots.capabilities.get(path);
     expect(capability.defId).toBe(WARRIOR_ID);
     expect(capability.anchorKind).toBe('occupied');
   });
@@ -181,6 +181,6 @@ describe('useRoster: Evaluator-Ergebnis statt Solver-validationErrors (Issue 012
     // bleibt geführt, ihr Wert fällt auf 0 (Rand: Summe ohne Vorkommen).
     expect(result.current.costTotals).toEqual({ [COST_TYPE_ID]: 0 });
     // Die entfernte Auswahl hat keinen Slot-Pfad mehr.
-    expect(result.current.pathBySelectionId.has('sel-warrior')).toBe(false);
+    expect(result.current.slots.pathBySelectionId.has('sel-warrior')).toBe(false);
   });
 });
