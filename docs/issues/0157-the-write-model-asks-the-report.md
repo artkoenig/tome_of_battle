@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/issue-157-og3nst
+pr: 251
 ---
 
 # The write model asks the report

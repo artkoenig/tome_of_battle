@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/new-session-065uhx
+pr: 255
 ---
 
 # Doppelte Lesungen und toter Bestand

@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/riese-aushebedialog-fehlt-qh0hk2
+pr: 248
 ---
 
 # Kontingent-Datensatz und Wurzel-Angebot folgen der catalogueLink-Hülle

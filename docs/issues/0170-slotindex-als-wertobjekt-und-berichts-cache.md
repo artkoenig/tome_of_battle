@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/new-session-065uhx
+pr: 255
 ---
 
 # SlotIndex als Wertobjekt und zweiter Berichts-Cache

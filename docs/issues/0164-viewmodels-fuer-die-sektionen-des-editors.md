@@ -1,7 +1,7 @@
 ---
-status: active
+status: done
 branch: claude/new-session-065uhx
-pr:
+pr: 255
 ---
 
 # ViewModels für die Sektionen des Editors
