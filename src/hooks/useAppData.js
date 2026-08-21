@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { getAllSystems, getAllRosters } from '../db/database';
-import { runSystemMigrations } from '../db/migrations';
-import { fetchCatalogText } from '../db/catalogUpdate';
+import { loadSystems } from '../services/systemLibrary';
+import { loadRosters } from '../services/rosterStore';
+import { refreshSystems } from '../services/catalogRevisions';
+import { DATA_EVENT, subscribeToDataChanges } from '../services/dataEvents';
 import { VIEWS } from '../constants/views';
 import { t } from '../i18n/i18nStore';
 
@@ -37,8 +38,8 @@ export default function useAppData({ showToast, navigate }) {
   // touches the network — and returns the loaded systems so a caller can hand them
   // to the background catalog refresh without reloading them.
   const loadLocalData = async () => {
-    const dbSystems = await getAllSystems();
-    const allRosters = await getAllRosters();
+    const dbSystems = await loadSystems();
+    const allRosters = await loadRosters();
     setSystems(dbSystems);
     setRosters(allRosters);
     setIsDataLoaded(true);
@@ -52,7 +53,7 @@ export default function useAppData({ showToast, navigate }) {
   const refreshCatalogInBackground = async (dbSystems) => {
     try {
       const { systems: refreshedSystems, failures, unrecoverable } =
-        await runSystemMigrations(dbSystems, fetchCatalogText);
+        await refreshSystems(dbSystems);
       if (failures.length > 0) {
         showToast(
           t('appData.refreshFailed', { systems: failures.map(f => f.name).join(', ') }),
@@ -124,6 +125,25 @@ export default function useAppData({ showToast, navigate }) {
   useEffect(() => {
     loadAllDataRef.current();
   }, []);
+
+  // Die eine Verdrahtung des Änderungs-Kanals der Datenschicht (ADR-0037,
+  // Issue 0167). Wer über `src/services/` schreibt, meldet den Abschluss; hier
+  // — und nur hier — zieht die App ihre Liste nach. Vorher erfuhr die
+  // Roster-Liste einen im Editor gespeicherten Stand erst durch das
+  // `reloadData` eines Navigationswechsels.
+  //
+  // Bewusst aus der Meldung heraus statt mit einem erneuten Lesen: das
+  // Ereignis trägt den gespeicherten Stand, und ein Lesen je Speichervorgang
+  // wäre ein Datenbankzugriff pro Klick im Editor.
+  useEffect(() => subscribeToDataChanges((event) => {
+    if (event.type === DATA_EVENT.ROSTER_SAVED) {
+      setRosters(prev => (prev.some(r => r.id === event.roster.id)
+        ? prev.map(r => (r.id === event.roster.id ? event.roster : r))
+        : [...prev, event.roster]));
+    } else if (event.type === DATA_EVENT.ROSTER_DELETED) {
+      setRosters(prev => prev.filter(r => r.id !== event.rosterId));
+    }
+  }), []);
 
   return { systems, rosters, isDataLoaded, setRosters, loadAllData, handleSystemImported };
 }

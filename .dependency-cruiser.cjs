@@ -52,18 +52,6 @@ const EVALUATION_LAYER = '^src/evaluation/';
 // laufen ueber useAppData und useRosterList.
 const VIEWMODEL_LAYER = '^src/viewmodels/';
 
-// Die drei ViewModels der Huellen, die heute noch selbst nach src/db/ und
-// src/parser/ greifen (Bestand aus Issue 0165). Sie sind die benannte und
-// abschliessende Ausnahme von "viewmodel-keine-datenschicht": jedes weitere
-// ViewModel, das die Datenschicht direkt anspricht, laesst forge-lint
-// fehlschlagen. Issue 0167 lenkt diese drei auf src/services/ um und streicht
-// die Ausnahme dann ersatzlos.
-const VIEWMODEL_DATA_LEGACY = [
-  '^src/viewmodels/useRosterEditor\\.js$',
-  '^src/viewmodels/usePlayRoster\\.js$',
-  '^src/viewmodels/useImporter\\.js$',
-];
-
 const UI_LAYER = [
   COMPONENTS_LAYER,
   VIEWMODEL_LAYER,
@@ -152,11 +140,11 @@ module.exports = {
       name: 'viewmodel-keine-datenschicht',
       comment:
         'ADR-0037/0038: ein ViewModel erreicht Daten ueber src/services/, nie ' +
-        'direkt ueber src/db/ oder src/parser/. Ausgenommen sind die drei ' +
-        'Huellen-ViewModels aus Issue 0165, deren Direktkanten Issue 0167 auf ' +
-        'die Fassade umlenkt.',
+        'direkt ueber src/db/ oder src/parser/. Seit Issue 0167 ohne ' +
+        'Ausnahme: die Direktkanten der drei Huellen-ViewModels laufen ueber ' +
+        'die Fassade.',
       severity: 'error',
-      from: { path: VIEWMODEL_LAYER, pathNot: [TEST_FILE, ...VIEWMODEL_DATA_LEGACY] },
+      from: { path: VIEWMODEL_LAYER, pathNot: TEST_FILE },
       to: { path: [DB_LAYER, PARSER_LAYER] },
     },
     {
@@ -165,9 +153,10 @@ module.exports = {
         'ADR-0037: die Oberflaeche erreicht Daten ausschliesslich ueber ' +
         'src/services/. Ein direkter Griff nach src/db/ oder src/parser/ laesst ' +
         'sich weder austauschen noch instrumentieren. Bestand beim Aufstellen ' +
-        'der Regel: 14 Kanten (ADR-0037, Befund 1). Jede Zahl darueber ist neu ' +
-        'und gehoert nicht dazu.',
-      severity: 'warn',
+        'der Regel: 14 Kanten (ADR-0037, Befund 1). Issue 0167 hat sie auf ' +
+        'src/services/ umgelenkt; die Regel steht seitdem auf error und ' +
+        'friert den Zustand ein.',
+      severity: 'error',
       from: { path: [...UI_LAYER, I18N_LAYER], pathNot: TEST_FILE },
       to: { path: [DB_LAYER, PARSER_LAYER] },
     },

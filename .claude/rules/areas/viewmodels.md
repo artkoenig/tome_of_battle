@@ -31,11 +31,10 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   so it fails `forge-lint`) — every effect and every memo of a screen lives here.
   Adding an override for a components path there means repeating the evaluator-facade `patterns`
   block: oxlint replaces a rule's config per override rather than merging it.
-- A ViewModel may **not** import `src/db/` or `src/parser/`: since Issue 0166
-  `viewmodel-keine-datenschicht` is an `error` and fails `forge-lint`. The only exception is
-  named and closing — `useRosterEditor.js`, `usePlayRoster.js` and `useImporter.js`, listed as
-  `VIEWMODEL_DATA_LEGACY` in `.dependency-cruiser.cjs`, where the edges were parked until the
-  data facade of Issue 0167 cuts them. A new ViewModel goes through the facade.
+- A ViewModel may **not** import `src/db/` or `src/parser/`: `viewmodel-keine-datenschicht` is
+  an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
+  shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
+  `src/services/` like everything else.
 - `viewmodel-kein-jsx` (`src/viewmodels/` → `src/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   WHFB6_LINKING_DEFAULT,
-  getWhfb6LinkingEnabled as loadWhfb6LinkingEnabled,
-  setWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
-} from '../db/database';
+  loadWhfb6LinkingEnabled,
+  saveWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
+} from '../services/settings';
 
 // App-wide settings, deliberately scoped to the single whfb6 linking flag (see
 // ADR-0015). The context is null until a SettingsProvider mounts, which

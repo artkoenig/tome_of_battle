@@ -4,6 +4,7 @@ import useAppData from './useAppData';
 import { getAllSystems, getAllRosters } from '../db/database';
 import { runSystemMigrations } from '../db/migrations';
 import { VIEWS } from '../constants/views';
+import { DATA_EVENT, emitDataChange } from '../services/dataEvents';
 
 vi.mock('../db/database', () => ({
   getAllSystems: vi.fn(),
@@ -116,5 +117,60 @@ describe('useAppData — Neuladen', () => {
     });
 
     expect(getAllRosters).toHaveBeenCalled();
+  });
+});
+
+// Issue 0167 / ADR-0037: `useAppData` ist die eine Stelle, an der der
+// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über `src/services/`
+// geschrieben wurde, steht danach in der Liste — ohne Navigationswechsel und
+// ohne zweites Lesen aus der DB.
+describe('useAppData — Änderungs-Kanal der Datenschicht', () => {
+  it('übernimmt ein gespeichertes Roster ohne Navigationswechsel', async () => {
+    const { result, navigate } = renderAppData();
+    await waitFor(() => expect(result.current.isDataLoaded).toBe(true));
+    getAllRosters.mockClear();
+    const renamed = { ...roster, name: 'Umbenannt' };
+
+    act(() => {
+      emitDataChange({ type: DATA_EVENT.ROSTER_SAVED, roster: renamed });
+    });
+
+    expect(result.current.rosters).toEqual([renamed]);
+    expect(getAllRosters).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('nimmt ein Roster auf, das die Liste noch nicht kennt', async () => {
+    const { result } = renderAppData();
+    await waitFor(() => expect(result.current.isDataLoaded).toBe(true));
+    const added = { id: 'roster-2', name: 'Liste 2', systemId: 'sys-1' };
+
+    act(() => {
+      emitDataChange({ type: DATA_EVENT.ROSTER_SAVED, roster: added });
+    });
+
+    expect(result.current.rosters).toEqual([roster, added]);
+  });
+
+  it('entfernt ein gelöschtes Roster aus der Liste', async () => {
+    const { result } = renderAppData();
+    await waitFor(() => expect(result.current.isDataLoaded).toBe(true));
+
+    act(() => {
+      emitDataChange({ type: DATA_EVENT.ROSTER_DELETED, rosterId: roster.id });
+    });
+
+    expect(result.current.rosters).toEqual([]);
+  });
+
+  it('meldet sich beim Abräumen wieder ab', async () => {
+    const { result, unmount } = renderAppData();
+    await waitFor(() => expect(result.current.isDataLoaded).toBe(true));
+
+    unmount();
+
+    expect(() => emitDataChange({ type: DATA_EVENT.ROSTER_DELETED, rosterId: roster.id }))
+      .not.toThrow();
+    expect(result.current.rosters).toEqual([roster]);
   });
 });

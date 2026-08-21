@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import JSZip from 'jszip';
-import { extractZipFiles } from '../parser/zipExtractor';
-import { deleteSystem } from '../db/database';
-import { fetchCatalogText, buildRawFileUrl, deriveRevisionState, REVISION_STATE } from '../db/catalogUpdate';
-import { loadAvailableSystemsFromSources } from '../db/catalogSourceIndex';
-import { completeSystemImport, SYSTEM_IMPORT_STATUS } from '../db/systemImport';
 import {
+  readSystemArchive,
+  importSystem,
+  deleteSystem,
+  loadAvailableSystems,
   catalogueDirectoryFromIndex,
   catalogueDirectoryFromLinks,
-} from '../parser/libraryDependencies';
+  SYSTEM_IMPORT_STATUS,
+} from '../services/systemLibrary';
+import { buildRawFileUrl, deriveRevisionState, REVISION_STATE } from '../services/catalogRevisions';
 import { useTranslation } from '../i18n/useTranslation';
 import { t as translate } from '../i18n/i18nStore';
 
@@ -175,8 +176,7 @@ export function useImporter({ systems = [], onSystemImported, onReportError } = 
 
   const fetchAvailableSystems = useCallback(async () => {
     try {
-      const { systems: indexSystems, anyIndexReachable } =
-        await loadAvailableSystemsFromSources(fetchCatalogText);
+      const { systems: indexSystems, anyIndexReachable } = await loadAvailableSystems();
       if (indexSystems.length > 0) {
         setAvailableSystems(indexSystems);
         setSelectedBundleSysId(indexSystems[0].id);
@@ -226,7 +226,7 @@ export function useImporter({ systems = [], onSystemImported, onReportError } = 
    * Importwege aus und spiegelt sein Ergebnis in der Oberfläche.
    */
   const finishImport = useCallback(async (gstFiles, catFiles, catalogueDirectory) => {
-    const result = await completeSystemImport({ gstFiles, catFiles, catalogueDirectory });
+    const result = await importSystem({ gstFiles, catFiles, catalogueDirectory });
 
     if (result.status === SYSTEM_IMPORT_STATUS.MISSING_LIBRARY_DEPENDENCIES) {
       setError(buildMissingLibraryDependencyMessage(result.missingDependencies, t));
@@ -291,7 +291,7 @@ export function useImporter({ systems = [], onSystemImported, onReportError } = 
 
     setLoading(true);
     try {
-      const { gstFiles, catFiles } = await extractZipFiles(file);
+      const { gstFiles, catFiles } = await readSystemArchive(file);
       // Ein hochgeladenes Archiv hat keinen Index, der seine Kataloge
       // begrenzt — jedes fehlende Link-Ziel kann der Nutzer ergänzen.
       await finishImport(gstFiles, catFiles, catalogueDirectoryFromLinks());

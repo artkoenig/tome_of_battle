@@ -10,8 +10,12 @@ paths:
 
 - This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
   allowed direction). It reaches data only through `src/services/`; a direct import of `src/db/`
-  or `src/parser/` is reported by the dependency-cruiser rule `ui-nicht-auf-daten` — still `warn`
-  while the 14 existing edges are being removed, `error` afterwards.
+  or `src/parser/` fails `forge-lint` on the dependency-cruiser rule `ui-nicht-auf-daten`
+  (`error` since Issue 0167 moved the last 14 edges onto the facade — there is no exception left).
+- `src/hooks/useAppData.js` is the **only** subscriber of the facade's change channel
+  (`services/dataEvents.js`): a write through `src/services/` announces itself there and the one
+  roster list follows. A screen that wants to see a foreign save subscribes nowhere — it reads
+  the list it already gets.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
   pair is an incomplete change.
 - **The ViewModel pattern (ADR-0038), and it is blocking since Issue 0166.** Every UI building

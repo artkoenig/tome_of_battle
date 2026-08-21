@@ -41,15 +41,17 @@ from low to high is forbidden.
 | Fachlogik | `src/evaluator/`, `src/evaluation/`, `src/roster/` | Evaluation, write model, translation between the two |
 | Daten | `src/services/`, `src/db/`, `src/parser/` | Persistence, import, catalogue decomposition |
 
-`src/services/` is the single address through which the UI reaches data; it does not
-exist yet. Four rules in `.dependency-cruiser.cjs` (`ui-nicht-auf-daten`,
-`daten-kein-rueckgriff`, `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the
-direction. They start as `warn` — `ui-nicht-auf-daten` reports the 14 direct UI → data
-edges that exist today — and are pulled to `error` as each phase (issues 0161–0171)
-removes its violations. `src/utils/` belongs to no layer and is dissolved on the way.
+`src/services/` is the single address through which the UI reaches data. Four rules in
+`.dependency-cruiser.cjs` (`ui-nicht-auf-daten`, `daten-kein-rueckgriff`,
+`fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the direction. They start as
+`warn` and are pulled to `error` as each phase (issues 0161–0171) removes its
+violations; `ui-nicht-auf-daten` is `error` since issue 0167 moved the 14 direct
+UI → data edges onto the facade. `src/utils/` belongs to no layer and is dissolved on
+the way.
 
 | Folder | Responsibility |
 |---|---|
+| `src/services/` | The data facade (ADR 0037): `rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`, plus the one change channel `dataEvents.js`. Every writing call announces its completion there; `src/hooks/useAppData.js` is the single place that subscribes. |
 | `src/parser/` | Imports uploaded `.cat`/`.gst`/`.zip` files: `zipExtractor.js`, `xmlParser.js`, advisory XSD validation (`schemaValidator.js`, [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)), `catalogEditor.js`. Has its own XML reader — separate from the evaluator's, a common source of confusion. |
 | `src/db/` | IndexedDB persistence (`database.js`: stores `systems`/`rosters`/`settings`), migrations, catalog fork fetch (`catalogUpdate.js`, [ADR 0014](adr/0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md)/[0017](adr/0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md)/[0018](adr/0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md)); see [ADR 0002](adr/0002-data-flow-and-indexeddb-storage.md). |
 | `src/roster/` | The app's **write model**: builds, resolves and rewrites the selection tree (`selectionFactory.js`, `rosterTree.js`, `catalogResolver.js`, `rosterSync.js`, ...). Structural only — it does not judge a roster ([ADR 0011](adr/0011-roster-referenzmodell-und-serialisierungs-adapter.md)). Barrel `index.js` is convenience only, not an enforced facade. |

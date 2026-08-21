@@ -1,14 +1,8 @@
 import { useState } from 'react';
-import { saveRoster, deleteRoster } from '../db/database';
+import { saveRoster, deleteRoster } from '../services/rosterStore';
+import { readRosterFile, buildRosterFile, MissingSystemError } from '../services/rosterTransfer';
 import { buildRoster } from '../utils/createRoster';
 import { VIEWS } from '../constants/views';
-import {
-  exportRosterToXml,
-  importRosterFromXml,
-  compressXmlToRosz,
-  decompressRoszToXml,
-  MissingSystemError
-} from '../utils/rosterSerialization';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 import { t } from '../i18n/i18nStore';
 
@@ -89,7 +83,10 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       });
       // Die neue Liste sofort veröffentlichen, damit die abgeleitete Auswahl
       // den Editor öffnen kann, ohne auf das Neuladen aus der DB zu warten.
-      setRosters(prev => [...prev, roster]);
+      // Einfügen nur, wenn es noch fehlt: seit Issue 0167 meldet `saveRoster`
+      // seinen Abschluss, und der Abonnent in `useAppData` hat das Roster
+      // womöglich schon eingesetzt — ein blindes Anhängen ergäbe es doppelt.
+      setRosters(prev => (prev.some(r => r.id === roster.id) ? prev : [...prev, roster]));
       reloadData();
 
       // Open editor
@@ -157,8 +154,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
 
   const importRoster = async (file) => {
     try {
-      const xmlText = await decompressRoszToXml(file);
-      let newRoster = importRosterFromXml(xmlText, systems);
+      let newRoster = await readRosterFile(file, systems);
 
       const system = systems.find(s => s.id === newRoster.systemId);
       if (system) {
@@ -189,14 +185,12 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         return;
       }
 
-      const xmlText = exportRosterToXml(roster, system);
-      const roszBlob = await compressXmlToRosz(roster.name, xmlText);
+      const { blob, fileName } = await buildRosterFile(roster, system);
 
-      const url = URL.createObjectURL(roszBlob);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const sanitizedName = roster.name.replace(/[/\\?%*:|"<>]/g, '_');
-      a.download = `${sanitizedName}.rosz`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
