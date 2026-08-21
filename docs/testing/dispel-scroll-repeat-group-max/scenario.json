@@ -3,10 +3,10 @@
   "name": "dispel-scroll-repeat-group-max",
   "description": "Ein modifier, der eine <repeats>-Liste mit genau EINEM <repeat> traegt, wird je gezaehltem Treffer dieses repeat einmal angewendet (Dispel-Scroll-Muster, Formatdoku Abschnitt 7.7/9.7). Konkret: die geteilte Gruppe 'Arcane Items (VC)' (2f34-a145-911a-fa00) der Vampire Counts traegt max 1 (Constraint fa59-e6b8-9523-3510, field=selections scope=parent) und zwei increment-1-Modifier auf genau diese Constraint-Id, deren je einziger <repeat> (value=1, repeats=1) die gewaehlten Kopien des Dispel-Scroll-Links adb3-9853-d566-e432 bzw. des Power-Stone-Links a7ac-677c-c302-3837 zaehlt. Mit N Dispel Scrolls ist das effektive Maximum der Gruppe 1+N. Zwei Roster im Kontingent Standard (VC-AB) (e989-15b8-7eb6-9668) unter dem Traeger Master Necromancer (4ee2-ac3a-3cc6-11af) pinnen das ueber expect.capabilities: 2 Scrolls => effectiveMax 3 (die Wiederholung greift ZWEIMAL), keine Auswahl => Basiswert effectiveMax 1.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

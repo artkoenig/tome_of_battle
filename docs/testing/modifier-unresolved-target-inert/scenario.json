@@ -3,10 +3,10 @@
   "name": "modifier-unresolved-target-inert",
   "description": "Ein modifier, dessen field eine Id nennt, die der geladene Datensatz NIRGENDS definiert - weder als constraint-id noch als costType noch als characteristicType -, ist wirkungslos: er erzeugt keine eigene Grenze, verschiebt keine fremde Grenze und stoert die Auswertung seines Traegers und seiner Nachbarn nicht. Gepinnt an den vier \"Swedish Comp System\"-Modifikatoren des Orcs-and-Goblins-Katalogs auf ce6e-afde-2ed1-aac2 (ein unbedingter decrement 100 am Upgrade \"Fanatics\" 18f4-ad33-69ca-e327, drei bedingte increment 100 an der Einheit \"Night Goblins\" 79af-55cb-9761-f0be). Die Id kommt im gesamten Fixture-Korpus AUSSCHLIESSLICH als field dieser vier Modifikatoren vor. Gegenprobe im selben Rahmen: der ECHTE Modifikator der \"Netters\" (increment 1 je vier Night-Goblin-Modellen auf die Grenze 445e-c0e4-6784-9097, Basiswert max 0) verschiebt seine Grenze nachweislich - sonst waere \"nichts passiert\" nicht von \"nichts ausgewertet\" zu unterscheiden.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

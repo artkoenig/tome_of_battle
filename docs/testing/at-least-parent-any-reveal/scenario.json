@@ -3,10 +3,10 @@
   "name": "at-least-parent-any-reveal",
   "description": "Eine condition type=atLeast value=1 field=selections scope=parent childId=any zaehlt im Eltern-Rahmen ihres Traegers die Selektionen von IRGENDETWAS (childId=any ist der unbeschraenkte Zaehler) und haelt, sobald diese Zahl 1 erreicht. Konkret: Im Vampire-Counts-Katalog traegt das geteilte Upgrade 'Wolf Lord' (66bc-8fc1-81a2-9cd4, Basis hidden=true) genau EINEN Modifier - set hidden=false - gegatet durch genau diese eine Bedingung, ohne repeats und ohne modifierGroup. Erreichbar ist der Eintrag ausschliesslich ueber vier ineinandergeschachtelte selectionEntryGroups (Magic selection 53e8 -> Bloodline 0719 -> Vampiric Powers Von Carstein 84fd -> entryLink b8be-a71f-569c-5cdc); Gruppen erscheinen in der .ros nicht als eigene selection, der Eltern-Rahmen ist deshalb die umschliessende Auswahl - der Vampire Thrall e37b-c827-99ac-b706. Fuenf Roster variieren allein, was diese Thrall-Auswahl haelt: 0 (Bedingung haelt nicht -> isHidden true), 1, 2, sowie der Traeger selbst ein- und zweifach (Bedingung haelt -> isHidden false). Die eigene Obergrenze des Traegers (06c5-d960-2b4d-399a, max 1, field=selections, scope=parent) wird dort behauptet, wo die Roster sie sprechen lassen: still bei Ist 0 und 1, feuernd bei Ist 2 (bound 1). Jedes Roster fuehrt die Blutlinie 'Von Carstein' (f557-097a-d26b-9363), damit der umschliessende, per Basis versteckte Gruppen-Verweis 614f-c7bb-2050-c603 in allen Faellen aufgedeckt ist und die Sichtbarkeit des Slots einzig von dessen eigenem hidden-Flag abhaengt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

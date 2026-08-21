@@ -3,10 +3,10 @@
   "name": "army-standard-bearer",
   "description": "Armee-Standartentraeger (Battle Standard Bearer) der 6th Definitive Edition (Orcs & Goblins + .gst + Mercenaries). Alle Erwartungen sind AUS DEN KATALOGDATEN abgeleitet (Black-Box, kein Blick in den Evaluator). Die BSB-Aufwertung traegt zwei eintrags-skopierte Zaehlgrenzen (auf dem geteilten .gst-Eintrag e9ad): armeeweit max 1 (082b, scope=roster) und je Charakter max 1 (01a5, scope=parent). Die KATEGORIE-skopierten Grenzen auf der categoryEntry 2ef7 gelten laut Datenformat (Paragraf 5.5/5.6) OHNE Wiederholung am categoryLink: die Force-Grenze 2a1d (Kategorie-Ziel, zaehlt armeeweit) feuert in Roster 02 (Ist 2/Grenze 1), 03 (2/1) und 04 (Border-Patrols-Modifier setzt die Grenze auf 0, Ist 1/Grenze 0). Die parent-skopierte Kategorie-Grenze 6935 bleibt unveraendert absent gepinnt (nicht Teil von Issue 0092); die als Verfuegbarkeit (hidden) modellierte Magic-Items-Sperre erscheint nicht als zaehlende Verletzung.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

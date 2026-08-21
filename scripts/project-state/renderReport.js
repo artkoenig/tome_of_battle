@@ -659,7 +659,7 @@ function escapeHtml(value) {
 /**
  * Das eingebettete Stylesheet. Es nimmt den Look der Anwendung auf (ADR 0004,
  * Gothic-/Tabletop-Thema): Pergament, Gold und Obsidian-Dunkel. Die Farbwerte sind
- * aus `src/styles/01-tokens.css` uebernommen (kopiert, nicht importiert -- die Seite
+ * aus `src/ui/styles/01-tokens.css` uebernommen (kopiert, nicht importiert -- die Seite
  * bleibt eigenstaendig). Schriften sind bewusst self-contained: kein Nachladen von
  * Google Fonts, sondern der Fallback-Serifen-Stack der App; der App-Look wird ueber
  * Palette, Gold und Layout getragen, nicht ueber Cinzel/Lora selbst. Helles und

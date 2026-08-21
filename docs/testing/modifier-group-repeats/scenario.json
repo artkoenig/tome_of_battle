@@ -3,10 +3,10 @@
   "name": "modifier-group-repeats",
   "description": "Ein <repeats> an einer <modifierGroup> wiederholt die Modifikatoren in der Klammer. Stehen in EINER <repeats>-Liste mehrere <repeat>-Elemente, ADDIEREN sich ihre Anwendungen — sie multiplizieren sich nicht. Belegt an 'Grave markers' (f899-4fbd-db93-629e) unter 'Army of Sylvania': min 2 (5c4a-c8ea-073d-909c) und max 2 (1b4e-3003-8b78-4be6), beide scope=parent, werden je Anwendung um 1 erhoeht; die zwei <repeat> zaehlen je 1 pro Vampire Count (6822-0110-a7c9-cbb0) und je 1 pro 0-1 Vampire Lord (b77b-88d5-5e80-e178) im Kontingent. Erwartete Grenze = 2 + Counts + Lords; eine multiplizierende Lesart ergaebe 2 + Counts * Lords und faellt in den Rostern 04-08 auf.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

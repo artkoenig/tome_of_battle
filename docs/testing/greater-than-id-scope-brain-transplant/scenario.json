@@ -3,10 +3,10 @@
   "name": "greater-than-id-scope-brain-transplant",
   "description": "Eine condition type=\"greaterThan\" field=\"selections\", deren scope KEIN Schluesselwort, sondern die Id eines Katalog-Eintrags ist: scope=\"7a4a-301b-af31-9ee0\" benennt die tragende Einheit 'Mutant Rat Ogres' des Skaven-Katalogs selbst. Der Rahmen ist damit die Selektion dieser Einheit; mit includeChildSelections=\"true\" zaehlt er ALLES unter sich, beliebig tief - die gezaehlte Aufwertung 'Brain transplant' (8b1c-de3a-982e-e323) steht zwei Ebenen tiefer, in der Gruppe 'Options' (a0a2-1a3d-86d3-4a67) unter der Aufwertung 'Rat Ogre' (40c5-05e4-da1d-6194). greaterThan 0 haelt, sobald genau eine solche Selektion existiert. Am infoLink 'Loss of Packmaster Ogres' (12c2-071e-1e09-5918, type=rule, targetId c78e-7036-f2ed-c05b) haengt daran ein einziger modifier set hidden=true: mit Brain transplant faellt die Regel aus der Info-Projektion der Einheit, ohne sie steht sie darin. Dieselbe Bedingung (identische Attribute) traegt vier Geschwister-Konstrukte derselben Einheit: sie blendet die Basis-verborgene Regel 'Regeneration' (infoLink 7105-391b-fc3a-3771) EIN, versteckt die Aufwertung 'Packmaster each pack' (90fa-58e6-5fdf-28c7) und setzt deren Mindestmass 6fda-622a-eae1-fc61 von 1 auf 0, und setzt am Rat-Ogre-Profil (infoLink a9e1-ff0e-140a-a6f4) Ld auf 7 und WS auf 4. Beobachtet wird die Zelle deshalb doppelt: ueber expect.capabilities (infoElements / infoElementsAbsent des Einheiten-Slots und Merkmalswerte des Rat-Ogre-Slots) UND ueber die Grenze 6fda-622a-eae1-fc61, die nur ohne Brain transplant feuert. Die condition selbst ist keine zaehlende Grenze und taucht im Verletzungsbericht nie auf.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Skaven (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

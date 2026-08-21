@@ -12,7 +12,7 @@ describe('project-state/coverage', () => {
     });
 
     it('normalizes backslash separators', () => {
-      expect(moduleFromPath('C:\\repo\\src\\parser\\read.js', 'C:/repo')).toBe('src/parser');
+      expect(moduleFromPath('C:\\repo\\src\\data\\parser\\read.js', 'C:/repo')).toBe('src/data/parser');
     });
   });
 
@@ -40,7 +40,7 @@ describe('project-state/coverage', () => {
 
     it('flattens per-branch hit arrays before counting', () => {
       const coverageFinal = {
-        '/repo/src/parser/x.js': {
+        '/repo/src/data/parser/x.js': {
           s: {},
           b: { 0: [1, 0], 1: [1, 1] },
           f: {},
@@ -53,7 +53,7 @@ describe('project-state/coverage', () => {
 
     it('reports full coverage for a metric with no measurable entries (no 0/0 division)', () => {
       const coverageFinal = {
-        '/repo/src/parser/empty.js': { s: {}, b: {}, f: {} },
+        '/repo/src/data/parser/empty.js': { s: {}, b: {}, f: {} },
       };
 
       const [parser] = aggregateCoverage(coverageFinal, { rootPath: '/repo' });
@@ -65,12 +65,12 @@ describe('project-state/coverage', () => {
     it('sorts modules by name', () => {
       const coverageFinal = {
         '/repo/src/solver/a.js': { s: { 0: 1 }, b: {}, f: {} },
-        '/repo/src/parser/a.js': { s: { 0: 1 }, b: {}, f: {} },
-        '/repo/src/components/a.js': { s: { 0: 1 }, b: {}, f: {} },
+        '/repo/src/data/parser/a.js': { s: { 0: 1 }, b: {}, f: {} },
+        '/repo/src/ui/components/a.js': { s: { 0: 1 }, b: {}, f: {} },
       };
 
       const modules = aggregateCoverage(coverageFinal, { rootPath: '/repo' }).map((entry) => entry.module);
-      expect(modules).toEqual(['src/components', 'src/parser', 'src/solver']);
+      expect(modules).toEqual(['src/data/parser', 'src/solver', 'src/ui/components']);
     });
 
     it('returns an empty list for empty or missing input', () => {

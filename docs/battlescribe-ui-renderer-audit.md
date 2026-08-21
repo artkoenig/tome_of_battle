@@ -4,8 +4,8 @@
 > Main-Issue 19 fest; die genannten `src/solver/`-Brücken existieren nicht mehr.
 > Seit Issue 0121 bezieht die Oberfläche Verletzungen, Verfügbarkeit, Grenzen,
 > Namen, Kosten und Profile aus dem Bericht der Reinraum-Engine
-> (`src/evaluator/`, Brücke `src/evaluation/`); rein strukturelle Helfer leben in
-> `src/roster/`. Der Bericht bleibt unverändert als Beleg, was damals geprüft
+> (`src/domain/evaluator/`, Brücke `src/domain/evaluation/`); rein strukturelle Helfer leben in
+> `src/domain/roster/`. Der Bericht bleibt unverändert als Beleg, was damals geprüft
 > wurde — er ist keine Beschreibung des heutigen Codes.
 
 Systematischer, **endlicher** Abgleich jedes anzeige-relevanten BattleScribe-XSD-
@@ -82,14 +82,14 @@ dort korrekt eingesammelt, erscheint es überall konsistent:
   `getEffectiveEntryCategoryLinks` (Konstrukt #3b).
 - Ergänzte Renderer-Tests sichern die auditierten Konstrukte ab:
   - `src/solver/constraintScope.test.js` — `formatConstraintLimit` (Prozent/Absolut).
-  - `src/components/editor/RosterSidebar.test.jsx` — Prozent-Grenzwert mit „%",
+  - `src/ui/components/editor/RosterSidebar.test.jsx` — Prozent-Grenzwert mit „%",
     versteckte Kostenart ausgeblendet, sichtbare Kostenart angezeigt.
-  - `src/components/play/PlayUnitDetails.infogroups.test.jsx` — infoGroup-gebündeltes
+  - `src/ui/components/play/PlayUnitDetails.infogroups.test.jsx` — infoGroup-gebündeltes
     Profil erscheint als eigene Profiltabelle (echte Brücke, kein Solver-Mock).
   - `src/solver/entryVisibility.test.js` — effektive Primärkategorie (Konstrukt #3b):
     `set-primary`-Modifier über einen entryLink auf ein Bibliothekskatalog-Ziel,
     inkl. Bedingungs-Gating.
-  - `src/components/editor/CategoryUnitAdder.test.jsx` — der Aushebe-Dialog bietet eine
+  - `src/ui/components/editor/CategoryUnitAdder.test.jsx` — der Aushebe-Dialog bietet eine
     per `set-primary` nach „Core" umkategorisierte Einheit an (echte Brücke, kein
     Solver-Mock).
 - Nicht-anzeige-relevante Konstrukte (#7 `importRootEntries`, #9 `publisherUrl`) haben

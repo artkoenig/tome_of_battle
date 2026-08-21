@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Regeln allein aus den
 Katalogdaten der *6th Definitive Edition*
-(`src/evaluator/__fixtures__/whfb6-definitive/`) und der Formatspezifikation
+(`src/domain/evaluator/__fixtures__/whfb6-definitive/`) und der Formatspezifikation
 ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md)) abgeleitet;
 die Roster-Form ist an den bestehenden Szenarien verifiziert (direktes `entryId`,
 `entryLinkId=""`, verschachtelte `selections` mit `number`). Struktureller Zwilling

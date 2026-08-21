@@ -3,10 +3,10 @@
   "name": "less-than-unit-wizard-level-gate",
   "description": "Eine condition type=lessThan mit field=selections, scope=unit, includeChildSelections=true und einer Eintrags-Id in childId haelt genau dann, wenn die umschliessende Einheit ECHT WENIGER als value Selektionen dieses Eintrags fuehrt. Konkret: Im Vampire-Counts-Katalog traegt der entryLink 'Magic Level 3' (9dc7-b9d7-4e92-4cda -> .gst-Upgrade cb6c-c69a-5c73-97e8) in der Gruppe 'Wizard Level' (43b8-dacd-f09f-37c3) des Units '0-1 Vampire Lord ' (b77b-88d5-5e80-e178) einen modifierGroup type=and, dessen conditionGroup type=and aus genau zwei Gliedern besteht: lessThan 1 x 'Magic Level 4' (fc28-3af2-d37a-d07e) UND atLeast 1 x 'Nehekhara's Noble Blood' (32d0-a151-94a3-aa54), beide scope=unit. Haelt die Klammer, setzt ihr modifier set value=1 field=4d5e-8101-e8d4-d7ad die eigene min-Grenze des Links (Basis min 0, scope=parent) auf 1; ein zweiter modifier setzt die pts-Kosten des Links (ecfa-8486-4f6c-c249, Basis 50) auf 0. Vier Vampire-Lord-Roster halten 'Nehekhara's Noble Blood' konstant und variieren allein die Magic-Level-4-Zahl (und, orthogonal dazu, ob 'Magic Level 3' selbst gewaehlt ist); zwei weitere Roster pinnen dasselbe Konstrukt am zweiten, unabhaengigen Vorkommen: entryLink 'Magic Level 2' (5a5f-aaf8-868f-9630) am Vampire Count (6822-0110-a7c9-cbb0), gegatet auf weniger als 1 x 'Magic Level 3', mit der min-Grenze 5e9b-7594-02cb-0bad. Der beobachtbare Zeuge ist jeweils der effectiveMin des gegateten Slots; die Kostenwirkung des zweiten Modifiers ist ueber expect.capabilities nicht aussagbar und bleibt unassertiert.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -3,10 +3,10 @@
   "name": "set-cost-value-force-gate",
   "description": "Ein modifier type=\"set\", dessen field eine Kostenart-Id ist, ERSETZT die Kosten seines Traegers in dieser Kostenart durch seinen value, solange seine Bedingung haelt - und laesst den geschriebenen Basiswert unangetastet, solange sie nicht haelt. Der ersetzte Wert ist das, was jede Summe ueber diese Kostenart danach benutzt, die Punktsumme der Roster eingeschlossen: dasselbe Zombie-Modell des Vampire-Counts-Katalogs kostet 6 pts (geschrieben), 5 pts im Kontingent \"Necromancer's Army (VC-AB)\" (set 5) und 8 pts im Kontingent \"Army of Sylvania (SoC)\" (set 8). Vier ansonsten identische Roster mit je 20 Modellen machen das an der engine-eigenen Budget-Regel budget::ecfa-8486-4f6c-c249 messbar (120 / 100 / 160 / 100 pts).",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

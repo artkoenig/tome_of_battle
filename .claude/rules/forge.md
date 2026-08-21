@@ -13,13 +13,13 @@
 
 - `forge-test` = `npx vitest run` — unit, component and the evaluator's manifest-driven E2E.
   `forge-test --run <pattern>` passes the pattern straight to vitest, so it filters by path or
-  filename (`forge-test --run src/evaluator`); pass `-t "<name>"` as the pattern to filter by
+  filename (`forge-test --run src/domain/evaluator`); pass `-t "<name>"` as the pattern to filter by
   test name.
 - `forge-lint` = `npm run lint && npm run depcruise`. oxlint's many warnings do not fail it;
   the blocking dependency-cruiser rules (Reinraum boundary, evaluator facade) do.
 - `npm run knip` is warn-only and deliberately outside the wrappers.
 - The Puppeteer app E2E (`node e2e/ui.test.js`, part of `npm test`) is **not** in `forge-test`:
-  it is slow and browser-bound. Run it by hand when a change touches `src/components/` or
+  it is slow and browser-bound. Run it by hand when a change touches `src/ui/components/` or
   `e2e/`.
 
 ## Before an issue is merged

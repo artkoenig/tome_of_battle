@@ -25,7 +25,7 @@ describe('project-state/tsSource', () => {
 
   it('recognises JSX in .jsx files without throwing', () => {
     const source = 'const App = () => <div className="x">hi</div>;';
-    const { node } = firstFunction(source, 'src/App.jsx');
+    const { node } = firstFunction(source, 'src/ui/App.jsx');
     expect(node).not.toBeNull();
     expect(isFunctionLike(node)).toBe(true);
   });

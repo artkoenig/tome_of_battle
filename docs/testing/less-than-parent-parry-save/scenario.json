@@ -3,10 +3,10 @@
   "name": "less-than-parent-parry-save",
   "description": "Die Bedingung type=\"lessThan\" mit scope=\"parent\" und einer Eintrags-Id in childId ist die 'diese Option ist NICHT gewaehlt'-Haelfte eines Gatters: sie haelt genau so lange, wie die Elternauswahl weniger als die genannte Zahl dieses Eintrags fuehrt. Im Soeldner-Profil 'Dwarf' (c69e-8fe4-ad3d-3b7d, Mercenaries, Modell 216c-6851-789d-4904 unter der Einheit 'Dwarfs' 59b2-d9d4-f797-9649) ist das die Parier-Regel des Schilds: der vierte Sv-Modifikator (decrement 1 auf f1be-e66c-d5e1-673c) haengt an einer and-Gruppe aus 'lessThan 1 Great Weapon (1eb7-3f36-8cf7-e0ba)' UND 'atLeast 1 Shield (50e2-1873-a856-03e7)', beide scope=parent. Basis Sv 6, dazu ein unbedingter increment 1 sowie decrement 2 (Heavy Armour), decrement 1 (Shield) und decrement 1 (Light Armour). Gemessen wird das Paar Schild-ohne-Zweihandwaffe gegen Schild-mit-Zweihandwaffe: der Ruestungswurf muss sich um genau einen Punkt unterscheiden. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

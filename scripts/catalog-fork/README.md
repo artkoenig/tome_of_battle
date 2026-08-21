@@ -11,7 +11,7 @@ The upstream Lexicanum repository does not maintain BattleScribe's `revision`
 convention and ships no `catpkg.json`. Empirically verified: `Skaven.cat` gained a new
 `entryLink` ("Ice Trolls") between releases `0.0.6` and `0.0.6.20260711` while its
 `revision` stayed `"1"` in both. The app's silent updater
-(`src/db/catalogUpdate.js`) only ever notices an update through a strictly higher
+(`src/data/db/catalogUpdate.js`) only ever notices an update through a strictly higher
 `revision` ("higher wins", per ADR-0014). Without help, no imported system would ever
 see a Lexicanum update.
 

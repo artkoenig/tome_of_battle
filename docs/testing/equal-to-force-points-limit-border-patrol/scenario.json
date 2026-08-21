@@ -3,10 +3,10 @@
   "name": "equal-to-force-points-limit-border-patrol",
   "description": "equalTo auf ein Kostenlimit (6th Definitive Edition): Der geteilte Aufwertungseintrag \"Border Patrol (500pts)\" (2066-082d-a465-4baf, Mercenaries-.cat, <sharedSelectionEntries>) traegt die einzige Bedingung des Korpus mit type=\"equalTo\" field=\"limit::ecfa-8486-4f6c-c249\" scope=\"force\" childId=\"any\". Sie hebt per set-Modifikator seine eigene Untergrenze 1a97-1579-ab05-a6d7 (Basis min 0, scope=parent) auf 1 — aber NUR bei einem eingestellten Punktebudget von exakt 500. Die vier Roster variieren AUSSCHLIESSLICH den <costLimits>-Wert (500 / 499 / 501 / 500) bei identischem Inhalt: bei 500 meldet der besetzte Slot effectiveMin 1, bei 499 und 501 effectiveMin 0. Ein Roster auf jeder Seite trennt \"equalTo\" damit sowohl von \"atLeast\" als auch von \"atMost\". Weil die Roster 0 Punkte verplanen, belegt das angehobene Minimum bei 500 zugleich, dass die Bedingung das KONFIGURIERTE Budget liest und nicht die verplante Summe (die waere 0). Roster 04 haelt das Budget 500 ohne die Auswahl: die Definition liegt in <sharedSelectionEntries> und wird im ganzen Datensatz von KEINEM entryLink referenziert, ist im Kontingent also nicht waehlbar — es entsteht kein Anker, und 1a97-1579-ab05-a6d7 bleibt still. Die Core-Pflicht 35c2-d478-392a-aeb1 (min 2, budgetunabhaengig unterhalb 2000 pts) dient in allen vier Rostern als Kontrolle, dass die reine Budget-Aenderung sonst nichts verschiebt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

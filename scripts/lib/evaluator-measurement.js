@@ -1,5 +1,5 @@
 /**
- * Messverfahren fuer die Reinraum-Engine (`src/evaluator/`) — **kein
+ * Messverfahren fuer die Reinraum-Engine (`src/domain/evaluator/`) — **kein
  * Produktivcode**.
  *
  * Es liegt bewusst unter `scripts/` und nicht unter `src/`: es wird nicht
@@ -28,7 +28,7 @@
  * damit das Ergebnis die Entscheidung traegt und nicht umgekehrt.
  */
 
-import { prepareDataset, evaluate, MeasuredPhase } from '../../src/evaluator/evaluator.js';
+import { prepareDataset, evaluate, MeasuredPhase } from '../../src/domain/evaluator/evaluator.js';
 
 /**
  * Interaktive Obergrenze: eine vollstaendige Auswertung bleibt darunter, damit

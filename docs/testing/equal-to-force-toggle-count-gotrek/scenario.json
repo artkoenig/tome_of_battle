@@ -3,10 +3,10 @@
   "name": "equal-to-force-toggle-count-gotrek",
   "description": "Eine condition type=\"equalTo\" field=\"selections\" scope=\"force\" childId=\"<Eintrags-Id>\" zaehlt die Selektionen dieses Eintrags im umschliessenden Kontingent und haelt NUR bei exakter Gleichheit mit ihrem value - nicht 'mindestens'. Einziges Vorkommen im Definitive-Korpus: der Sondercharakter 'Gotrek Gurnisson & Felix Jaeger' (ef9d-ae15-cc43-f2d6, Mercenaries-.cat, <sharedSelectionEntries>) traegt max 0 selections scope=roster (Constraint e3c5-278b-09bc-84cf) und einen set-1-Modifikator auf genau diese Constraint-Id, gegatet per equalTo 1 auf den .gst-Schalter 'Allow special characters?' (8923-5946-7b10-8957). Drei Roster mit je EINEM Gotrek variieren allein die Zahl der Schalter-Selektionen im Kontingent: 0 -> Bedingung faellt, Grenze bleibt max 0 und feuert (Ist 1 / Grenze 0), zusaetzlich liegt die Autor-Meldung 'Please enable \"Allow special characters?\"' an (eigenes Gatter lessThan 1); 1 -> Bedingung haelt, effectiveMax 1, keine Verletzung, Meldung schweigt; 2 -> die Trennung von atLeast: die Bedingung faellt WIEDER, die Grenze faellt auf max 0 zurueck und feuert erneut (Ist 1 / Grenze 0), waehrend die Meldung stumm BLEIBT (ihr Gatter ist lessThan 1, und 2 liegt nicht darunter). Die zweite Schalter-Selektion ist als zweites Geschwister-<selection> mit number=1 geschrieben; sie verletzt dabei die eigene Roster-Obergrenze des Schalters (max 1, 5036-e10c-2fd8-f135) mit Ist 2 / Grenze 1 - offen deklariert statt versteckt. Der baugleiche atLeast-Fall am Schwester-Eintrag '0-1 Amazon Serpent Priestess' kommt in keinem dieser Roster vor, damit die Gleichheit isoliert bleibt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

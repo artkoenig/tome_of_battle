@@ -3,12 +3,12 @@
   "name": "root-entrylink-mandatory-catalogue-scope",
   "description": "Ein root-level entryLink lebt strukturell in seinem eigenen Katalog: Ogre Kingdoms (731d-5b13-2a92-5427) deklariert unter seinem eigenen Katalog-Wurzel-entryLink 'Ogre Bulls' (d82e-111e-89b9-2be1, targetId 7754-8b3d-df99-d2d5 in der Mercenaries-Bibliothek) eine armeeweite Pflicht: constraint 32ed-26da-3f27-5c04, Rohwert min 0, per modifier set auf 1 gehoben, wenn die Force NICHT eine Instanz der Ironskin-Tribe-Variante (forceEntry 8711-ed16-2a44-7251) ist - das trifft auf die Force 'Standard (OK-AB)' 729f-9246-5cd3-5044 zu. Vampire Counts (4d73-5ab0-9020-403c) und Orcs and Goblins (4049-c46d-7f80-44fb) deklarieren je ihren EIGENEN, separaten Katalog-Wurzel-entryLink auf dasselbe Ziel (21f4-c979-396b-c02a bzw. 0612-9f28-e986-2bce) - beide ohne eigene constraints, also rein optionale Soeldner-Angebote. Keines der drei Armeebuecher verlinkt per catalogueLink auf ein anderes Armeebuch (nur je auf Mercenaries) - der Ogre-Kingdoms-eigene entryLink samt seiner Pflicht ist in einem Vampire-Counts- oder Orcs-and-Goblins-Kontingent daher strukturell gar nicht erreichbar. Die Pflicht 32ed-26da-3f27-5c04 darf deshalb NUR in einem Ogre-Kingdoms-Standard-Kontingent feuern (Ist 0, Grenze 1 ohne die Einheit; erfuellt mit ihr) und MUSS in einem Vampire-Counts- oder Orcs-and-Goblins-Standard-Kontingent abwesend bleiben, selbst wenn dort ebenfalls keine Ogre-Bulls-Einheit steht.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

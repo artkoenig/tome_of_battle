@@ -4,7 +4,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const INDEX_PATH = resolve(__dirname, '..', 'src', 'data', 'rules-index.json');
+const INDEX_PATH = resolve(__dirname, '..', 'src', 'data', 'rules', 'rules-index.json');
 
 describe('generate-rules-index output', () => {
   let index;
@@ -90,7 +90,7 @@ describe('generate-rules-index output', () => {
   });
 
   it('resolves entity-bearing names against the lookup', async () => {
-    const { getRuleUrl } = await import('../src/data/rulesLookup.js');
+    const { getRuleUrl } = await import('../src/data/rules/rulesLookup.js');
     expect(getRuleUrl('Cloak & Dagger')).toContain('/weapons/cloak-and-dagger');
   });
 });

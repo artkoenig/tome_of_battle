@@ -1,16 +1,16 @@
 ---
 paths:
-  - "src/viewmodels/**"
+  - "src/ui/viewmodels/**"
 ---
 
 # viewmodels
 
 The ViewModel layer of ADR-0038: hooks that hold state and derive display values, plus the two
-roster contexts. It sits **above** `src/components/` in the UI layer of ADR-0037 — a ViewModel may
-never import a component. Run it with `forge-test --run src/viewmodels`.
+roster contexts. It sits **above** `src/ui/components/` in the UI layer of ADR-0037 — a ViewModel may
+never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
-  bundles split by how often they change. `useRoster` in `src/hooks/` is only the flat view onto
+  bundles split by how often they change. `useRoster` in `src/ui/hooks/` is only the flat view onto
   it — change the behaviour here, not there.
 - The `commands` bundle is identity-stable for the hook's whole lifetime: implementations are
   rebuilt each render into `currentCommandsRef`, the exported functions are `useMemo(…, [])`
@@ -27,15 +27,15 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - Since Issue 0165 each **screen shell** has its own ViewModel here too: `useRosterEditor`,
   `usePlayRoster`, `usePlayUnit`, `useRosterDashboard`, `useImporter`, `useNewRosterModal`, plus
   `useBottomSheet` and `useRulesIndexDialog` for the two overlays. `useEffect`/`useMemo` are
-  banned in `src/components/**` by an oxlint `no-restricted-imports` override (severity `error`,
+  banned in `src/ui/components/**` by an oxlint `no-restricted-imports` override (severity `error`,
   so it fails `forge-lint`) — every effect and every memo of a screen lives here.
   Adding an override for a components path there means repeating the evaluator-facade `patterns`
   block: oxlint replaces a rule's config per override rather than merging it.
-- A ViewModel may **not** import `src/db/` or `src/parser/`: `viewmodel-keine-datenschicht` is
+- A ViewModel may **not** import `src/data/db/` or `src/data/parser/`: `viewmodel-keine-datenschicht` is
   an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
   shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
-  `src/services/` like everything else.
-- `viewmodel-kein-jsx` (`src/viewmodels/` → `src/components/`) is an `error` too, so the "never
+  `src/data/services/` like everything else.
+- `viewmodel-kein-jsx` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
   formats a label needs `language` in its dependency list, or a language switch leaves the
@@ -53,28 +53,28 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   `components/importer/importMessages.js` and `revisionDisplay.js` into `useImporter.js`.
 - A hook test that reaches `useRuleUrl` (every shell with a rule channel) must mock
   `../contexts/SettingsContext`; the real `useSettings` throws without its provider.
-- `src/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
+- `src/ui/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
   `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
   `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
   `components/editor/upgradeDetails.jsx` (it returns JSX): it hands the component the resolved
   entry and `system`, and the component renders the detail block.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
-  (`src/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
+  (`src/domain/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
   `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back
   to `EMPTY_SLOT_INDEX` and keeps `slots` (not the three maps) in its `useMemo` dependencies.
 - `capabilityEntries.js` here is the one place that resolves a slot back to its catalogue entry
   (`findCapabilityEntry`, `capabilityEntryOf` with the `{ id, name }` stub). It lives in this
-  folder because `src/evaluation/` may not import `src/roster/`.
+  folder because `src/domain/evaluation/` may not import `src/domain/roster/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
-  on an import of them from `src/components/`. The cost-budget helpers live in
+  on an import of them from `src/ui/components/`. The cost-budget helpers live in
   `useSelectionConfigurator.js` next to the row derivations it shares with `useOptionGroup`.
 - A section ViewModel derives what the editor used to thread through as props (`costTypeLabel`,
   `remainingPoints`, `extraResources`, the force path from `report.slots.pathOfForce(...)` — never the
   roster's input index). What stays a prop is only what the caller knows: `force`/`forceId`,
   `forcePath`, `categoryLink`/`categoryId` and display state;
-  `src/components/editor/sectionPropCount.test.js` pins the ceilings.
+  `src/ui/components/editor/sectionPropCount.test.js` pins the ceilings.
 - `useAutoFillSuggestions` filters twice, and both halves are load-bearing: the slot **path** must
   lie in the force's subtree (`path === forcePath` or `` `${forcePath}/` `` prefix) **and** its
   frame must be the force or a path in `pathBySelectionId`. The frame check alone leaks another
@@ -83,7 +83,7 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - `useValidationPanel` reads `report.violations` **without** a `?? []` fallback on purpose: a
   missing list is a broken report and must fail loudly rather than read as "all clear"
   (`RosterEditor.test.jsx` pins the throw).
-- A section component's own tests go through `src/test-utils/harnesses/<Component>Harness.jsx` —
+- A section component's own tests go through `src/shared/test-utils/harnesses/<Component>Harness.jsx` —
   one file per component, not one shared module: a partial `lucide-react` mock would otherwise
   fail on the icons of a component it never renders. `sectionHarnessBase.jsx` holds the shared
   pieces, including the inversions a flat prop set needs (`costTypeLabel`, `remainingPoints`,
@@ -93,7 +93,7 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
   reintroduce it (`useSelectionConfigurator.test.jsx` pins the case).
-- The report the context carries is `useRosterReportModel` (`src/evaluation/rosterReport.js`),
+- The report the context carries is `useRosterReportModel` (`src/domain/evaluation/rosterReport.js`),
   referentially stable per `(system, roster)`. A new derived field belongs in that bundle,
   memoized, or it destroys the stability every consumer depends on.
 - Files here use the classic JSX runtime: a `.jsx` file (and its test) must `import React` or it
@@ -102,7 +102,7 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   `processImportedData` and `buildRoster` — roughly 2 s per case. Where the case is about state or
   derivation only, pass `system = null`: the evaluation is the frozen empty result and runs
   instantly.
-- `src/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
+- `src/shared/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
   `createRosterProviderWrapper`, `createEmptyRosterReport`, `createNoopRosterCommands`). Extend
   the empty report there when the report gains a field.
 - A hook test here builds its report by hand (`new Map()` of slots, folded into a `SlotIndex` by
@@ -115,4 +115,4 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   (`classifyGroupItem`, `classifyStandaloneOption`: mandatory/met, radio, binary, stepper). It is
   pure and takes only values the report already measured — it re-reads no catalogue. The
   catalogue-side twin of those questions lives once, in the report
-  (`src/evaluator/groupBehavior.js`); a second reading here would drift from it.
+  (`src/domain/evaluator/groupBehavior.js`); a second reading here would drift from it.

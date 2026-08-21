@@ -8,7 +8,7 @@
  * which stays pure so the extraction rules can be pinned on synthetic XML.
  *
  * Only `.cat`/`.gst` text is read: no roster, no evaluation, no import from
- * `src/evaluator/` (ADR 0030, ADR 0033).
+ * `src/domain/evaluator/` (ADR 0030, ADR 0033).
  *
  * `DOMParser` is expected as a global — the vitest jsdom environment supplies
  * it, and `scripts/evaluator-coverage-inventory.js` installs jsdom's before
@@ -32,10 +32,10 @@ const currentFilePath = fileURLToPath(import.meta.url);
 export const REPO_ROOT = resolve(dirname(currentFilePath), '..', '..');
 
 /** The frozen "definitive edition" corpus the evaluator E2E scenarios run on. */
-export const WHFB6_DEFINITIVE_DIR = resolve(REPO_ROOT, 'src', 'evaluator', '__fixtures__', 'whfb6-definitive');
+export const WHFB6_DEFINITIVE_DIR = resolve(REPO_ROOT, 'src', 'domain', 'evaluator', '__fixtures__', 'whfb6-definitive');
 
 /** The frozen upstream-form corpus that also feeds the app E2E harness. */
-export const WHFB6_DIR = resolve(REPO_ROOT, 'src', '__fixtures__', 'whfb6');
+export const WHFB6_DIR = resolve(REPO_ROOT, 'src', 'shared', '__fixtures__', 'whfb6');
 
 /** Both corpora, in the order the inventory walks them. */
 export const CORPUS_DIRS = Object.freeze([WHFB6_DEFINITIVE_DIR, WHFB6_DIR]);

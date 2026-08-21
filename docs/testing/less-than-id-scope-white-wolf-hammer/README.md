@@ -5,7 +5,7 @@ Element-Ids und Erwartungswerte sind **ausschließlich aus den Katalogdaten** de
 *6th Definitive Edition*, der Formatspezifikation
 ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md), §5.6,
 §7.1, §7.2, §7.6, §7.7, §8) und der vendorten
-[`Catalogue.xsd`](../../../src/parser/schema/Catalogue.xsd) abgeleitet. Die
+[`Catalogue.xsd`](../../../src/data/parser/schema/Catalogue.xsd) abgeleitet. Die
 Roster-Form folgt den bereits verifizierten Szenarien (direktes `entryId` bzw.
 `entryId` + `entryLinkId`, `entryGroupId` = **innerste** Gruppen-Id bzw. bei
 einem verlinkten Gruppen-Verweis deren **Ziel-Id**, verschachtelte `selections`

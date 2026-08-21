@@ -3,10 +3,10 @@
   "name": "at-least-roster-points-limit",
   "description": "Eine condition type=\"atLeast\" mit field=\"limit::ecfa-8486-4f6c-c249\", scope=\"roster\" und childId=\"any\" liest das im Roster EINGESTELLTE Punktebudget (<costLimits>), nicht die verplante Kostensumme, und haelt, sobald dieses Budget den value der Bedingung ERREICHT (>=). Traeger: der Eintrag \"Tournament rules: Uprising (2026)\" (4bc4-8781-2091-d9df, Orcs and Goblins) mit Basisgrenze max 0 selections scope=force (00f6-c1b3-ee85-5c02); ein set-1-Modifikator auf genau diese Grenze ist per and-Gruppe aus atLeast 2000 UND atMost 2500 auf dasselbe Kostenlimit gegated. Drei Roster mit IDENTISCHEM Inhalt (eine Uprising-Selektion), die sich nur im costLimit bzw. in der verplanten Summe unterscheiden: 2000 (Schwellenwert selbst, atLeast haelt -> Grenze 1, keine Verletzung), 1999 (einen Punkt darunter, atLeast haelt nicht -> Basisgrenze 0 feuert bei Ist 1) und 1999 bei verplanter Summe 2000 (die Bedingung bleibt falsch, weil sie das Budget und nicht die Summe liest). Das zweite gegatterte Ergebnis desselben Modifikatorpaars (set hidden=false) wird bewusst NICHT behauptet, weil der Traeger unter einem hidden=\"true\"-Elterneintrag haengt und die Formatreferenz die Vererbung von hidden ueber eine Eltern-selectionEntry nicht festlegt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

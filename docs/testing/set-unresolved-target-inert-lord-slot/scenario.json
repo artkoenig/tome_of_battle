@@ -3,10 +3,10 @@
   "name": "set-unresolved-target-inert-lord-slot",
   "description": "Ein <modifier type=\"set\">, dessen field eine Id nennt, die der geladene Datensatz NIRGENDS definiert - weder als constraint-id noch als costType noch als characteristicType - und die keines der Schluesselwoerter hidden|name|category|error|warning|info ist, hat kein Ziel und damit keine Wirkung: er legt keine eigene Grenze an, verschiebt keine fremde und stoert weder seinen Traeger noch seine Nachbarn. Gepinnt an den beiden einzigen Vorkommen dieser Konstruktion im eingefrorenen Korpus: dem unbedingten <modifier type=\"set\" value=\"1\" field=\"a59d-2ddb-429c-1aca\"/> am Lord-categoryLink der Sonderheere \"Army of the Lichemaster\" (Kontingent f37a-a93e-fa22-61a8, categoryLink 7a76-8153-c4b2-9fee, echte Grenze 760d-2352-9fac-0e46) und \"Vampire Coast\" (Kontingent bf46-ee85-7c10-ba98, categoryLink aa77-6ac1-ba5c-5646, echte Grenze 8471-437a-59d6-bc3d). Die Id a59d-2ddb-429c-1aca kommt im gesamten Fixture-Korpus AUSSCHLIESSLICH als field dieser zwei Modifikatoren vor und nie als id=. Je Kontingent ein Paar: ohne Lord-Auswahl feuert die echte min-1-Grenze mit Ist 0 / Grenze 1, mit genau einer Lord-Auswahl schweigt sie - unveraendert, als gaebe es den haltlosen Modifikator nicht. Gegenprobe im selben Rahmen (Roster 05): der ECHTE Modifikator am Core-categoryLink des Vampire-Coast-Kontingents (increment 1 je Bloated Corpse auf 35c2-d478-392a-aeb1) bewegt seine Grenze nachweislich von 4 auf 5.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

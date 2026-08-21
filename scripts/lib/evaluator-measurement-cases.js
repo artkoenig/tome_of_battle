@@ -14,12 +14,12 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { rosterFromRos } from '../../src/evaluator/__fixtures__/rosParser.js';
+import { rosterFromRos } from '../../src/domain/evaluator/__fixtures__/rosParser.js';
 
 /** Wurzel der E2E-Szenarien, relativ zum Projekt-Wurzelverzeichnis (dem cwd). */
 const TESTING_ROOT = 'docs/testing';
 
-/** Dateiname des Szenario-Manifests (Vertrag siehe `src/evaluator/e2e.testcatalog.test.js`). */
+/** Dateiname des Szenario-Manifests (Vertrag siehe `src/domain/evaluator/e2e.testcatalog.test.js`). */
 const MANIFEST_FILE = 'scenario.json';
 
 /**
@@ -36,7 +36,7 @@ const MANIFEST_FILE = 'scenario.json';
  *   Bewertung gegen die interaktive Obergrenze, weil er den groessten
  *   Definitionsbestand aufbereiten muss.
  *
- * Bewusst ausgelassen sind die Szenarien gegen `src/__fixtures__/` und
+ * Bewusst ausgelassen sind die Szenarien gegen `src/shared/__fixtures__/` und
  * `scripts/__fixtures__/`: gemessen wird gegen den Datenbestand, den die Engine
  * als ihren eigenen fuehrt (ADR-0030).
  */

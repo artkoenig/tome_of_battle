@@ -10,11 +10,11 @@
  * result is a list of constructs rather than a list of catalogue rows.
  *
  * The module is data-first and deliberately independent of the engine: it
- * never imports anything under `src/evaluator/` (ADR 0030 forbids it from
+ * never imports anything under `src/domain/evaluator/` (ADR 0030 forbids it from
  * outside the facade, and ADR 0033's black-box principle wants the inventory
  * to challenge the engine rather than mirror it). Its vocabulary comes from
  * `docs/battlescribe-data-format.md` §7.6, §7.7, §13.1 and §13.2 and from the
- * vendored `src/parser/schema/Catalogue.xsd`.
+ * vendored `src/data/parser/schema/Catalogue.xsd`.
  *
  * Everything here is pure: the entry points take already-parsed documents, so
  * the corpus walk, the file system and `DOMParser` live in

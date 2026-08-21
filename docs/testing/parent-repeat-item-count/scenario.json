@@ -3,10 +3,10 @@
   "name": "parent-repeat-item-count",
   "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"<entryId>\" repeats=\"1\" value=\"1\" includeChildSelections=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl des genannten Eintrags im Eltern-Rahmen an; ein increment auf eine Grenze waechst dadurch je gezaehlter Kopie um einen Schritt. Konkret: die geteilte Gruppe 'Arcane Items' (4c3e-febe-6d5d-6912) der Ogre Kingdoms traegt max 1 (Constraint 188e-3808-4b37-c8d9, field=selections scope=parent includeChildSelections=false) und einen increment-1-Modifier auf genau diese Constraint-Id, dessen einziger <repeat> (value=1, repeats=1, includeChildSelections=false) die vom Traeger DIREKT gehaltenen Kopien des Dispel Scroll b76c-6bad-4650-dbb0 zaehlt (Bedingung greaterThan 0 auf dieselbe childId). Mit N Dispel Scrolls ist das effektive Maximum der Gruppe 1+N. Fuenf Roster im Kontingent Standard (OK-AB) (729f-9246-5cd3-5044) unter demselben Traeger Butcher (8933-af8e-e780-6f48) pinnen das ueber expect.capabilities am Gruppen-Anker (Verweis a8d2-cc08-f449-6ad6) und ueber die feuernde Grenze: 0/1/2 Scrolls => effectiveMax 1/2/3, und bei Ueberschreitung meldet 188e den ANGEHOBENEN bound (1 ohne Scroll, 3 mit zwei Scrolls). Der zweite increment derselben Constraint-Id (repeat auf 696a-648d-c842-4c6a, includeChildSelections=true) ist in allen Rostern inert, weil kein Power Stone gewaehlt ist.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

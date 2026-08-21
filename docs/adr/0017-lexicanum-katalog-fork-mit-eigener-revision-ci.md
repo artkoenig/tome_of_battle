@@ -11,7 +11,7 @@ ADR-0014 hat den Katalog-Fork [artkoenig/Warhammer-Fantasy-6th-edition](https://
 [lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition](https://github.com/lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition)
 (Karak Norn Wargaming Club) zeigt einen inhaltlich deutlich reichhaltigeren, aktiv gepflegten Datensatz (mehr Fraktionen inkl. Kislev, integrierte Errata/FAQ, deutlich mehr Sonderfiguren und Alternativlisten).
 
-Ein vollständiger Test-Import des neuen Datensatzes durch den bestehenden Parser (`src/parser/xmlParser.js`) zeigte, dass alle 18 Kataloge strukturell kompatibel sind, deckte aber zwei App-seitige Parser-Lücken auf (unabhängig von der Quellenwahl, aber erst durch das reichhaltigere Schema sichtbar): `parseRules()` verwirft `sharedRules`, wenn zusätzlich ein Geschwister-`<rules>`-Element existiert, und `infoGroup`-Elemente werden gar nicht geparst.
+Ein vollständiger Test-Import des neuen Datensatzes durch den bestehenden Parser (`src/data/parser/xmlParser.js`) zeigte, dass alle 18 Kataloge strukturell kompatibel sind, deckte aber zwei App-seitige Parser-Lücken auf (unabhängig von der Quellenwahl, aber erst durch das reichhaltigere Schema sichtbar): `parseRules()` verwirft `sharedRules`, wenn zusätzlich ein Geschwister-`<rules>`-Element existiert, und `infoGroup`-Elemente werden gar nicht geparst.
 
 Zusätzlich erfüllt `lexicanum-imperialis` zwei Annahmen von ADR-0014 nicht, die dort stillschweigend an „ein BSData-Fork" geknüpft waren:
 

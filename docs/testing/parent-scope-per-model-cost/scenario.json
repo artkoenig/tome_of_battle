@@ -3,10 +3,10 @@
   "name": "parent-scope-per-model-cost",
   "description": "Prüft den Bezugsrahmen scope=\"parent\" an einem Kostenaufschlag je Modell: Der 'Light Armour'-Link der Söldnereinheit 'Ogre Bulls' (Mercenaries) hängt direkt unter der Einheit und trägt einen `increment 3`-Modifikator auf die pts-Kostenart mit `<repeat field=\"selections\" scope=\"parent\" childId=\"model\" repeats=\"1\"/>` — je Modell-Auswahl der Eltern-Auswahl (der Einheit selbst) kostet das Light Armour 3 pts mehr. Bei 4 Bulls (je 35 pts) kostet die Einheit 152 pts (140 Modelle + 0 Ogre Club + 12 Light Armour). Beobachtbar über die roster-weite Budget-Regel: Limit 151 feuert mit Ist 152, Limit 153 schweigt. Eine Engine, die die Wiederholung 0-fach (140), 1-fach (143), je Modell-*Auswahl* statt je Modell (143) oder nach dem min-Constraint-Wert 3 statt der echten Zählung (149) anwendet, lässt Roster 01 fälschlich schweigen; eine, die überzählt (5-fach: 155; alle Eltern-Kinder statt nur type=\"model\": 158), feuert in Roster 02 fälschlich.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -13,12 +13,12 @@
 /**
  * Die Schichtung der App. Eine tiefere Schicht darf nicht auf eine hoehere
  * zugreifen. Seit Issue 0121 steht in der Mitte das App-Schreibmodell
- * `src/roster/` (frueher `src/solver/`, abgerissen).
+ * `src/domain/roster/` (frueher `src/solver/`, abgerissen).
  */
 export const DEFAULT_LAYERS = Object.freeze([
-  { name: 'parser', prefix: 'src/parser/' },
-  { name: 'roster', prefix: 'src/roster/' },
-  { name: 'components', prefix: 'src/components/' },
+  { name: 'parser', prefix: 'src/data/parser/' },
+  { name: 'roster', prefix: 'src/domain/roster/' },
+  { name: 'components', prefix: 'src/ui/components/' },
 ]);
 
 const SMALLEST_CYCLE_NODE_COUNT = 2;

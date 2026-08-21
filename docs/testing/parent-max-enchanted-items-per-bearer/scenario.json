@@ -3,9 +3,9 @@
   "name": "parent-max-enchanted-items-per-bearer",
   "description": "Eine max-Grenze mit field=\"selections\" und scope=\"parent\" an einer GETEILTEN selectionEntryGroup zaehlt die Mitglieder der Gruppe im Rahmen der Elternauswahl, die die Gruppe haelt - und dieser Rahmen ist der einzelne Traeger, nicht das Roster, obwohl die Grenze shared=\"true\" und includeChildForces=\"true\" traegt. Gepinnt an der geteilten Gruppe \"Enchanted Items\" 76c3-b01d-0836-2f86 des upstream-Katalogs Vampire Counts.cat (:3579) mit ihrer einzigen Grenze e945-1f86-ecf8-4c65 (type=max, field=selections, scope=parent, value=1, shared=true, includeChildSelections=false, includeChildForces=true, :3581). Ein Traeger mit zwei Enchanted Items laesst sie mit Ist 2 / Grenze 1 feuern; zwei Traeger mit je einem lassen sie in BEIDEN Rahmen schweigen. Die Gegenprobe liefert die Eigengrenze eines Gegenstands (Casket of Ages c235-25ac-6aaf-b4bd, max 1 scope=\"roster\"): sie feuert mit Ist 2, wenn beide Traeger denselben Gegenstand nehmen - der roster-weite Rahmen aggregiert also sehr wohl, der Eltern-Rahmen nicht.",
   "dataset": {
-    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/__fixtures__/whfb6/Vampire Counts.cat"
+      "src/shared/__fixtures__/whfb6/Vampire Counts.cat"
     ]
   },
   "rosters": [

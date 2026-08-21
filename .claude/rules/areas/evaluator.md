@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/evaluator/**"
+  - "src/domain/evaluator/**"
   - "docs/testing/**"
 ---
 
@@ -10,18 +10,18 @@ The clean-room rule engine: `evaluate(catalog, roster) → report`, a pure funct
 production engine. `docs/battlescribe-data-format.md` is the canonical source for what the data
 means; it outranks the ADRs where the two disagree.
 
-- `src/evaluator/evaluator.js` is the **only** legal entry point from outside. Importing any other
+- `src/domain/evaluator/evaluator.js` is the **only** legal entry point from outside. Importing any other
   file from outside the folder fails `forge-lint` (dependency-cruiser `evaluator-nur-ueber-fassade`,
   oxlint `no-restricted-imports`) — an `error`, not a warning.
-- The folder must not import `src/roster/**`, and `src/roster/**` must not import it. Both
-  directions are blocking rules. The bridge is `src/evaluation/rosterAdapter.js`.
+- The folder must not import `src/domain/roster/**`, and `src/domain/roster/**` must not import it. Both
+  directions are blocking rules. The bridge is `src/domain/evaluation/rosterAdapter.js`.
 - The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
-  reaches back into the UI and never imports `src/i18n/` — the report carries ids, the UI
+  reaches back into the UI and never imports `src/ui/i18n/` — the report carries ids, the UI
   translates them (dependency-cruiser `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`). The
   Reinraum rules above are unaffected by that layering and stay stricter.
 - `catalogReader.js` is the evaluator's own XML reader, deliberately separate from
-  `src/parser/xmlParser.js`. Changing one never implies changing the other.
-- A change confined to this folder only needs `forge-test --run src/evaluator` — that covers the
+  `src/data/parser/xmlParser.js`. Changing one never implies changing the other.
+- A change confined to this folder only needs `forge-test --run src/domain/evaluator` — that covers the
   unit tests and the manifest-driven E2E runner (`e2e.testcatalog.test.js`, `crossCatalog.test.js`)
   over the scenarios in `docs/testing/`. The full suite is not required.
 - New E2E scenarios under `docs/testing/` are **not** written here: they are delegated to the
@@ -64,9 +64,9 @@ means; it outranks the ADRs where the two disagree.
   a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
   `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
   engine taste: they are the reading a recruit has always followed, and
-  `src/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  `src/domain/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
   tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
-  (`src/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
+  (`src/domain/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
   and that sweep fails first.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
@@ -95,26 +95,26 @@ means; it outranks the ADRs where the two disagree.
   A change that widens a traversal needs that number checked.
   `node scripts/measure-evaluator-browser.js` runs the same measurement in a real browser
   (Puppeteer) and shows how far jsdom's XML reader skews the jsdom figure.
-- Report messages are projected to text elsewhere (`src/i18n/violationMessages.js`); a new
+- Report messages are projected to text elsewhere (`src/ui/i18n/violationMessages.js`); a new
   violation kind is only half-done inside this folder.
-- The E2E fixture corpus `src/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18
+- The E2E fixture corpus `src/domain/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18
   Definitive-Edition books. A scenario for an army whose `.cat` is missing cannot be written until
   the book is added — check the folder listing before planning one.
 - Fetch a missing book verbatim from the commit the fixture README pins, never from `main` and
   never hand-edited:
-  `curl -sSL -o "src/evaluator/__fixtures__/whfb6-definitive/<Book> (6th definitive edition).cat" \
+  `curl -sSL -o "src/domain/evaluator/__fixtures__/whfb6-definitive/<Book> (6th definitive edition).cat" \
   "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition/<pinned-commit>/<Book>%20(6th%20definitive%20edition).cat"`
   The exact file name and casing come from the repo's own tree — a wrong case returns a 14-byte
   "404: Not Found" body with HTTP 200 via the raw host, which looks like a successful download.
-- Adding a book makes `src/evaluator/__fixtures__/whfb6-definitive/README.md` stale: it states the
+- Adding a book makes `src/domain/evaluator/__fixtures__/whfb6-definitive/README.md` stale: it states the
   count of books present, which of them are there and why. Update it in the same commit.
 - Adding a book also breaks every **frozen corpus figure**, in four places that must move with it
   (measured: one book broke 18 assertions): `scripts/lib/evaluator-coverage-corpus.test.js`
   (file count, the seven per-kind tag totals, landmark occurrence counts, the per-file
-  "owns this cell alone" claims), `src/evaluator/evaluator.corpusLinkLocalChildren.test.js`
+  "owns this cell alone" claims), `src/domain/evaluator/evaluator.corpusLinkLocalChildren.test.js`
   (per-file table, totals, contributing-file count), and the suite docs
   `scripts/lib/CLAUDE.md` + the fixture README. Run the **full** `forge-test` for such a change —
-  `--run src/evaluator` misses the `scripts/lib` half.
+  `--run src/domain/evaluator` misses the `scripts/lib` half.
 - A "no other file carries this cell" claim is an argument about the **coverage set**, not about
   whatever happens to lie in the folder: a book added for a single scenario is excluded from the
   comparison rather than the claim being deleted.

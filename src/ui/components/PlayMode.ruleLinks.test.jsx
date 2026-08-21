@@ -1,0 +1,300 @@
+import React from 'react';
+import { SlotIndex } from '../../domain/evaluation/slotIndex';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import PlayMode from './PlayMode';
+
+// This suite isolates PlayMode's rule-link wiring: the `onShowRule` seam that all
+// play-mode chip groups funnel through, and the resulting RulesIndexDialog URL.
+// Both must be governed by the central `useRuleUrl` hook so the global whfb6
+// linking setting is honored (see ADR-0015 and issue 17/03). PlayUnitDetails and
+// RulesIndexDialog are mocked so the test observes only PlayMode's behavior.
+
+const RULE_NAME = 'Killing Blow';
+const RULE_URL = 'https://6th.whfb.app/special-rules/killing-blow';
+const REGELBUCH_URL = 'https://6th.whfb.app/?utm_source=6th-builder&utm_medium=referral';
+
+const mockResolveRuleUrl = vi.fn();
+
+vi.mock('../hooks/useRuleUrl', () => ({
+  useRuleUrl: () => mockResolveRuleUrl,
+}));
+
+vi.mock('lucide-react', () => ({
+  ArrowLeft: () => <span data-testid="icon-arrow-left" />,
+  Search: () => <span data-testid="icon-search" />,
+  Plus: () => <span data-testid="icon-plus" />,
+  Minus: () => <span data-testid="icon-minus" />,
+  Heart: () => <span data-testid="icon-heart" />,
+  Swords: () => <span data-testid="icon-swords" />,
+  BookOpen: () => <span data-testid="icon-book-open" />,
+  X: () => <span data-testid="icon-x" />,
+}));
+
+vi.mock('../../data/db/database', () => ({
+  saveRoster: vi.fn(),
+}));
+
+vi.mock('../hooks/usePlayState', () => ({
+  default: () => ({
+    gameState: { wounds: {} },
+    adjustTracker: vi.fn(),
+    getUnitCurrentWounds: vi.fn(),
+    handleAdjustWound: vi.fn(),
+  }),
+}));
+
+// Only the rules engine is stubbed; the roster-tree primitives that the barrel
+// re-exports stay real, since they are pure traversal without any rules in them
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/domain/roster/).
+vi.mock('../../domain/roster', async (importOriginal) => ({
+  ...(await importOriginal()),
+  findEntryInSystem: vi.fn(() => ({ id: 'entry' })),
+  resolveEntry: vi.fn(() => ({ id: 'resolved', name: 'Resolved', profiles: [] })),
+  collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),
+  getSelectionTotalCost: vi.fn(() => 100),
+  findForceEntryById: (system, id) => system?.forceEntries?.find((fe) => fe.id === id) || null,
+  calculateRosterCosts: () => ({}),
+  getExtraResourceTotals: () => [],
+}));
+
+// Die Spielansicht liest aus dem **Bericht**, welche Auswahl eine Listenregel
+// ist (`capability.isListRule`, Issue 0156). Der Auswertungs-Haken wird deshalb
+// gestellt: er liefert je Selektion ihren Slot; die Regel-Selektionen tragen
+// dort `isListRule: true`.
+const { evaluationStub } = vi.hoisted(() => ({
+  evaluationStub: { current: null },
+}));
+
+vi.mock('../../domain/evaluation/useEvaluation', () => ({
+  useEvaluation: () => evaluationStub.current ?? {
+    slots: SlotIndex.fromMaps(),
+    costTotals: {},
+    description: null,
+    violations: [],
+  },
+}));
+
+/** Ein Bericht, der die genannten Selektionen als Listenregeln ausweist. */
+const reportMarkingListRules = (selectionIds, listRuleIds) => ({
+  slots: SlotIndex.fromMaps({
+    capabilities: new Map(selectionIds.map((id, index) => [
+      `0/${index}`,
+      { anchorKind: 'occupied', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, isListRule: listRuleIds.includes(id), totalCosts: {}, infoElements: [] },
+    ])),
+    pathBySelectionId: new Map(selectionIds.map((id, index) => [id, `0/${index}`])),
+  }),
+  costTotals: {},
+  description: null,
+  violations: [],
+});
+
+// PlayUnitDetails is the component that renders the three chip groups. Here it is
+// reduced to a single button that triggers the `onShowRule` callback PlayMode
+// passes down, standing in for a user clicking a linked rule chip.
+vi.mock('./play/PlayUnitDetails', () => ({
+  default: ({ onShowRule }) => (
+    <button type="button" data-testid="chip-show-rule" onClick={() => onShowRule(RULE_NAME)}>
+      show rule
+    </button>
+  ),
+}));
+
+vi.mock('./RulesIndexDialog', () => ({
+  default: ({ ruleName, url }) => (
+    <div data-testid="rules-index-dialog" data-url={url}>
+      {ruleName}
+    </div>
+  ),
+}));
+
+const mockSystem = {
+  forceEntries: [{ id: 'fe-1', categoryLinks: [{ targetId: 'cat-core', name: 'Core' }] }],
+  categoryEntries: [{ id: 'cat-core', name: 'Core Units' }],
+};
+
+const mockRoster = {
+  catalogueId: 'cat-1',
+  costLimitType: 'pts',
+  forces: [
+    {
+      id: 'force-1',
+      forceEntryId: 'fe-1',
+      selections: [{ id: 'sel-1', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' }],
+    },
+  ],
+};
+
+function renderPlayMode() {
+  return render(<PlayMode system={mockSystem} roster={mockRoster} onBack={vi.fn()} />);
+}
+
+describe('PlayMode rule-link wiring', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+  });
+
+  it('resolves the rule name through the central hook when a chip is clicked', () => {
+    mockResolveRuleUrl.mockReturnValue(RULE_URL);
+    renderPlayMode();
+
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+
+    expect(mockResolveRuleUrl).toHaveBeenCalledWith(RULE_NAME);
+  });
+
+  it('opens the rules dialog with the hook-resolved URL when linking is enabled', () => {
+    mockResolveRuleUrl.mockReturnValue(RULE_URL);
+    renderPlayMode();
+
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+
+    const dialog = screen.getByTestId('rules-index-dialog');
+    expect(dialog).toBeTruthy();
+    expect(dialog.getAttribute('data-url')).toBe(RULE_URL);
+    expect(dialog.textContent).toBe(RULE_NAME);
+  });
+
+  it('shows the catalog fallback (no external dialog) when linking is disabled', () => {
+    mockResolveRuleUrl.mockReturnValue(null);
+    renderPlayMode();
+
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+
+    expect(screen.queryByTestId('rules-index-dialog')).toBeNull();
+  });
+
+  it('reflects a toggled setting on the next click without remounting', () => {
+    renderPlayMode();
+
+    // Setting off: clicking a chip must not open the external dialog.
+    mockResolveRuleUrl.mockReturnValue(null);
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+    expect(screen.queryByTestId('rules-index-dialog')).toBeNull();
+
+    // Setting on: the very next click opens the dialog, no reload in between.
+    mockResolveRuleUrl.mockReturnValue(RULE_URL);
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+    expect(screen.getByTestId('rules-index-dialog').getAttribute('data-url')).toBe(RULE_URL);
+  });
+
+  it('keeps an already-open dialog intact when the setting is toggled off', () => {
+    mockResolveRuleUrl.mockReturnValue(RULE_URL);
+    const { rerender } = renderPlayMode();
+    fireEvent.click(screen.getByTestId('chip-show-rule'));
+    expect(screen.getByTestId('rules-index-dialog')).toBeTruthy();
+
+    // Toggling the setting off re-renders the same PlayMode instance; the dialog
+    // captured its URL at open time, so it must remain until closed manually.
+    mockResolveRuleUrl.mockReturnValue(null);
+    rerender(<PlayMode system={mockSystem} roster={mockRoster} onBack={vi.fn()} />);
+
+    const dialog = screen.getByTestId('rules-index-dialog');
+    expect(dialog).toBeTruthy();
+    expect(dialog.getAttribute('data-url')).toBe(RULE_URL);
+  });
+
+  it('keeps the Regelbuch button visible and functional regardless of the setting', () => {
+    mockResolveRuleUrl.mockReturnValue(null);
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderPlayMode();
+
+    const regelbuchButtons = screen.getAllByTitle('Regelbuch öffnen (neuer Tab)');
+    expect(regelbuchButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(regelbuchButtons[0]);
+    expect(openSpy).toHaveBeenCalledWith(REGELBUCH_URL, '_blank');
+
+    openSpy.mockRestore();
+  });
+});
+
+describe('PlayMode hides list rules', () => {
+  const systemWithRules = {
+    forceEntries: [
+      {
+        id: 'fe-1',
+        categoryLinks: [
+          { targetId: 'cat-rules', name: 'Special list rules' },
+          { targetId: 'cat-core', name: 'Core' },
+        ],
+      },
+    ],
+    categoryEntries: [
+      { id: 'cat-rules', name: 'Special list rules' },
+      { id: 'cat-core', name: 'Core Units' },
+    ],
+  };
+
+  const rosterWithRules = {
+    catalogueId: 'cat-1',
+    costLimitType: 'pts',
+    forces: [
+      {
+        id: 'force-1',
+        forceEntryId: 'fe-1',
+        selections: [
+          { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', entryLinkId: 'el-rule' },
+          { id: 'sel-unit', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' },
+        ],
+      },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+  });
+
+  afterEach(() => {
+    evaluationStub.current = null;
+  });
+
+  it('does not render the list-rule group and renders only the battlefield unit', () => {
+    evaluationStub.current = reportMarkingListRules(['sel-rule', 'sel-unit'], ['sel-rule']);
+    render(<PlayMode system={systemWithRules} roster={rosterWithRules} onBack={vi.fn()} />);
+
+    // The list-rule category collapses to empty and is not shown; the unit
+    // category remains.
+    expect(screen.queryByText('Special list rules')).toBeNull();
+    expect(screen.getByText('Core Units')).toBeTruthy();
+
+    // Exactly one unit is rendered (PlayUnitDetails stub → one chip button).
+    expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
+  });
+
+  it('also hides a list rule that falls into the uncategorized "Sonstige Auswahlen" path', () => {
+    // The list-rule selection sits in a category with no matching categoryLink,
+    // so it reaches the uncategorized branch; it must still be filtered out, and
+    // with no other uncategorized selection the "Sonstige Auswahlen" group must
+    // not appear at all.
+    const systemCoreOnly = {
+      forceEntries: [{ id: 'fe-1', categoryLinks: [{ targetId: 'cat-core', name: 'Core' }] }],
+      categoryEntries: [{ id: 'cat-core', name: 'Core Units' }],
+    };
+    const rosterWithOrphanRule = {
+      catalogueId: 'cat-1',
+      costLimitType: 'pts',
+      forces: [
+        {
+          id: 'force-1',
+          forceEntryId: 'fe-1',
+          selections: [
+            { id: 'sel-unit', name: 'Knights', category: 'cat-core', entryLinkId: 'el-1' },
+            // category 'cat-rules' has no categoryLink → uncategorized path.
+            { id: 'sel-rule', name: 'Allow experimental rules?', category: 'cat-rules', entryLinkId: 'el-rule' },
+          ],
+        },
+      ],
+    };
+
+    evaluationStub.current = reportMarkingListRules(['sel-unit', 'sel-rule'], ['sel-rule']);
+    render(<PlayMode system={systemCoreOnly} roster={rosterWithOrphanRule} onBack={vi.fn()} />);
+
+    expect(screen.queryByText('Allow experimental rules?')).toBeNull();
+    expect(screen.queryByText('Sonstige Auswahlen')).toBeNull();
+    expect(screen.getByText('Core Units')).toBeTruthy();
+    expect(screen.getAllByTestId('chip-show-rule')).toHaveLength(1);
+  });
+});

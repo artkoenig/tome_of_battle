@@ -3,10 +3,10 @@
   "name": "parent-costsum-magic-items-budget",
   "description": "Eine constraint mit field=<costType-Id> statt field=\"selections\" begrenzt die SUMME dieser Kostenart unterhalb ihres Traegers, nicht eine Anzahl. Am Hunter der Ogre Kingdoms traegt die Gruppe 'Magic Items and Big Names' (9326-f5c9-9e82-f4bf) die Grenze 2dd3-546b-146e-ce63 (type=max, field=ecfa-8486-4f6c-c249 = pts, scope=parent, value=50, includeChildSelections=true): die gewaehlten Gegenstaende duerfen zusammen hoechstens 50 Punkte kosten, und der Ist-Wert ist die Punktesumme. Die Roster klammern die Summe von unten (30), auf der Grenze (50) und darueber (55) ein; zwei weitere Roster pinnen ueber den verschachtelten Preis-Kindeintrag 'Gnoblar Thiefstones' (15 pts je Stueck unter dem 0-pts-Talisman 'Gnoblar thiefstone') genau das, was includeChildSelections=true entscheidet (65 feuert, 50 schweigt). Die Pflichtausruestung des Hunters (Ogre Club, Harpoon Crossbow, Light Armour) und der Sabertusk haengen ausserhalb der Gruppe am Hunter und gehoeren daher nicht in die Summe.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

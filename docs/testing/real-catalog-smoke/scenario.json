@@ -3,10 +3,10 @@
   "name": "real-catalog-smoke",
   "description": "Rauchtest der Fassade evaluate an echten DE-Daten (gst + Ogre Kingdoms + Mercenaries). Belegt die katalogeuebergreifende AUFLOESUNGS-Faehigkeit der Engine (nicht die Regel-Semantik einzelner Armeen): eine leere Armee (keine Kontingente) liefert einen strukturell vollstaendigen Bericht ohne Absturz, und jede per catalogueLink importierte Definition loest auf. Fehlt die Mercenaries-Abhaengigkeit, meldet der Auswerter die fehlende Abhaengigkeit, und der nur ueber Mercenaries erreichbare Pikemen-Verweis baumelt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
@@ -29,9 +29,9 @@
       "file": "rosters/01-empty-army.ros",
       "description": "DIESELBE leere Armee, aber ausgewertet OHNE die Mercenaries-Datei (Roster-`dataset`-Override: nur gst + Ogre). Ogre deklariert per catalogueLink die Abhaengigkeit auf Mercenaries (fc47-8392-a6c8-452a) — sie fehlt jetzt: MISSING_CATALOGUE_DEPENDENCY. Der nur ueber Mercenaries erreichbare Ogre-entryLink auf Pikemen baumelt: DANGLING_ENTRY_LINK auf die Ziel-Id f7d8-66b4-21ee-00dd. Der Bericht bleibt strukturell vollstaendig, kein Absturz.",
       "dataset": {
-        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat"
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat"
         ]
       },
       "expect": {

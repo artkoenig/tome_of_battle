@@ -3,9 +3,9 @@
   "name": "explorer-category-constraints",
   "description": "Prüft die Auswertung von MAX-Grenzen an einem categoryLink innerhalb eines forceEntry. Konkret: In Orcs and Goblins führt die Armeeliste 'Savage Orc Horde' (59e1-efd7-af88-55a1) einen categoryLink 'Goblin Character' (19ee-4dd1-e36d-6d70, Kategorie 6b1c-cce4-a402-a6e4) mit der Grenze '0298-fc5a-a995-cbae' (Basiswert -1, per bedingungslosem Modifikator auf 2 gesetzt). Ein Roster mit 3 Goblin Characters muss diese Verletzung feuern.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat"
     ]
   },
   "rosters": [

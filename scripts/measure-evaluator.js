@@ -6,7 +6,7 @@
  *   node scripts/measure-evaluator.js --all           # Uebersicht ueber alle E2E-Roster
  *
  * Gemessen wird an **echten Katalogdaten**: den Definitive-Edition-Katalogen unter
- * `src/evaluator/__fixtures__/whfb6-definitive/` mit Rostern aus den bestehenden
+ * `src/domain/evaluator/__fixtures__/whfb6-definitive/` mit Rostern aus den bestehenden
  * E2E-Szenarien unter `docs/testing/`. Nie an synthetischen Miniaturkatalogen — der
  * Aufwand der Engine haengt an der Groesse des echten Definitionsbestands.
  *

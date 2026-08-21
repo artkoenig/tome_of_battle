@@ -9,7 +9,7 @@
 
 ADR-0014 hat `raw.githubusercontent.com` bewusst der Service-Worker-Cache-Regel hinzugefügt, mit der Begründung, dass dies keine Offline-Regression sei — der erste Import brauche ohnehin schon Netzwerk. Der Service Worker (`public/sw.js`) setzt das als Stale-While-Revalidate um: eine gecachte Antwort wird sofort zurückgegeben, der echte Netzwerk-Request aktualisiert den Cache nur im Hintergrund für den *nächsten* Aufruf.
 
-Das kollidiert mit ADR-0014s eigenem Kernmechanismus, dem Revisionsvergleich („higher wins", `deriveRevisionState`/`isOutdated` in `src/db/catalogUpdate.js`), der stillschweigend voraussetzt, dass ein `fetch()` gegen den Fork immer den echten aktuellen Serverstand liefert. Beobachtet: Nach einer CI-bedingten Revisions-Korrektur im Lexicanum-Fork (fälschlich auf 3 hochgezählt, dann auf 2 zurückkorrigiert) zeigte der Import-Screen weiterhin die veraltete Revision 3 — sowohl als „verfügbare" Revision aus dem gecachten `catpkg.json` als auch nach explizitem manuellem Reimport, der denselben SW-interceptierten Fetch-Pfad nutzt.
+Das kollidiert mit ADR-0014s eigenem Kernmechanismus, dem Revisionsvergleich („higher wins", `deriveRevisionState`/`isOutdated` in `src/data/db/catalogUpdate.js`), der stillschweigend voraussetzt, dass ein `fetch()` gegen den Fork immer den echten aktuellen Serverstand liefert. Beobachtet: Nach einer CI-bedingten Revisions-Korrektur im Lexicanum-Fork (fälschlich auf 3 hochgezählt, dann auf 2 zurückkorrigiert) zeigte der Import-Screen weiterhin die veraltete Revision 3 — sowohl als „verfügbare" Revision aus dem gecachten `catpkg.json` als auch nach explizitem manuellem Reimport, der denselben SW-interceptierten Fetch-Pfad nutzt.
 
 ADR-0014s eigene Begründung trennt nicht zwischen zwei unterschiedlichen Nutzungen: (a) ein bereits importiertes System soll offline weiter nutzbar sein — das ist bereits vollständig durch IndexedDB gewährleistet und braucht keinen SW-Cache; (b) der Import-/Update-Screen soll den *aktuellen* Serverstand zeigen — genau das verletzt ein Cache-First-SW strukturell.
 
@@ -32,7 +32,7 @@ Gewählte Option: **Option 2**, weil sie die einzige ist, die die Korrektheitsga
 
 - **Positiv:** Die Revisionsanzeige und jeder Reimport liefern zuverlässig den echten aktuellen Serverstand; „higher wins" funktioniert wieder wie in ADR-0014 vorgesehen.
 - **Negativ:** Der Import-Screen (Liste verfügbarer Systeme/Kataloge, `catpkg.json`) ist ohne Netzwerkverbindung nicht mehr nutzbar. Das betrifft nur das erstmalige Browsen/Importieren, nicht bereits importierte Systeme.
-- **Neutral:** `loadCatalogIndex`s In-Memory-Session-Cache (`src/db/catalogUpdate.js`) entfällt im selben Zug vollständig, da er denselben Fehlklassentyp (session-lange Staleness) unabhängig vom SW erzeugt hätte.
+- **Neutral:** `loadCatalogIndex`s In-Memory-Session-Cache (`src/data/db/catalogUpdate.js`) entfällt im selben Zug vollständig, da er denselben Fehlklassentyp (session-lange Staleness) unabhängig vom SW erzeugt hätte.
 
 ## Vor- und Nachteile der Optionen
 

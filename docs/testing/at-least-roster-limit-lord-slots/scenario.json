@@ -3,10 +3,10 @@
   "name": "at-least-roster-limit-lord-slots",
   "description": "Eine condition type=\"atLeast\" mit field=\"limit::ecfa-8486-4f6c-c249\" und scope=\"roster\" vergleicht das im Roster EINGESTELLTE Punktebudget (<costLimits>) mit ihrem value und haelt ab dem Schwellenwert EINSCHLIESSLICH (>=); ihr childId benennt bei dieser Feldart nichts Zaehlbares, childId=\"model\" aendert daran nichts. Traeger ist der categoryLink \"Lord\" d1d3-6362-e2f7-23c9 im Kontingent \"Standard (BR-AB)\" 3a8b-8c11-beff-0534 (Bretonnia) mit der einen Grenze max 0 selections scope=force (d7e7-599d-12cf-1fd1) und drei Modifikatoren darauf: decrement 1 ab Budget 1000, increment 1 ab Budget 2000 mit repeat je 1000 Punkte (Faktor floor(Budget/1000)), set -1 bei Budget < 0 (nie erfuellt). Daraus folgt die wirksame Lord-Grenze allein aus dem Budget: 0 (unter 1000), -1 (1000 bis 1999), 1 (2000 bis 2999), 2 (ab 3000). Sechs Roster, die sich innerhalb ihrer Familie NUR im costLimit unterscheiden, straddeln beide geschriebenen Schwellen von unten und exakt auf ihnen: 999/1000, 1999/2000 (ein Lord) sowie 2999/3000 (zwei Lords). Ein rechnerisch auf -1 gefallenes Maximum ist KEIN Unbegrenzt-Sentinel, sondern \"nichts erlaubt\" - der Sentinel gilt laut docs/battlescribe-data-format.md 7.6 nur als hingeschriebener Wert; deshalb feuert die Grenze bei Budget 1000 und 1999 mit bound -1. Die zweite Grenze auf derselben Kategorie (fda5-91c2-e17f-774c an der categoryEntry d024-d25b-a9b4-73b6 im .gst) und die Charaktergrenze c3c3-a80c-e026-200f sind mitgeprueft, damit kein zweites Limit die Erwartung ueberrascht. Das budgetabhaengige hidden-Flag der Lord-Kategorie (set true bei Budget < 2000) wird bewusst NICHT behauptet - eigene lessThan-Zelle; Max-Grenzen gelten ohnehin unabhaengig von der Sichtbarkeit.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -14,7 +14,7 @@
 // Beide Namen kommen aus der Fassade: die Abschnitte, die die Engine ausweist,
 // und die Diagnose-Arten, die ihr Bericht traegt. Die Ausgabe benennt damit, was
 // sie liest, statt es zu kennen (Issue 0138).
-import { DiagnosticKind, MeasuredPhase } from '../../src/evaluator/evaluator.js';
+import { DiagnosticKind, MeasuredPhase } from '../../src/domain/evaluator/evaluator.js';
 import {
   INTERACTIVE_BUDGET_MS,
   TWO_STAGE_PREPARATION_SHARE,

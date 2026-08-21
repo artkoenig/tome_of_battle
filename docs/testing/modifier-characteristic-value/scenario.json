@@ -3,10 +3,10 @@
   "name": "modifier-characteristic-value",
   "description": "Merkmals-Modifikatoren: ein <modifier>, dessen field die Id eines <characteristicType> nennt, veraendert genau den Merkmalswert des Profils bzw. des Verweis-Vorkommens, an dem er haengt - und nur ihn. Roster 01/02 zeigen dieselbe Einheit mit nicht erfuellter bzw. erfuellter Bedingung (decrement auf Sv), Roster 03 zeigt vier Verweis-Vorkommen desselben geteilten Profils mit je eigenen set-Modifikatoren.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

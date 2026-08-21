@@ -25,7 +25,7 @@ import { join } from 'node:path';
 const MEASUREMENT_MODULE = join(process.cwd(), 'scripts/lib/evaluator-measurement.js');
 
 /** Die einzige legale Aussenschnittstelle der Reinraum-Engine (ADR-0030). */
-const FACADE_SUFFIX = 'src/evaluator/evaluator.js';
+const FACADE_SUFFIX = 'src/domain/evaluator/evaluator.js';
 
 /**
  * Alle Modul-Angaben einer Datei: statische `import`/`export … from`-Angaben und
@@ -43,11 +43,11 @@ function moduleSpecifiersOf(source) {
 
 /** Die Modul-Angaben, die in die Engine zeigen. */
 function evaluatorSpecifiersOf(source) {
-  return moduleSpecifiersOf(source).filter(specifier => specifier.includes('src/evaluator/'));
+  return moduleSpecifiersOf(source).filter(specifier => specifier.includes('src/domain/evaluator/'));
 }
 
 describe('evaluator-measurement.js: nur ueber die Fassade', () => {
-  it('importiert kein engine-internes Modul mehr — allein `src/evaluator/evaluator.js`', () => {
+  it('importiert kein engine-internes Modul mehr — allein `src/domain/evaluator/evaluator.js`', () => {
     const source = readFileSync(MEASUREMENT_MODULE, 'utf8');
 
     const internal = evaluatorSpecifiersOf(source).filter(specifier => !specifier.endsWith(FACADE_SUFFIX));

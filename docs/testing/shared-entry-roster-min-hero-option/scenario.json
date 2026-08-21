@@ -3,10 +3,10 @@
   "name": "shared-entry-roster-min-hero-option",
   "description": "Ein geteilter Eintrag mit eigenem min-Constraint scope=\"roster\" (\"Pure of Heart\", Hoch-Elfen) ist kein Wurzel-Angebot: sein einziger Platz liegt unter dem Helden, dessen Gruppe den Verweis darauf fuehrt — als Angebot, solange er nicht genommen ist, und als belegter Platz, sobald er es ist. Seine Pflicht bleibt davon unberuehrt: der Katalog verlangt ihn mindestens 1x im ganzen Roster (Constraint 82ef-69c7-f459-5e20, type=\"min\", value=\"1\", scope=\"roster\", includeChildSelections/includeChildForces=\"true\"), also meldet die Liste ihn als unerfuellt, solange kein Held ihn genommen hat, und schweigt, sobald einer es getan hat.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

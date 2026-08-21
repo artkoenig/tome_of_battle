@@ -3,10 +3,10 @@
   "name": "at-least-self-model-count",
   "description": "Eine condition type=\"atLeast\" field=\"selections\" scope=\"self\" childId=\"model\" zaehlt die Modelle der TRAGENDEN Auswahl selbst — nicht die des Kontingents und nicht die des Rosters — und haelt, sobald diese Zahl den value erreicht (atLeast schliesst den Schwellenwert ein). Traeger ist die Vampire-Counts-Einheit 'Ghouls' (6b45-b2ad-dcdf-d3f4); die gegatterte Wirkung ist der Modifikator 'add category 6ad6-f54e-1867-00a7' (BP Infantry 10+), beobachtet an der Autor-Meldung 'You must include at least ONE infantry unit of 10+ models.' am Slot 'Border Patrols rules' (4e15-0353-165f-5528). Die zweite Bedingung derselben and-Gruppe (atLeast 1 childId=4e15… scope=roster) wird ueber alle Roster konstant gehalten, indem jedes Roster diesen Eintrag fuehrt; costLimit ist ueberall 500, damit er sichtbar ist.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

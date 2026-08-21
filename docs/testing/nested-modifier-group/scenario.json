@@ -3,10 +3,10 @@
   "name": "nested-modifier-group",
   "description": "Die verschachtelte modifierGroup - Klammer in der Klammer. Ein <modifierGroup> darf laut Catalogue.xsd:523-538 wieder <modifierGroups> enthalten; die Bedingungen der aeusseren Klammer regieren alles darin, die der inneren nur deren eigene Modifikatoren, und beide verknuepfen sich als Konjunktion. Gepinnt am einzigen Traeger-Muster des Fixture-Korpus: der BLOODLINE-Klammer des 0-1 Vampire Lord (Vampire Counts .cat:3046-3122), einer bedingungslosen aeusseren Klammer mit fuenf je eigen-bedingten inneren Klammern. Beobachtet ueber expect.capabilities (effektiver Anzeigename des Slots sowie die Merkmalswerte des Profil-Vorkommens, dessen Modifikatoren die von der inneren Klammer gesetzte Clan-Kategorie lesen) und - in Roster 04 - ueber die zaehlende Gruppengrenze der Blutlinienwahl. Die Kombination 'innere Bedingung haelt, aeussere schlaegt fehl' ist im Datensatz NICHT baubar: alle drei verschachtelten Stellen des Korpus tragen eine bedingungslose aeussere Klammer (siehe README, Abschnitt 'Luecke').",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

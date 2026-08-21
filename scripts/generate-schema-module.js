@@ -20,10 +20,11 @@ import { JSDOM } from 'jsdom';
 const currentFilePath = fileURLToPath(import.meta.url);
 const repoRoot = resolve(dirname(currentFilePath), '..');
 
-export const VENDORED_XSD_PATH = resolve(repoRoot, 'src', 'parser', 'schema', 'Catalogue.xsd');
+export const VENDORED_XSD_PATH = resolve(repoRoot, 'src', 'data', 'parser', 'schema', 'Catalogue.xsd');
 export const GENERATED_MODULE_PATH = resolve(
   repoRoot,
   'src',
+  'data',
   'parser',
   'schema',
   'battlescribeSchema.generated.js',
@@ -45,7 +46,7 @@ const HYPHEN = /-/g;
 const MODULE_HEADER = `// AUTO-GENERATED FILE — DO NOT EDIT BY HAND.
 //
 // Generated from the vendored BattleScribe schema at
-// src/parser/schema/Catalogue.xsd by \`npm run generate:schema\`.
+// src/data/parser/schema/Catalogue.xsd by \`npm run generate:schema\`.
 //
 // This module is the single source of truth for the BattleScribe data format's
 // closed enum sets and canonical attribute names (see ADR 0016). Parser and

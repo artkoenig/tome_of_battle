@@ -3,10 +3,10 @@
   "name": "violation-classification",
   "description": "Jede gemeldete Meldung ist fachlich eingeordnet: sie nennt ihre Herkunft (origin), und eine aus einer Grenze abgeleitete Meldung nennt zusaetzlich sprachfrei die Art der Grenze (limitKind), die Messgroesse (measure: selectionCount/costSum/budgetLimit/rosterBudget), die Kostenart (costTypeId), die Prozent-Eigenschaft (isPercent), die Art des Bezugsrahmens (scopeKind/scopeTargetId), den Anker (anchorKind/anchorName) sowie Ist/Grenze/Differenz (actual/bound/delta). Zusaetzlich gepinnt: die Ursachen (causes) werden aus der Herleitung des Grenzwerts gelesen - ein bedingter Modifikator, dessen Bedingung eine benennbare Auswahl nennt, erscheint als Ursache, ein Modifikator ohne Bedingung oder mit einer Bedingung auf ein forceEntry bzw. eine Kostenschwelle erzeugt KEINE Ursache; und ein Angebots-Anker (offerAnchor) traegt zwar seine Autor-Meldungen im Faehigkeits-Datensatz, steuert aber NICHTS zur Meldungsliste bei.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
@@ -109,10 +109,10 @@
       "file": "rosters/04-magic-items-cost-sum.ros",
       "description": "Savage Orc Warboss mit zwei magischen Waffen (75 + 50 = 125 pts) unter der Gruppe \"Magic Items\", deren Grenze eine KOSTENSUMME misst (field = die pts-Kostenart, nicht selections). Die Meldung ist damit measure=costSum mit costTypeId der pts-Kostenart, Bezugsrahmen parent, und sie haengt an der grenzentragenden Gruppe (groupAnchor). Die Gruppe traegt keinen Modifikator - keine Ursache.",
       "dataset": {
-        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {
@@ -146,10 +146,10 @@
       "file": "rosters/05-roster-budget-exceeded.ros",
       "description": "Eine Orc-Boyz-Einheit mit 30 Modellen a 5 pts (Summe 150) bei einem eingestellten Punktebudget von 100. Das ist die einzige Regel dieses Szenarios, die NICHT aus einem <constraint> stammt, sondern der engine-eigenen Budget-Regel entspringt: measure=rosterBudget, Anker=roster (sie haengt an keinem Slot), Bezugsrahmen roster, Kostenart pts, keine Ursache.",
       "dataset": {
-        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {
@@ -181,10 +181,10 @@
       "file": "rosters/06-vampire-coast-budget-limit.ros",
       "description": "Leeres Kontingent \"Vampire Coast (WD#306-UK)\" mit einem eingestellten Punktebudget von 1000. Das forceEntry traegt eine eigene Grenze, deren field das KOSTENLIMIT der Roster liest (limit::<pts-Kostenart>) - Basis min 0, per Modifikator auf 2000 gesetzt, sobald genau dieses Kontingent verwendet wird. Die Meldung ist damit measure=budgetLimit mit costTypeId der pts-Kostenart, Bezugsrahmen roster, Ist 1000, Grenze 2000. Der hebende Modifikator hat zwar eine Bedingung, diese zielt aber auf ein forceEntry und nicht auf eine benennbare Auswahl - also KEINE Ursache.",
       "dataset": {
-        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {
@@ -215,11 +215,11 @@
       "file": "rosters/07-phantom-and-offer.ros",
       "description": "Kontingent \"Clan Blood Dragons (VC-AB)\" mit den beiden Schaltern \"Allow Mercenaries\"/\"Allow Regiments of Renown\", sonst leer. Zwei Aussagen in einem Roster: (a) der Pflicht-Anker \"Army of Sylvania\" - ein Wurzel-Eintrag mit je einer unerfuellten min-1-Grenze in force- und in parent-Reichweite - ist in diesem Kontingent effektiv versteckt: seine beiden Min-Grenzen erzeugen KEINE Meldung (Issue 0088); (b) der Angebots-Anker \"Toxote's Hellmounts\" (Mercenaries-Eintrag 1a52-2060-f39b-38ee, im Kontingent verankert durch den Wurzel-entryLink d582-0c51-60be-ce82 der Vampirfuersten-.cat selbst) traegt im Faehigkeits-Datensatz seine Autor-Meldung, steuert aber NICHTS zur Meldungsliste bei - weder diese Autor-Meldung noch seine max-0-Grenze 9595-a908-74bc-94bc noch die min-3-Grenze unterhalb des ebenfalls nur angebotenen \"Fell Bats\". \"Manbiters\" traegt denselben Bauplan, steht hier aber nicht mehr: sein einziger Wurzel-entryLink liegt in der O&G-.cat, und ein fremdes Armeebuch verankert kein Angebot mehr (Issue 0159).",
       "dataset": {
-        "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-          "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {

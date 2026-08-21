@@ -3,10 +3,10 @@
   "name": "condition-group-or-force-gate",
   "description": "Top-level conditionGroup type=\"or\" als Modifikator-Gatter (6th Definitive Edition): Die Wurzel-Einheit \"0-1 Bat Swarm\" (3161-6d02-8903-b0c4, Basis hidden=\"false\") der Vampire Counts traegt einen set hidden=true-Modifikator, dessen einziges Gatter eine or-Gruppe mit fuenf instanceOf(scope=force)-Mitgliedern ist (Necromancer's Army, Clan Necrarch, Clan Blood Dragons, Army of the Lichemaster, Vampire Coast). Laut Formatreferenz (docs/battlescribe-data-format.md, Paragraph 7.7) haelt eine or-Gruppe genau dann, wenn mindestens eines ihrer Mitglieder haelt. Zwei bis auf die Kontingent-entryId identische Roster pinnen beide Zweige ueber expect.capabilities[].isHidden am gewaehlten Bat-Swarm-Slot: Clan Necrarch (genau EIN wahres Mitglied, die vier anderen falsch) -> isHidden true; Standard (kein Mitglied wahr) -> isHidden false. Die internen Mindestmasse der Einheit sind in beiden Rostern erfuellt, damit die Sonderregel \"min-Grenzen verborgener Entitaeten werden nicht geprueft\" keine Rolle spielt; zaehlende Grenzen sind nur als still (absent) gepinnt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -3,10 +3,10 @@
   "name": "parent-min-include-children-bolt-thrower",
   "description": "Eine constraint type=min field=selections scope=parent mit shared=true, includeChildSelections=true und includeChildForces=false am Pflicht-Modell selbst. Traeger ist der selectionEntry 'Reaper Bolt Thrower team' (8d99-db74-0051-4a45, type=model) innerhalb der Rare-Einheit 'Reaper Bolt Thrower' (a757-462a-11d5-9636) des Dark-Elves-Katalogs; die gepinnte Grenze ist 41ec-bee5-0865-0448 (min 1), unmittelbar daneben steht die Nachbar-Obergrenze ccf9-fefc-71c8-bd73 (max 2) mit denselben Flags. Der Bezugsrahmen ist die Eltern-Auswahl, also die einzelne Einheiten-Instanz: gezaehlt werden die Instanzen des Traegers in diesem Rahmen. Fuenf Roster im Kontingent 'Standard (DE-AB)' (26bc-729f-a188-f285) klammern das Paar von beiden Seiten ein (0 feuert unten, 1 und 2 schweigen, 3 feuert oben) und trennen den Rahmen von der Armee: ein Team in einer ANDEREN Reaper-Bolt-Thrower-Einheit desselben Kontingents erfuellt die Pflicht der leeren Einheit nicht. Alle Zahlen sind aus der Katalog-XML abgeleitet; kein modifier im gesamten Fixture-Satz adressiert eine der beteiligten Grenzen-Ids, sie behalten also ihre geschriebenen Werte. includeChildSelections=true ist an dieser Fundstelle nur in seiner belegbaren Haelfte pruefbar (tiefe Unterstruktur im Rahmen aendert das Ist nicht) - eine tiefer geschachtelte Kopie des Traegers ist katalog-seitig nicht baubar, siehe README.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
