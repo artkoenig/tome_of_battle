@@ -10,7 +10,7 @@ import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefau
  *
  * Die Schicht übersetzt nicht: ein Fehler trägt seinen Übersetzungsschlüssel
  * (`messageKey`) und dessen Platzhalter (`messageParams`) und wird erst in der
- * Oberfläche formuliert (`describeRosterFileError` in `src/ui/hooks/`).
+ * Oberfläche formuliert (`describeRosterFileError` in `src/ui/viewmodels/`).
  * Das Ein- und Auspacken der `.rosz`-Datei ist Datei-Ein-/Ausgabe und liegt in
  * der Datenschicht (`src/data/services/rosterTransfer.js`).
  */

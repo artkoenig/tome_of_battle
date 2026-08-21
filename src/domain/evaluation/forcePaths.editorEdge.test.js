@@ -14,7 +14,7 @@
  * `pathBySelectionId` im Ergebnis **beider** Raender, die die Oberflaeche
  * benutzt (durch Lesen verifiziert, 2026-07-30):
  *
- * - `useEvaluation(system, roster)` — Rand des Editors (`src/ui/hooks/useRoster.js`
+ * - `useEvaluation(system, roster)` — Rand des Editors (`src/ui/viewmodels/useRosterState.js`
  *   → `RosterEditor` → `ForceEditorSection`);
  * - `evaluateAppRoster(system, roster)` — Rand des `.ros`-Exports
  *   (`src/domain/roster/rosterSerialization.js`).

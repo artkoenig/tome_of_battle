@@ -17,7 +17,7 @@ Alles andere ist Konvention.
 Das Architektur-Review vom 2026-08-20 hat drei Folgen davon gemessen:
 
 1. **Die Oberfläche greift direkt auf die Datenschicht durch.** 14 Import-Kanten führen von
-   `src/ui/components/`, `src/ui/hooks/` und `src/ui/contexts/` unmittelbar nach `src/data/db/` bzw.
+   `src/ui/components/`, `src/ui/viewmodels/` und `src/ui/contexts/` unmittelbar nach `src/data/db/` bzw.
    `src/data/parser/`:
 
    | Von | Nach |

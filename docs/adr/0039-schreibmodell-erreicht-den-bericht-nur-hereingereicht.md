@@ -25,7 +25,7 @@ dieser Art im ganzen Abhängigkeitsgraphen, und sie war nirgends beschrieben.
 - Die Richtung UI → Fachlogik → Daten (ADR-0037): der Bericht gehört der
   Oberfläche, die ihn ohnehin lesen darf.
 - Am `.ros`-Inhalt darf sich nichts ändern; der Export ist Nutzerdatenformat.
-- Der einzige Aufrufer des Exports (`src/ui/hooks/useRosterList.js`) liegt in
+- Der einzige Aufrufer des Exports (`src/ui/viewmodels/useRosterList.js`) liegt in
   der UI-Schicht; die Kosten der Umstellung sind eine Signatur.
 
 ## Betrachtete Optionen

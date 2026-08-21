@@ -9,12 +9,12 @@ import AppDialogs from './components/AppDialogs';
 import PreviewBadge from './components/PreviewBadge';
 import { SettingsProvider } from './contexts/SettingsContext';
 
-import useViewportHeight from './hooks/useViewportHeight';
-import usePwaLifecycle from './hooks/usePwaLifecycle';
-import useToast from './hooks/useToast';
-import useAppNavigation from './hooks/useAppNavigation';
-import useAppData from './hooks/useAppData';
-import useRosterList from './hooks/useRosterList';
+import useViewportHeight from './viewmodels/useViewportHeight';
+import usePwaLifecycle from './viewmodels/usePwaLifecycle';
+import useToast from './viewmodels/useToast';
+import useAppNavigation from './viewmodels/useAppNavigation';
+import useAppData from './viewmodels/useAppData';
+import useRosterList from './viewmodels/useRosterList';
 import { getDiffChanges } from './viewmodels/releaseDiff';
 import { VIEWS, isImmersiveView } from '../shared/constants/views';
 import { useTranslation } from './i18n/useTranslation';

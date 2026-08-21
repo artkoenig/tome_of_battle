@@ -27,7 +27,7 @@ import { useState, useMemo, useRef, useCallback } from 'react';
 
 import { findSelectionInRoster } from '../../domain/roster';
 import { useRosterReportModel } from '../../domain/evaluation/rosterReport';
-import { useUndoableState } from '../hooks/useUndoableState';
+import { useUndoableState } from './useUndoableState';
 import { createRosterCommands } from './rosterCommands';
 import { useRosterPersistence } from './useRosterPersistence';
 import { useMandatoryListRuleAutoAdd } from './useMandatoryListRuleAutoAdd';

@@ -4,7 +4,7 @@
  * Kriterium 3 nennt als Falsifikator: „Grenzen, die am Link definiert sind,
  * wirken in der UI (Verletzung erscheint, wenn sie ueberschritten werden)."
  * Bisher deklariert kein Test des Repos einen `constraint` an einem `entryLink`;
- * `src/ui/hooks/useRoster.evaluator.test.js` haengt seine max-1-Grenze an den
+ * `src/ui/viewmodels/useRosterState.evaluator.test.js` haengt seine max-1-Grenze an den
  * `selectionEntry` — dort ist die Regel also nicht falsifizierbar. Diese Datei
  * schliesst die Beweisluecke.
  *

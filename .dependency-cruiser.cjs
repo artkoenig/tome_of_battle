@@ -49,9 +49,9 @@ const EVALUATION_LAYER = '^src/domain/evaluation/';
 // blockieren "fachlogik-kein-rueckgriff" und "keine-i18n-unter-ui": unterhalb
 // der Oberflaeche wird nicht mehr uebersetzt und nicht zurueckgegriffen.
 
-// Darstellung und Interaktion. src/ui/hooks/ steht in der ADR-Tabelle nicht
-// eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/data/db/
-// laufen ueber useAppData und useRosterList.
+// Darstellung und Interaktion. Seit Issue 0178 traegt die Oberflaeche nur noch
+// die Verzeichnisse aus der ADR-Tabelle: die Ableitungs- und Zustandshaken
+// liegen samt useAppData und useRosterList unter src/ui/viewmodels/.
 const VIEWMODEL_LAYER = '^src/ui/viewmodels/';
 
 // Seit Issue 0171 heisst das Verzeichnis wie die Schicht: alles unter src/ui/

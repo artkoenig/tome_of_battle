@@ -14,7 +14,7 @@ import { syncRosterSelectionsWithSystem } from '../../domain/roster';
 import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
-} from '../hooks/persistenceFailure';
+} from './persistenceFailure';
 import '../../shared/types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;

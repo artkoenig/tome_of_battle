@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRuleUrl } from '../../hooks/useRuleUrl';
+import { useRuleUrl } from '../../viewmodels/useRuleUrl';
 import { renderUpgradeDetails } from './upgradeDetails';
 import RuleChipIcon from './RuleChipIcon';
 import { useUnitChips } from '../../viewmodels/editor/useUnitChips';

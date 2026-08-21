@@ -17,7 +17,7 @@ eine Änderungs-Kanal: `rosterStore.js`, `systemLibrary.js`, `settings.js`, `cat
 - **Jeder schreibende Aufruf** meldet über `emitDataChange` — erst nach der Zusage der Ablage,
   nie im Fehlerfall (der Fehler wird durchgereicht). Lesende Wege und der Katalog-Abgleich
   melden nichts; `rosterTransfer` schreibt nichts und meldet deshalb auch nichts.
-- Der Emitter ist **an genau einer Stelle** abonniert: `src/ui/hooks/useAppData.js` zieht die
+- Der Emitter ist **an genau einer Stelle** abonniert: `src/ui/viewmodels/useAppData.js` zieht die
   Roster-Liste aus der Meldung nach. Ein zweiter Abonnent in einem Bildschirm ist ein Rückfall —
   vorher erfuhr eine Ansicht einen fremden Stand nur durch `reloadData` beim Navigationswechsel.
   Ein Abonnent, der auf eine Meldung hin selbst aus der DB liest, ergibt einen Zugriff je Klick.
@@ -36,7 +36,7 @@ eine Änderungs-Kanal: `rosterStore.js`, `systemLibrary.js`, `settings.js`, `cat
   beide Schichtregeln sind blockierend.
 - Ein Fehler dieser Schicht trägt seinen Übersetzungsschlüssel, nie den Text: `rosterFileError`
   in `rosterTransfer.js` setzt `messageKey`/`messageParams`/`detail`, und
-  `describeRosterFileError` in `src/ui/hooks/useRosterList.js` formuliert ihn.
+  `describeRosterFileError` in `src/ui/viewmodels/useRosterList.js` formuliert ihn.
 - Tests hier mocken die `src/data/db/`-Module mit `vi.mock` statt IndexedDB hochzufahren (es gibt kein
   globales `fake-indexeddb`-Setup). Ein bestehender Test eines Verbrauchers, der `../db/…`
   mockt, bleibt dadurch grün: die Fassade importiert dieselbe Modul-Id.

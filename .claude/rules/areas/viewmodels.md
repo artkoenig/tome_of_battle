@@ -9,8 +9,26 @@ The ViewModel layer of ADR-0038: hooks that hold state and derive display values
 roster contexts. It sits **above** `src/ui/components/` in the UI layer of ADR-0037 — a ViewModel may
 never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 
+- Since Issue 0178 this is the **only** directory of the layer: the app-level hooks `useRosterList`,
+  `useAppData`, `useAppNavigation`, `usePlayState`, `usePwaLifecycle`, `useRuleUrl`, `useToast`,
+  `useUndoableState`, `useViewportHeight` and the shared `persistenceFailure` helper live here too,
+  next to the screen ViewModels. There is no `src/ui/hooks/`; `App.jsx` imports them from
+  `./viewmodels/`. The layer takes small mechanics as well (`useBottomSheet` is the precedent).
+- The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
+  `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
+- `useAppData.js` is the **only** subscriber of the facade's change channel
+  (`services/dataEvents.js`): a write through `src/data/services/` announces itself there and the one
+  roster list follows. A screen that wants to see a foreign save subscribes nowhere.
+- `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
+  `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
+  catalog refresh; `reloadData` — what `useRosterList` gets — reads IndexedDB and nothing else.
+  Hanging the start run off a repeating event re-parses every stored catalogue and drops the
+  evaluation cache with it.
+- `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
+  `messageParams`/`detail` error from `src/domain/roster/` or `src/data/services/` into text.
+
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
-  bundles split by how often they change. The flat view `useRoster` in `src/ui/hooks/` is gone
+  bundles split by how often they change. The flat view `useRoster` is gone
   (Issue 0175): consumers and tests read `roster`, `report.*`, `commands.*` off the node itself.
 - The state node is cut along the same 300-line rule (Issue 0176): `rosterCommands.js`
   (`createRosterCommands` — the write commands as a plain per-render factory over roster, report

@@ -16,7 +16,7 @@ const RULE_URL = 'https://6th.whfb.app/special-rules/killing-blow';
 
 const mockResolveRuleUrl = vi.fn();
 
-vi.mock('../hooks/useRuleUrl', () => ({
+vi.mock('../viewmodels/useRuleUrl', () => ({
   useRuleUrl: () => mockResolveRuleUrl,
 }));
 

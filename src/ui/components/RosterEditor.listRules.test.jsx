@@ -10,7 +10,7 @@ import { createSubSelectionOperationsMock } from '../../shared/test-utils/subSel
 // drops its "+" adder and renders a checklist (ListRuleChecklist) instead of unit
 // cards, while unit categories keep both.
 
-vi.mock('../hooks/useRuleUrl', () => ({
+vi.mock('../viewmodels/useRuleUrl', () => ({
   useRuleUrl: () => vi.fn(),
 }));
 
