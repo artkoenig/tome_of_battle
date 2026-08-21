@@ -3,10 +3,10 @@
   "name": "prepend-name-chosen-knights",
   "description": "modifier type=\"prepend\" field=\"name\" mit join-Trenner (6th Definitive Edition, Dark Elves): der Modifikator stellt seinen value VOR den bestehenden Namen und setzt den join-Text als Trenner dazwischen — das Ergebnis ist value + join + name. Der Trenner wird VERBATIM uebernommen, nicht angenommen: an dieser Fundstelle ist er ein U+00A0 NO-BREAK SPACE, KEIN gewoehnliches Leerzeichen U+0020. Die Einheit \"Knights of Chaos\" (7843-05b6-ba2d-cc2b) traegt <modifier type=\"prepend\" value=\"Chosen\" field=\"name\" join=\" \">, dessen einzige Bedingung atLeast 1 selections mit scope=\"self\" auf die Aufwertung \"Chosen\" (7ab9-d251-abf3-8878) prueft. Zwei Roster im Kontingent \"Cult of Slaanesh (SoC)\" (5013-f9f4-e03b-94d5), das die Einheit per set hidden=false ueberhaupt erst sichtbar macht: ohne die Aufwertung meldet der Einheiten-Slot den Katalognamen \"Knights of Chaos\", mit ihr \"Chosen Knights of Chaos\" (Trennzeichen U+00A0, im Manifest als \\u00a0 geschrieben — bitte NICHT zu einem gewoehnlichen Leerzeichen \"korrigieren\"). Kontrolle: der gleichnamige Modell-Slot (2a5f-a5b9-62c7-4659) traegt keinen Namens-Modifikator und bleibt in beiden Rostern \"Knights of Chaos\". Alle Aussagen laufen ueber expect.capabilities (effektiver name, isHidden); zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

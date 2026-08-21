@@ -3,10 +3,10 @@
   "name": "condition-group-not",
   "description": "Eine conditionGroup type=\"not\" ist die Negation: sie haelt genau dann, wenn KEINES ihrer Mitglieder haelt. Belegt am einzigen realen Vorkommen im Datensatz — dem set-Modifikator, der im Kontingent 'Army of the Lichemaster' die Pflicht-Untergrenzen von Heinrich Kemmler (8461-3eab-e5ac-1636) und Krell (60a8-5b49-6b81-7c84) von 0 auf 1 hebt. Sein Waechter ist eine and-Gruppe aus (a) instanceOf auf das Kontingent f37a-a93e-fa22-61a8 und (b) einer not-Gruppe ueber genau einer and-Untergruppe (limit::pts < 2000 UND mindestens eine Kampagnen-Auswahl 14fb-dd39-08e7-cbde im Kontingent). Die Roster variieren Budget, Kampagnen-Auswahl und Kontingent so, dass jede Fehl-Lesart der Negation sichtbar wird.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

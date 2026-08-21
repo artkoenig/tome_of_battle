@@ -1,5 +1,5 @@
 <!--
-Referenz-Entwurf für die eigenständige Auswertungs-Engine unter `src/evaluator/`.
+Referenz-Entwurf für die eigenständige Auswertungs-Engine unter `src/domain/evaluator/`.
 Diese Datei ist die dauerhaft im Repo gesicherte Grundlage („auf Grundlage dieser
 Architektur") für die zweite, räumlich getrennte Engine. Der Bau-Entscheid und
 seine Abgrenzung zu ADR-0023 (Solver-Fassade) und ADR-0029 (In-Solver-Query-Engine,
@@ -31,7 +31,7 @@ Reinraum-Entwurf. Grundlage sind ausschließlich das beschriebene Problem und di
 
 1. **Eine reine Funktion.** Die gesamte Auswertung ist `evaluate(Katalog, Roster) → Bericht`. Keine Seiteneffekte, kein verteilter Zustand. Damit ist die Logik ohne UI und ohne Framework testbar. Der rosterunabhängige Katalog-Vorlauf ist dabei als eigener erster Schritt herausgezogen (`prepareDataset`, siehe §3.1) — das ändert nichts an der Reinheit: sein Ergebnis ist unveränderlich, und der Aufrufer reicht es wieder herein, statt dass die Engine es hinter seinem Rücken hielte.
 
-   > **Die eine benannte Ausnahme: der Mess-Modus** (Issue 0138). Beide Fassaden-Schritte nehmen ein **Opt-in-Flag** `{ measure: true }` entgegen. Nur dann liest die Engine eine Uhr: sie stoppt ihre eigenen Abschnitte — Vorbereitung, iterierte Auswertung, Nach-Durchlauf, Grenzen und Bericht — und legt die Dauern zusammen mit dem Ausgang der Fixpunktschleife und den Knotenzahlen des Auswertungsbaums als **ein** zusätzliches Feld `measurement` ab (`src/evaluator/measurement.js`). Für den **Normalpfad** gilt die Reinheit unverändert weiter: ohne das Flag — und ebenso mit leeren Optionen oder `{ measure: false }` — läuft kein Zeitgeber, entsteht kein zusätzliches Feld und ist der Rückgabewert derselbe wie zuvor; „gleiche Eingabe → gleiche Ausgabe" bleibt für jeden bestehenden Aufrufer wahr. Die Ausnahme existiert, damit die Aufwandsmessung (`scripts/measure-evaluator*.js`) die Abschnitte **ablesen** kann, statt die Pipeline von außen nachzubauen — der Nachbau war eine zweite Kopie der Aufrufreihenfolge und ist genau daran auseinandergelaufen. Ihr einziger Nutzer sind die Mess-Skripte; die App setzt das Flag nie.
+   > **Die eine benannte Ausnahme: der Mess-Modus** (Issue 0138). Beide Fassaden-Schritte nehmen ein **Opt-in-Flag** `{ measure: true }` entgegen. Nur dann liest die Engine eine Uhr: sie stoppt ihre eigenen Abschnitte — Vorbereitung, iterierte Auswertung, Nach-Durchlauf, Grenzen und Bericht — und legt die Dauern zusammen mit dem Ausgang der Fixpunktschleife und den Knotenzahlen des Auswertungsbaums als **ein** zusätzliches Feld `measurement` ab (`src/domain/evaluator/measurement.js`). Für den **Normalpfad** gilt die Reinheit unverändert weiter: ohne das Flag — und ebenso mit leeren Optionen oder `{ measure: false }` — läuft kein Zeitgeber, entsteht kein zusätzliches Feld und ist der Rückgabewert derselbe wie zuvor; „gleiche Eingabe → gleiche Ausgabe" bleibt für jeden bestehenden Aufrufer wahr. Die Ausnahme existiert, damit die Aufwandsmessung (`scripts/measure-evaluator*.js`) die Abschnitte **ablesen** kann, statt die Pipeline von außen nachzubauen — der Nachbau war eine zweite Kopie der Aufrufreihenfolge und ist genau daran auseinandergelaufen. Ihr einziger Nutzer sind die Mess-Skripte; die App setzt das Flag nie.
 2. **Single Source of Truth.** Der Bericht ist der einzige Ort, an dem Regel-Ergebnisse existieren. Validierung und UI-Steuerung sind zwei Projektionen desselben Berichts — die Regeln werden nie zweimal ausgewertet.
 3. **Unidirektionaler Datenfluss.** Roster-Änderung → `evaluate` → neuer Bericht → Rendering. Die UI liest nur, sie rechnet nie.
 4. **Ein Query-Primitiv.** Limit, Condition und Repeat sind drei Verpackungen derselben Frage: *„Zähle `field` im Rahmen `scope`, gefiltert auf `target`, unter `flags`."* Es gibt genau eine Implementierung dieser Frage.
@@ -299,7 +299,7 @@ record InstanceNode { defId: Id, count: number, catalogueId: Id?, children: Inst
                       // defId: bei einer über einen entryLink gesetzten Auswahl die Id des
                       // VERWEISES, sonst die des Eintrags; unauflösbar ⇒ Diagnose
                       // `unresolvedDefinition`, bewusst ohne Rückfall. Vertrag samt
-                      // Begründung: JSDoc `@param roster` an `evaluate` (src/evaluator/evaluator.js)
+                      // Begründung: JSDoc `@param roster` an `evaluate` (src/domain/evaluator/evaluator.js)
                       // catalogueId: NUR am Kontingent-Knoten und optional — das Armeebuch,
                       // aus dem das Kontingent stammt (Issue 0140). Je KNOTEN, nicht je
                       // Definition (Verbündete: zwei Kontingente derselben Definition aus

@@ -3,10 +3,10 @@
   "name": "force-id-scope-instance-of",
   "description": "Die selbst-gegatterte Kodierung einer instanceOf-Pruefung auf ein forceEntry (6th Definitive Edition, Orcs and Goblins): eine condition darf die forceEntry-Id direkt im scope tragen (scope=\"a2fa-6a0e-8c17-373c\" childId=\"any\") statt kanonisch in childId (scope=\"force\" childId=\"<forceId>\"). Beide Kodierungen bedeuten dasselbe — die Bedingung haelt genau dann, wenn das umschliessende Kontingent eine Instanz dieses forceEntry ist. Sie ist eine Identitaetspruefung, kein Zaehlrahmen: die Zaehl-Flags (value=1, field=selections, includeChildSelections=false, includeChildForces=false, shared) engen sie nicht ein, weshalb sie auch in einem voellig leeren Kontingent haelt. Getraeger wird das an den or-Gruppen der set-hidden-Modifikatoren von \"Savage Orc Warboss\" (ca27-a5f4-4a3e-7aeb) und \"Savage Orc Great Shaman\" (0767-0a7d-7c03-8833), deren or-Gruppen identisch sind und deren einziges auf die jeweilige Force zutreffendes Mitglied das selbst-gegatterte ist. Als Kontrolle laeuft \"Orc Great Shaman\" (aa57-63c4-136b-4af5) mit, dessen or-Gruppe a2fa NICHT enthaelt, dafuer aber kanonisch 59e1-efd7-af88-55a1. Drei bis auf die Kontingent-entryId identische (leere) Roster pinnen das ueber expect.capabilities[].isHidden an den Angebots-Ankern; zaehlende Grenzen sind nicht Gegenstand des Szenarios.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -3,9 +3,9 @@
   "name": "decrement-cost-bloodline-casting-dice",
   "description": "Ein modifier type=\"decrement\", dessen field eine Kostenart-Id ist, SENKT die Kosten seines Traegers in dieser Kostenart um seinen value - und laesst den geschriebenen Wert unangetastet, solange seine Bedingung nicht haelt. Der gesenkte Wert ist das, was jede Summe ueber diese Kostenart danach benutzt. Gepinnt am Blood-Dragon-Magierabatt des upstream-Katalogs Vampire Counts.cat (ea4b-9294-3427-1fc1): \"Wizard level 2\" (42d9-cebe-18d5-cdbd, geschrieben 2 Casting Dice) und \"Wizard level 3\" (649a-8bc1-fb66-ed73, geschrieben 3) tragen je einen decrement 1 auf die Kostenart fcec-2340-6368-a2ba, gegated per condition greaterThan 0 auf die Kategorie 4cae-a20e-8374-b6cb (Blood Dragon) mit scope=\"parent\" und includeChildSelections=\"true\" - also auf die Blutlinie UNTERHALB desselben Vampirs. Messbar allein ueber die engine-eigene Budget-Regel budget::fcec-2340-6368-a2ba, denn kein constraint des Satzes misst diese Kostenart. Paarweise Roster (dieselbe Zauberstufe, nur die Blutlinie wechselt) und je eine Gegenklammer pinnen die verbilligte Summe exakt.",
   "dataset": {
-    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/__fixtures__/whfb6/Vampire Counts.cat"
+      "src/shared/__fixtures__/whfb6/Vampire Counts.cat"
     ]
   },
   "rosters": [

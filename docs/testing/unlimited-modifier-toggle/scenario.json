@@ -3,10 +3,10 @@
   "name": "unlimited-modifier-toggle",
   "description": "Der Sentinel-Wert -1 (= unbegrenzt) im Zusammenspiel mit set-Modifikatoren, an echten Katalogdaten der 6th Definitive Edition. Fall A (Border-Patrols-Muster, Orcs & Goblins): Die Goblin-Modellgrenze ad41-8936-7a56-1717 hat Rohwert max=-1 und wird per Modifier set 25 gedeckelt, sobald 'Border Patrols rules' (4e15-0353-165f-5528) im Roster liegt — ohne die Bedingung bleibt sie unbegrenzt und feuert auch bei hoher Zaehlung nicht. Fall B (Experimental-rules-Muster, Mercenaries): Die force-skopierte Grenze 264b-4c6a-defa-2b3e der Amazon Cold One Outriders hat Rohwert max=0 und wird per Modifier set -1 aufgehoben, sobald 'Allow experimental rules?' (8b76-92c4-23f9-54b1) in derselben Force liegt — mit erfuellter Bedingung feuert sie auch bei einer Zaehlung ueber dem Rohwert nicht. Das Schwester-Szenario max-unlimited-violation pinnt bereits 'Rohwert -1 ohne erfuellte Bedingung feuert nie' und wird hier nicht dupliziert.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

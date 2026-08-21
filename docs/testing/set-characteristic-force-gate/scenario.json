@@ -3,10 +3,10 @@
   "name": "set-characteristic-force-gate",
   "description": "Kontingent-gegatterter Merkmals-set (6th Definitive Edition): Der Profil-infoLink 'Tomb Scorpion' (fe84bf5a-d0f1-4b5e-ae5d-475128f4ee32) der Wurzeleinheit 'Tomb stalker' (f401a3ed-077e-4795-b32d-ee659bd0b37a, Vampire Counts) traegt einen modifier type=\"set\" value=\"6\" field=\"0e92-d038-82bf-fb41\" (characteristicType Mv), dessen einzige Bedingung eine kanonische instanceOf-Pruefung auf das forceEntry 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8, scope=force, Formatreferenz 7.7) ist. Haelt die Bedingung, ersetzt der Modifikator GENAU das Mv-Merkmal des Verweis-Vorkommens durch 6; haelt sie nicht, steht der Basiswert Mv 7 des geteilten Profils 'Tomb Scorpion' (d2b729f3-3d5d-4d5b-84a8-cb1906d4ba77). Zwei bis auf die Kontingent-entryId identische Roster pinnen beide Zweige ueber expect.capabilities[].infoElements[].characteristics; als dokumentierte Begleiteffekte desselben Gates werden der Vorkommens-Name ('Tomb stalker' vs. 'Tomb Scorpion') und die Sichtbarkeit der Einheit (isHidden false vs. true, Basis hidden=\"true\") mitgeprueft. Zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

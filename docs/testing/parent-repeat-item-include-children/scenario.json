@@ -3,10 +3,10 @@
   "name": "parent-repeat-item-include-children",
   "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"<entryId>\" value=\"1\" repeats=\"1\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"false\" roundUp=\"false\" percentValue=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl des genannten Eintrags im Eltern-Rahmen an. Gepinnt wird der ZWEITE increment-Modifier der geteilten Gruppe 'Arcane Items' (4c3e-febe-6d5d-6912) der Ogre Kingdoms: er hebt die Constraint 188e-3808-4b37-c8d9 (max 1, field=selections, scope=parent, includeChildSelections=false) um +1 je gezaehlter Kopie des Power Stone (696a-648d-c842-4c6a, Link c492-f625-09c8-3702), gegatet durch eine condition greaterThan 0 auf dieselbe childId. Mit N Power Stones ist das effektive Maximum der Gruppe 1+N. Sechs Roster im Kontingent Standard (OK-AB) (729f-9246-5cd3-5044) unter demselben Traeger Butcher (8933-af8e-e780-6f48) pinnen das ueber expect.capabilities am Gruppen-Anker (Verweis a8d2-cc08-f449-6ad6): 0/1/2 Power Stones => effectiveMax 1/2/3, und mit zwei konstanten Nicht-Stepper-Items (Skullmantle, Halfling cookbook) feuert 188e-3808-4b37-c8d9 mit dem ANGEHOBENEN bound 1/2/3 bei actual 2/3/4. Der erste increment derselben Constraint-Id (repeat auf b76c-6bad-4650-dbb0, includeChildSelections=false; Szenario parent-repeat-item-count) ist in allen Rostern inert, weil kein Dispel Scroll gewaehlt ist. NICHT Gegenstand: die Abgrenzung includeChildSelections=true gegen false — in diesem Datensatz ist Power Stone ein flacher Eintrag (kein Wrapper) und keiner der beiden Traeger der Gruppe hat eine Unterauswahl, die einen Power Stone fuehren duerfte; eine tiefer geschachtelte Kopie ist katalogseitig nicht konstruierbar (siehe README).",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

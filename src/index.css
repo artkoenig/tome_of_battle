@@ -1,6 +1,6 @@
 /* ── Globales Stylesheet ───────────────────────────────────────────────────
    Diese Datei enthält selbst keine Regeln. Sie bindet ausschließlich die
-   Bereichs-Dateien unter `src/styles/` in genau der Reihenfolge ein, in der
+   Bereichs-Dateien unter `src/ui/styles/` in genau der Reihenfolge ein, in der
    sie kaskadieren sollen (siehe ADR 0004 §6).
 
    Die Nummer im Dateinamen IST die Kaskadenposition. Zwei Regeln gleicher
@@ -14,36 +14,36 @@
    Der Google-Fonts-Import liegt in `index.html`.
 ── */
 
-@import './styles/01-tokens.css';
-@import './styles/02-base.css';
-@import './styles/03-typography.css';
-@import './styles/04-panels-and-controls.css';
-@import './styles/05-app-shell.css';
-@import './styles/06-dashboard.css';
-@import './styles/07-editor-layout.css';
-@import './styles/08-editor-unit-card.css';
-@import './styles/09-editor-options.css';
-@import './styles/10-editor-autofill.css';
-@import './styles/11-profiles.css';
-@import './styles/12-play-dashboard.css';
-@import './styles/13-play-unit-card.css';
-@import './styles/14-modals.css';
-@import './styles/15-settings-dialog.css';
-@import './styles/16-badges-and-validation.css';
-@import './styles/17-importer-systems.css';
-@import './styles/18-sidebar.css';
-@import './styles/19-utilities.css';
-@import './styles/20-checkboxes-and-radios.css';
-@import './styles/21-mobile-shell.css';
-@import './styles/22-mobile-views.css';
-@import './styles/23-popover-and-bottomsheet.css';
-@import './styles/24-bottomsheet-mobile.css';
-@import './styles/25-toast-and-tooltip.css';
-@import './styles/26-empty-states.css';
-@import './styles/27-update-toast.css';
-@import './styles/28-builder-top-bar.css';
-@import './styles/29-play-destroyed-state.css';
-@import './styles/30-unit-chips-and-details.css';
-@import './styles/31-importer.css';
-@import './styles/32-rules-index-dialog.css';
-@import './styles/33-list-rule-checklist.css';
+@import './ui/styles/01-tokens.css';
+@import './ui/styles/02-base.css';
+@import './ui/styles/03-typography.css';
+@import './ui/styles/04-panels-and-controls.css';
+@import './ui/styles/05-app-shell.css';
+@import './ui/styles/06-dashboard.css';
+@import './ui/styles/07-editor-layout.css';
+@import './ui/styles/08-editor-unit-card.css';
+@import './ui/styles/09-editor-options.css';
+@import './ui/styles/10-editor-autofill.css';
+@import './ui/styles/11-profiles.css';
+@import './ui/styles/12-play-dashboard.css';
+@import './ui/styles/13-play-unit-card.css';
+@import './ui/styles/14-modals.css';
+@import './ui/styles/15-settings-dialog.css';
+@import './ui/styles/16-badges-and-validation.css';
+@import './ui/styles/17-importer-systems.css';
+@import './ui/styles/18-sidebar.css';
+@import './ui/styles/19-utilities.css';
+@import './ui/styles/20-checkboxes-and-radios.css';
+@import './ui/styles/21-mobile-shell.css';
+@import './ui/styles/22-mobile-views.css';
+@import './ui/styles/23-popover-and-bottomsheet.css';
+@import './ui/styles/24-bottomsheet-mobile.css';
+@import './ui/styles/25-toast-and-tooltip.css';
+@import './ui/styles/26-empty-states.css';
+@import './ui/styles/27-update-toast.css';
+@import './ui/styles/28-builder-top-bar.css';
+@import './ui/styles/29-play-destroyed-state.css';
+@import './ui/styles/30-unit-chips-and-details.css';
+@import './ui/styles/31-importer.css';
+@import './ui/styles/32-rules-index-dialog.css';
+@import './ui/styles/33-list-rule-checklist.css';

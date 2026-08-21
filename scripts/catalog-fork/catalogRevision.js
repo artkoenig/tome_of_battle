@@ -10,7 +10,7 @@
  * whether content that matters actually changed (not merely the `revision` attribute
  * itself) and, if so, bumps `revision`. It then regenerates `catpkg.json` in the
  * ecosystem format (`id`, `name`, `type`, `revision`, `sourceSha256`) the app already
- * consumes (`src/db/catalogUpdate.js`).
+ * consumes (`src/data/db/catalogUpdate.js`).
  *
  * Everything here is pure and framework-free; the fs/git wiring lives in the CLI
  * (`generate-catpkg.js`) so this logic stays unit-testable in isolation.
@@ -22,7 +22,7 @@ const GAME_SYSTEM_FILE_EXTENSION = '.gst';
 
 /**
  * catpkg `type` values, lower case, exactly as emitted by BSData/publish-catpkg and
- * consumed by the app's updater. Kept in sync with `src/db/catalogUpdate.js`.
+ * consumed by the app's updater. Kept in sync with `src/data/db/catalogUpdate.js`.
  */
 export const CATPKG_TYPE = Object.freeze({
   GAME_SYSTEM: 'gamesystem',

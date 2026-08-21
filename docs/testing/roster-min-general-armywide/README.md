@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, IDs und
 Erwartungswerte sind **ausschliesslich aus den Katalogdaten** des
-**upstream**-Fixture-Satzes (`src/__fixtures__/whfb6/`) und der
+**upstream**-Fixture-Satzes (`src/shared/__fixtures__/whfb6/`) und der
 Formatspezifikation ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md),
 §5.5/§7.6/§8) abgeleitet. Die Roster-Form folgt der an diesem Satz bereits
 verifizierten Gestalt (direktes `entryId`, `entryLinkId=""`, verschachtelte
@@ -25,7 +25,7 @@ die gegen dieselbe `.gst`/`.cat` laufen.
 > Die Ids `1077-7379-f142-f382` und `d818-c60d-b1f8-8aaa` existieren in **beiden**
 > Sätzen — mit unterschiedlichen Attributen:
 >
-> | | **upstream** (`src/__fixtures__/whfb6/`, **dieses Szenario**) | Definitive Edition (`src/evaluator/__fixtures__/whfb6-definitive/`) |
+> | | **upstream** (`src/shared/__fixtures__/whfb6/`, **dieses Szenario**) | Definitive Edition (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) |
 > |---|---|---|
 > | Fundstelle | `Warhammer Fantasy Battle 6th edition.gst:53-57` | `Warhammer Fantasy Battles (6th definitive edition).gst:721-725` |
 > | `scope` beider Grenzen | **`roster`** | **`force`** |
@@ -129,7 +129,7 @@ gemeldet werden.
 | **RMGA-R2** | `scope="roster"` + `includeChildForces="true"` macht daraus eine **armeeweite** Pflicht: gezählt wird über **alle** Kontingente hinweg, nicht je Kontingent. | `.gst:55/:56` — beide Grenzen `scope="roster" includeChildSelections="true" includeChildForces="true"`. [§7.6-Tabelle](../../battlescribe-data-format.md#76-constraint) zu `includeChildForces`; [§5.6-Regelkasten](../../battlescribe-data-format.md#56-force-entries-detachments) / §7.7 (ADR 0029): Kategorie-Ziel zählt **armeeweit**. |
 | **RMGA-R3** | Die Untergrenze ist **`min 1`** und feuert bei **Ist 0** — auch dann, wenn im Roster gar keine Auswahl der Kategorie instanziiert ist (die Kategorie selbst ist immer da, sie ist im Spielsystem deklariert). | `.gst:56` `type="min" value="1.0"`. Präzedenz für „`min` feuert auf einer leeren Kategorie": OK-R1 in [`ogre-kingdoms`](../ogre-kingdoms/README.md) (Roster 01, `1077-…`, Ist 0). |
 | **RMGA-R4** | Die Obergrenze ist **`max 1`** (`d818-c60d-b1f8-8aaa`) und feuert bei **Ist 2** — im selben, armeeweiten Rahmen. Min und Max sind Geschwister an derselben `categoryEntry`: was das eine erfüllt, lässt das andere schweigen und umgekehrt. | `.gst:55` `type="max" value="1.0"`, sonst attributgleich zu `:56`. |
-| **RMGA-R5** | `bound` ist in **allen** Rostern **1**: kein `modifier` im Satz adressiert die beiden Constraint-Ids. | Volltextsuche über `src/__fixtures__/whfb6/`: `d818-c60d-b1f8-8aaa` und `1077-7379-f142-f382` haben je **genau einen** Treffer — die Deklaration in `.gst:55` bzw. `:56`. Kein `modifier field="d818-…"`/`"1077-…"`. |
+| **RMGA-R5** | `bound` ist in **allen** Rostern **1**: kein `modifier` im Satz adressiert die beiden Constraint-Ids. | Volltextsuche über `src/shared/__fixtures__/whfb6/`: `d818-c60d-b1f8-8aaa` und `1077-7379-f142-f382` haben je **genau einen** Treffer — die Deklaration in `.gst:55` bzw. `:56`. Kein `modifier field="d818-…"`/`"1077-…"`. |
 | **RMGA-R6** | Der einzige Kategorie-Träger im Satz ist die gst-geteilte Aufwertung `1b7c-2c90-6d96-28c9`; jede ihrer Instanzen zählt **1** zur Kategorie. Auflösung strikt über die Id. | `.gst:633` + `categoryLink` `b6a9-2d67-cff3-dde7` (`.gst:638`); genau zwei Vorkommen von `a37e-7207-de6d-acb0` im ganzen Satz. [§3.1](../../battlescribe-data-format.md#31-ids-und-namen): *„Beziehungen … werden ausschliesslich über IDs / `categoryLinks` aufgelöst, nie über Namensgleichheit."* |
 | **RMGA-R7** | Die **Eigengrenze** der Aufwertung (`5b30-f604-aa3b-1c34`, `max 1`, `scope="parent"`) ist eine **andere** Aussage: höchstens ein „General" **je Trägereinheit**. Zwei Generale an zwei verschiedenen Einheiten lassen sie schweigen — die armeeweite `d818-…` dagegen nicht. | `.gst:635`. Rahmen-Regel für `scope="parent"` gepinnt in [`parent-max-enchanted-items-per-bearer`](../parent-max-enchanted-items-per-bearer/README.md) (PMEI: `shared="true"` weitet den Eltern-Rahmen nicht aufs Roster aus). |
 | **RMGA-R8** | Die Mindestgrenze ist **nicht** durch `hidden` entwertet: Kategorie, geteilte Definition, `entryLink` und Trägereinheit sind alle `hidden="false"` und tragen keinen `hidden`-Modifikator. | Tabelle oben; [§5.6-Regelkasten](../../battlescribe-data-format.md#56-force-entries-detachments): *„dessen Mindestgrenzen dürfen **nicht** validiert werden"* — Voraussetzung liegt hier nicht vor. |

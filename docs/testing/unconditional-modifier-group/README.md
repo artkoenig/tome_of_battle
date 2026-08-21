@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, IDs und
 Erwartungswerte sind **ausschliesslich aus den Katalogdaten** der *6th Definitive
-Edition* (`src/evaluator/__fixtures__/whfb6-definitive/`) und der
+Edition* (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) und der
 Formatspezifikation ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md),
 §7.3/§7.7) abgeleitet. Die Roster-Form folgt der in den bestehenden Szenarien
 verifizierten Gestalt (direktes `entryId`, `entryLinkId=""`, verschachtelte

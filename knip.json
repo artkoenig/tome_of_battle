@@ -14,7 +14,7 @@
   "ignore": [
     ".worktrees/**",
     "**/.claude/**",
-    "src/parser/schema/**",
+    "src/data/parser/schema/**",
     "**/__fixtures__/**"
   ]
 }

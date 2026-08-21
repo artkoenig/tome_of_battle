@@ -3,10 +3,10 @@
   "name": "roster-repeat-category-count",
   "description": "Ein <repeat field=\"selections\" scope=\"roster\" childId=\"<Kategorie-Id>\" value=\"1\" repeats=\"1\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"true\" roundUp=\"false\" percentValue=\"false\"> an einem Modifier wendet diesen Modifier EINMAL JE gezaehlter Auswahl dieser Kategorie im GESAMTEN Roster an — ueber alle Kontingente hinweg. Ein increment auf eine Grenze waechst dadurch je gezaehlter Auswahl um genau einen Schritt. Konkret: die Wurzel-Einheit 'Orc Big Uns' (eeb1-a6c4-b57e-f08c, Orcs-and-Goblins-.cat) traegt max 0 (Constraint 938b-15b1-f433-e0d5, field=selections scope=roster shared=true includeChildSelections=false includeChildForces=false) und einen increment-1-Modifier auf genau diese Constraint-Id, dessen einziger <repeat> die Auswahlen der Kategorie 'Orc boyz' (344f-77ef-7238-f157) roster-weit zaehlt. Diese Kategorie traegt im ganzen Fixture-Satz genau eine Definition: die Wurzel-Einheit 'Orc Boyz' (ac23-b9d3-4046-23b7, categoryLink 61ca-d64b-4a52-c623). Mit N gezaehlten Orc Boyz ist das effektive Maximum der Big Uns 0+N. Sechs Roster im Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f) laufen die Zahl der gezaehlten Kopien ab (0/1/2) und pinnen sie ueber expect.capabilities am Big-Uns-Slot (current, effectiveMax) sowie ueber den ANGEHOBENEN bound der feuernden Grenze: 3 Big Uns feuern gegen bound 2 statt gegen den geschriebenen Basiswert 0. Roster 05 pinnt, dass das `number` einer Auswahl zaehlt (eine Auswahl mit number=2 wirkt wie zwei Auswahlen mit number=1); Roster 06 pinnt includeChildForces=\"true\", indem die gezaehlten Orc Boyz in einem ZWEITEN Kontingent stehen.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

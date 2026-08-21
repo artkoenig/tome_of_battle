@@ -3,10 +3,10 @@
   "name": "modifier-group-repeats-grave-markers",
   "description": "Eine <modifierGroup> OHNE jede <conditions>/<conditionGroups>, aber MIT <repeats>, ist keine Klammer, die nie greift, und keine, die genau einmal greift: sie greift unbedingt, und ihr Wiederholungsfaktor multipliziert sich in jeden Modifikator darin. Gepinnt an 'Grave markers' (f899-4fbd-db93-629e) unter 'Army of Sylvania' (b48b-4a69-80f1-5d47) im Kontingent 'Army of Sylvania (SoC)' (4072-c3b8-84c4-a097): min 2 (5c4a-c8ea-073d-909c) und max 2 (1b4e-3003-8b78-4be6), beide field=selections scope=parent includeChildSelections=false, werden von zwei increment-1-Modifikatoren in genau dieser nackten Klammer je Anwendung um einen Schritt gehoben. Die Roster gehen die Wiederholung in DREI Stufen ab (0, 1, 2 Vampire Counts 6822-0110-a7c9-cbb0) und lesen die verschobenen Grenzen zweifach ab: ueber expect.capabilities am Slot 'Grave markers' (effectiveMin/effectiveMax 2/2, 3/3, 4/4 bei current 2..5) und ueber die feuernden Grenzen dort, wo die Markerzahl neben der verschobenen Grenze liegt. KEIN Roster fuehrt einen '0-1 Vampire Lord' (b77b-88d5-5e80-e178): der zweite <repeat> derselben <repeats>-Liste zaehlt ueberall 0, damit trifft dieses Szenario bewusst keine Aussage darueber, wie sich zwei <repeat> mit BEIDERSEITS positiver Trefferzahl verrechnen (siehe README).",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

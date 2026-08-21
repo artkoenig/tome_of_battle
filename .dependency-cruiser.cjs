@@ -13,7 +13,7 @@
  * fehlschlagen. Die CI bleibt durch `continue-on-error` unberuehrt.
  *
  * Seit Issue 0121 gibt es kein src/solver/ mehr: die Alt-Engine ist abgerissen,
- * ihr Schreibmodell lebt als src/roster/ weiter (ADR-0023 damit erledigt).
+ * ihr Schreibmodell lebt als src/domain/roster/ weiter (ADR-0023 damit erledigt).
  */
 
 // Testdateien duerfen Schichtgrenzen und Fassaden bewusst umgehen:
@@ -24,54 +24,58 @@ const TEST_FILE = '\\.test\\.(js|jsx)$';
 // Schicht-Praefixe. Die Reihenfolge parser -> components bezeichnet die
 // erlaubte Abhaengigkeitsrichtung: eine hoehere Schicht darf auf tiefere
 // zugreifen, ein Rueckgriff von tief nach hoch ist verboten.
-const PARSER_LAYER = '^src/parser/';
-const COMPONENTS_LAYER = '^src/components/';
+const PARSER_LAYER = '^src/data/parser/';
+const COMPONENTS_LAYER = '^src/ui/components/';
 
 // Die Reinraum-Auswertungs-Engine (ADR-0030), von aussen nur ueber ihre eigene
 // Fassade erreichbar und vom App-Schreibmodell in beide Richtungen getrennt.
 // Anders als der warn-only Alt-Bestand sind diese Regeln blockierend ("error"):
 // die Engine traegt keinen Ballast, darum kann die Trennung sofort maschinell
 // greifen statt nur zu warnen.
-const EVALUATOR_LAYER = '^src/evaluator/';
-const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
+const EVALUATOR_LAYER = '^src/domain/evaluator/';
+const EVALUATOR_FACADE = '^src/domain/evaluator/evaluator\\.js$';
 
-// Das Schreibmodell des App-Rosters (Issue 0121, Task 8): App-Schicht wie
-// src/utils/. Der Evaluator bleibt in beide Richtungen davon isoliert
-// (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/evaluation/
+// Das Schreibmodell des App-Rosters (Issue 0121, Task 8). Der Evaluator bleibt
+// in beide Richtungen davon isoliert
+// (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/domain/evaluation/
 // braucht es nicht -- sie uebersetzt nur die Eingaberichtung.
-const ROSTER_LAYER = '^src/roster/';
-const EVALUATION_LAYER = '^src/evaluation/';
+const ROSTER_LAYER = '^src/domain/roster/';
+const EVALUATION_LAYER = '^src/domain/evaluation/';
 
 // Die drei Schichten aus ADR-0037: UI -> Fachlogik -> Daten. Der Pfeil ist die
 // erlaubte Richtung; jeder Rueckgriff von tief nach hoch ist verboten. Die
 // Regeln entstehen als "warn" und werden auf "error" gezogen, sobald die Phase
-// gemergt ist, die ihre Verstoesse abbaut (Issues 0161-0171).
+// gemergt ist, die ihre Verstoesse abbaut (Issues 0161-0171). Seit Issue 0169
+// blockieren "fachlogik-kein-rueckgriff" und "keine-i18n-unter-ui": unterhalb
+// der Oberflaeche wird nicht mehr uebersetzt und nicht zurueckgegriffen.
 
-// Darstellung und Interaktion. src/hooks/ steht in der ADR-Tabelle nicht
-// eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/db/
+// Darstellung und Interaktion. src/ui/hooks/ steht in der ADR-Tabelle nicht
+// eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/data/db/
 // laufen ueber useAppData und useRosterList.
-const UI_LAYER = [
-  COMPONENTS_LAYER,
-  '^src/viewmodels/',
-  '^src/contexts/',
-  '^src/hooks/',
-  '^src/styles/',
-];
+const VIEWMODEL_LAYER = '^src/ui/viewmodels/';
+
+// Seit Issue 0171 heisst das Verzeichnis wie die Schicht: alles unter src/ui/
+// ist Oberflaeche, einschliesslich src/ui/App.jsx. src/ui/i18n/ ist
+// ausgenommen, weil es als eigener Praefix eine eigene Regel traegt (siehe
+// I18N_LAYER) -- ohne die Ausnahme meldete jeder Griff danach zwei Regeln.
+const UI_LAYER = ['^src/ui/(?!i18n/)'];
 
 // Uebersetzte Texte. Teil der UI-Schicht, aber eigener Praefix: nur so laesst
 // sich der Griff einer tieferen Schicht danach als eigene Regel melden.
-const I18N_LAYER = '^src/i18n/';
+const I18N_LAYER = '^src/ui/i18n/';
 
 // Auswertung, Schreibmodell und die Bruecke zwischen beiden. Die
 // Reinraum-Regeln oben gelten unveraendert innerhalb dieser Schicht.
 const DOMAIN_LAYER = [EVALUATOR_LAYER, EVALUATION_LAYER, ROSTER_LAYER];
 
-// Persistenz, Import und Katalog-Zerlegung. src/services/ ist die einzige
+// Persistenz, Import und Katalog-Zerlegung. src/data/services/ ist die einzige
 // Adresse, ueber die die UI Daten erreichen darf, und deshalb aus
 // "ui-nicht-auf-daten" ausgenommen.
-const DB_LAYER = '^src/db/';
-const SERVICES_LAYER = '^src/services/';
-const DATA_LAYER = [SERVICES_LAYER, DB_LAYER, PARSER_LAYER];
+const DB_LAYER = '^src/data/db/';
+const SERVICES_LAYER = '^src/data/services/';
+// Seit Issue 0171 ist die ganze Schicht ein Verzeichnis; src/data/rules/ (der
+// Regeltext-Index samt Namensabgleich) gehoert dazu.
+const DATA_LAYER = ['^src/data/'];
 
 module.exports = {
   forbidden: [
@@ -94,14 +98,67 @@ module.exports = {
       to: { path: COMPONENTS_LAYER },
     },
     {
+      name: 'ableitungen-nur-in-viewmodels',
+      comment:
+        'ADR-0038 (Issue 0164): die Anzeige-Ableitungen aus dem Bericht -- die ' +
+        'Listenregel-Ankreuzliste, die armeeweiten Selektoren und die ' +
+        'Verletzungs-Statistik -- werden von den ViewModels in ' +
+        'src/ui/viewmodels/editor/ gelesen, nie von einer Komponente. Eine ' +
+        'Komponente, die sie selbst aufruft, rechnet wieder im Render und ist ' +
+        'nur noch ueber das DOM pruefbar.',
+      severity: 'error',
+      from: { path: COMPONENTS_LAYER, pathNot: TEST_FILE },
+      to: {
+        path: [
+          '^src/domain/evaluation/listRuleGroups\\.js$',
+          '^src/domain/evaluation/armyWideSelectorSlots\\.js$',
+          '^src/domain/evaluation/violationStats\\.js$',
+        ],
+      },
+    },
+    {
+      name: 'viewmodel-kein-jsx',
+      comment:
+        'ADR-0038: src/ui/viewmodels/ liegt in der UI-Schicht ueber ' +
+        'src/ui/components/. Ein ViewModel gibt Anzeigewerte heraus und kennt ' +
+        'kein Markup -- importiert es eine Komponente, ist die Richtung ' +
+        'gedreht und das Modell nur noch ueber das DOM pruefbar.',
+      severity: 'error',
+      from: { path: VIEWMODEL_LAYER, pathNot: TEST_FILE },
+      to: { path: COMPONENTS_LAYER },
+    },
+    {
+      name: 'komponente-kein-bericht',
+      comment:
+        'ADR-0038: eine Komponente ist JSX. Den Auswertungsbericht liest ihr ' +
+        'ViewModel unter src/ui/viewmodels/ und reicht fertige Anzeigewerte als ' +
+        'Props herein. Wer src/domain/evaluation/ oder src/domain/evaluator/ in der ' +
+        'Komponente anfasst, rechnet wieder im Render.',
+      severity: 'error',
+      from: { path: COMPONENTS_LAYER, pathNot: TEST_FILE },
+      to: { path: [EVALUATION_LAYER, EVALUATOR_LAYER] },
+    },
+    {
+      name: 'viewmodel-keine-datenschicht',
+      comment:
+        'ADR-0037/0038: ein ViewModel erreicht Daten ueber src/data/services/, nie ' +
+        'direkt ueber src/data/db/ oder src/data/parser/. Seit Issue 0167 ohne ' +
+        'Ausnahme: die Direktkanten der drei Huellen-ViewModels laufen ueber ' +
+        'die Fassade.',
+      severity: 'error',
+      from: { path: VIEWMODEL_LAYER, pathNot: TEST_FILE },
+      to: { path: [DB_LAYER, PARSER_LAYER] },
+    },
+    {
       name: 'ui-nicht-auf-daten',
       comment:
         'ADR-0037: die Oberflaeche erreicht Daten ausschliesslich ueber ' +
-        'src/services/. Ein direkter Griff nach src/db/ oder src/parser/ laesst ' +
+        'src/data/services/. Ein direkter Griff nach src/data/db/ oder src/data/parser/ laesst ' +
         'sich weder austauschen noch instrumentieren. Bestand beim Aufstellen ' +
-        'der Regel: 14 Kanten (ADR-0037, Befund 1). Jede Zahl darueber ist neu ' +
-        'und gehoert nicht dazu.',
-      severity: 'warn',
+        'der Regel: 14 Kanten (ADR-0037, Befund 1). Issue 0167 hat sie auf ' +
+        'src/data/services/ umgelenkt; die Regel steht seitdem auf error und ' +
+        'friert den Zustand ein.',
+      severity: 'error',
       from: { path: [...UI_LAYER, I18N_LAYER], pathNot: TEST_FILE },
       to: { path: [DB_LAYER, PARSER_LAYER] },
     },
@@ -120,7 +177,7 @@ module.exports = {
       comment:
         'ADR-0037: die Fachlogik traegt keine Darstellung. Sie darf die ' +
         'Datenschicht nutzen, aber nie zurueck in die Oberflaeche greifen.',
-      severity: 'warn',
+      severity: 'error',
       from: { path: DOMAIN_LAYER, pathNot: TEST_FILE },
       to: { path: UI_LAYER },
     },
@@ -128,17 +185,17 @@ module.exports = {
       name: 'keine-i18n-unter-ui',
       comment:
         'ADR-0037: uebersetzte Texte entstehen in der Oberflaeche. Wer in ' +
-        'Fachlogik oder Datenschicht src/i18n/ importiert, formuliert dort eine ' +
+        'Fachlogik oder Datenschicht src/ui/i18n/ importiert, formuliert dort eine ' +
         'Anzeige und bindet die Schicht an eine Sprache.',
-      severity: 'warn',
+      severity: 'error',
       from: { path: [...DOMAIN_LAYER, ...DATA_LAYER], pathNot: TEST_FILE },
       to: { path: I18N_LAYER },
     },
     {
       name: 'evaluator-keine-roster-abhaengigkeit',
       comment:
-        'Reinraum-Schutz (ADR-0030/0034): src/evaluator/ darf das App-Schreibmodell ' +
-        'src/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine.',
+        'Reinraum-Schutz (ADR-0030/0034): src/domain/evaluator/ darf das App-Schreibmodell ' +
+        'src/domain/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine.',
       severity: 'error',
       from: { path: EVALUATOR_LAYER, pathNot: TEST_FILE },
       to: { path: ROSTER_LAYER },
@@ -146,7 +203,7 @@ module.exports = {
     {
       name: 'roster-keine-evaluator-abhaengigkeit',
       comment:
-        'Das Schreibmodell src/roster/ bleibt rein strukturell (Issue 0121, Task 8): ' +
+        'Das Schreibmodell src/domain/roster/ bleibt rein strukturell (Issue 0121, Task 8): ' +
         'es importiert den Evaluator nie -- auch nicht ueber dessen Fassade.',
       severity: 'error',
       from: { path: ROSTER_LAYER, pathNot: TEST_FILE },
@@ -155,9 +212,9 @@ module.exports = {
     {
       name: 'evaluation-keine-roster-abhaengigkeit',
       comment:
-        'Die Auswertungs-Bruecke src/evaluation/ uebersetzt nur App-Roster -> ' +
+        'Die Auswertungs-Bruecke src/domain/evaluation/ uebersetzt nur App-Roster -> ' +
         'Evaluator-Vertrag und reicht den Bericht durch; das Schreibmodell ' +
-        'src/roster/ braucht sie nicht (Issue 0121, Task 8).',
+        'src/domain/roster/ braucht sie nicht (Issue 0121, Task 8).',
       severity: 'error',
       from: { path: EVALUATION_LAYER, pathNot: TEST_FILE },
       to: { path: ROSTER_LAYER },
@@ -166,7 +223,7 @@ module.exports = {
       name: 'evaluator-nur-ueber-fassade',
       comment:
         'Der Evaluator wird von aussen ausschliesslich ueber die Fassade ' +
-        'src/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
+        'src/domain/evaluator/evaluator.js angesprochen (ADR-0030, gespiegelt aus der ' +
         'Solver-Fassade ADR-0023). Ausgenommen sind evaluator-interne Module und ' +
         'Testdateien -- dieselben Ausnahmen wie die oxlint-Regel ' +
         'no-restricted-imports. Fuer das Messwerkzeug gab es bis Issue 0138 eine ' +
@@ -194,7 +251,7 @@ module.exports = {
           TEST_FILE, // Tests haben konstruktionsbedingt keine Importeure
           '\\.config\\.(js|cjs|mjs)$', // vite/vitest-Konfiguration
           '^src/main\\.jsx$', // App-Einstieg
-          '^src/test-utils/', // Test-Setup-Helfer
+          '^src/shared/test-utils/', // Test-Setup-Helfer
           '(^|/)node_modules/',
         ],
       },
@@ -208,12 +265,12 @@ module.exports = {
 
     // Vollstaendig aus dem Graphen ausschliessen: Build-Ausgaben, VCS,
     // verschachtelte Arbeitskopien, Fixtures und generierte Dateien. Verhindert
-    // Falschmeldungen aus .worktrees/, .claude/, Fixtures und src/parser/schema/.
+    // Falschmeldungen aus .worktrees/, .claude/, Fixtures und src/data/parser/schema/.
     exclude: {
       path:
         '(^|/)(dist|coverage|\\.git|\\.worktrees|\\.claude)/' +
         '|(^|/)__fixtures__/' +
-        '|^src/parser/schema/',
+        '|^src/data/parser/schema/',
     },
 
     enhancedResolveOptions: {

@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den Engine-Quellcode). Alle Regeln,
 Grenz-Ids, Ist- und Grenzwerte sind **ausschließlich aus den Katalogdaten** der
-*6th Definitive Edition* (`src/evaluator/__fixtures__/whfb6-definitive/`), der
+*6th Definitive Edition* (`src/domain/evaluator/__fixtures__/whfb6-definitive/`), der
 Format-Doku [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md)
 und der vendorten `Catalogue.xsd` **abgeleitet** — nicht aus einem Engine-Lauf.
 Die Roster-Form folgt der in bestehenden Szenarien verifizierten Gestalt
@@ -83,7 +83,7 @@ einen fremden Wert setzen würde.
 ### Wie das Fehlen des Ziels geprüft wurde
 
 Volltextsuche über **alle fünf** Dateien des eingefrorenen Korpus
-`src/evaluator/__fixtures__/whfb6-definitive/` (`.gst` + `Vampire Counts` +
+`src/domain/evaluator/__fixtures__/whfb6-definitive/` (`.gst` + `Vampire Counts` +
 `Orcs and goblins` + `Ogre Kingdoms` + `Mercenaries`), zuerst nach der vollen Id,
 dann nach dem Präfix `a59d`:
 

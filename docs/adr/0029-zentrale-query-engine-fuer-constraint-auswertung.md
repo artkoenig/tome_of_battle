@@ -18,7 +18,7 @@
 > Orte mehr — `validateRoster`, `entryAvailability` (der Validierungs-Diff aus
 > ADR-0022, seinerseits durch [ADR-0035](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md)
 > ersetzt), `getModifiedConstraintValue`, `getSelectionTotalCost`. Das Query-Primitiv
-> selbst ist realisiert, aber in der Reinraum-Engine (`src/evaluator/query.js`), und
+> selbst ist realisiert, aber in der Reinraum-Engine (`src/domain/evaluator/query.js`), und
 > die Oberfläche liest sein Ergebnis ausschließlich aus dem Bericht (ADR-0034) statt
 > aus einem `SelectionBehaviorModel`. Das Dokument beschreibt nur noch Historie —
 > lesenswert für die Problemanalyse, nicht für den geltenden Aufbau.

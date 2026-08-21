@@ -3,10 +3,10 @@
   "name": "set-primary-category-membership",
   "description": "Ein unbedingter modifier type=set-primary field=category sichert die Mitgliedschaft in der benannten Kategorie GANZ ALLEIN - ohne begleitendes add/category und ohne eigenen categoryLink. Beleg-Eintrag: 'Kathleen' Halftank (Ogre Kingdoms, 331a-3634-095a-574a) traegt categoryLinks nur auf Rare (primary=true), Experimental rules und War Machine, dazu einen unbedingten set-primary auf ee09-9a50-ad78-9c32 (Regiment of Renown). Im Kontingent Standard (OK-AB), dessen forceEntry einen categoryLink auf diese Kategorie fuehrt (f78c-c639-4655-0461), muss der Kategorie-Anker Regiment of Renown die Einheit zaehlen (current 1), waehrend die Gegenprobe Slave Giant (7ec6-83de-2dc3-82e9, nur Rare, kein Kategorie-Modifier) dort 0 zaehlt. Die zweite Haelfte: set-primary verschiebt nur das primary-Flag, es entfernt keine Mitgliedschaft - Kathleen zaehlt weiterhin als Rare, weshalb sie zusammen mit dem Slave Giant die .gst-Grenze Rare max 1 (0a44-2d3f-adfe-f3a1) mit Ist 2 reisst. Welche Kategorie der ANZEIGE-Bucket ist, ist kein Manifest-Schluessel und wird bewusst nicht behauptet.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generatedBy": "scripts/evaluator-coverage-inventory.js",
   "corpus": [
-    "src/evaluator/__fixtures__/whfb6-definitive",
-    "src/__fixtures__/whfb6"
+    "src/domain/evaluator/__fixtures__/whfb6-definitive",
+    "src/shared/__fixtures__/whfb6"
   ],
   "totals": {
     "cells": 130,

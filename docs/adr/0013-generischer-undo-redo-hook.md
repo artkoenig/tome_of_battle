@@ -7,7 +7,7 @@
 
 ## Kontext und Problemstellung
 
-Für das Feature "Undo/Redo im Editor" (siehe [PRD-editor-undo-redo.md](../PRD-editor-undo-redo.md)) muss der `roster`-State in `src/hooks/useRoster.js` rückgängig machbar und wiederherstellbar werden. `useRoster.js` verwaltet aktuell den Roster-State direkt über `React.useState` und enthält bereits Domänenlogik (Kostenberechnung, Validierung, Autosave, System-Synchronisation).
+Für das Feature "Undo/Redo im Editor" (siehe [PRD-editor-undo-redo.md](../PRD-editor-undo-redo.md)) muss der `roster`-State in `src/ui/hooks/useRoster.js` rückgängig machbar und wiederherstellbar werden. `useRoster.js` verwaltet aktuell den Roster-State direkt über `React.useState` und enthält bereits Domänenlogik (Kostenberechnung, Validierung, Autosave, System-Synchronisation).
 
 ## Entscheidungsfaktoren (Drivers)
 
@@ -18,7 +18,7 @@ Für das Feature "Undo/Redo im Editor" (siehe [PRD-editor-undo-redo.md](../PRD-e
 
 ## Betrachtete Optionen
 
-- **Option 1:** Generischer Hook `src/hooks/useUndoableState.js`, der einen beliebigen State kapselt (`{ state, setState, replace, undo, redo, canUndo, canRedo }`). `useRoster.js` nutzt ihn anstelle von `useState` für den `roster`-State.
+- **Option 1:** Generischer Hook `src/ui/hooks/useUndoableState.js`, der einen beliebigen State kapselt (`{ state, setState, replace, undo, redo, canUndo, canRedo }`). `useRoster.js` nutzt ihn anstelle von `useState` für den `roster`-State.
 - **Option 2:** History-Array direkt und ausschließlich in `useRoster.js` implementieren, eng verwoben mit der Roster-Domänenlogik.
 
 ## Entscheidungsergebnis

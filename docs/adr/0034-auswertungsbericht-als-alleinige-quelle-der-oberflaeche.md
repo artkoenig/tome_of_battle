@@ -11,7 +11,7 @@
 
 ## Kontext und Problemstellung
 
-ADR-0030 hat beschlossen, dass die Reinraum-Engine (`src/evaluator/`) die alte
+ADR-0030 hat beschlossen, dass die Reinraum-Engine (`src/domain/evaluator/`) die alte
 Engine (`src/solver/`) ablöst. Beim Zuschnitt des Cutovers stellte sich heraus,
 dass die eigentliche Frage nicht „welche Engine" ist, sondern **wo die Grenze
 zwischen Engine und Oberfläche verläuft**.

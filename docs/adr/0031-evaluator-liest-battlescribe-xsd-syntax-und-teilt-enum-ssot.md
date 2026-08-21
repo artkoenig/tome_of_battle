@@ -4,7 +4,7 @@ Status: accepted
 
 # Der Reinraum-Evaluator liest die rohe BattleScribe-XSD-Syntax und teilt deren Enum-SSOT
 
-ADR-0030 hat die zweite Auswertungs-Engine (`src/evaluator/`) bewusst mit einem
+ADR-0030 hat die zweite Auswertungs-Engine (`src/domain/evaluator/`) bewusst mit einem
 **eigenen, erfundenen Vokabular** (`op` / `operation` / `targetKind` / `targetId`)
 gebaut und diese Abweichung von den echten BattleScribe-Attributen als „bewusst
 offen gelassene Grenze" ehrlich dokumentiert (Issue 65, ADR-0030 „Umsetzungsstand
@@ -15,8 +15,8 @@ Wir entscheiden, diese Grenze zu schließen. Der Evaluator liest ausschließlich
 **kanonischen XSD-Attributnamen** (`type`, `field`, `value`, `scope`, …) und
 bezieht die geschlossenen Enum-Mengen (`ConstraintKind`, `ConditionKind`,
 `ModifierKind`, `ConditionGroupKind`, `InfoLinkKind`) aus der bereits
-vendored XSD-SSOT `src/parser/schema/battlescribeSchema.generated.js` (ADR-0016),
-statt sie in `src/evaluator/model.js` zu duplizieren. Der Import aus `src/parser/`
+vendored XSD-SSOT `src/data/parser/schema/battlescribeSchema.generated.js` (ADR-0016),
+statt sie in `src/domain/evaluator/model.js` zu duplizieren. Der Import aus `src/data/parser/`
 ist von ADR-0030 ausdrücklich erlaubt; die harte Import-Isolation gegen die
 zweite Engine bleibt in beide Richtungen unberührt. Das erfundene Alt-Vokabular
 wird **ersatzlos entfernt** (kein Kompatibilitäts-Fallback): keine realen Daten
@@ -30,7 +30,7 @@ bleibt Evaluator-eigene Konvention und wird nicht aus dem Schreibmodell bezogen
 `npm run depcruise` als Fehler durchgesetzt).
 
 > **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert. Die
-> Gegenseite der Import-Isolation heißt seit dem Cutover `src/roster/` (das
+> Gegenseite der Import-Isolation heißt seit dem Cutover `src/domain/roster/` (das
 > Schreibmodell, das aus `src/solver/` hervorgegangen ist); der Validierungsteil des
 > Solvers ist gelöscht.
 

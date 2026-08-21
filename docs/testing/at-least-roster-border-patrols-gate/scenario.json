@@ -3,10 +3,10 @@
   "name": "at-least-roster-border-patrols-gate",
   "description": "Roster-weites atLeast-Gatter (6th Definitive Edition): Die Wurzel-Einheit \"0-1 Black Coach\" (dd09-e6e8-38ea-c6f4, Basis hidden=\"false\") traegt einen set hidden=true-Modifikator, dessen einzige Bedingung atLeast 1 selections mit scope=\"roster\", includeChildForces=\"true\" auf childId 4e15-0353-165f-5528 (\"Border Patrols rules\", Wurzeleintrag der .gst) ist. Enthaelt das Roster irgendwo eine Border-Patrols-Selektion, haelt die Bedingung und der Black Coach ist verborgen (isHidden true); ohne sie bleibt der Basiswert (isHidden false). Beide Roster tragen costLimit 500 pts, damit der Border-Patrols-Umschalter selbst legitim sichtbar ist (sein eigenes Gatter: equalTo 500 auf limit::pts) — sie unterscheiden sich AUSSCHLIESSLICH in der Anwesenheit dieser einen Selektion. Zweiter Zeuge derselben Bedingungszelle: der set-Modifikator der Core-Pflicht (35c2-d478-392a-aeb1, Basis min 2 -> 1 unter Border Patrols) laesst die feuernde Grenze ihren bound wechseln. Der zitierte Modifikator sitzt auf der EINHEIT, nicht auf der Great-Weapon-Option (11a1-6a7d-bea8-c35e, modifikatorlos) — deren Slot wird als unveraenderte Gegenprobe (isHidden false) im Basisroster gepinnt.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

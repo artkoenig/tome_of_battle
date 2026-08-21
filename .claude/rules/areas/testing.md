@@ -6,7 +6,7 @@ paths:
 # E2E-Szenarien des Evaluators
 
 Ein Szenario ist ein Verzeichnis aus `rosters/*.ros`, `README.md` und `scenario.json`. Die
-`scenario.json` ist das Manifest, das der Runner (`src/evaluator/e2e.testcatalog.test.js`)
+`scenario.json` ist das Manifest, das der Runner (`src/domain/evaluator/e2e.testcatalog.test.js`)
 abarbeitet; das README ist die **Herleitung** dazu und keine Prosa-Beigabe — jeder Soll-Wert im
 Manifest muss dort aus den Katalogdaten begruendet sein (ADR 0033).
 
@@ -34,7 +34,7 @@ Manifest muss dort aus den Katalogdaten begruendet sein (ADR 0033).
   traegt — ein verborgener Slot wird materialisiert und markiert, nie weggelassen.
 - Regel-Ids (`VCC-R…`, `OCS-R…`) werden zwischen den READMEs per relativem Link zitiert. Wer eine
   Regel umnummeriert oder ersetzt, zieht die Verweise im Schwester-README nach.
-- Ausgefuehrt wird das alles von `forge-test --run src/evaluator`; ein geaendertes Manifest
+- Ausgefuehrt wird das alles von `forge-test --run src/domain/evaluator`; ein geaendertes Manifest
   braucht keine weiteren Checks, solange kein `src/`-Code angefasst wurde.
 - Rote Szenarien, die absichtlich rot bleiben, stehen in `docs/testing/campaign-state.json`;
   `worklist.json`/`covered-cells.json` bewegen sich nur bei einem **neuen** Zellenschluessel.

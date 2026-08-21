@@ -3,10 +3,10 @@
   "name": "at-least-self-equipment-save",
   "description": "Eine condition type=\"atLeast\" mit scope=\"self\" nimmt die Auswahl, die die Query traegt, als Zaehlrahmen und zaehlt die Auswahlen UNTER diesem Traeger — mit includeChildSelections=\"true\" auch die tiefer verschachtelten. Am Bretonnian Lord (bf54-da29-921a-e457, Bretonnia) haengen vier decrement-Modifikatoren am infoLink c2cae708-0b6f-4553-9adc-754be21e3d2e (Profil 58b5-73df-d1c1-7387, Basis Sv 7), je gegattert durch genau eine solche Bedingung: Shield 50e2-1873-a856-03e7 (-1), Barding 3211-d836-02f1-01d0 (-1), Bretonnian Warhorse adc2-53db-4a9e-b8ea (-1) und Heavy Armour dde4-0ba8-7b3c-57b7 (-2). Jeder Modifikator feuert genau dann, wenn sein Ausruestungsteil irgendwo unter dem Lord steht; Sv ist der geschriebene Basiswert minus der Summe der greifenden Abzuege. Roster 05 fuehrt das Barding UEBER das Pferd ein (eine Ebene tiefer als die direkten Kinder) und trennt damit \"zaehlt in beliebiger Tiefe unter dem Traeger\" von \"zaehlt nur direkte Kinder\"; Roster 07 stellt den nackten Lord neben eine voll ausgeruestete Einheit derselben Force und trennt scope=\"self\" von force/roster. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

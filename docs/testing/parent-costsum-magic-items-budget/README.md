@@ -3,7 +3,7 @@
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, Constraint-IDs
 und Erwartungswerte sind **ausschliesslich aus den Katalogdaten** der *6th Definitive
 Edition* **abgeleitet** — aus den `.gst`/`.cat`-XML, die auch die Reinraum-Engine
-(`src/evaluator/`) als E2E-Fixtures nutzt. Sie stammen **nicht** aus einem Engine-Lauf.
+(`src/domain/evaluator/`) als E2E-Fixtures nutzt. Sie stammen **nicht** aus einem Engine-Lauf.
 
 - Spielsystem: `Warhammer Fantasy Battles (6th definitive edition).gst`
   (`0d13-7737-ea86-4662`, rev 1)
@@ -57,7 +57,7 @@ Lesart der Attribute (Format-Doku [§7.6](../../battlescribe-data-format.md#76-c
 - **`includeChildSelections="true"`** erweitert die Summe von den direkten
   Gruppenmitgliedern auf **alles, was darunter hängt** — insbesondere auf einen
   bepreisten Kindeintrag *unter* einem Gegenstand. (Der XSD-Vorgabewert wäre `false`,
-  `src/parser/schema/Catalogue.xsd` Zeile 430; hier steht `true` ausdrücklich da.)
+  `src/data/parser/schema/Catalogue.xsd` Zeile 430; hier steht `true` ausdrücklich da.)
 - **`value="50"` / `type="max"`** ist die Grenze. Kein `modifier` im gesamten
   Fixture-Korpus adressiert `field="2dd3-546b-146e-ce63"` — die Grenze bleibt in jedem
   Roster dieses Szenarios **50**.

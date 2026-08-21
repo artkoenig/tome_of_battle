@@ -3,10 +3,10 @@
   "name": "force-repeat-bloodletters-flesh-hound-slots",
   "description": "Ein <repeat value=\"1\" repeats=\"1\" field=\"selections\" scope=\"force\" childId=\"7dc4-fb32-003b-c289\" shared=\"true\" roundUp=\"false\" includeChildSelections=\"true\" includeChildForces=\"true\"> an einem increment-Modifikator wendet diesen EINMAL JE gezaehlter Auswahl des benannten Eintrags im KONTINGENT an - childId ist hier eine Eintrags-Id (die Wurzel-Einheit 'Bloodletters', Forces-of-Chaos-.cat Z. 5634), nicht eine Kategorie und kein Kostenlimit. Traeger ist die Wurzel-Einheit 'Flesh Hounds' eaf6-a701-f67e-7c26 (Z. 5790) mit der einen Grenze max 0 selections scope=force shared=true includeChildSelections=false (7f35-5f3f-42c9-be19, Z. 5886) und genau zwei Schreibern darauf: einem set -1, gegattert per notInstanceOf auf das Kontingent 'Daemonic Legion (SoC)' 93f4-7522-86e9-7d45 (Z. 5801), und dem increment 1 mit dem <repeat>, gegattert per instanceOf auf dasselbe Kontingent (Z. 5807). Daraus folgt: IN der Daemonic Legion ist das wirksame Maximum der Flesh Hounds gleich der Zahl der Bloodletters-Einheiten im Kontingent (0 -> 0, 1 -> 1, 2 -> 2, 3 -> 3); AUSSERHALB ist die Grenze per hingeschriebenem Sentinel -1 aufgehoben, unabhaengig von jeder Bloodletters-Auswahl. Fuenf Roster in der Daemonic Legion laufen die Leiter ab und straddeln sie zweimal (Ist 2 gegen bound 1, Ist 3 gegen bound 2), zwei Roster im Kontingent 'Standard (HC-AB + BC-AB)' d403-5cc9-152c-2093 pinnen die Aufhebung - darunter eine auswahlgleiche Gegenprobe zu dem Roster, das in der Daemonic Legion feuert. Die Sichtbarkeitsgatter beider Einheiten (set hidden=true bei instanceOf 'Archaon's Horde (SoC)' f1d2-edba-0f35-030a bzw. zusaetzlich bei 'Morghur' 1d54-5b22-90c0-96c4) sind bewusst nicht ausgeloest: kein Roster nutzt dieses Kontingent oder diesen Charakter.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Forces of Chaos (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -17,8 +17,8 @@ Alles andere ist Konvention.
 Das Architektur-Review vom 2026-08-20 hat drei Folgen davon gemessen:
 
 1. **Die Oberfläche greift direkt auf die Datenschicht durch.** 14 Import-Kanten führen von
-   `src/components/`, `src/hooks/` und `src/contexts/` unmittelbar nach `src/db/` bzw.
-   `src/parser/`:
+   `src/ui/components/`, `src/ui/hooks/` und `src/ui/contexts/` unmittelbar nach `src/data/db/` bzw.
+   `src/data/parser/`:
 
    | Von | Nach |
    |---|---|
@@ -77,15 +77,15 @@ tief nach hoch ist verboten.
 
 | Schicht | Verzeichnisse | Verantwortung |
 |---|---|---|
-| UI | `src/components/`, `src/viewmodels/`, `src/contexts/`, `src/styles/`, `src/i18n/` | Darstellung und Interaktion |
-| Fachlogik | `src/evaluator/`, `src/evaluation/`, `src/roster/` | Auswertung, Schreibmodell, Übersetzung zwischen beiden |
-| Daten | `src/services/`, `src/db/`, `src/parser/` | Persistenz, Import, Katalog-Zerlegung |
+| UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/contexts/`, `src/ui/styles/`, `src/ui/i18n/` | Darstellung und Interaktion |
+| Fachlogik | `src/domain/evaluator/`, `src/domain/evaluation/`, `src/domain/roster/` | Auswertung, Schreibmodell, Übersetzung zwischen beiden |
+| Daten | `src/data/services/`, `src/data/db/`, `src/data/parser/` | Persistenz, Import, Katalog-Zerlegung |
 
-Neu ist `src/services/` als **einzige** Adresse, über die die Oberfläche Daten erreicht. Die
+Neu ist `src/data/services/` als **einzige** Adresse, über die die Oberfläche Daten erreicht. Die
 14 Direktkanten aus dem Kontext werden dorthin umgelenkt.
 
 Die Reinraum-Regeln aus ADR-0030/0034 bleiben unberührt und gelten weiter innerhalb der
-Fachlogik-Schicht: `src/evaluator/` ist von `src/roster/` in beide Richtungen getrennt und von
+Fachlogik-Schicht: `src/domain/evaluator/` ist von `src/domain/roster/` in beide Richtungen getrennt und von
 außen nur über seine Fassade erreichbar.
 
 Option 2 wurde verworfen, weil sie für eine Anwendung ohne Backend und ohne zweiten Adapter
@@ -99,10 +99,10 @@ Neue Regeln in `.dependency-cruiser.cjs`, Testdateien wie bisher ausgenommen:
 
 | Regel | Verbietet |
 |---|---|
-| `ui-nicht-auf-daten` | UI → `src/db/`, `src/parser/` (nur `src/services/` ist erlaubt) |
+| `ui-nicht-auf-daten` | UI → `src/data/db/`, `src/data/parser/` (nur `src/data/services/` ist erlaubt) |
 | `daten-kein-rueckgriff` | Daten → UI, Daten → Fachlogik |
 | `fachlogik-kein-rueckgriff` | Fachlogik → UI |
-| `keine-i18n-unter-ui` | Fachlogik/Daten → `src/i18n/` |
+| `keine-i18n-unter-ui` | Fachlogik/Daten → `src/ui/i18n/` |
 
 Jede Regel entsteht als `warn` und wird auf `error` gezogen, sobald die Phase, die ihre
 Verstöße abbaut, gemergt ist. Eine Regel ohne offene Verstöße, die auf `warn` stehen bleibt,
@@ -122,10 +122,13 @@ ist ein Fehler — sie erlaubt den Rückfall.
   durchreichen, ist das reine Zeremonie.
 - **Negativ:** Die Umstellung berührt viele Dateien. Sie ist deshalb in Phasen geschnitten
   (Issues 0161–0171); jede Phase ist für sich lauffähig und grün.
-- **Neutral:** Die Verzeichnisse behalten zunächst ihre Namen. Eine Umbenennung nach
-  `src/ui|domain|data|shared` wäre ein Diff über rund 400 Dateien ohne Verhaltensänderung und
-  steht deshalb als letzte, ausdrücklich optionale Phase am Ende.
-- **Neutral:** `src/utils/` gehört in keine der drei Schichten und wird beim Abbau der
+- **Neutral:** Die Verzeichnisse behielten zunächst ihre Namen; die Umbenennung nach
+  `src/ui|domain|data|shared` war als letzte, ausdrücklich optionale Phase am Ende
+  vorgesehen und ist mit Issue 0171 vollzogen — ein Diff über rund 400 Dateien aus
+  Verschiebungen und Import-Pfaden, ohne Verhaltensänderung. Seitdem heißt jedes
+  Verzeichnis wie seine Schicht; `src/shared/` nimmt auf, was in keine gehört
+  (`constants/`, `types.js`, `test-utils/`, `__fixtures__/`).
+- **Neutral:** `src/utils/` gehörte in keine der drei Schichten und ist mit Issue 0169 aufgelöst; historisch war der Abbau der
   Doppelungen aufgelöst.
 
 ## Vor- und Nachteile der Optionen
@@ -137,7 +140,7 @@ ist ein Fehler — sie erlaubt den Rückfall.
 - **Gut, weil** sie schrittweise scharf gestellt werden kann: `warn` zeigt den Bestand, `error`
   friert das Erreichte ein.
 - **Gut, weil** sie die vorhandene Struktur beschreibt statt sie zu ersetzen — bis auf
-  `src/services/` entsteht kein neues Verzeichnis.
+  `src/data/services/` entsteht kein neues Verzeichnis.
 - **Schlecht, weil** Pfad-Regeln nur Verzeichnisse kennen. Eine Datei am falschen Ort ist
   regelkonform und trotzdem falsch geschnitten.
 - **Schlecht, weil** die Schichtung mehr Dateien für dieselbe Aufgabe bedeutet.

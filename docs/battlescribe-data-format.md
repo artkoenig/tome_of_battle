@@ -9,14 +9,14 @@
 > unter [`docs/bsdata-catalogue-development-wiki/`](bsdata-catalogue-development-wiki/) im Repo,
 > aktualisierbar per `git submodule update --remote` — sowie reale
 > WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
-> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/__fixtures__/whfb6/`).
+> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/shared/__fixtures__/whfb6/`).
 > Alle XML-Beispiele stammen aus echten Dateien.
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
 > (inklusive der aus vergangenen Bug-Analysen gesammelten Domänen-Erkenntnisse). Wie das Projekt
 > das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md), in der
-> Reinraum-Engine unter [`src/evaluator/`](../src/evaluator/) (sie beurteilt ein Roster) und im
-> App-Schreibmodell unter [`src/roster/`](../src/roster/) (es erzeugt und editiert eines).
+> Reinraum-Engine unter [`src/domain/evaluator/`](../src/domain/evaluator/) (sie beurteilt ein Roster) und im
+> App-Schreibmodell unter [`src/domain/roster/`](../src/domain/roster/) (es erzeugt und editiert eines).
 
 ---
 
@@ -87,13 +87,13 @@ Alle Dateien sind **XML**. Jedes Element hat einen eigenen XML-Namespace
 > und **kein** `backups`-Ordner. Kompression und Indizierung übernimmt die Auslieferungsinfrastruktur.
 > Siehe [§11](#11-best-practices).
 
-**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/parser/zipExtractor.js`.
-Vor dem Parsen prüft ein **beratender** Schema-Schritt (`src/parser/schemaValidator.js`, angebunden über
-`src/parser/importSchemaGate.js`) jede Datei gegen die vendored `Catalogue.xsd` — ein Verstoß wird
+**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/data/parser/zipExtractor.js`.
+Vor dem Parsen prüft ein **beratender** Schema-Schritt (`src/data/parser/schemaValidator.js`, angebunden über
+`src/data/parser/importSchemaGate.js`) jede Datei gegen die vendored `Catalogue.xsd` — ein Verstoß wird
 per `console.warn` protokolliert (mit Datei + Zeile), **blockiert den Import aber nicht** und wird
 **nicht in der UI angezeigt** (advisory, siehe ADR 0016). Anschließend parst
-`src/parser/xmlParser.js` die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
-gespeichert wird (`src/db/database.js`).
+`src/data/parser/xmlParser.js` die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
+gespeichert wird (`src/data/db/database.js`).
 
 ---
 
@@ -130,11 +130,11 @@ per `targetId="027b-31d2-b3e2-23a4"` referenziert:
 ```
 
 Konsequenz für die Auswertung: Die Definition muss zum **Lesezeitpunkt** aus dem System aufgelöst
-werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/roster/catalogResolver.js`).
+werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/domain/roster/catalogResolver.js`).
 Dabei muss der **`catalogueId`-Kontext** mitgeführt werden, weil dieselbe Ziel-ID in verschiedenen
 Katalogen/Detachments unterschiedliche Dinge bedeuten kann.
 
-> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator (`src/evaluator/`) führt
+> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator (`src/domain/evaluator/`) führt
 > **keinen** `catalogueId`-Kontext mit. Er mischt alle Quellen (`.gst` + alle `.cat`) in eine
 > einzige flache `id→Definition`-Tabelle und löst **global-by-ID** auf — korrekt, solange die IDs
 > katalogübergreifend disjunkte GUIDs sind, was die realen Datensätze erfüllen. Verletzt ein
@@ -651,7 +651,7 @@ zu. Referenziert wird per `typeId`:
 >
 > **Zahlenbasis:** Diese Multiplikation gilt für **per-Eltern-relative** Stückzahlen — „Anzahl je
 > Eltern-Instanz", die Zahlenbasis der Katalog-Constraint-Mathematik. Die Reinraum-Engine
-> multipliziert dagegen **nicht** durch die Elternkette (`src/evaluator/countIndex.js`,
+> multipliziert dagegen **nicht** durch die Elternkette (`src/domain/evaluator/countIndex.js`,
 > `contributionOf`: jeder Knoten trägt sein `instance.count` unverrechnet bei). Sie setzt damit
 > voraus, dass das `number` einer `.ros`-Selektion eine **absolute** Gesamtstückzahl ist, kein
 > per-Eltern-Multiplikator — unter dieser Annahme fallen beide Rechnungen zusammen. Die
@@ -737,7 +737,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 > — den `<catalogue id=…>`, aus dem das umschließende Kontingent stammt.** Die Frage lautet nicht
 > „wie viele?", sondern „ist es dieses?"; der Rahmen ist deshalb kein Zählrahmen, sondern eine
 > **Identitätsprüfung** gegen die in `childId` genannte Katalog-Wurzel-Id. Drei Belege aus den
-> eingefrorenen Fixture-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`, 27 Vorkommen:
+> eingefrorenen Fixture-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`, 27 Vorkommen:
 > 7 in der `.gst`, 20 in `Mercenaries (…).cat`):
 > - Alle 27 stehen an einer `condition` (`instanceOf`/`notInstanceOf`, `field="selections"`), nie
 >   an einem `constraint` oder `repeat`, und **jede** `childId` ist eine Katalog-Wurzel-Id
@@ -751,7 +751,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 >   „Tomb Kings may have more than one Chariot" an einem `notInstanceOf childId="…"
 >   childName="Tomb Kings"`; auch die übrigen `childName` sind Armeebuch-Namen.
 >
-> Die Semantik der Engine (`src/evaluator/query.js`) folgt daraus: Treffer ⇒ 1, anderes Armeebuch
+> Die Semantik der Engine (`src/domain/evaluator/query.js`) folgt daraus: Treffer ⇒ 1, anderes Armeebuch
 > ⇒ 0, `childId` leer (Prozent-Nenner „alles im Rahmen") ⇒ 1, denn der Rahmen hat genau **einen**
 > Katalog. `shared="false"` verengt ihn nicht — ein Katalog wird durch eine Instanz nicht enger.
 > Eine `childId`, deren Katalog im Datensatz gar nicht geladen ist, ist ein schlichter
@@ -777,7 +777,7 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > **`scope` an einem `modifier` — in der `Catalogue.xsd` nicht definiert, in echten Daten belegt.**
 > Die vendored `Catalogue.xsd` dieses Projekts kennt kein `scope`-Attribut an `<modifier>`; sie führt
 > es nur an `constraint`, `condition` und `repeat`. Belegt ist es trotzdem: **8 Vorkommen** in den
-> 12 eingefrorenen Fixture-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`), davon 7×
+> 12 eingefrorenen Fixture-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`), davon 7×
 > `scope="unit"` und 1× `scope="force"`. Beispiel `<modifier type="add" field="category"
 > value="4990-1770-2328-effd" scope="unit"/>` an „Mark of Slaanesh" (`Dark Elves` 5×,
 > `Vampire Counts` 1×) — die Absicht ist erkennbar: die Kategorie „Slaanesh" soll die **Einheit**
@@ -796,11 +796,11 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > ([*Data structure overview*](bsdata-catalogue-development-wiki/Data-structure-overview.md),
 > Abschnitt *Modifier*). Hier gilt die Entscheidung dieses Dokuments: **Fehlt `join`, wird ohne
 > Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
-> (`src/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
-> eingefrorenen Definitive-Edition-Katalogen (`src/evaluator/__fixtures__/whfb6-definitive/`,
+> (`src/domain/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
+> eingefrorenen Definitive-Edition-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`,
 > 11 `.cat` + 1 `.gst`; 121 `join`-Vorkommen insgesamt, davon 15 wirkungslos an
 > `set`-Modifiern; 5 stehen an `prepend`-Modifiern, wo der Trenner wirkt
-> (`src/evaluator/modifiers.js`, `prependOrder`)): 101 von 119 `append`-Modifiern setzen `join`
+> (`src/domain/evaluator/modifiers.js`, `prependOrder`)): 101 von 119 `append`-Modifiern setzen `join`
 > explizit (Leerzeichen, NBSP oder
 > `"&#160;+&#160;"`) — dort ist der Unterschied latent. Die 18 `append` ohne `join`
 > (`Mercenaries` 1, `Skaven` 4, `The Empire` 13; Beispiel
@@ -838,7 +838,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 
 | `condition`-Attribut | Bedeutung |
 |----------------------|-----------|
-| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
+| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/shared/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
 | `scope` | Bezugsrahmen. Die **geschlossene** Liste der Schlüsselwörter: `roster`, `force`, `parent`, `self`, `unit` (die umschließende Einheit) und `model-or-unit` (das nächste Modell **oder** die nächste Einheit) als Zählrahmen; `ancestor` (die Vorfahrenkette, nur mit `instanceOf`/`notInstanceOf`), `primary-catalogue` (das Armeebuch des umschließenden Kontingents, [Kasten in §7.6](#scope-primary-catalogue)) und `primary-category` (die primäre Kategorie der tragenden Auswahl) als Prüfungen. Siehe die Kästen zu [`unit`/`ancestor`](#scope-unit-ancestor) und zu [`primary-category`/`model-or-unit`](#scope-primary-category-model-or-unit). Jeder andere Wert ist eine **Vorfahren-Id** (Eintrag, Gruppe, `forceEntry`, Kategorie). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
@@ -1098,7 +1098,7 @@ Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirk
 > Wirkung der Wiederholungsfaktor vervielfacht. Es gibt keine Lesart, in der wiederholtes Setzen
 > eines *konstanten* `value` einen wachsenden Wert ergäbe; wer eine Staffel will, schreibt einen
 > `set` **und** einen wiederholenden `increment`. Die Engine folgt dem
-> (`src/evaluator/modifiers.js`, `setValue` ignoriert den Faktor; gepinnt in
+> (`src/domain/evaluator/modifiers.js`, `setValue` ignoriert den Faktor; gepinnt in
 > `modifiers.test.js`), und die Katalogdaten sind an dieser Stelle schlicht ungenau: die
 > Core-Obergrenze bleibt bei jedem Budget ≥ 5000 exakt 6.
 >
@@ -1106,7 +1106,7 @@ Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirk
 > Modifier „multiple times" greifen, ohne einen Fall für `set` zu nennen ([§15](#15-lücken-der-quelle)).
 
 Ein Modifier kann auch `field="hidden"` setzen, um Einträge/Kategorielinks kontextabhängig ein- oder
-auszublenden (in diesem Projekt ausgewertet allein von `src/evaluator/`; die Oberflaeche liest
+auszublenden (in diesem Projekt ausgewertet allein von `src/domain/evaluator/`; die Oberflaeche liest
 das `isHidden` des Berichts).
 
 ---
@@ -1254,7 +1254,7 @@ von denen man **mehr als einen** nehmen darf (klassisch *Dispel Scroll*, *Power 
 Erkennung: ein `increment`-Modifier, dessen `field` die **`id` eines `max`-Constraints der Gruppe** ist
 und dessen `<repeat>`-`childId` (bzw. `field`) auf **genau diesen Eintrag** zeigt. Solche Einträge
 müssen als **Mengen-Stepper** (nicht Radio) gerendert und aus der Radio-Exklusivität ausgenommen
-werden (`src/components/editor/OptionGroup.jsx`).
+werden (`src/ui/components/editor/OptionGroup.jsx`).
 
 Zwei Fallstricke:
 
@@ -1347,12 +1347,12 @@ kann**:
   bleibt davon **unberührt** — es wird gesondert erkannt und als Mengen-Stepper gerendert.
 
 **Umsetzung:** Die statische „hebbar?"-Erkennung liefert der Bericht
-(`capability.isMaxRaisable`, `src/evaluator/groupBehavior.js`); die *aktuellen*
+(`capability.isMaxRaisable`, `src/domain/evaluator/groupBehavior.js`); die *aktuellen*
 effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintLimit`. Sämtliche
 Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
 „Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`) leiten sich aus
 diesen **effektiven** Werten ab — kein roher Constraint-Wert steuert mehr eine dieser Entscheidungen
-(`src/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`). Die Auffüll-Vorschläge
+(`src/ui/components/editor/OptionGroup.jsx`, `SelectionConfigurator.jsx`). Die Auffüll-Vorschläge
 (`AutoFillSuggestions.jsx`) rechnen seit dem Cutover gar nicht mehr selbst: sie lesen die
 **effektiven** Werte fertig aus dem Bericht der Evaluator-Fassade (ADR-0034).
 
@@ -1532,7 +1532,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `constraint`/`condition`/`repeat` | `scope` | Neun Schlüsselwörter — `parent`, `roster`, `force`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)), `primary-category` (4× in den Fixture-Katalogen belegt, `Forces of Chaos`) und `model-or-unit` (2× belegt, `Lizardmen`; beide upstream nicht dokumentiert, [§7.7](#scope-primary-category-model-or-unit)) — **oder** eine Vorfahren-Id (Eintrag, Gruppe, `forceEntry`, Kategorie). Ein Literal `category` gibt es nicht: die Wiki-Formulierung *„any Category"* meint eine Kategorie-**Id**, und keiner der beiden eingefrorenen Korpora schreibt `scope="category"`. |
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
-| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
+| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/shared/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
 | `conditionGroup` | `type` | `and`, `or`, `not` (`not` ohne offiziellen Schema-Beleg, siehe [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen)) |
 
 ### 13.2 Der `field`-Wert je nach Kontext
@@ -1563,7 +1563,7 @@ eingefrorenen Fixture-Katalogen kommt die Kurzform an **keinem** Boolean-Attribu
 `hidden`, `shared`, `includeChildSelections`, `includeChildForces`, `percentValue`, `primary`,
 `collective`, `library`, `import`, `roundUp`, `importRootEntries`: 0 Treffer). Gültiges XML ist sie
 trotzdem, und wer sie nicht liest, hält ein `hidden="1"` still für sichtbar. Der Evaluator liest
-deshalb beide Formen an **einer** Stelle (`readBoolean`, `src/evaluator/catalogReader.js`) —
+deshalb beide Formen an **einer** Stelle (`readBoolean`, `src/domain/evaluator/catalogReader.js`) —
 und damit an jedem dieser Attribute gleich (Issue 0102, Punkt 6).
 
 ---

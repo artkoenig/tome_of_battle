@@ -3,10 +3,10 @@
   "name": "greater-than-self-blessed-spawning-slots",
   "description": "condition type=greaterThan mit scope=self zaehlt STRIKT und IM TRAEGER (Lizardmen, Saurus Warriors 2258-e16e-24dd-6e85). Zwei verschachtelte modifierGroups gatten die Kategoriezugehoerigkeit an der Selbst-Zaehlung der Gruppe Blessed Spawning Warrios (bd30-a138-fa7a-ecbe): >0 schiebt das Regiment von Core (64bf-...) nach Special (43cc-...), >1 weiter nach Rare (e94b-...). Bei GENAU dem hingeschriebenen Wert haelt die Bedingung nicht — 0 Optionen bleiben Core, 1 Option bleibt Special. Beobachtbar gemacht ueber die kategoriezaehlenden .gst-Grenzen Core min 2 (35c2-d478-392a-aeb1), Special max 3 (16f0-6e5b-55d0-4102) und Rare max 1 (0a44-2d3f-adfe-f3a1) bei costLimit 1000 sowie ueber die Kategorie-Anker des Kontingents Standard (LM-AB) 8fcd-0130-a0ff-b7bc. Zwei Regimenter je Roster: die Faelle 02 und 05 pinnen, dass die Zaehlung im Traeger und nicht im Kontingent stattfindet.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Lizardmen (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

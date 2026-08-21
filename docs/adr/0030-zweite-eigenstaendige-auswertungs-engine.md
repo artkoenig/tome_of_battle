@@ -14,7 +14,7 @@
 > ist gelöscht. Die verworfene Option 3 (dauerhafter Laufzeit-Umschalter) wurde
 > nie gebaut — der Cutover war ein Schnitt. Was am Solver rein strukturell war
 > (Selektions-Fabrik, Baum-Editing, Katalog-Auflösung, Roster-Abgleich), ist als
-> App-Schreibmodell `src/roster/` erhalten und in beide Richtungen von dieser
+> App-Schreibmodell `src/domain/roster/` erhalten und in beide Richtungen von dieser
 > Engine getrennt (blockierende Regeln in `.dependency-cruiser.cjs` und
 > `.oxlintrc.json`).
 
@@ -31,7 +31,7 @@ ausdrücklich und ohne Ausnahme:
    stützen oder es als Paritäts-Vorlage heranziehen. Grundlage für die neue
    Engine sind allein die BattleScribe-Daten (`.cat`/`.gst`/XSD, ADR-0003,
    ADR-0016) und ihr eigenes Reinraum-Modell.
-3. **Die neue Engine unter `src/evaluator/` wird mit dem erklärten Ziel
+3. **Die neue Engine unter `src/domain/evaluator/` wird mit dem erklärten Ziel
    entwickelt, die alte vollständig zu ersetzen.** Der produktive Cutover ist
    damit nicht mehr offen — er ist die beschlossene Richtung. Bis zum Cutover
    bleibt die App auf `src/solver/`, aber jede neue Arbeit dient dem Ersatz,
@@ -73,7 +73,7 @@ abzulösen.
   greifen, nicht auf Disziplin beruhen (analog zur Durchsetzungslogik von
   ADR-0023).
 - **Wahrhaftigkeit der Doku:** ein künftiger Leser muss ohne Kontext erkennen,
-  dass `src/evaluator/` der designierte Nachfolger ist und `src/solver/` die
+  dass `src/domain/evaluator/` der designierte Nachfolger ist und `src/solver/` die
   abzulösende, fehlerhafte Alt-Engine.
 
 ## Betrachtete Optionen
@@ -81,7 +81,7 @@ abzulösen.
 - **Option 1 — In `src/solver/` integrieren / ADR-0029 ablösen.** Den vollen
   Entwurf in den bestehenden Code setzen. Verworfen: erbt die Fehler und die
   Verflechtung der fehlerhaften Alt-Engine, statt sauber neu aufzusetzen.
-- **Option 2 — Eigene, isolierte Engine `src/evaluator/` als Nachfolger.** Ein zu
+- **Option 2 — Eigene, isolierte Engine `src/domain/evaluator/` als Nachfolger.** Ein zu
   `src/solver/` paralleler Top-Level-Ordner mit eigener Fassade, eigenem Parser,
   eigenem Datenmodell und eigenem Report; harte Import-Isolation gegen
   `src/solver/` in beide Richtungen; von außen nur über die eigene Fassade.
@@ -93,15 +93,15 @@ abzulösen.
 
 ## Entscheidungsergebnis
 
-Gewählte Option: **Option 2.** Die neue Engine lebt in `src/evaluator/`,
+Gewählte Option: **Option 2.** Die neue Engine lebt in `src/domain/evaluator/`,
 Geschwister zu `src/solver/`, nicht darin, und wird zum **Nachfolger** ausgebaut.
-`src/evaluator/` bekommt eine **eigene Fassade** als einzige legale
+`src/domain/evaluator/` bekommt eine **eigene Fassade** als einzige legale
 Außenschnittstelle (das Fassaden-Muster aus ADR-0023, auf die neue Engine
 gespiegelt). Neue, maschinell geprüfte Regeln (`.oxlintrc.json`,
 `.dependency-cruiser.cjs`, ADR-0024) trennen die beiden Engines **hart in beide
-Richtungen**: `src/evaluator/` importiert nie aus `src/solver/` und umgekehrt.
+Richtungen**: `src/domain/evaluator/` importiert nie aus `src/solver/` und umgekehrt.
 Diese Trennung schützt die neue Engine ausdrücklich davor, sich auf den
-fehlerhaften Alt-Code zu stützen. Import aus `src/parser/` bleibt erlaubt — der
+fehlerhaften Alt-Code zu stützen. Import aus `src/data/parser/` bleibt erlaubt — der
 Evaluator liest jedoch entpacktes `.cat`/`.gst`-XML **mit eigenem Parser**
 (Resolver-Umfang: IDs/Importe/Link-Ketten/Dokumentreihenfolge → aufgelöste
 Definitionen; **ohne** ZIP-Entpacken, XSD-Gate, Katalog-Editor — das bleibt
@@ -114,7 +114,7 @@ realisiert den vollen Entwurf als Robustheitsgarantie (Zyklen werden *sichtbar*
 statt still falsch).
 
 **Analyse- und Planungsregel (verbindlich):** Bei jeder Auswertung, jedem Entwurf
-und jeder Fehlersuche für `src/evaluator/` bleibt `src/solver/` außen vor. Sein
+und jeder Fehlersuche für `src/domain/evaluator/` bleibt `src/solver/` außen vor. Sein
 Verhalten ist kein Sollwert, sein Code keine Vorlage. Korrektes Verhalten wird
 ausschließlich aus den BattleScribe-Daten und dem Reinraum-Modell abgeleitet.
 
@@ -128,10 +128,10 @@ ausschließlich aus den BattleScribe-Daten und dem Reinraum-Modell abgeleitet.
 - **Negativ:** bewusst in Kauf genommene Duplikation (eigener Parser, eigenes
   Datenmodell, eigene Fixtures) als Preis des echten Reinraums — vorübergehend,
   bis `src/solver/` abgelöst und entfernt ist.
-- **Negativ:** `src/evaluator/` ist bis zum Cutover im App-Bundle toter Code
+- **Negativ:** `src/domain/evaluator/` ist bis zum Cutover im App-Bundle toter Code
   (getreeshaked); die `no-orphans`-Regel muss den nur test-importierten Zustand
   solange tolerieren.
-- **Richtung (nicht mehr offen):** der produktive Cutover — `src/evaluator/`
+- **Richtung (nicht mehr offen):** der produktive Cutover — `src/domain/evaluator/`
   ersetzt `src/solver/` — ist das erklärte Ziel dieser Entwicklung. Der Zeitpunkt
   und die schrittweise Verdrahtung sind noch zu planen; das *Ob* nicht mehr.
 
@@ -144,7 +144,7 @@ weitere Lücken zu schließen, ehrlich dokumentiert statt vorgetäuscht:
 (1) der eigene Parser las anfangs für Bedingungen/Modifikatoren ein **eigenes**
 Vokabular statt der rohen BattleScribe-Attribute (**diese Grenze schließt
 ADR-0031**: der Evaluator liest inzwischen die kanonische XSD-Syntax und teilt
-die Enum-SSOT aus `src/parser/schema/`); (2) es wird ein **Einzelkatalog**
+die Enum-SSOT aus `src/data/parser/schema/`); (2) es wird ein **Einzelkatalog**
 gelesen — katalogübergreifende Importe/Link-Ketten und die Inkrementalisierung
 (Architektur §4.9) sind vorgemerkte Zukunft; (3) die eingestellte
 Roster-Punktgrenze (`limit::<costTypeId>` / `costLimit`/`costLimitType`) fließt

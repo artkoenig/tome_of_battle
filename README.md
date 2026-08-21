@@ -26,7 +26,7 @@ like a native app.
   (`.ros` / `.rosz`) can be imported too.
 - **Build army lists** — add units, pick upgrades and options, watch point costs
   update as you go.
-- **Real-time validation** — a clean-room rules engine (`src/evaluator/`) checks
+- **Real-time validation** — a clean-room rules engine (`src/domain/evaluator/`) checks
   point limits, category limits and entry constraints on every change.
 - **Play mode** — track rounds, victory points, command points and wounds during
   a game.
@@ -35,7 +35,7 @@ like a native app.
 - **Local only** — nothing is uploaded; all data stays in your browser.
 
 Catalog data is fetched at runtime and is not bundled with the app. A frozen
-subset lives in `src/__fixtures__/whfb6/` and is used only by the tests.
+subset lives in `src/shared/__fixtures__/whfb6/` and is used only by the tests.
 
 ---
 
@@ -73,22 +73,22 @@ screenshots of every main view to `.screenshots/`.
 
 Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 
-- `src/parser/` — extracts the ZIP archive and translates the catalog XML into a
+- `src/data/parser/` — extracts the ZIP archive and translates the catalog XML into a
   structured game system.
-- `src/db/` — the only place that touches IndexedDB (`systems`, `rosters`,
+- `src/data/db/` — the only place that touches IndexedDB (`systems`, `rosters`,
   `settings`), including migrations of older data.
-- `src/roster/` — the write model: creates, resolves and rewrites selection trees,
+- `src/domain/roster/` — the write model: creates, resolves and rewrites selection trees,
   independent of React. Structural only; it does not judge a roster.
-- `src/evaluator/` — the rules engine, hard-isolated from the write model and
+- `src/domain/evaluator/` — the rules engine, hard-isolated from the write model and
   reached only through its facade `evaluate({ gameSystem, catalogues }, roster) → report`.
   Pure function with its own parser, data model and report.
-- `src/evaluation/` — the bridge that feeds the report into the UI.
-- `src/components/`, `App.jsx` — the views (`rosters`, `importer`, `builder`,
+- `src/domain/evaluation/` — the bridge that feeds the report into the UI.
+- `src/ui/components/`, `App.jsx` — the views (`rosters`, `importer`, `builder`,
   `play`), switched without a router; responsive above a 900px breakpoint.
 
 A `Roster` holds forces, which hold a recursive tree of selections. A selection
 references its catalog definition by ID instead of copying it; definitions are
-resolved at runtime. Types are documented as JSDoc in `src/types.js`.
+resolved at runtime. Types are documented as JSDoc in `src/shared/types.js`.
 
 Further reading: [`docs/project-map.md`](docs/project-map.md) (where everything
 lives), [`docs/adr/`](docs/adr/) (architecture decisions),
@@ -109,5 +109,5 @@ Knip · dependency-cruiser · TypeScript (JSDoc type checking)
 **GNU General Public License v3.0** — see [`LICENSE`](LICENSE).
 
 BattleScribe catalog data fetched at runtime, and the frozen test fixture under
-`src/__fixtures__/`, belong to their respective community authors and are used
+`src/shared/__fixtures__/`, belong to their respective community authors and are used
 here for testing and demonstration.

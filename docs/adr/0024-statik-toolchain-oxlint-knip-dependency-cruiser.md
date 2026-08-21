@@ -20,7 +20,7 @@ Datei** arbeitet:
   durch die dateilokale oxlint-Regel `no-restricted-imports` bewacht.
   **Import-Zyklen** erkennt oxlint gar nicht. (Damals galt das der Solver-Fassade
   aus ADR-0023; seit Issue 0121 bewacht dieselbe Mechanik die Fassade der
-  Reinraum-Engine und deren Trennung vom Schreibmodell `src/roster/`.)
+  Reinraum-Engine und deren Trennung vom Schreibmodell `src/domain/roster/`.)
 - **Duplizierung** — in Issue 42 lag dasselbe E2E-Harness dreifach kopiert vor,
   zwei Kopien liefen unbemerkt kaputt.
 
@@ -75,7 +75,7 @@ anderes:
   „geparst-aber-nie-genutzt"- und Aufräum-Klasse ab, die oxlint pro Datei nicht
   sehen kann. Konfiguriert über `knip.json` (Entry: `index.html`,
   `src/**/*.test.{js,jsx}`, `scripts/**`; Projekt: `src/**`, `scripts/**`;
-  ignoriert `.worktrees`, `.claude`, `src/parser/schema`, `__fixtures__`).
+  ignoriert `.worktrees`, `.claude`, `src/data/parser/schema`, `__fixtures__`).
 - **dependency-cruiser** (`npm run depcruise`) — **Struktur des Importgraphen**:
   die Schichtung `parser → solver → components` als erlaubte Richtung, die
   Solver-Fassade als Regel (`solver-nur-ueber-fassade`), Import-Zyklen

@@ -12,8 +12,8 @@ import {
 } from './evaluator-measurement.js';
 // Die Namen der Abschnitte und der Ankerarten gehoeren der Engine; das
 // Messgeraet liest sie von der Fassade, also liest dieser Test sie von dort.
-import { MeasuredPhase } from '../../src/evaluator/evaluator.js';
-import { AnchorKind } from '../../src/evaluator/model.js';
+import { MeasuredPhase } from '../../src/domain/evaluator/evaluator.js';
+import { AnchorKind } from '../../src/domain/evaluator/model.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den Evaluator-Tests).
 // Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.

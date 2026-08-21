@@ -132,7 +132,7 @@ gezaehltem Modell einmal angewandt, und *(b)* dabei zaehlen auch Modelle mit, di
 **(b)** ist an diesen Daten **nicht beobachtbar**, und zwar ohne erfundene Platzierung
 nicht herstellbar:
 
-- Im gesamten Fixture-Korpus (`src/evaluator/__fixtures__/whfb6-definitive/`, 5 Dateien)
+- Im gesamten Fixture-Korpus (`src/domain/evaluator/__fixtures__/whfb6-definitive/`, 5 Dateien)
   traegt diese Zelle (`scope="parent"` + `childId="model"` + `includeChildSelections="true"`)
   **12 Vorkommen** an **sechs** Traeger-Einheiten:
   „Savage Orc Boyz" `e4d9-143c-2cf3-6615` (Zeilen 3535, 3549),

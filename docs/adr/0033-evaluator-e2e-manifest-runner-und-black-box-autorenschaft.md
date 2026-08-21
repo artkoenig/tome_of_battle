@@ -7,9 +7,9 @@
 
 ## Kontext und Problemstellung
 
-Die End-to-End-Absicherung der Reinraum-Engine (`src/evaluator/`) bestand
+Die End-to-End-Absicherung der Reinraum-Engine (`src/domain/evaluator/`) bestand
 ursprünglich aus **handgeschriebenen, je Armee eigenen** Testdateien
-(`src/evaluator/e2e.ogreKingdoms.test.js`, `e2e.orcsAndGoblins.test.js`,
+(`src/domain/evaluator/e2e.ogreKingdoms.test.js`, `e2e.orcsAndGoblins.test.js`,
 `e2e.vampireCounts.test.js`, `e2e.realCatalog.smoke.test.js` sowie die
 `e2e.*.ros`-Charakterisierung). Jede dieser Dateien baute ihre Roster
 programmatisch im Testcode auf und formulierte die Erwartungen inline.
@@ -40,7 +40,7 @@ Daraus ergaben sich zwei Probleme:
 ## Betrachtete Optionen
 
 - **Option 1 — Handgeschriebene, je Armee eigene E2E-Tests beibehalten.** Der
-  Status quo: jede Armee/jeder Fall als eigenes `.test.js` in `src/evaluator/`.
+  Status quo: jede Armee/jeder Fall als eigenes `.test.js` in `src/domain/evaluator/`.
 - **Option 2 — Ein datengetriebener, manifest-getriebener Runner.** Ein einziger
   versionierter Testeinstieg entdeckt zur Laufzeit alle Szenarien unter
   `docs/testing/`, die ein Manifest (`scenario.json`) tragen, und erzeugt die
@@ -57,7 +57,7 @@ und die Autorenschaft strukturell von der Engine trennt.
 Konkret:
 
 - **Ein Runner als einzige Quelle der Wahrheit.**
-  [`src/evaluator/e2e.testcatalog.test.js`](../../src/evaluator/e2e.testcatalog.test.js)
+  [`src/domain/evaluator/e2e.testcatalog.test.js`](../../src/domain/evaluator/e2e.testcatalog.test.js)
   ist der **einzige** versionierte E2E-Einstieg der Engine. Er entdeckt zur
   Laufzeit alle Szenarien unter [`docs/testing/`](../testing/) mit einem
   `scenario.json`, wertet jedes darin deklarierte Roster gegen die öffentliche

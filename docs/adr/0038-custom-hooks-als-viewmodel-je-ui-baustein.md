@@ -68,12 +68,12 @@ Gewählte Option: **Option 1 — Custom Hook als ViewModel je UI-Baustein.**
 ### Das Muster
 
 ```
-src/viewmodels/editor/useUnitCard.js         Hook. Liest den Bericht, gibt fertige Anzeigewerte.
-src/components/editor/UnitSelectionCard.jsx  Nur JSX. Props sind die Felder des ViewModels.
+src/ui/viewmodels/editor/useUnitCard.js         Hook. Liest den Bericht, gibt fertige Anzeigewerte.
+src/ui/components/editor/UnitSelectionCard.jsx  Nur JSX. Props sind die Felder des ViewModels.
 ```
 
-`src/viewmodels/` spiegelt den Komponentenbaum. Es gehört zur UI-Schicht aus ADR-0037 und liegt
-dort über `src/components/`: ein ViewModel darf eine Komponente nie importieren.
+`src/ui/viewmodels/` spiegelt den Komponentenbaum. Es gehört zur UI-Schicht aus ADR-0037 und liegt
+dort über `src/ui/components/`: ein ViewModel darf eine Komponente nie importieren.
 
 ### Zwei Kontexte, getrennt nach Änderungsfrequenz
 
@@ -87,7 +87,7 @@ Kommando auslösen (Knöpfe, Menüs), hängen am stabilen Kontext und rendern be
 Roster-Änderung nicht neu.
 
 Ein Render-Rückschritt entsteht nicht: der Bericht ist über die WeakMap in
-`src/evaluation/evaluationCache.js` bereits identitätsstabil je `(system, roster)`, und der
+`src/domain/evaluation/evaluationCache.js` bereits identitätsstabil je `(system, roster)`, und der
 Roster-Zustand liegt heute ohnehin im `RosterEditor` — jede Bearbeitung rendert den Teilbaum
 also schon jetzt vollständig neu.
 
@@ -97,11 +97,11 @@ In `.dependency-cruiser.cjs`:
 
 | Regel | Verbietet |
 |---|---|
-| `viewmodel-kein-jsx` | `src/viewmodels/` → `src/components/` |
-| `komponente-kein-bericht` | `src/components/` → `src/evaluation/`, `src/evaluator/` |
-| `viewmodel-keine-datenschicht` | `src/viewmodels/` → `src/db/`, `src/parser/` (nur `src/services/`) |
+| `viewmodel-kein-jsx` | `src/ui/viewmodels/` → `src/ui/components/` |
+| `komponente-kein-bericht` | `src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/` |
+| `viewmodel-keine-datenschicht` | `src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/` (nur `src/data/services/`) |
 
-In `.oxlintrc.json`, für `src/components/**`: **`useEffect` und `useMemo` sind verboten.** Jeder
+In `.oxlintrc.json`, für `src/ui/components/**`: **`useEffect` und `useMemo` sind verboten.** Jeder
 Effekt und jede Ableitung gehört ins ViewModel. `useState`, `useRef` und `useCallback` bleiben
 erlaubt — ein aufgeklapptes Sheet, ein Fokus-Ref und ein stabiler Handler sind
 Darstellungszustand, kein Modell.
@@ -124,15 +124,15 @@ Empfehlungen haben die 22-Prop-Signatur nicht verhindert.
   diese Fixtures in die ViewModel-Tests verschieben. Mechanisch, aber der größte Einzelposten
   des Umbaus.
 - **Negativ:** Zwei Kontexte sind zwei Provider mehr im Baum und eine Fehlerquelle mehr in
-  Tests, die eine Komponente isoliert rendern. Ein Test-Wrapper in `src/test-utils/` fängt das
+  Tests, die eine Komponente isoliert rendern. Ein Test-Wrapper in `src/shared/test-utils/` fängt das
   ab.
 - **Neutral:** Jede Roster-Bearbeitung erzeugt einen neuen Bericht, also rechnen alle ViewModels
   neu — genauso wie heute. Slot-genaue Identitätsstabilität müsste der Evaluator liefern; das
   ist ein eigenes Thema und ausdrücklich nicht Teil dieser Entscheidung.
-- **Neutral:** Die ViewModels sind die Stelle, an der die Oberfläche künftig `src/services/`
+- **Neutral:** Die ViewModels sind die Stelle, an der die Oberfläche künftig `src/data/services/`
   anspricht. Die 14 Direktkanten aus ADR-0037 wandern damit aus den Komponenten in die
   ViewModels, bevor die Service-Fassade sie schneidet — deshalb steht dieser Umbau **vor** der
-  Einführung von `src/services/`.
+  Einführung von `src/data/services/`.
 
 ## Vor- und Nachteile der Optionen
 
@@ -142,7 +142,7 @@ Empfehlungen haben die 22-Prop-Signatur nicht verhindert.
   kann das nicht, und genau diese Mischung ist es, die heute in den Komponenten steckt.
 - **Gut, weil** das Muster mit React-Bordmitteln auskommt und keine siebte Abhängigkeit einführt.
 - **Gut, weil** es maschinell prüfbar ist: ein Pfad-Präfix plus zwei verbotene Hooks in
-  `src/components/**`.
+  `src/ui/components/**`.
 - **Schlecht, weil** ein Kontext grobkörnig ist — jeder Verbraucher des Bericht-Kontexts rendert
   bei jeder Roster-Änderung. Die Aufteilung in zwei Kontexte begrenzt den Schaden, hebt ihn
   nicht auf.

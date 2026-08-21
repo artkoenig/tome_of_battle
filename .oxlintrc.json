@@ -15,7 +15,7 @@
             "patterns": [
               {
                 "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
-                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
               }
             ]
           }
@@ -23,7 +23,34 @@
       }
     },
     {
-      "files": ["src/evaluator/**"],
+      // ADR-0038: eine Komponente ist JSX. Zustandsfolgen und Ableitungen
+      // gehoeren in ihr ViewModel unter src/ui/viewmodels/ -- ein `useEffect` oder
+      // `useMemo` in einer Komponente ist genau die Ableitung im Render, die
+      // die Schicht abschaffen soll.
+      "files": ["src/ui/components/**/*.js", "src/ui/components/**/*.jsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "importNames": ["useEffect", "useMemo", "useLayoutEffect"],
+                "message": "ADR-0038: Effekte und Memoisierung gehoeren in das ViewModel des Bildschirms (src/ui/viewmodels/), nicht in die Komponente."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/domain/evaluator/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -31,7 +58,7 @@
             "patterns": [
               {
                 "group": ["**/roster/**"],
-                "message": "Reinraum-Schutz (ADR-0030/0034): src/evaluator/ darf das App-Schreibmodell src/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine."
+                "message": "Reinraum-Schutz (ADR-0030/0034): src/domain/evaluator/ darf das App-Schreibmodell src/domain/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine."
               }
             ]
           }
@@ -39,7 +66,7 @@
       }
     },
     {
-      "files": ["src/roster/**"],
+      "files": ["src/domain/roster/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -47,7 +74,7 @@
             "patterns": [
               {
                 "group": ["**/evaluator/**"],
-                "message": "Das Schreibmodell src/roster/ bleibt rein strukturell (Issue 0121, Task 8): es importiert den Evaluator nie -- auch nicht ueber dessen Fassade. Bewertung liest allein die Oberflaeche aus dem Bericht."
+                "message": "Das Schreibmodell src/domain/roster/ bleibt rein strukturell (Issue 0121, Task 8): es importiert den Evaluator nie -- auch nicht ueber dessen Fassade. Bewertung liest allein die Oberflaeche aus dem Bericht."
               }
             ]
           }
@@ -55,7 +82,7 @@
       }
     },
     {
-      "files": ["src/evaluation/**"],
+      "files": ["src/domain/evaluation/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -63,11 +90,11 @@
             "patterns": [
               {
                 "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
-                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
               },
               {
                 "group": ["**/roster/**"],
-                "message": "Die Auswertungs-Bruecke src/evaluation/ braucht das Schreibmodell src/roster/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
+                "message": "Die Auswertungs-Bruecke src/domain/evaluation/ braucht das Schreibmodell src/domain/roster/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
               }
             ]
           }
@@ -85,7 +112,7 @@
       // mit dem zugehoerigen Consumer-Hook. Die Regel dient allein dem Fast Refresh des
       // Dev-Servers; sie zu erfuellen hiesse, Context-Objekt, Provider und Hook auf drei
       // Dateien zu verteilen und damit eine Zustaendigkeit zu zersplittern.
-      "files": ["src/contexts/**"],
+      "files": ["src/ui/contexts/**"],
       "rules": {
         "react/only-export-components": "off"
       }

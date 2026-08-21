@@ -61,9 +61,9 @@ Konkret:
 
 > **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert, ihre
 > Orte haben sich mit dem Cutover auf die Reinraum-Engine verschoben. Das Rendern
-> sitzt heute in `src/evaluator/authorMessages.js` (nicht mehr in
+> sitzt heute in `src/domain/evaluator/authorMessages.js` (nicht mehr in
 > `collectTriggeredMessages` des gelöschten Solvers), und die Pass-through-Anzeige
-> ist `src/i18n/violationMessages.js` (nicht mehr `formatValidationError`). Der
+> ist `src/ui/i18n/violationMessages.js` (nicht mehr `formatValidationError`). Der
 > effektive Name kommt aus der Effektiv-Werte-Schicht des Evaluators statt aus
 > `getEffectiveName`.
 - Abgrenzung zu ADR-0026: Dies ist **kein** i18n-Interpolation über App-Vorlagen

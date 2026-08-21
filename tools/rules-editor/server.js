@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
-const DATA_DIR = path.join(PROJECT_ROOT, 'src', 'data');
+const DATA_DIR = path.join(PROJECT_ROOT, 'src', 'data', 'rules');
 const LOG_DIR = path.join(__dirname, 'logs');
 const CATALOG_DIR = path.join(PROJECT_ROOT, 'public', 'catalogs', 'whfb6');
 const CRAWL_SCRIPT = path.join('scripts', 'generate-rules-index.js');

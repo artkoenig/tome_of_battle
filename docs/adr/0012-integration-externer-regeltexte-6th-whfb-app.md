@@ -53,10 +53,10 @@ die Original-Seiten von 6th.whfb.app.
 - **`scripts/generate-rules-index.js`** — manuell gestartetes CLI-Skript (Node 18+
   `fetch`, keine Dependencies). Crawlt die Index-Seiten der Sektionen
   `special-rules`, `weapons`, `magic-items`, `spell-lists`, `characteristics` und
-  schreibt **`src/data/rules-index.json`** (eingecheckt, ~845 Einträge).
-- **`src/data/synonyms.js`** — handgepflegtes Mapping `BSData-Name → kanonischer
+  schreibt **`src/data/rules/rules-index.json`** (eingecheckt, ~845 Einträge).
+- **`src/data/rules/synonyms.js`** — handgepflegtes Mapping `BSData-Name → kanonischer
   Name`, um Namensabweichungen zu überbrücken (z. B. `Short Bow → Shortbow`).
-- **`src/data/rulesLookup.js`** — exportiert `getRuleUrl(name) → string | null`
+- **`src/data/rules/rulesLookup.js`** — exportiert `getRuleUrl(name) → string | null`
   (Synonyms zuerst, dann `rules-index.json`, case-insensitive). `null` = kein
   Mapping.
 

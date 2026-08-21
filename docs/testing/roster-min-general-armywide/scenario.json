@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "name": "roster-min-general-armywide",
-  "description": "Eine min-Grenze an einer categoryEntry mit field=\"selections\" scope=\"roster\" includeChildSelections=\"true\" includeChildForces=\"true\" ist eine ARMEEWEITE Pflicht auf dieser Kategorie: sie zaehlt jede Auswahl der Kategorie im ganzen Roster - ueber Kontingentgrenzen hinweg - und muss feuern, wenn keine einzige darin steht. Gepinnt an der Kategorie \"General\" a37e-7207-de6d-acb0 des UPSTREAM-Spielsystems (src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst:53-57), die genau zwei Grenzen traegt: max d818-c60d-b1f8-8aaa (:55) und min 1077-7379-f142-f382 (:56), beide field=\"selections\" scope=\"roster\" value=\"1.0\" percentValue=\"false\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"true\". Traeger der Kategorie ist im ganzen upstream-Satz ausschliesslich die gst-geteilte Aufwertung \"General\" 1b7c-2c90-6d96-28c9 (:633) ueber ihren categoryLink b6a9-2d67-cff3-dde7 (:638) - aufgeloest ueber die Id, nie ueber den Namen. ACHTUNG: dieselbe Constraint-Id traegt im Definitive-Satz (src/evaluator/__fixtures__/whfb6-definitive/) scope=\"force\" statt scope=\"roster\"; dieses Szenario laeuft ausschliesslich auf dem upstream-Satz und nennt nur dessen Dateien.",
+  "description": "Eine min-Grenze an einer categoryEntry mit field=\"selections\" scope=\"roster\" includeChildSelections=\"true\" includeChildForces=\"true\" ist eine ARMEEWEITE Pflicht auf dieser Kategorie: sie zaehlt jede Auswahl der Kategorie im ganzen Roster - ueber Kontingentgrenzen hinweg - und muss feuern, wenn keine einzige darin steht. Gepinnt an der Kategorie \"General\" a37e-7207-de6d-acb0 des UPSTREAM-Spielsystems (src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst:53-57), die genau zwei Grenzen traegt: max d818-c60d-b1f8-8aaa (:55) und min 1077-7379-f142-f382 (:56), beide field=\"selections\" scope=\"roster\" value=\"1.0\" percentValue=\"false\" shared=\"true\" includeChildSelections=\"true\" includeChildForces=\"true\". Traeger der Kategorie ist im ganzen upstream-Satz ausschliesslich die gst-geteilte Aufwertung \"General\" 1b7c-2c90-6d96-28c9 (:633) ueber ihren categoryLink b6a9-2d67-cff3-dde7 (:638) - aufgeloest ueber die Id, nie ueber den Namen. ACHTUNG: dieselbe Constraint-Id traegt im Definitive-Satz (src/domain/evaluator/__fixtures__/whfb6-definitive/) scope=\"force\" statt scope=\"roster\"; dieses Szenario laeuft ausschliesslich auf dem upstream-Satz und nennt nur dessen Dateien.",
   "dataset": {
-    "gameSystem": "src/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/__fixtures__/whfb6/Vampire Counts.cat"
+      "src/shared/__fixtures__/whfb6/Vampire Counts.cat"
     ]
   },
   "rosters": [

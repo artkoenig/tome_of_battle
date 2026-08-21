@@ -3,10 +3,10 @@
   "name": "append-characteristic-zacharias-spell",
   "description": "Ein <modifier type=\"append\" field=\"<characteristicTypeId>\"> haengt seinen value an den TEXT genau jenes Merkmals des Profil-Vorkommens an, an dem er haengt, getrennt durch das verbatim uebernommene join (Formatdoku 7.7). Beide Vorkommen des Konstrukts im Definitive-Korpus sitzen am geteilten Spruchprofil \"1. Invocation of Nehek\" (6484-4a1a-e62b-2ce1, Vampire Counts, <sharedProfiles>, typeName=\"Spell\") und sind auf dieselbe einzige Bedingung instanceOf scope=\"unit\" childId=\"1c05-5813-2f0c-f878\" (Zacharias the Everliving) gegatet. Zwei Roster, die sich NUR im tragenden Zauberer unterscheiden, pinnen beide Zweige ueber expect.capabilities[].infoElements[].characteristics: bei Zacharias traegt das Merkmal Effect (7d21-349e-b0a8-fc7d) die angehaengte vierte Tabellenzeile, beim Necromancer den unveraenderten Basistext. Das Merkmal Cast (f1e6-8816-26e0-8a70) wird in BEIDEN Rostern behauptet: bei Zacharias als Basiswert \"3+/7+/11+\" + join=\" \" + value=\"/15+\", also \"3+/7+/11+ /15+\", beim Necromancer als unveraenderter Basiswert \"3+/7+/11+\". Der zweite append traegt zusaetzlich das Attribut position=\"-1\", das weder docs/battlescribe-data-format.md noch das BSData-Wiki noch die vendorte Catalogue.xsd kennt; per Wartungsentscheid vom 2026-08-11 ist es ein Datenfehler und wird bei der Auswertung vollstaendig ignoriert. Genau das pinnt die Cast-Zusicherung in Roster 01: ein von keiner Quelle spezifiziertes Attribut ist wirkungslos und darf das Ergebnis in keiner Weise veraendern. Das Merkmal Range (42e6-553f-842f-0b91) dient in beiden Rostern als Kontrolle: sein bedingter set-Modifikator haelt nirgends, es bleibt auf dem Basiswert. Merkmalstexte sind keine zaehlende Schranke - firing bleibt leer.",
   "dataset": {
-    "gameSystem": "src/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

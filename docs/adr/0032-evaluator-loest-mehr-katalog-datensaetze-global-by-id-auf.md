@@ -5,7 +5,7 @@ Status: accepted
 # Der Reinraum-Evaluator löst Mehr-Katalog-Datensätze (`.gst` + Liste von `.cat`) global-by-ID auf
 
 ADR-0030 und ADR-0031 haben die katalogübergreifende Auflösung des Evaluators
-(`src/evaluator/`) bewusst ausgeklammert: die Fassade `evaluate(catalogXml, roster)`
+(`src/domain/evaluator/`) bewusst ausgeklammert: die Fassade `evaluate(catalogXml, roster)`
 nahm genau **einen** Katalog-XML-String, und der Resolver löste nur die direkt
 unter der Wurzel stehenden Einträge auf. Per Verweis oder Import bezogene
 Definitionen — `entryLink`, `infoLink`, `sharedSelectionEntries` und
@@ -80,7 +80,7 @@ Datensatz die GUID-Disjunktheit verletzt.
   und ist zum Zeitpunkt dieser Entscheidung nicht in die App verdrahtet. Die harte
   Import-Isolation ist unberührt. *(Stand nach Issue 0121, 2026-07-30: verdrahtet
   ist er inzwischen — die Oberfläche liest ausschließlich seinen Bericht. Die
-  Import-Isolation läuft seither gegen das Schreibmodell `src/roster/`.)* Der
+  Import-Isolation läuft seither gegen das Schreibmodell `src/domain/roster/`.)* Der
   vollständige Kontext-Stack-Aufbau bleibt bewusst ungebaut, bis ein realer
   Datensatz ihn erzwingt.
 
@@ -123,7 +123,7 @@ ein Kontingent erreichen; `importRootEntries` sagt, wessen **Wurzel**-Einträge 
 als eigenes Angebot führt (XSD-Vorgabe `false`). Ein ohne dieses Attribut
 verlinkter Bibliothekskatalog liegt also im Umfang — seine geteilten Einträge
 sind über `entryLink`s erreichbar —, sein Wurzel-Angebot bleibt aber sein
-eigenes. Beide Hüllen stehen nebeneinander in `src/evaluator/catalogSet.js`
+eigenes. Beide Hüllen stehen nebeneinander in `src/domain/evaluator/catalogSet.js`
 (`buildCatalogueScopeClosure` / `buildRootImportClosure`).
 
 **Unberührt bleibt auch Entscheidung 3:** ein `catalogueLink` ohne mitgegebenen
