@@ -75,7 +75,7 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
 - `profileCellDisplayOf` lives in `editor/useUnitCard.js` and is read from `usePlayUnit.js` as
   well (`modificationStateOf` next to it is module-private since Issue 0166) — one profile-cell presentation for the editor table and the play
   table; the former `components/profileCellClasses.js` is gone. The same move absorbed
-  `components/importer/importMessages.js` and `revisionDisplay.js` into `useImporter.js`.
+  `components/importer/importMessages.js` and `revisionDisplay.js` into the import shell.
 - A hook test that reaches `useRuleUrl` (every shell with a rule channel) must mock
   `../contexts/SettingsContext`; the real `useSettings` throws without its provider.
 - `src/ui/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
@@ -135,6 +135,14 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   and nothing else. `buildSections`/`buildStandaloneSection` take the hook's memo bundle as a
   `context` argument (`{ slots, system, activeCatalogueId, costTypeId, costTypeLabel,
   subSelectionOperations }`) — pure functions, testable without a provider.
+- The import shell is cut along the same line: `importerMessages.js` (the three message builders),
+  `importerRevisionDisplay.js` (`REVISION_TONE`, `buildRevisionDisplay`, `revisionLabelClassName` —
+  the ADR 0014 state matrix), `importerBundle.js` (`allSelectedCatalogues`, `buildBundleView` —
+  the chosen index system held against the installed list) and `systemArchiveExport.js`
+  (`hasRawXmls`, `downloadSystemArchive`). `useImporter.js` is the flow and the state; it exports
+  only the hook, and `Importer.jsx` reads `revisionLabelClassName` off the hook's return, so the
+  component's props do not change when a derivation moves. A test for the export module stubs
+  `URL.createObjectURL`/`revokeObjectURL` — jsdom has neither.
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
   reintroduce it (`editor/optionRowDerivations.test.js` pins the case).

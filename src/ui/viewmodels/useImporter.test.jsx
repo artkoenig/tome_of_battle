@@ -1,18 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { REVISION_TONE } from './importerRevisionDisplay';
 
 /**
  * Issue 0165, AC1, AC3 and AC5 — the import shell's ViewModel.
  *
- * Two things are pinned here beyond the plain state: the screen no longer holds
- * its own system list (it takes the app's, so a finished import is visible
- * everywhere at once), and the two absorbed display modules
- * (`importer/importMessages.js`, `importer/revisionDisplay.js`) live on as
- * exports of this ViewModel.
+ * Beyond the plain state this pins that the screen no longer holds its own
+ * system list: it takes the app's, so a finished import is visible everywhere
+ * at once.
+ *
+ * Since Issue 0176 the display derivations sit next to the hook and are pinned
+ * there (`importerMessages`, `importerRevisionDisplay`, `importerBundle`,
+ * `systemArchiveExport`); what is left here is the flow.
  *
  * The catalog index and the import completion are the network/DB seams and are
- * mocked; the message and revision derivations are production code.
+ * mocked; the derivations they feed are production code.
  */
 const loadAvailableSystemsFromSources = vi.fn();
 const completeSystemImport = vi.fn();
@@ -29,15 +32,7 @@ vi.mock('../../data/db/database', () => ({
   deleteSystem: (...args) => deleteSystem(...args),
 }));
 
-const {
-  useImporter,
-  buildRevisionDisplay,
-  revisionLabelClassName,
-  buildImportSuccessMessage,
-  buildFailedCatalogueMessage,
-  buildMissingLibraryDependencyMessage,
-  REVISION_TONE,
-} = await import('./useImporter');
+const { useImporter } = await import('./useImporter');
 
 const INDEX_SYSTEM = {
   id: 'sys1',
@@ -160,39 +155,5 @@ describe('useImporter', () => {
 
     await waitFor(() => expect(result.current.error).toBeTruthy());
     expect(result.current.bundle.hasIndex).toBe(false);
-  });
-});
-
-describe('die aufgegangenen Anzeige-Ableitungen', () => {
-  it('builds the revision display of ADR 0014 for every state', () => {
-    expect(buildRevisionDisplay(undefined, null)).toBeNull();
-    expect(buildRevisionDisplay(5, null).text).toContain('Rev 5');
-    expect(buildRevisionDisplay(5, null).tone).toBe(REVISION_TONE.SUBTLE);
-    expect(buildRevisionDisplay(5, { revision: 5 }).tone).toBe(REVISION_TONE.SUBTLE);
-    expect(buildRevisionDisplay(5, { revision: 4 }).tone).toBe(REVISION_TONE.ACCENT);
-    expect(buildRevisionDisplay(5, { revision: 6 }).tone).toBe(REVISION_TONE.NEUTRAL);
-    expect(revisionLabelClassName(REVISION_TONE.ACCENT)).toBe('bundle-revision-label text-gold');
-    expect(revisionLabelClassName(REVISION_TONE.NEUTRAL)).toBe('bundle-revision-label');
-  });
-
-  it('names the failed catalogues and reports an incomplete import as incomplete', () => {
-    const failures = [{ fileName: 'emp.cat', message: 'kaputt' }];
-    expect(buildFailedCatalogueMessage(failures)).toContain('emp.cat');
-    expect(buildFailedCatalogueMessage(failures)).toContain('kaputt');
-
-    const system = { name: 'Warhammer', catalogues: [{ id: 'cat1' }] };
-    expect(buildImportSuccessMessage(system, [])).toContain('Warhammer');
-    expect(buildImportSuccessMessage(system, failures)).not.toBe(buildImportSuccessMessage(system, []));
-  });
-
-  it('names every missing library together with what depends on it', () => {
-    const message = buildMissingLibraryDependencyMessage([
-      { id: 'lib', name: 'Bibliothek', requiredBy: ['Bretonnia', 'Empire'] },
-      { id: 'lib2', name: 'Zweite', requiredBy: [] },
-    ]);
-    expect(message).toContain('Bibliothek');
-    expect(message).toContain('Bretonnia');
-    expect(message).toContain('Empire');
-    expect(message).toContain('Zweite');
   });
 });
