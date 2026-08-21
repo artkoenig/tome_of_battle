@@ -14,7 +14,7 @@ import { usePlayRoster, groupedPlaySelections } from './usePlayRoster';
  */
 
 vi.mock('../../data/db/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('./SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 

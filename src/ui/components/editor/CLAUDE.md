@@ -82,7 +82,7 @@ than reparsed per case (see
   become `data-testid="icon-<name>"` spans — `ChevronDown`/`ChevronRight` for
   expand state, `Plus`/`Minus` for a quantity stepper's buttons),
   `../../data/rulesLookup` (`getRuleUrl: () => null`) and
-  `../../contexts/SettingsContext`
+  `../../viewmodels/SettingsContext`
   (`useSettings: () => ({ whfb6LinkingEnabled: false })`). Nothing else is
   mocked in a `*.evaluator.test.jsx` or fixture-sweep file.
 - A test of a component that owns children with their own test files also fakes

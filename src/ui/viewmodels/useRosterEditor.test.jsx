@@ -16,7 +16,7 @@ import { useRosterEditor } from './useRosterEditor';
 vi.mock('../../data/db/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
 // Der Regel-Kanal haengt am globalen whfb6-Schalter (ADR-0015). Er hat hier
 // keinen Provider ueber sich, also steht er wie in der App ohne Verknuepfung.
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('./SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 

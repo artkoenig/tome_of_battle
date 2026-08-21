@@ -77,7 +77,7 @@ tief nach hoch ist verboten.
 
 | Schicht | Verzeichnisse | Verantwortung |
 |---|---|---|
-| UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/contexts/`, `src/ui/styles/`, `src/ui/i18n/` | Darstellung und Interaktion |
+| UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/styles/`, `src/ui/i18n/` | Darstellung und Interaktion |
 | Fachlogik | `src/domain/evaluator/`, `src/domain/evaluation/`, `src/domain/roster/` | Auswertung, Schreibmodell, Übersetzung zwischen beiden |
 | Daten | `src/data/services/`, `src/data/db/`, `src/data/parser/` | Persistenz, Import, Katalog-Zerlegung |
 
@@ -159,3 +159,26 @@ ist ein Fehler — sie erlaubt den Rückfall.
 - **Gut, weil** sie nichts kostet.
 - **Schlecht, weil** die drei gemessenen Befunde belegen, dass sie hier nicht trägt: alle drei
   sind unter genau dieser Konvention entstanden und über Monate unbemerkt geblieben.
+
+## Nachtrag — `src/ui/contexts/` ist aufgelöst
+
+**Status des Nachtrags:** akzeptiert, 2026-08-21. Er ändert die Schichtung nicht, nur die
+Verzeichnisliste der UI-Schicht oben.
+
+`src/ui/contexts/` trug genau eine Datei, `SettingsContext.jsx` (ADR-0015). Ein Context-Modul ist
+kein eigener Bauteiltyp: es hält Zustand und reicht ihn an die Tiefe durch — genau das, was
+ADR-0038 dem ViewModel zuschreibt, und `rosterContexts.jsx` liegt aus demselben Grund seit jeher
+unter `src/ui/viewmodels/`. Ein Verzeichnis für eine Datei stellte die beiden Context-Module
+nebeneinander, ohne dass sie sich unterschieden hätten.
+
+`SettingsContext.jsx` liegt seitdem als `src/ui/viewmodels/SettingsContext.jsx` bei den übrigen
+ViewModels, das leere Verzeichnis ist entfallen. Die `react/only-export-components`-Ausnahme in
+`.oxlintrc.json` greift die Context-Module jetzt über den Dateinamen heraus
+(`src/ui/viewmodels/**/*Context.jsx`, `**/*Contexts.jsx`) statt über den Verzeichnispfad; ihre
+Begründung — Provider und Consumer-Hook bleiben in einer Datei — ist unverändert. Die
+dependency-cruiser-Regeln `viewmodel-keine-datenschicht` und `viewmodel-keine-komponente` gelten
+für die Datei damit zusätzlich; sie hält beide bereits (sie liest über `src/data/services/` und
+importiert keine Komponente).
+
+Die Befundtabelle unter „Kontext und Problemstellung" bleibt unangetastet: sie hält den Stand vom
+2026-08-20 fest und nennt darum weiterhin `contexts/SettingsContext.jsx` und `hooks/useAppData.js`.

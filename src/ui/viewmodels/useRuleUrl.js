@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { getRuleUrl } from '../../data/rules/rulesLookup';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings } from './SettingsContext';
 
 /**
  * Central resolver for 6th.whfb.app rule links that honors the global whfb6

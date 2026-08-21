@@ -43,7 +43,7 @@ import RosterEditor from './RosterEditor';
 // Nachbarn ohne Anteil an der Frage — der Pfad Roster → Bericht → Lücke →
 // Panel bleibt vollständig echt.
 vi.mock('../../data/db/database', () => ({ saveRoster: vi.fn() }));
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('../viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 vi.mock('./RulesIndexDialog', () => ({ default: () => null }));

@@ -10,7 +10,7 @@ vi.mock('lucide-react', () => ({
   X: (props) => <span data-testid="icon-x" {...props} />,
 }));
 
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('../viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

@@ -5,7 +5,7 @@ import React from 'react';
 import { createSelectionFromDef } from './selectionFactory.js';
 import { resolveEntry } from './catalogResolver.js';
 import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../shared/test-utils/editorHarness';
-import { SettingsProvider } from '../../ui/contexts/SettingsContext.jsx';
+import { SettingsProvider } from '../../ui/viewmodels/SettingsContext.jsx';
 
 /**
  * Nach ADR 0018 sind mehrere Kataloge desselben Spielsystems gleichzeitig geladen, und

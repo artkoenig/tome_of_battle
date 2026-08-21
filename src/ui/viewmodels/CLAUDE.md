@@ -5,7 +5,9 @@ editor hooks under `editor/`, the roster state node `useRosterState.*`, and the 
 derivation and state hooks that moved here with Issue 0178 — `useRosterList`, `useAppData`,
 `useAppNavigation`, `usePlayState`, `usePwaLifecycle`, `useRuleUrl`, `useToast`,
 `useUndoableState` ([ADR 0013](../../../docs/adr/0013-generischer-undo-redo-hook.md)),
-`useViewportHeight`, plus the shared `persistenceFailure` helper. Framework: vitest +
+`useViewportHeight`, plus the shared `persistenceFailure` helper — and `SettingsContext`
+([ADR 0015](../../../docs/adr/0015-settings-context-fuer-whfb6-verlinkung.md)), which came over
+from the dissolved `src/ui/contexts/`. Framework: vitest +
 `@testing-library/react` (`renderHook`, `act`), plain `describe`/`it`. Run the whole
 directory: `forge-test --run src/ui/viewmodels`; a single file:
 `forge-test --run src/ui/viewmodels/<file>.test.js`.

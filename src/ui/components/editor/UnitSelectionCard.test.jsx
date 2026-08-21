@@ -33,7 +33,7 @@ vi.mock('./BottomSheet', () => ({
 // The rendered UnitChips resolve rule links through the real useRuleUrl hook,
 // which reads the whfb6 linking setting. Provide it so the hook has a context.
 const mockUseSettings = vi.fn();
-vi.mock('../../contexts/SettingsContext', () => ({
+vi.mock('../../viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

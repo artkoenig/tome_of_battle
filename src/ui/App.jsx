@@ -7,7 +7,7 @@ import PlayMode from './components/PlayMode';
 import RosterDashboard from './components/RosterDashboard';
 import AppDialogs from './components/AppDialogs';
 import PreviewBadge from './components/PreviewBadge';
-import { SettingsProvider } from './contexts/SettingsContext';
+import { SettingsProvider } from './viewmodels/SettingsContext';
 
 import useViewportHeight from './viewmodels/useViewportHeight';
 import usePwaLifecycle from './viewmodels/usePwaLifecycle';
