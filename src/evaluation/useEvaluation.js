@@ -11,8 +11,9 @@
  * die es nur einmal gibt, kann nicht auseinander laufen.
  *
  * Ergebnis (Form und Leerfaelle: siehe `AppEvaluation` in
- * `evaluationCache.js`): `{ violations, capabilities, description, costTotals,
- * pathBySelectionId, pathByForceId, diagnostics }`.
+ * `evaluationCache.js`): `{ violations, slots, description, costTotals,
+ * diagnostics }` — die Slot-Seite ist seit Issue 0170 **ein** Wertobjekt
+ * (`SlotIndex`), nicht mehr drei einzelne Felder.
  *
  * Memoisierung (Kriterium 8 des Issues, verschaerft in Task 7):
  * - `prepareDataset` und `describeDataset` laufen hoechstens einmal je
