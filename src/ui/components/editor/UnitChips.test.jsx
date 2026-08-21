@@ -37,7 +37,7 @@ vi.mock('../../../data/rules/rulesLookup', () => ({
 }));
 
 const mockUseSettings = vi.fn();
-vi.mock('../../contexts/SettingsContext', () => ({
+vi.mock('../../viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

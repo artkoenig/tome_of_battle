@@ -18,7 +18,7 @@ vi.mock('../../../data/rules/rulesLookup', () => ({
 // (not the hook itself) exercises that real wiring, so the disabled-state test
 // verifies the actual link-vs-fallback decision rather than a stubbed shortcut.
 const mockUseSettings = vi.fn();
-vi.mock('../../contexts/SettingsContext', () => ({
+vi.mock('../../viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

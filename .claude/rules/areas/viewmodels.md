@@ -6,13 +6,16 @@ paths:
 # viewmodels
 
 The ViewModel layer of ADR-0038: hooks that hold state and derive display values, plus the two
-roster contexts. It sits **above** `src/ui/components/` in the UI layer of ADR-0037 — a ViewModel may
-never import a component. Run it with `forge-test --run src/ui/viewmodels`.
+roster contexts and `SettingsContext.jsx`. It sits **above** `src/ui/components/` in the UI layer
+of ADR-0037 — a ViewModel may never import a component. Run it with
+`forge-test --run src/ui/viewmodels`.
 
 - Since Issue 0178 this is the **only** directory of the layer: the app-level hooks `useRosterList`,
   `useAppData`, `useAppNavigation`, `usePlayState`, `usePwaLifecycle`, `useRuleUrl`, `useToast`,
   `useUndoableState`, `useViewportHeight` and the shared `persistenceFailure` helper live here too,
-  next to the screen ViewModels. There is no `src/ui/hooks/`; `App.jsx` imports them from
+  next to the screen ViewModels, and `SettingsContext.jsx` (ADR-0015, the whfb6 rule-linking
+  toggle) moved here from the one-file `src/ui/contexts/`, which is gone with it. There is no
+  `src/ui/hooks/` and no `src/ui/contexts/`; `App.jsx` imports them from
   `./viewmodels/`. The layer takes small mechanics as well (`useBottomSheet` is the precedent).
 - The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
   `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
@@ -95,7 +98,12 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   table; the former `components/profileCellClasses.js` is gone. The same move absorbed
   `components/importer/importMessages.js` and `revisionDisplay.js` into the import shell.
 - A hook test that reaches `useRuleUrl` (every shell with a rule channel) must mock
-  `../contexts/SettingsContext`; the real `useSettings` throws without its provider.
+  `./SettingsContext`; the real `useSettings` throws without its provider.
+- The `react/only-export-components` exception for the context modules (provider and consumer hook
+  stay in one file) is an `.oxlintrc.json` override on the **file names**
+  `src/ui/viewmodels/**/*Context.jsx` and `**/*Contexts.jsx`, not on a directory — a new context
+  module has to be named that way to inherit it. The rule is warn-only either way, so a miss does
+  not fail `forge-lint`.
 - `src/ui/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
   `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
   `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,

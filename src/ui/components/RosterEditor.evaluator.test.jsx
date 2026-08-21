@@ -31,7 +31,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 const mockUseSettings = vi.fn(() => ({ whfb6LinkingEnabled: false }));
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('../viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

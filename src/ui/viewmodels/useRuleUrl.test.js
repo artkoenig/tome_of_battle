@@ -8,7 +8,7 @@ vi.mock('../../data/rules/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 
-vi.mock('../contexts/SettingsContext', () => ({
+vi.mock('./SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 

@@ -111,8 +111,10 @@
       // Ein Context-Modul veroeffentlicht bewusst seinen Provider (Komponente) zusammen
       // mit dem zugehoerigen Consumer-Hook. Die Regel dient allein dem Fast Refresh des
       // Dev-Servers; sie zu erfuellen hiesse, Context-Objekt, Provider und Hook auf drei
-      // Dateien zu verteilen und damit eine Zustaendigkeit zu zersplittern.
-      "files": ["src/ui/contexts/**"],
+      // Dateien zu verteilen und damit eine Zustaendigkeit zu zersplittern. Die
+      // Context-Module liegen seit dem Umzug von src/ui/contexts/ bei den uebrigen
+      // ViewModels; der Glob greift sie ueber den Dateinamen heraus.
+      "files": ["src/ui/viewmodels/**/*Context.jsx", "src/ui/viewmodels/**/*Contexts.jsx"],
       "rules": {
         "react/only-export-components": "off"
       }

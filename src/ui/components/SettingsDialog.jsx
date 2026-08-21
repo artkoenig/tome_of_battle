@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings } from '../viewmodels/SettingsContext';
 import { useTranslation } from '../i18n/useTranslation';
 import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n/constants';
 

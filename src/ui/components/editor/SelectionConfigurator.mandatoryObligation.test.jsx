@@ -50,7 +50,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 vi.mock('../../../data/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
-vi.mock('../../contexts/SettingsContext', () => ({
+vi.mock('../../viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 

@@ -60,7 +60,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 vi.mock('../../../data/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
-vi.mock('../../contexts/SettingsContext', () => ({
+vi.mock('../../viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
