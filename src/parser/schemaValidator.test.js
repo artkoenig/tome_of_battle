@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { validateAgainstSchema, SCHEMA_KIND } from './schemaValidator';
+import { validateFilesAgainstSchema, SCHEMA_KIND } from './schemaValidator';
+
+// The production entry point is the batch one: it reports only the files that carry a
+// schema violation. `validate` wraps a single document in that shape so a case reads as
+// one document validated as one kind.
+async function validate(xmlText, kind) {
+  const file = { name: `${kind}.xml`, content: xmlText };
+  const reported = await validateFilesAgainstSchema([file], kind);
+  return {
+    valid: reported.length === 0,
+    errors: reported[0]?.errors ?? [],
+    file: reported[0]?.file ?? null,
+  };
+}
 
 // Synthetic, minimal, schema-valid documents — one per kind — declaring the
 // namespace the vendored XSD expects after the kind-driven namespace swap. They are
@@ -27,30 +40,31 @@ const invalidCatalogue = `<?xml version="1.0" encoding="UTF-8"?>
   </selectionEntries>
 </catalogue>`;
 
-describe('validateAgainstSchema', () => {
+describe('validateFilesAgainstSchema', () => {
   it('accepts a schema-valid catalogue', async () => {
-    const result = await validateAgainstSchema(validCatalogue, SCHEMA_KIND.CATALOGUE);
+    const result = await validate(validCatalogue, SCHEMA_KIND.CATALOGUE);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
 
   it('accepts a schema-valid game system', async () => {
-    const result = await validateAgainstSchema(validGameSystem, SCHEMA_KIND.GAME_SYSTEM);
+    const result = await validate(validGameSystem, SCHEMA_KIND.GAME_SYSTEM);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
 
   it('accepts a schema-valid roster', async () => {
-    const result = await validateAgainstSchema(validRoster, SCHEMA_KIND.ROSTER);
+    const result = await validate(validRoster, SCHEMA_KIND.ROSTER);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
 
   it('rejects a deliberately invalid catalogue and reports a locatable error', async () => {
-    const result = await validateAgainstSchema(invalidCatalogue, SCHEMA_KIND.CATALOGUE);
+    const result = await validate(invalidCatalogue, SCHEMA_KIND.CATALOGUE);
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
+    expect(result.file.name).toBe(`${SCHEMA_KIND.CATALOGUE}.xml`);
 
     const [firstError] = result.errors;
     expect(firstError.line).toBe(4);
@@ -62,24 +76,24 @@ describe('validateAgainstSchema', () => {
   it('validates each kind against its own namespace: a catalogue is invalid as a game system', async () => {
     // The catalogue's root namespace is the catalogue namespace; validating it under
     // the game-system namespace must fail, proving the kind switch swaps namespaces.
-    const asGameSystem = await validateAgainstSchema(validCatalogue, SCHEMA_KIND.GAME_SYSTEM);
+    const asGameSystem = await validate(validCatalogue, SCHEMA_KIND.GAME_SYSTEM);
     expect(asGameSystem.valid).toBe(false);
 
     // The same bytes are valid under the correct kind.
-    const asCatalogue = await validateAgainstSchema(validCatalogue, SCHEMA_KIND.CATALOGUE);
+    const asCatalogue = await validate(validCatalogue, SCHEMA_KIND.CATALOGUE);
     expect(asCatalogue.valid).toBe(true);
   });
 
   it('validates a game system against its own namespace: a game system is invalid as a catalogue', async () => {
-    const asCatalogue = await validateAgainstSchema(validGameSystem, SCHEMA_KIND.CATALOGUE);
+    const asCatalogue = await validate(validGameSystem, SCHEMA_KIND.CATALOGUE);
     expect(asCatalogue.valid).toBe(false);
 
-    const asGameSystem = await validateAgainstSchema(validGameSystem, SCHEMA_KIND.GAME_SYSTEM);
+    const asGameSystem = await validate(validGameSystem, SCHEMA_KIND.GAME_SYSTEM);
     expect(asGameSystem.valid).toBe(true);
   });
 
   it('throws on an unknown kind', async () => {
-    await expect(validateAgainstSchema(validCatalogue, 'notAKind')).rejects.toThrow(
+    await expect(validate(validCatalogue, 'notAKind')).rejects.toThrow(
       /Unknown schema kind/
     );
   });

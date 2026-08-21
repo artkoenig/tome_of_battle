@@ -50,7 +50,9 @@ evaluator. `src/db/` persists it in IndexedDB.
   the same questions live once, in the report (`src/evaluator/groupBehavior.js`).
 - Gone with Issue 0169 as well, do not resurrect: `battlescribeConstants.js` (`isCostField`,
   `isEntryScope`, `isSharedQuery`, `isRosterLimitField` — scope/shared reading is the evaluator's),
-  `someSelectionInSubtree`/`countSelectionsInSubtree` in `rosterTree.js`, and the profile
+  `someSelectionInSubtree`/`countSelectionsInSubtree` und `effectiveCountOf` in `rosterTree.js`,
+  `findEntryInCatalogue` in `catalogResolver.js` (Auflösung geht immer über `findEntryInSystem`
+  mit der Katalog-Id als Kontext, ADR 0032), and the profile
   extractors beside `groupProfilesByType`. `rulesEvaluator.js` is now `profileGrouping.js` — the
   name says what it does, and nothing in it evaluates.
 - `evaluateAppRoster` in `src/evaluation/` is the single memoized seam; adding a second call path

@@ -6,12 +6,11 @@ const ENTRY_ID_QUALIFIER_SEPARATOR = '::';
 
 /**
  * Entry indexes live in module-scoped WeakMaps rather than as a field on the
- * indexed object, because systems and catalogues are persisted to IndexedDB
- * verbatim — a field would be written along with them. Keying weakly also lets
- * an index be collected as soon as the system or catalogue it belongs to is.
+ * indexed object, because systems are persisted to IndexedDB verbatim — a field would be
+ * written along with them. Keying weakly also lets an index be collected as soon
+ * as the system it belongs to is.
  * @type {WeakMap<object, {source: *, index: Map}>}
  */
-const catalogueEntryIndexes = new WeakMap();
 const systemEntryIndexes = new WeakMap();
 
 function stripEntryIdQualifier(entryId) {
@@ -49,14 +48,6 @@ function indexEntriesById(node, index) {
       indexEntriesById(value, index);
     }
   }
-}
-
-function getCatalogueEntryIndex(catalogue) {
-  return getOrBuildIndex(catalogueEntryIndexes, catalogue, catalogue, () => {
-    const index = new Map();
-    indexEntriesById(catalogue, index);
-    return index;
-  });
 }
 
 /**
@@ -113,11 +104,6 @@ export function foreignCatalogueIdsOf(system, ownCatalogueId) {
     foreign.add(catalogue.id);
   }
   return foreign;
-}
-
-export function findEntryInCatalogue(catalogue, entryId) {
-  if (!catalogue) return null;
-  return getCatalogueEntryIndex(catalogue).get(stripEntryIdQualifier(entryId)) || null;
 }
 
 /**

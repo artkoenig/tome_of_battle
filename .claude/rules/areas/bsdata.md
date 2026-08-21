@@ -32,6 +32,14 @@ Agent liest sie, bevor er formatnahen Code oder Katalogdaten anfasst — auch Su
 - Die XSD liegt vendored als Konformitätsquelle im Repo (`src/parser/schema/Catalogue.xsd`,
   ADR 0016); der Evaluator teilt deren
   Enum-SSOT (ADR 0031). Ein Enum-Wert wird dort gepflegt, nicht per Hand dupliziert.
+- `schemaValidator.js` hat seit Issue 0169 nur noch **einen** Einstiegspunkt:
+  `validateFilesAgainstSchema(files, kind)` — ein xmllint-Lauf für viele Dokumente einer Art,
+  zurück kommen nur die Dateien mit Verstoss. Den Einzeldokument-Pfad (`validateAgainstSchema`)
+  gibt es nicht mehr; ein Test für ein einzelnes Dokument verpackt es in die Batch-Form
+  (`[{ name, content }]`) statt ihn wieder einzuführen.
+- `npm run knip` sieht **keinen** Export, den nur ein Test benutzt: `knip.json` führt
+  `src/**/*.test.{js,jsx}` als Entry Points, also gilt ein Testkonsument als Nutzung. Wer hier
+  aufräumt, prüft von Hand (`grep -rn '\bname\b' src` — nur Definition plus `.test.js` heisst tot).
 - Kataloge liegen **nicht** im Repo: sie kommen zur Laufzeit aus dem externen Fork (ADR 0014,
   0017, 0018). Für Tests gibt es den eingefrorenen Ausschnitt unter `src/__fixtures__/whfb6/` —
   der ist Fixture, kein Datenstand zum Aktualisieren.

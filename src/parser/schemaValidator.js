@@ -68,8 +68,8 @@ function toLocatableError(validationError) {
 
 /**
  * Resolves the target namespace for a document kind, rejecting unknown kinds. The
- * single source of truth for the kind → namespace mapping used by both the
- * single-document and multi-document entry points.
+ * single source of truth for the kind → namespace mapping used by the
+ * batch entry point.
  *
  * @throws {Error} If `kind` is not one of the known schema kinds.
  */
@@ -82,30 +82,6 @@ function resolveTargetNamespace(kind) {
     );
   }
   return targetNamespace;
-}
-
-/**
- * Validates BattleScribe XML text against the vendored XSD for the given document
- * kind.
- *
- * @param {string} xmlText - The raw XML document text.
- * @param {typeof SCHEMA_KIND[keyof typeof SCHEMA_KIND]} kind - Which document kind to
- *   validate as; selects the target namespace.
- * @returns {Promise<{ valid: boolean, errors: Array<{ line: number|null, column: number|null, message: string }> }>}
- * @throws {Error} If `kind` is not one of the known schema kinds.
- */
-export async function validateAgainstSchema(xmlText, kind) {
-  const targetNamespace = resolveTargetNamespace(kind);
-
-  const result = await validateXML({
-    xml: [{ fileName: `${kind}.xml`, contents: xmlText }],
-    schema: [schemaTextForNamespace(targetNamespace)],
-  });
-
-  return {
-    valid: result.valid,
-    errors: result.errors.map(toLocatableError),
-  };
 }
 
 // A per-file identifier handed to xmllint as the document's file name. libxml echoes

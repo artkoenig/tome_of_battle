@@ -2,7 +2,6 @@ import { describe, test, expect } from 'vitest';
 import {
   childSelectionsOf,
   rootSelectionsOf,
-  effectiveCountOf,
   traverseSelectionTree,
   foldSelectionTree,
   findSelectionById,
@@ -73,17 +72,6 @@ describe('rootSelectionsOf', () => {
 
   test('skips a force that carries no selections', () => {
     expect(rootSelectionsOf({ forces: [{ id: 'f' }] })).toEqual([]);
-  });
-});
-
-describe('effectiveCountOf', () => {
-  test('multiplies the selection number by its parent count', () => {
-    expect(effectiveCountOf({ number: 3 }, 2)).toBe(6);
-  });
-
-  test('treats a missing number as one', () => {
-    expect(effectiveCountOf({ id: 'a' }, 5)).toBe(5);
-    expect(effectiveCountOf({ number: 0 }, 5)).toBe(5);
   });
 });
 

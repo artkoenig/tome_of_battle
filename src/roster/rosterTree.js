@@ -58,16 +58,6 @@ export function ownCountOf(selection) {
 }
 
 /**
- * Die effektive Anzahl einer Selection im Baum: ihre eigene Anzahl,
- * multipliziert mit der effektiven Anzahl ihres Elternknotens.
- * @param {import('../types.js').Selection} selection
- * @param {number} parentCount effektive Anzahl des Elternknotens
- */
-export function effectiveCountOf(selection, parentCount) {
-  return ownCountOf(selection) * parentCount;
-}
-
-/**
  * Tiefensuche in Präorder über einen Selection-Wald.
  *
  * `visit` liefert den Kontext zurück, mit dem die Kinder des besuchten Knotens

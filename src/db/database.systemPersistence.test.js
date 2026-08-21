@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { saveSystem, getSystem, getAllSystems, saveRoster, getRoster } from './database';
-import { findEntryInSystem, findEntryInCatalogue } from '../roster/catalogResolver';
+import { findEntryInSystem } from '../roster/catalogResolver';
 
 function buildSystem() {
   return {
@@ -27,7 +27,6 @@ describe('system persistence after entry resolution', () => {
   it('stores a resolved system without any resolution index', async () => {
     const system = buildSystem();
     findEntryInSystem(system, 'se-1', 'cat-1');
-    findEntryInCatalogue(system.catalogues[0], 'se-1');
 
     await saveSystem(system);
 
