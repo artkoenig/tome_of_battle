@@ -39,7 +39,7 @@ paths:
     of them are allowed.
   - Four rules keep it, all `error`, all failing `forge-lint`: the oxlint
     `no-restricted-imports` override on `src/ui/components/**` (the hook ban), and in
-    `.dependency-cruiser.cjs` `viewmodel-kein-jsx` (`src/ui/viewmodels/` → `src/ui/components/`),
+    `.dependency-cruiser.cjs` `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
     `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
     `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,

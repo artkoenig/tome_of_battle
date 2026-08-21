@@ -29,7 +29,7 @@ ohne Testdatei daneben; die übrigen 20 haben eine.
 - AC1 `daten-kein-rueckgriff` hat `severity: 'error'`, und `forge-lint` bleibt grün. | verify: forge-lint
 - AC2 Die Regel `viewmodel-kein-jsx` heißt nach dem, was sie prüft, und ihr Kommentar nennt ausdrücklich, dass die Dateiendung nicht gemeint ist. | verify: forge-lint
 - AC3 `capabilityEntries.js`, `useBottomSheet.js` und `useRulesIndexDialog.js` haben je eine Testdatei neben sich. | verify: forge-test --run src/ui/viewmodels
-- AC4 Jede Datei unter `src/ui/viewmodels/` hat eine Testdatei neben sich — die Schicht ist lückenlos. | verify: test -z "$(find src/ui/viewmodels -name '*.js*' ! -name '*.test.*' | while read f; do ls "${f%.*}".test.js "${f%.*}".test.jsx >/dev/null 2>&1 || echo "$f"; done)"
+- AC4 Jede Datei unter `src/ui/viewmodels/` hat eine Testdatei neben sich — die Schicht ist lückenlos. | verify: test -z "$(find src/ui/viewmodels -name '*.js*' ! -name '*.test.*' | while read f; do b="${f%.*}"; ls "$b".test.js >/dev/null 2>&1 || ls "$b".test.jsx >/dev/null 2>&1 || echo "$f"; done)"
 - AC5 Alle vier Wrapper sind grün.
 
 ## Out of scope

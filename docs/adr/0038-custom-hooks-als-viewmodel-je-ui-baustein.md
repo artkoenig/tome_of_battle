@@ -97,7 +97,7 @@ In `.dependency-cruiser.cjs`:
 
 | Regel | Verbietet |
 |---|---|
-| `viewmodel-kein-jsx` | `src/ui/viewmodels/` → `src/ui/components/` |
+| `viewmodel-keine-komponente` | `src/ui/viewmodels/` → `src/ui/components/` |
 | `komponente-kein-bericht` | `src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/` |
 | `viewmodel-keine-datenschicht` | `src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/` (nur `src/data/services/`) |
 

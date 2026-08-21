@@ -60,7 +60,7 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
   shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
   `src/data/services/` like everything else.
-- `viewmodel-kein-jsx` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
+- `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
   formats a label needs `language` in its dependency list, or a language switch leaves the
