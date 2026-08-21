@@ -74,12 +74,22 @@ never import a component. Run it with `forge-test --run src/ui/viewmodels`.
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
   `components/editor/upgradeDetails.jsx` (it returns JSX).
 - The detail block of an upgrade is derived here, by `editor/upgradeDetailElements.js`
-  (`upgradeDetailElementsOf(capability)`), out of `capability.infoElements` and `capability.source`
-  alone (Issue 0173). Every row hook that offers an info tooltip puts the finished list on the row
-  as `detailElements`; `renderUpgradeDetails(elements)` in the component only renders it and takes
-  no `system`. The old name-similarity lookup against `system.sharedRules` (lowercased, trimmed,
-  substring, last-ten-characters, a hard-wired `waaagh` case) is gone — do not reintroduce it.
-  `publicationRefOf(source)` next to it is the one place the `[Book, S. 44]` form is written.
+  (`upgradeDetailElementsOf(capability, system, catalogueId)`), out of `capability.infoElements`
+  and `capability.source` (Issue 0173). Every row hook that offers an info tooltip puts the
+  finished list on the row as `detailElements`; `renderUpgradeDetails(elements)` in the component
+  only renders it and takes no `system`. The old name-**similarity** lookup (substring,
+  last-ten-characters, a hard-wired `waaagh` case, first hit across all catalogues) is gone — do
+  not reintroduce it. What stays is one narrow fallback: a slot with **no** rule element at all
+  takes the description of the *equally* named rule of its own catalogue
+  (`findRuleByName(system, name, catalogueId)` in `domain/roster/catalogResolver.js`, own
+  catalogue → game system → the rest). Real books declare a magic item's text as an unlinked
+  shared rule — four in the Vampire Counts book alone — and without the fallback those rows lose
+  their description. That fallback row carries **no** book source: the rule hangs on no carrier of
+  the slot. `publicationRefOf(source)` next to it is the one place the `[Book, S. 44]` form is
+  written.
+- A component test that mocks `domain/roster` wholesale (`vi.mock('../../../domain/roster', …)`)
+  lists the exports by hand, so a new import a ViewModel adds there fails those files with
+  "No <name> export is defined on the mock" — the mock, not the ViewModel, is what is out of date.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
   (`src/domain/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
   `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back

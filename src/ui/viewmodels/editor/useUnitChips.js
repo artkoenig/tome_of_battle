@@ -171,7 +171,7 @@ export function useUnitChips({ selection }) {
       resolved: upgrade.resolved,
       chipName: upgrade.resolved?.name || upgrade.name,
       descText: getUpgradeDescription(upgrade.capability),
-      detailElements: upgradeDetailElementsOf(upgrade.capability),
+      detailElements: upgradeDetailElementsOf(upgrade.capability, system, activeCatalogueId),
     }));
 
     // Die Regeln kommen aus der Info-Projektion des Slots

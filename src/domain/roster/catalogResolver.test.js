@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { findEntryInSystem, findRuleByName, resolveEntry } from './catalogResolver.js';
 
 describe('catalogResolver - Index-Wiederverwendung', () => {
   const makeSystem = (entryName) => ({
@@ -331,5 +331,32 @@ describe('catalogResolver - resolveEntry', () => {
     const resolved = resolveEntry(mockSystem, entry, 'cat-1');
     expect(resolved.profiles.find(p => p.id === 'prof-secret').hidden).toBe(true);
     expect(resolved.rules.find(r => r.id === 'rule-secret').hidden).toBe(true);
+  });
+});
+
+describe('catalogResolver - findRuleByName', () => {
+  const system = {
+    sharedRules: [{ id: 'gst-1', name: 'Frostklinge', description: 'Aus dem Spielsystem.' }],
+    catalogues: [
+      { id: 'cat-fremd', sharedRules: [{ id: 'sr-fremd', name: 'Frostklinge', description: 'Aus einem fremden Buch.' }] },
+      { id: 'cat-eigen', sharedRules: [{ id: 'sr-eigen', name: ' frostklinge ', description: 'Aus dem eigenen Buch.' }] },
+      { id: 'cat-leer' },
+    ],
+  };
+
+  it('nimmt die gleichnamige Regel des eigenen Katalogs vor jeder anderen', () => {
+    expect(findRuleByName(system, 'Frostklinge', 'cat-eigen').id).toBe('sr-eigen');
+    expect(findRuleByName(system, 'Frostklinge', 'cat-fremd').id).toBe('sr-fremd');
+  });
+
+  it('faellt ohne eigenen Katalog auf das Spielsystem zurueck, dann auf die uebrigen Kataloge', () => {
+    expect(findRuleByName(system, 'Frostklinge', 'cat-leer').id).toBe('gst-1');
+    expect(findRuleByName({ catalogues: system.catalogues }, 'Frostklinge', 'cat-leer').id).toBe('sr-fremd');
+  });
+
+  it('vergleicht auf Gleichheit, nicht auf Aehnlichkeit — und braucht einen Namen', () => {
+    expect(findRuleByName(system, 'Die grosse Frostklinge', 'cat-eigen')).toBeNull();
+    expect(findRuleByName(system, '', 'cat-eigen')).toBeNull();
+    expect(findRuleByName(null, 'Frostklinge', 'cat-eigen')).toBeNull();
   });
 });

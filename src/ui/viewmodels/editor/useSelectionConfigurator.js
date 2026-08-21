@@ -456,7 +456,7 @@ export function useSelectionConfigurator({ selection }) {
         costTypeLabel,
         costBudgets: costBudgetTextsOf(capability, system),
         descText: optionDescriptionOf(capability),
-        detailElements: upgradeDetailElementsOf(capability),
+        detailElements: upgradeDetailElementsOf(capability, system, activeCatalogueId),
         resolved,
         isSubUnitWithOwnOptions,
         isBinary,

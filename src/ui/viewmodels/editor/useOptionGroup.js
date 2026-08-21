@@ -176,7 +176,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
           points: capability.costs?.[costTypeId] ?? 0,
           costTypeLabel,
           descText: optionDescriptionOf(capability),
-          detailElements: upgradeDetailElementsOf(capability),
+          detailElements: upgradeDetailElementsOf(capability, system, activeCatalogueId),
           isBinary,
           isRadio,
           radioName: `${selection.id}-${group.name}`,

@@ -60,6 +60,7 @@ const DEFINITIONS = {
 
 vi.mock('../../../domain/roster', async () => ({
   findEntryInSystem: (_system, entryId) => (DEFINITIONS[entryId] ? entryId : null),
+  findRuleByName: () => null,
   resolveEntry: (_system, entryId) => DEFINITIONS[entryId] || null,
   collectUnitProfilesAndRules: () => ({ profiles: [], rules: [] }),
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
