@@ -10,13 +10,6 @@ export const MODEL_PROFILE_EXCLUDED_KEYWORDS = [
   'standarte', 'runes', 'runen'
 ];
 
-// Upgrade classification keywords
-export const UPGRADE_CLASSIFICATION_KEYWORDS = [
-  'magic item', 'weapon', 'armour', 'enchanted item', 'arcane item', 'talisman',
-  'magic weapon', 'magic armour', 'virtue', 'runes', 'special rule', 'gegenstand',
-  'virtues', 'tugend'
-];
-
 // Upgrade details check keywords
 export const UPGRADE_DETAILS_KEYWORDS = ['weapon', 'magic', 'items', 'rüstung', 'waffe'];
 

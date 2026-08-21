@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoster } from './useRoster';
 import { processImportedData } from '../parser/xmlParser';
-import { buildRoster } from '../utils/createRoster';
+import { buildRoster } from '../roster/createRoster';
 import { formatViolation } from '../i18n/violationMessages';
 
 /**

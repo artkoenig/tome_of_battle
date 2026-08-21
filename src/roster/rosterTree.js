@@ -141,14 +141,6 @@ export function someSelection(selections, predicate) {
 }
 
 /**
- * True, sobald die Selection selbst oder einer ihrer Nachfahren das Prädikat
- * erfüllt. Der Teilbaum schließt seine Wurzel mit ein.
- */
-export function someSelectionInSubtree(selection, predicate) {
-  return selection ? someSelection([selection], predicate) : false;
-}
-
-/**
  * Die Force, in deren Teilbaum die Selection mit `selectionId` liegt — auf
  * beliebiger Tiefe. Trägt keine Force die Selection, ist das Ergebnis `null`.
  *
@@ -180,21 +172,6 @@ export function countSelections(selections, { includeChildSelections = false, pr
       : 0;
     return sum + ownCount + nestedCount;
   }, 0);
-}
-
-/**
- * Zählt wie {@link countSelections}, aber im Teilbaum *einer* Selection statt in
- * einem Wald: die Selection selbst zählt mit, ihre Nachfahren nur, wenn
- * `includeChildSelections` gesetzt ist. Zählendes Gegenstück zu
- * {@link someSelectionInSubtree} und dieselbe Tiefenregel wie überall sonst —
- * die Option entscheidet allein darüber, ob unterhalb der Wurzel weitergezählt
- * wird.
- *
- * @param {import('../types.js').Selection|null|undefined} selection
- * @returns {number}
- */
-export function countSelectionsInSubtree(selection, options = {}) {
-  return countSelections(selection ? [selection] : NO_SELECTIONS, options);
 }
 
 /**

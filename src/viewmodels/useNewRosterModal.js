@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { describeSystem } from '../evaluation/evaluationCache';
 import { costLimitLabelOf } from '../evaluation/costDisplays';
-import { DEFAULT_ROSTER_COST_LIMIT } from '../utils/rosterDefaults';
+import { DEFAULT_ROSTER_COST_LIMIT } from '../roster/rosterDefaults';
 
 /**
  * ViewModel des Modals „Neue Armeeliste" (ADR-0038).

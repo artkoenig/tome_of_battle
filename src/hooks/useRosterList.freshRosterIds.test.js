@@ -5,10 +5,9 @@ import { saveRoster, deleteRoster } from '../db/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
-  compressXmlToRosz,
-  decompressRoszToXml,
   MissingSystemError,
-} from '../utils/rosterSerialization';
+} from '../roster/rosterSerialization';
+import { readRosterText, buildRosterFile } from '../services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 
 /**
@@ -33,12 +32,15 @@ const { MissingSystemErrorMock } = vi.hoisted(() => {
   return { MissingSystemErrorMock };
 });
 
-vi.mock('../utils/rosterSerialization', () => ({
+vi.mock('../roster/rosterSerialization', () => ({
   MissingSystemError: MissingSystemErrorMock,
   exportRosterToXml: vi.fn(() => '<xml/>'),
   importRosterFromXml: vi.fn(),
-  compressXmlToRosz: vi.fn(() => Promise.resolve(new Blob())),
-  decompressRoszToXml: vi.fn(() => Promise.resolve('<xml/>')),
+}));
+
+vi.mock('../services/rosterTransfer', () => ({
+  readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
+  buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));
 
 vi.mock('../roster', () => ({

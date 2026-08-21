@@ -351,7 +351,7 @@ export function resolveEntry(system, entry, catalogueId) {
   return resolved;
 }
 
-export function findPublicationById(system, publicationId, catalogueId = null) {
+function findPublicationById(system, publicationId, catalogueId = null) {
   if (!system || !publicationId) return null;
   
   // 1. Search in the gameSystem publications
@@ -382,7 +382,7 @@ export function findPublicationById(system, publicationId, catalogueId = null) {
   return null;
 }
 
-export function getPublicationRef(system, publicationId, page, catalogueId = null) {
+function getPublicationRef(system, publicationId, page, catalogueId = null) {
   if (!publicationId && !page) return '';
   
   let pubName = '';

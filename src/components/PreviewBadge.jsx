@@ -1,5 +1,5 @@
 import React from 'react';
-import { isPreviewHost } from '../utils/previewHost.js';
+import { isPreviewHost } from './previewHost.js';
 import { useTranslation } from '../i18n/useTranslation';
 
 export default function PreviewBadge() {

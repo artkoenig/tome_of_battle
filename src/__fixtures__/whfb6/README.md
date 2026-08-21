@@ -56,7 +56,7 @@ Normalisierung aus Issue 02 durchläuft, statt sie mit vorbereinigten Daten zu u
 ## Warum Ogre Kingdoms
 
 Kleinste der drei WHFB6-Kataloge, die bereits an anderer Stelle im Testkorpus verwendet werden
-(`src/utils/rosterSerialization.integration.test.js`), trägt beide Whitespace-Fälle und deckt
+(`src/roster/rosterSerialization.integration.test.js`), trägt beide Whitespace-Fälle und deckt
 sowohl eine primäre `Heroes`- als auch eine nicht-primäre `Characters`-Kategorie ab — beides
 prüft `ui.test.js` explizit.
 

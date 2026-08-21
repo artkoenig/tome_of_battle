@@ -103,7 +103,7 @@ function raisesMaxAboveSingleChoice(modifier, maxLimit) {
  * Ob **irgendein** Modifikator der Gruppe eine ihrer `max`-Grenzen ueber 1 heben
  * kann — rein statisch, unabhaengig davon, ob seine Bedingung gerade haelt.
  */
-export function canGroupMaxBeRaisedAboveSingleChoice(groupDef) {
+function canGroupMaxBeRaisedAboveSingleChoice(groupDef) {
   const maxLimits = maxLimitsOf(groupDef);
   if (maxLimits.length === 0) return false;
   const modifiers = [...groupModifiersOf(groupDef)];

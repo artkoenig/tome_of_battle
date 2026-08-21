@@ -65,7 +65,7 @@ vi.mock('../../roster', async () => ({
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
   isIndependentSubUnit: (await vi.importActual('../../roster/subUnit')).isIndependentSubUnit,
   childSelectionsOf: (await vi.importActual('../../roster/rosterTree')).childSelectionsOf,
-  groupProfilesByType: (await vi.importActual('../../roster/rulesEvaluator')).groupProfilesByType,
+  groupProfilesByType: (await vi.importActual('../../roster/profileGrouping')).groupProfilesByType,
   ...(await vi.importActual('../../roster/constants')),
 }));
 

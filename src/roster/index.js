@@ -23,14 +23,10 @@ export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalo
 export {
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
 } from './costTypeLabels.js';
-export {
-  classifyGroupItem, classifyStandaloneOption
-} from './selectionBehavior.js';
 export { reconcileImportedSelectionIds, syncRosterSelectionsWithSystem } from './rosterSync.js';
 export { findForceEntryById } from './forceEntries.js';
-export { isIndependentSubUnit } from './subUnit.js';
 export { getUnitOptions } from './optionsCollector.js';
-export { groupProfilesByType } from './rulesEvaluator.js';
+export { groupProfilesByType } from './profileGrouping.js';
 export { createSelectionFromDef } from './selectionFactory.js';
 export { MODEL_COUNT_PROFILE_TYPES, UPGRADE_DETAILS_KEYWORDS } from './constants.js';
 export { withAddedInstance, withChangedOptionCount, withoutInstance } from './subSelectionEditing.js';

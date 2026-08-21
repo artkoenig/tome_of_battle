@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { useRoster } from './useRoster';
 import { processImportedData } from '../parser/xmlParser';
-import { buildRoster } from '../utils/createRoster';
+import { buildRoster } from '../roster/createRoster';
 
 /**
  * Issue 0145, increment 1, Kriterium 1 — a mandatory member is created at any

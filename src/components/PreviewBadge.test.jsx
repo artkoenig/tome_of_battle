@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import PreviewBadge from './PreviewBadge';
 
 const isPreviewHostMock = vi.fn();
-vi.mock('../utils/previewHost.js', () => ({
+vi.mock('./previewHost.js', () => ({
   isPreviewHost: (...args) => isPreviewHostMock(...args),
 }));
 

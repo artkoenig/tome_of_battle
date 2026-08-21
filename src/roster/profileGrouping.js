@@ -1,51 +1,23 @@
 import {
   MODEL_PROFILE_INCLUDED_KEYWORDS,
-  MODEL_PROFILE_EXCLUDED_KEYWORDS,
-  UPGRADE_CLASSIFICATION_KEYWORDS
+  MODEL_PROFILE_EXCLUDED_KEYWORDS
 } from './constants.js';
+
+/**
+ * Gruppierung der Profile einer Auswahl für die tabellarische Anzeige.
+ * Reine Struktur: das Modul liest Profil-Typnamen und ordnet sie — es wertet
+ * nichts aus (ADR-0034: Auswertung ist Sache des Berichts).
+ */
 
 /**
  * Filters a list of profiles to include only unit models/creatures.
  */
-export function extractModelProfiles(profiles) {
+function extractModelProfiles(profiles) {
   if (!Array.isArray(profiles)) return [];
   return profiles.filter(p => {
     const typeLower = p.profileTypeName?.toLowerCase() || '';
     return MODEL_PROFILE_INCLUDED_KEYWORDS.some(t => typeLower.includes(t)) && 
            !MODEL_PROFILE_EXCLUDED_KEYWORDS.some(t => typeLower.includes(t));
-  });
-}
-
-/**
- * Filters a list of profiles to include only upgrades/magic items/weapons.
- */
-export function extractUpgradeProfiles(profiles) {
-  if (!Array.isArray(profiles)) return [];
-  return profiles.filter(p => {
-    const typeLower = p.profileTypeName?.toLowerCase() || '';
-    return UPGRADE_CLASSIFICATION_KEYWORDS.some(t => typeLower.includes(t));
-  });
-}
-
-/**
- * Filters a list of profiles to include only weapons.
- */
-export function extractWeaponProfiles(profiles) {
-  if (!Array.isArray(profiles)) return [];
-  return profiles.filter(p => {
-    const typeLower = p.profileTypeName?.toLowerCase() || '';
-    return typeLower.includes('weapon') || typeLower.includes('waffe');
-  });
-}
-
-/**
- * Filters a list of profiles to include only armours.
- */
-export function extractArmourProfiles(profiles) {
-  if (!Array.isArray(profiles)) return [];
-  return profiles.filter(p => {
-    const typeLower = p.profileTypeName?.toLowerCase() || '';
-    return typeLower.includes('armour') || typeLower.includes('rüstung');
   });
 }
 

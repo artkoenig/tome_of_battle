@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import {
-  resolveEntry, classifyGroupItem,
+  resolveEntry,
   resolveCostLimitTypeId, resolveCostLimitLabel,
 } from '../../roster';
+import { classifyGroupItem } from './selectionBehavior.js';
 import { findChildSlot } from '../../evaluation/slotLookups';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 import {

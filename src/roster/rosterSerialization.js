@@ -1,11 +1,20 @@
-import JSZip from 'jszip';
-import {
-  findEntryInSystem, resolveEntry, childSelectionsOf,
-  mapSelectionTree, isIndependentSubUnit, resolveCostLimitTypeId
-} from '../roster';
+import { RosterFileError } from '../services/rosterTransfer.js';
+import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
+import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
+import { isIndependentSubUnit } from './subUnit.js';
+import { resolveCostLimitTypeId } from './costTypeLabels.js';
 import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
-import { t } from '../i18n/i18nStore.js';
+
+/**
+ * `.ros`-Serialisierung des Schreibmodells (ADR-0037: Fachlogik).
+ *
+ * Die Schicht übersetzt nicht: ein Fehler trägt seinen Übersetzungsschlüssel
+ * (`messageKey`) und dessen Platzhalter (`messageParams`) und wird erst in der
+ * Oberfläche formuliert (`describeRosterFileError` in `src/hooks/`).
+ * Das Ein- und Auspacken der `.rosz`-Datei ist Datei-Ein-/Ausgabe und liegt in
+ * der Datenschicht (`src/services/rosterTransfer.js`).
+ */
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.
 const COST_DECIMAL_PRECISION = 6;
@@ -58,11 +67,14 @@ function escapeXml(unsafe) {
 
 /**
  * Custom error class for when a roster is imported but its corresponding game system is missing.
+ * Trägt den Übersetzungsschlüssel statt des Textes — formuliert wird in der Oberfläche.
  */
 export class MissingSystemError extends Error {
   constructor(systemName, systemId) {
-    super(t('serialization.missingSystem', { name: systemName, id: systemId }));
+    super('serialization.missingSystem');
     this.name = 'MissingSystemError';
+    this.messageKey = 'serialization.missingSystem';
+    this.messageParams = { name: systemName, id: systemId };
     this.systemName = systemName;
     this.systemId = systemId;
   }
@@ -210,86 +222,6 @@ function resolveSelectionEntry(system, selection, catalogueId) {
 }
 
 /**
- * Compresses raw XML text into a BattleScribe-compliant .rosz (ZIP) Blob.
- * @param {string} fileName 
- * @param {string} xmlText 
- * @returns {Promise<Blob>} ZIP Blob
- */
-export async function compressXmlToRosz(fileName, xmlText) {
-  const zip = new JSZip();
-  const baseName = fileName.replace(/\.rosz$/i, '').replace(/\.ros$/i, '');
-  zip.file(`${baseName}.ros`, xmlText);
-  // Explicit octet-stream avoids browsers appending a ".zip" suffix to the
-  // ".rosz" download name based on JSZip's default "application/zip" blob type.
-  return await zip.generateAsync({ type: 'blob', mimeType: 'application/octet-stream' });
-}
-
-/**
- * The local file header signature every ZIP archive starts with ("PK\x03\x04"). It tells
- * an archive apart from raw .ros XML, so a failure to unpack it can be reported as real
- * damage instead of being mistaken for "this file was never a ZIP".
- */
-const ZIP_FILE_SIGNATURE = Object.freeze([0x50, 0x4b, 0x03, 0x04]);
-
-const ROSTER_XML_EXTENSION = '.ros';
-
-/**
- * Whether the blob starts with the ZIP local file header signature. Only the first
- * bytes are read, so the check stays cheap regardless of the archive's size.
- */
-async function hasZipFileSignature(fileBlob) {
-  const header = new Uint8Array(
-    await fileBlob.slice(0, ZIP_FILE_SIGNATURE.length).arrayBuffer()
-  );
-  return ZIP_FILE_SIGNATURE.every((byte, index) => header[index] === byte);
-}
-
-function readBlobAsText(fileBlob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(fileBlob);
-  });
-}
-
-/**
- * Unpacks a .rosz archive and returns the contained roster XML.
- * @throws {Error} when the archive is damaged or carries no .ros entry.
- */
-async function extractRosterXmlFromZip(fileBlob) {
-  let zip;
-  try {
-    zip = await JSZip.loadAsync(fileBlob);
-  } catch (error) {
-    // The signature identified this as a ZIP, so a load failure is genuine damage
-    // and must not be papered over by the raw-XML fallback below.
-    throw new Error(`${t('serialization.damagedArchive')} (${error.message})`);
-  }
-
-  const rosFileName = Object.keys(zip.files).find(name => name.endsWith(ROSTER_XML_EXTENSION));
-  if (!rosFileName) {
-    throw new Error(t('serialization.missingRosterEntry', { extension: ROSTER_XML_EXTENSION }));
-  }
-  return zip.files[rosFileName].async('text');
-}
-
-/**
- * Decompresses a BattleScribe .rosz ZIP Blob (or handles raw .ros XML directly) and returns
- * the XML text. Which of the two it is, is decided by the ZIP signature rather than by a
- * failed unpacking attempt — so a damaged archive surfaces as an error instead of being
- * read as text and failing later with a misleading "invalid file format".
- * @param {Blob|File} fileBlob
- * @returns {Promise<string>} XML text
- */
-export async function decompressRoszToXml(fileBlob) {
-  if (await hasZipFileSignature(fileBlob)) {
-    return extractRosterXmlFromZip(fileBlob);
-  }
-  return readBlobAsText(fileBlob);
-}
-
-/**
  * Deserializes raw BattleScribe XML text into our internal Roster object.
  * Maps XML node attributes and tags recursively, verifying the presence of the Game System.
  * Generates fresh unique UUIDs to prevent clashing with local rosters in IndexedDB.
@@ -304,7 +236,7 @@ export function importRosterFromXml(xmlText, systems) {
   const root = doc.documentElement;
   
   if (root.nodeName !== 'roster') {
-    throw new Error(t('serialization.invalidFormat'));
+    throw new RosterFileError('serialization.invalidFormat');
   }
 
   const systemId = root.getAttribute('gameSystemId');

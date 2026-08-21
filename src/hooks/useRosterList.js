@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { saveRoster, deleteRoster } from '../services/rosterStore';
-import { readRosterFile, buildRosterFile, MissingSystemError } from '../services/rosterTransfer';
-import { buildRoster } from '../utils/createRoster';
+import { readRosterText, buildRosterFile } from '../services/rosterTransfer';
+import {
+  exportRosterToXml, importRosterFromXml, MissingSystemError,
+} from '../roster/rosterSerialization';
+import { buildRoster } from '../roster/createRoster';
 import { VIEWS } from '../constants/views';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 import { t } from '../i18n/i18nStore';
@@ -39,6 +42,18 @@ const ERROR_MESSAGE_KEY = Object.freeze({
  *   showToast: (message: string, type?: string) => void,
  * }} deps
  */
+/**
+ * Der Nutzertext eines Fehlers aus Datei-Austausch oder Serialisierung. Beide
+ * Schichten liegen unter der Oberfläche und übersetzen deshalb nicht (ADR-0037,
+ * `keine-i18n-unter-ui`): sie tragen `messageKey`/`messageParams` und — wo es
+ * eine technische Ergänzung gibt — `detail`. Formuliert wird genau hier.
+ */
+function describeRosterFileError(err) {
+  if (!err?.messageKey) return err?.message;
+  const message = t(err.messageKey, err.messageParams);
+  return err.detail ? `${message} (${err.detail})` : message;
+}
+
 export default function useRosterList({ systems, rosters, setRosters, reloadData, navigate, showToast }) {
   const [isNewRosterModalOpen, setIsNewRosterModalOpen] = useState(false);
   const [rosterToDelete, setRosterToDelete] = useState(null);
@@ -154,7 +169,8 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
 
   const importRoster = async (file) => {
     try {
-      let newRoster = await readRosterFile(file, systems);
+      const xmlText = await readRosterText(file);
+      let newRoster = importRosterFromXml(xmlText, systems);
 
       const system = systems.find(s => s.id === newRoster.systemId);
       if (system) {
@@ -170,9 +186,11 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     } catch (err) {
       console.error('Import error:', err);
       if (err instanceof MissingSystemError) {
-        showToast(err.message, 'error');
+        showToast(describeRosterFileError(err), 'error');
       } else {
-        showToast(t('rosterList.importError', { message: err.message || t('rosterList.invalidFormat') }), 'error');
+        showToast(t('rosterList.importError', {
+          message: describeRosterFileError(err) || t('rosterList.invalidFormat'),
+        }), 'error');
       }
     }
   };
@@ -185,7 +203,8 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         return;
       }
 
-      const { blob, fileName } = await buildRosterFile(roster, system);
+      const xmlText = exportRosterToXml(roster, system);
+      const { blob, fileName } = await buildRosterFile(roster.name, xmlText);
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -197,7 +216,9 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      showToast(t('rosterList.exportError', { message: err.message || t('rosterList.exportFailed') }), 'error');
+      showToast(t('rosterList.exportError', {
+        message: describeRosterFileError(err) || t('rosterList.exportFailed'),
+      }), 'error');
     }
   };
 

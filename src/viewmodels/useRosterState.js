@@ -37,7 +37,7 @@ import { useUndoableState } from '../hooks/useUndoableState';
 import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
-} from '../utils/persistenceFailure';
+} from '../hooks/persistenceFailure';
 import '../types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;

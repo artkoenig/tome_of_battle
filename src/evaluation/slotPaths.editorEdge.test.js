@@ -16,7 +16,7 @@
  *   ueber `RosterEditor` an jede Einheitenkarte weiter; `PlayMode.jsx:29` liest
  *   denselben Hook.
  * - `evaluateAppRoster(system, roster)` — der Rand des **`.ros`-Exports**:
- *   `src/utils/rosterSerialization.js:88` loest darueber Namen und Kosten je
+ *   `src/roster/rosterSerialization.js:88` loest darueber Namen und Kosten je
  *   Selektion auf.
  *
  * Beide Raender bauen Adapter und `evaluate` heute **getrennt** zusammen. Diese

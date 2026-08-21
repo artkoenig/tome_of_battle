@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import usePlayState from './usePlayState';
-import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../utils/persistenceFailure';
+import { PERSISTENCE_FAILURE_MESSAGE_KEY } from './persistenceFailure';
 import { t } from '../i18n/i18nStore';
 
 describe('usePlayState Hook', () => {

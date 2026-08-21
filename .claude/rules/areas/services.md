@@ -29,9 +29,14 @@ eine Änderungs-Kanal: `rosterStore.js`, `systemLibrary.js`, `settings.js`, `cat
   erweitern.
 - Die Schicht kennt `src/i18n/` nicht (`keine-i18n-unter-ui`) und greift nicht auf
   `src/roster/`/`src/evaluation/` zurück (`daten-kein-rueckgriff`). Deshalb liefert
-  `rosterTransfer.readRosterFile` das Roster **so, wie die Datei es beschreibt**; der Abgleich
-  mit dem installierten System bleibt beim Aufrufer. Nur direkte Kanten werden gemessen, ein
-  Umweg über `src/utils/` ist regelkonform und trotzdem eine Rückkopplung — sparsam einsetzen.
+  `rosterTransfer` nur den Datei-Inhalt **so, wie die Datei ihn trägt**; der Abgleich
+  mit dem installierten System bleibt beim Aufrufer: `readRosterText` liefert den XML-Text,
+  gedeutet wird er von `src/roster/rosterSerialization.js`, zusammengesetzt in
+  `useRosterList`. `src/utils/` als regelkonformer Umweg gibt es seit Issue 0169 nicht mehr —
+  beide Schichtregeln sind blockierend.
+- Ein Fehler dieser Schicht trägt seinen Übersetzungsschlüssel, nie den Text: `rosterFileError`
+  in `rosterTransfer.js` setzt `messageKey`/`messageParams`/`detail`, und
+  `describeRosterFileError` in `src/hooks/useRosterList.js` formuliert ihn.
 - Tests hier mocken die `src/db/`-Module mit `vi.mock` statt IndexedDB hochzufahren (es gibt kein
   globales `fake-indexeddb`-Setup). Ein bestehender Test eines Verbrauchers, der `../db/…`
   mockt, bleibt dadurch grün: die Fassade importiert dieselbe Modul-Id.

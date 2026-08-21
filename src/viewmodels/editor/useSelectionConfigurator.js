@@ -3,9 +3,10 @@ import {
   resolveEntry,
   getUnitOptions,
   resolveCostLimitTypeId, resolveCostLimitLabel, resolveCostTypeLabel,
-  countSelections, classifyStandaloneOption,
+  countSelections,
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../roster';
+import { classifyStandaloneOption } from './selectionBehavior.js';
 import { childSlotsOf } from '../../evaluation/slotLookups';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 

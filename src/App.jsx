@@ -15,7 +15,7 @@ import useToast from './hooks/useToast';
 import useAppNavigation from './hooks/useAppNavigation';
 import useAppData from './hooks/useAppData';
 import useRosterList from './hooks/useRosterList';
-import { getDiffChanges } from './utils/releaseDiff';
+import { getDiffChanges } from './viewmodels/releaseDiff';
 import { VIEWS, isImmersiveView } from './constants/views';
 import { useTranslation } from './i18n/useTranslation';
 import { Analytics } from '@vercel/analytics/react';

@@ -5,7 +5,7 @@ import path from 'path';
 
 import { useRosterState } from './useRosterState';
 import { processImportedData } from '../parser/xmlParser';
-import { buildRoster } from '../utils/createRoster';
+import { buildRoster } from '../roster/createRoster';
 
 /**
  * Issue 0162, AC1 and AC2 — `useRosterState` holds the roster, the UI selection

@@ -35,8 +35,8 @@ const COMPONENTS_LAYER = '^src/components/';
 const EVALUATOR_LAYER = '^src/evaluator/';
 const EVALUATOR_FACADE = '^src/evaluator/evaluator\\.js$';
 
-// Das Schreibmodell des App-Rosters (Issue 0121, Task 8): App-Schicht wie
-// src/utils/. Der Evaluator bleibt in beide Richtungen davon isoliert
+// Das Schreibmodell des App-Rosters (Issue 0121, Task 8). Der Evaluator bleibt
+// in beide Richtungen davon isoliert
 // (Reinraum, ADR-0030/0034), und die Auswertungs-Bruecke src/evaluation/
 // braucht es nicht -- sie uebersetzt nur die Eingaberichtung.
 const ROSTER_LAYER = '^src/roster/';
@@ -45,7 +45,9 @@ const EVALUATION_LAYER = '^src/evaluation/';
 // Die drei Schichten aus ADR-0037: UI -> Fachlogik -> Daten. Der Pfeil ist die
 // erlaubte Richtung; jeder Rueckgriff von tief nach hoch ist verboten. Die
 // Regeln entstehen als "warn" und werden auf "error" gezogen, sobald die Phase
-// gemergt ist, die ihre Verstoesse abbaut (Issues 0161-0171).
+// gemergt ist, die ihre Verstoesse abbaut (Issues 0161-0171). Seit Issue 0169
+// blockieren "fachlogik-kein-rueckgriff" und "keine-i18n-unter-ui": unterhalb
+// der Oberflaeche wird nicht mehr uebersetzt und nicht zurueckgegriffen.
 
 // Darstellung und Interaktion. src/hooks/ steht in der ADR-Tabelle nicht
 // eigens, gehoert aber zur UI: die dort gemessenen Direktkanten nach src/db/
@@ -175,7 +177,7 @@ module.exports = {
       comment:
         'ADR-0037: die Fachlogik traegt keine Darstellung. Sie darf die ' +
         'Datenschicht nutzen, aber nie zurueck in die Oberflaeche greifen.',
-      severity: 'warn',
+      severity: 'error',
       from: { path: DOMAIN_LAYER, pathNot: TEST_FILE },
       to: { path: UI_LAYER },
     },
@@ -185,7 +187,7 @@ module.exports = {
         'ADR-0037: uebersetzte Texte entstehen in der Oberflaeche. Wer in ' +
         'Fachlogik oder Datenschicht src/i18n/ importiert, formuliert dort eine ' +
         'Anzeige und bindet die Schicht an eine Sprache.',
-      severity: 'warn',
+      severity: 'error',
       from: { path: [...DOMAIN_LAYER, ...DATA_LAYER], pathNot: TEST_FILE },
       to: { path: I18N_LAYER },
     },

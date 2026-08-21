@@ -1,7 +1,7 @@
 import { test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML, parseCatalogueXML } from './xmlParser';
-import { groupProfilesByType } from '../roster/rulesEvaluator';
+import { groupProfilesByType } from '../roster/profileGrouping';
 import { extraResourceTotalsOf } from '../evaluation/costDisplays';
 
 beforeAll(() => {

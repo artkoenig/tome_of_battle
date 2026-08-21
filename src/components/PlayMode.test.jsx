@@ -70,11 +70,7 @@ vi.mock('../roster', async (importOriginal) => ({
   isListRuleSelection: () => false,
 }));
 
-vi.mock('../roster/rulesEvaluator', () => ({
-  extractModelProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Model')),
-  extractUpgradeProfiles: vi.fn().mockImplementation((profiles) => profiles),
-  extractWeaponProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Weapon' || p.profileTypeName === 'Waffe')),
-  extractArmourProfiles: vi.fn().mockImplementation((profiles) => profiles.filter(p => p.profileTypeName === 'Armour' || p.profileTypeName === 'Rüstung')),
+vi.mock('../roster/profileGrouping', () => ({
   groupProfilesByType: vi.fn().mockImplementation((profiles) => {
     if (!Array.isArray(profiles)) return [];
     const modelProfiles = profiles.filter(p => p.profileTypeName === 'Model');

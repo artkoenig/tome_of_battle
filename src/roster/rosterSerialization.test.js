@@ -1,12 +1,9 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import crypto from 'crypto';
-import JSZip from 'jszip';
 import {
   exportRosterToXml,
   importRosterFromXml,
-  compressXmlToRosz,
-  decompressRoszToXml,
   MissingSystemError
 } from './rosterSerialization.js';
 import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
@@ -394,45 +391,6 @@ describe('Roster Serialization & Deserialization', () => {
     expect(bully2).toBeUndefined();
   });
 
-  test('decompressing and compressing ZIP files (JSZip layer)', async () => {
-    const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
-    
-    // Compress to ZIP
-    const zipBlob = await compressXmlToRosz('my_test_roster', xmlText);
-    expect(zipBlob).toBeDefined();
-    expect(zipBlob.size).toBeGreaterThan(0);
-    
-    // Decompress ZIP back to XML
-    const decompressedXml = await decompressRoszToXml(zipBlob);
-    expect(decompressedXml).toBe(xmlText);
-  });
-
-  test('decompressing unzipped raw XML falls back to reading as text', async () => {
-    const xmlText = '<?xml version="1.0"?><roster name="Raw XML Roster"></roster>';
-    const blob = new Blob([xmlText], { type: 'text/xml' });
-
-    const decompressedXml = await decompressRoszToXml(blob);
-    expect(decompressedXml).toBe(xmlText);
-  });
-
-  // A truncated .rosz used to be mistaken for "this was never a ZIP", read as text and
-  // then fail as "invalid file format" — a message pointing away from the real cause.
-  test('a damaged ZIP archive is reported as damaged, not read as raw text', async () => {
-    const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
-    const zipBlob = await compressXmlToRosz('my_test_roster', xmlText);
-    const truncatedZip = zipBlob.slice(0, Math.floor(zipBlob.size / 2));
-
-    await expect(decompressRoszToXml(truncatedZip)).rejects.toThrow(/beschädigt/);
-  });
-
-  test('a ZIP archive without a .ros entry is reported instead of read as raw text', async () => {
-    const zip = new JSZip();
-    zip.file('notes.txt', 'kein Roster');
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-
-    await expect(decompressRoszToXml(zipBlob)).rejects.toThrow(/\.ros/);
-  });
-
   test('throws MissingSystemError if game system is not found in systems database', () => {
     const xmlText = exportRosterToXml(mockRoster, mockSystems[0]);
     
@@ -444,13 +402,16 @@ describe('Roster Serialization & Deserialization', () => {
     } catch (err) {
       expect(err.systemId).toBe('system-id-123');
       expect(err.systemName).toBe('Warhammer Fantasy 6th Edition');
-      expect(err.message).toContain('Warhammer Fantasy 6th Edition');
+      // Die Fachlogik übersetzt nicht (ADR-0037): der Fehler trägt den
+      // Schlüssel und seine Platzhalter, formuliert wird in der Oberfläche.
+      expect(err.messageKey).toBe('serialization.missingSystem');
+      expect(err.messageParams).toEqual({ name: 'Warhammer Fantasy 6th Edition', id: 'system-id-123' });
     }
   });
 
   test('throws Error for malformed XML or incorrect root elements', () => {
     const malformedXml = '<?xml version="1.0"?><wrongRoot name="Malformed Roster"></wrongRoot>';
-    expect(() => importRosterFromXml(malformedXml, mockSystems)).toThrow('Ungültiges Dateiformat');
+    expect(() => importRosterFromXml(malformedXml, mockSystems)).toThrow('serialization.invalidFormat');
   });
 });
 

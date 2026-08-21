@@ -125,7 +125,7 @@ ist ein Fehler — sie erlaubt den Rückfall.
 - **Neutral:** Die Verzeichnisse behalten zunächst ihre Namen. Eine Umbenennung nach
   `src/ui|domain|data|shared` wäre ein Diff über rund 400 Dateien ohne Verhaltensänderung und
   steht deshalb als letzte, ausdrücklich optionale Phase am Ende.
-- **Neutral:** `src/utils/` gehört in keine der drei Schichten und wird beim Abbau der
+- **Neutral:** `src/utils/` gehörte in keine der drei Schichten und ist mit Issue 0169 aufgelöst; historisch war der Abbau der
   Doppelungen aufgelöst.
 
 ## Vor- und Nachteile der Optionen

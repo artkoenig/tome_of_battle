@@ -5,7 +5,7 @@ import path from 'path';
 
 import { useRosterReportModel } from './rosterReport';
 import { processImportedData } from '../parser/xmlParser';
-import { buildRoster } from '../utils/createRoster';
+import { buildRoster } from '../roster/createRoster';
 
 /**
  * Issue 0162, AC5 — der Bericht, den der Bericht-Kontext aus ADR-0038

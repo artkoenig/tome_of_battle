@@ -5,10 +5,9 @@ import { saveRoster, deleteRoster } from '../db/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
-  compressXmlToRosz,
-  decompressRoszToXml,
   MissingSystemError,
-} from '../utils/rosterSerialization';
+} from '../roster/rosterSerialization';
+import { readRosterText, buildRosterFile } from '../services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../roster';
 
 vi.mock('../db/database', () => ({
@@ -21,12 +20,15 @@ const { MissingSystemErrorMock } = vi.hoisted(() => {
   return { MissingSystemErrorMock };
 });
 
-vi.mock('../utils/rosterSerialization', () => ({
+vi.mock('../roster/rosterSerialization', () => ({
   MissingSystemError: MissingSystemErrorMock,
   exportRosterToXml: vi.fn(() => '<xml/>'),
   importRosterFromXml: vi.fn(),
-  compressXmlToRosz: vi.fn(() => Promise.resolve(new Blob())),
-  decompressRoszToXml: vi.fn(() => Promise.resolve('<xml/>')),
+}));
+
+vi.mock('../services/rosterTransfer', () => ({
+  readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
+  buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));
 
 vi.mock('../roster', () => ({
@@ -222,7 +224,7 @@ describe('useRosterList — Import', () => {
   });
 
   it('meldet ein fehlendes Spielsystem über die MissingSystemError-Meldung', async () => {
-    decompressRoszToXml.mockRejectedValueOnce(new MissingSystemError('System X fehlt'));
+    readRosterText.mockRejectedValueOnce(new MissingSystemError('System X fehlt'));
     const { result, deps } = setup();
 
     await act(async () => {
@@ -234,7 +236,7 @@ describe('useRosterList — Import', () => {
 
   it('meldet ein ungültiges Dateiformat generisch', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    decompressRoszToXml.mockRejectedValueOnce(new Error('kaputt'));
+    readRosterText.mockRejectedValueOnce(new Error('kaputt'));
     const { result, deps } = setup();
 
     await act(async () => {
@@ -270,7 +272,7 @@ describe('useRosterList — Export', () => {
     });
 
     expect(exportRosterToXml).toHaveBeenCalledWith(roster, system);
-    expect(compressXmlToRosz).toHaveBeenCalled();
+    expect(buildRosterFile).toHaveBeenCalled();
     expect(createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:url');

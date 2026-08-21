@@ -102,3 +102,8 @@ never import a component. Run it with `forge-test --run src/viewmodels`.
   the derivation does, not what the engine computes. Where the hand-built system resolves no
   frame, `getUnitOptions` returns nothing and the configurator keeps every group anchor as an
   empty section — expect those in an assertion over `sections`.
+- `editor/selectionBehavior.js` is the one **display** classifier of an option row
+  (`classifyGroupItem`, `classifyStandaloneOption`: mandatory/met, radio, binary, stepper). It is
+  pure and takes only values the report already measured — it re-reads no catalogue. The
+  catalogue-side twin of those questions lives once, in the report
+  (`src/evaluator/groupBehavior.js`); a second reading here would drift from it.

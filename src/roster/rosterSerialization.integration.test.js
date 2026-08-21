@@ -9,7 +9,7 @@ import {
   reconcileImportedSelectionIds,
   syncRosterSelectionsWithSystem,
   resolveEntry
-} from '../roster/index.js';
+} from './index.js';
 import { evaluateAppRoster } from '../evaluation/evaluationCache.js';
 import { getUnitOptions } from '../roster/optionsCollector.js';
 
@@ -54,7 +54,7 @@ function buildSystem(catFile) {
 
 // Mirrors the app's import flow: parse → reconcile option ids → sync names.
 function importFixture(system, fixture) {
-  const ros = fs.readFileSync(path.join('src/utils/__fixtures__', fixture), 'utf8');
+  const ros = fs.readFileSync(path.join('src/roster/__fixtures__', fixture), 'utf8');
   const imported = importRosterFromXml(ros, [system]);
   const reconciled = reconcileImportedSelectionIds(imported, system);
   return syncRosterSelectionsWithSystem(reconciled, system);

@@ -17,7 +17,7 @@ file: `forge-test --run src/hooks/<file>.test.js`.
   real catalogue XML, unmocked `resolveEntry`/`createSelectionFromDef`, the
   real `useEvaluation` — loads its fixture with `fs.readFileSync` +
   `processImportedData` and builds the fresh roster with `buildRoster`
-  (`src/utils/createRoster.js`); nothing about the roster or the catalogue is
+  (`src/roster/createRoster.js`); nothing about the roster or the catalogue is
   hand-built. See `useRoster.costedMandatoryAutoAdd.test.js` (synthetic
   catalogue built to a real entry's exact shape) and
   `useRoster.nestedMandatoryGroups.test.js` (a real fixture catalogue, read

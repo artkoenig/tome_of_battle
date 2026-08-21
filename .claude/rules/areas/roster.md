@@ -12,8 +12,10 @@ evaluator. `src/db/` persists it in IndexedDB.
 
 - What `src/roster/` still is: catalogue resolution (`catalogResolver.js`), the selection factory
   and sub-selection editing, the tree helpers, catalogue sync, the option **structure** collector
-  (`optionsCollector.js` — membership and order, no visibility) and the cost-type labels
-  (`costTypeLabels.js`). Evaluation is **not** part of it, and since Issue 0157 no module here
+  (`optionsCollector.js` — membership and order, no visibility), the cost-type labels
+  (`costTypeLabels.js`), the `.ros` serialization (`rosterSerialization.js`) and the roster
+  factory plus its defaults (`createRoster.js`, `rosterDefaults.js`, here since Issue 0169
+  dissolved `src/utils/`). Evaluation is **not** part of it, and since Issue 0157 no module here
   performs any: violations, availability, costs, profiles, visibility, the static entry
   classification **and the obligation a raise carries** all come from the report (ADR-0034).
   Nothing in this folder counts a roster, evaluates a modifier or resolves a query any more.
@@ -32,7 +34,25 @@ evaluator. `src/db/` persists it in IndexedDB.
 - No import of `src/evaluator/**` from `src/roster/**`, in either direction; the rule is blocking
   in `forge-lint`. Anything that needs both belongs in `src/evaluation/`.
 - `src/roster/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
-  a module.
+  a module. A re-export nobody imports makes `npm run knip` red; import from the module directly
+  and drop the barrel line in the same change.
+- The folder is Fachlogik and therefore **translates nothing** (`keine-i18n-unter-ui`, `error`
+  since Issue 0169). An error carries `messageKey`/`messageParams` (`MissingSystemError`,
+  `RosterFileError` from `src/services/rosterTransfer.js`); `describeRosterFileError` in
+  `src/hooks/useRosterList.js` is the one place that formulates them. A test here asserts on the
+  key, never on German text.
+- `rosterSerialization.js` reads the report (`evaluateAppRoster`) for names and costs and only
+  produces/consumes XML **text**. Packing and unpacking the `.rosz` archive is file I/O and lives
+  in `src/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
+  in `useRosterList.js`, because the data layer may not reach back into this one.
+- A UI behaviour model does not belong here: `classifyGroupItem`/`classifyStandaloneOption` moved
+  to `src/viewmodels/editor/selectionBehavior.js` with Issue 0169. The catalogue-side answers to
+  the same questions live once, in the report (`src/evaluator/groupBehavior.js`).
+- Gone with Issue 0169 as well, do not resurrect: `battlescribeConstants.js` (`isCostField`,
+  `isEntryScope`, `isSharedQuery`, `isRosterLimitField` — scope/shared reading is the evaluator's),
+  `someSelectionInSubtree`/`countSelectionsInSubtree` in `rosterTree.js`, and the profile
+  extractors beside `groupProfilesByType`. `rulesEvaluator.js` is now `profileGrouping.js` — the
+  name says what it does, and nothing in it evaluates.
 - `evaluateAppRoster` in `src/evaluation/` is the single memoized seam; adding a second call path
   into the evaluator silently defeats `evaluationCache.js`.
 - `evaluationCache.js` caches on **three** levels, all WeakMaps over object identity: the prepared

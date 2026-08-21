@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
-} from '../utils/persistenceFailure';
-import { createInitialGameState } from '../utils/rosterDefaults';
+} from './persistenceFailure';
+import { createInitialGameState } from '../roster/rosterDefaults';
 import '../types.js';
 
 /**

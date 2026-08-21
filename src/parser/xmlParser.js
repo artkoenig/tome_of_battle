@@ -192,7 +192,7 @@ function parseCosts(el) {
  * source of truth so the engine's cost/selection distinction
  * and this parser default cannot drift apart.
  */
-export const SELECTIONS_FIELD = 'selections';
+const SELECTIONS_FIELD = 'selections';
 const DEFAULT_CONSTRAINT_SCOPE = 'parent'; // parent, force, roster, or an ancestor id
 
 /**
@@ -201,7 +201,7 @@ const DEFAULT_CONSTRAINT_SCOPE = 'parent'; // parent, force, roster, or an ances
  * only an explicit `shared="false"` narrows it to the one instance it hangs on.
  * The engine reads the resulting flag when it resolves a query scope.
  */
-export const DEFAULT_SHARED_QUERY = true;
+const DEFAULT_SHARED_QUERY = true;
 
 /**
  * Reads a boolean XSD attribute, falling back to the default the schema declares
