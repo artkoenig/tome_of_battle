@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/issue-160-lp1a7m
+pr: 250
 ---
 
 # Angebots-Anker-Erwartung auf Toxote's Hellmounts umstellen

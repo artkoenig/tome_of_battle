@@ -1,7 +1,7 @@
 ---
-status: backlog
+status: done
 branch: claude/riese-aushebedialog-fehlt-qh0hk2
-pr:
+pr: 248
 ---
 
 # Riese im Aushebedialog der O&G Definitive Edition anbieten
