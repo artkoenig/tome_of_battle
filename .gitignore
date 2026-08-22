@@ -55,3 +55,7 @@ e2e-failure.png
 # Lokale Ausgabe des Zustandsbericht-Generators (scripts/project-state/generate.js).
 # In CI wird der Bericht direkt ins Pages-Deployment gelegt und nie committet.
 .report/
+
+# Scan cache written by `cast scan` (cast render/report read it). Regenerated on
+# every scan. A hand-written .cast/layers.json stays versioned.
+.cast/graph.json
