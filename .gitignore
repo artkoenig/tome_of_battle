@@ -55,3 +55,7 @@ e2e-failure.png
 # Lokale Ausgabe des Zustandsbericht-Generators (scripts/project-state/generate.js).
 # In CI wird der Bericht direkt ins Pages-Deployment gelegt und nie committet.
 .report/
+
+# cast: der gescannte Modulgraph ist ein Cache. `cast scan` schreibt ihn unter
+# den jeweils uebergebenen --root, also auch nach src/.cast/.
+.cast/
