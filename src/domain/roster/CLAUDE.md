@@ -22,7 +22,7 @@ directory: `forge-test --run src/domain/roster`; a single file: `forge-test --ru
   per file or per case (ADR-0003) — `selectionEntries`/`entryLinks`/
   `selectionEntryGroups` with the same field names the real `.cat`/`.gst`
   parser produces. Real catalogue data (`src/domain/evaluator/__fixtures__/
-  whfb6-definitive/`, `src/shared/__fixtures__/whfb6/`) is read only where the point
+  whfb6-definitive/`, `src/tests/__fixtures__/whfb6/`) is read only where the point
   of the case is that real data, not a schema shape — see
   `src/ui/viewmodels/useRosterState.nestedMandatoryGroups.test.js` (a `src/ui/viewmodels` file, but
   the pattern for loading a fixture `.gst`/`.cat` and parsing it for real is

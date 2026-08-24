@@ -43,7 +43,7 @@ Fast alle Szenarien werten Roster gegen die **echten** Definitive-Edition-
 Katalogdaten aus (ADR-[0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)) —
 `src/domain/evaluator/__fixtures__/whfb6-definitive/`, genau die Dateien, die ein Nutzer
 beim Import erlebt. Ausnahme ist `vampire-bloodlines-ergofang`, das den
-eigenständigen ergofang-VC-Katalog (`src/shared/__fixtures__/whfb6/`) nutzt. Jede
+eigenständigen ergofang-VC-Katalog (`src/tests/__fixtures__/whfb6/`) nutzt. Jede
 Armee-`.cat` wird zusammen mit ihrer gemeinsamen **Mercenaries**-Abhängigkeit
 ausgewertet (Stern-Struktur); einige Roster prüfen bewusst den **unvollständigen**
 Satz *ohne* Mercenaries — per Roster-`dataset`-Override im Manifest.

@@ -19,7 +19,7 @@ run a single file: `forge-test --run scripts/lib/<file>.test.js`.
   for the drift-guard shape (regenerate, compare to the committed output).
 - A file whose tests run against tiny synthetic input is a plain unit test; a
   file whose tests parse the real, frozen fixture corpus
-  (`src/domain/evaluator/__fixtures__/whfb6-definitive/`, `src/shared/__fixtures__/whfb6/`)
+  (`src/domain/evaluator/__fixtures__/whfb6-definitive/`, `src/tests/__fixtures__/whfb6/`)
   is integration level and says so in its top comment — keep the synthetic
   cases in the unit file and the corpus-backed ones in the integration file,
   as `evaluator-coverage-cells.test.js` / `evaluator-coverage-corpus.test.js`
@@ -46,7 +46,7 @@ strings built inline per test (helper: `source(xml, file)` wraps
 the extraction, if a total ever disagrees, since the fixtures are frozen:
 
 ```
-grep -rhoE '<modifierGroup[ />]' src/domain/evaluator/__fixtures__/whfb6-definitive src/shared/__fixtures__/whfb6 | wc -l
+grep -rhoE '<modifierGroup[ />]' src/domain/evaluator/__fixtures__/whfb6-definitive src/tests/__fixtures__/whfb6 | wc -l
 ```
 
 Issue 0148, increment 2 re-baselined every corpus figure in this doc and in

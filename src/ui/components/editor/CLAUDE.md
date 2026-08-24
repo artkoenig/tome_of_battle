@@ -110,7 +110,7 @@ than reparsed per case (see
   assert on the DOM alone (see the `KONTROLLE:` case of
   `UnitSelectionCard.gatedProfileCharacteristics.test.jsx`).
 - Write operations are observed through `createSubSelectionOperationsMock`
-  (`src/shared/test-utils/subSelectionOperationsMock`), never through roster state — a
+  (`src/tests/test-utils/subSelectionOperationsMock`), never through roster state — a
   case reads `operations.increaseCount`/`decreaseCount.mock.calls`, not a
   re-rendered roster.
 - `identifiesOption(arg, defId)` reads an operations-mock call argument that may
@@ -143,7 +143,7 @@ than reparsed per case (see
 
 A fixture sweep (`*.fixtureSweep.test.jsx`) renders and fully expands every
 `type="unit"` entry of the six catalogues under
-`src/domain/evaluator/__fixtures__/whfb6-definitive/` and `src/shared/__fixtures__/whfb6/`
+`src/domain/evaluator/__fixtures__/whfb6-definitive/` and `src/tests/__fixtures__/whfb6/`
 (208 cards) once in a shared `beforeAll`, so each `test` reads an independent
 assertion off the same collected data — no `test` re-renders. A new measurement
 belongs in its own `*.fixtureSweep.test.jsx` file copying the harness rather

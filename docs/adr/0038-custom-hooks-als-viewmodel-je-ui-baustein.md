@@ -124,7 +124,7 @@ Empfehlungen haben die 22-Prop-Signatur nicht verhindert.
   diese Fixtures in die ViewModel-Tests verschieben. Mechanisch, aber der größte Einzelposten
   des Umbaus.
 - **Negativ:** Zwei Kontexte sind zwei Provider mehr im Baum und eine Fehlerquelle mehr in
-  Tests, die eine Komponente isoliert rendern. Ein Test-Wrapper in `src/shared/test-utils/` fängt das
+  Tests, die eine Komponente isoliert rendern. Ein Test-Wrapper in `src/tests/test-utils/` fängt das
   ab.
 - **Neutral:** Jede Roster-Bearbeitung erzeugt einen neuen Bericht, also rechnen alle ViewModels
   neu — genauso wie heute. Slot-genaue Identitätsstabilität müsste der Evaluator liefern; das
