@@ -15,13 +15,14 @@
   `forge-test --run <pattern>` passes the pattern straight to vitest, so it filters by path or
   filename (`forge-test --run src/domain/evaluator`); pass `-t "<name>"` as the pattern to filter by
   test name.
-- `forge-lint` = `npm run lint && npm run cast`. oxlint's many warnings do not fail it, and
-  neither do cast's structural rules: `npm run cast` is `cast-check`, and every rule in
-  `.cast/rules.json` is `warn` (ADR 0041) — it lists the edges it finds, with file and line, and
-  leaves the exit code alone. What still fails the gate is oxlint's
-  `no-restricted-imports`, the blocking mirror of the Reinraum boundary and the evaluator facade.
-  cast is a Claude Code plugin, not an npm package, so the check has no CI step; it runs locally
-  and in every agent run.
+- `forge-lint` = `npm run lint && npm run cast`. oxlint's many warnings do not fail it, but
+  cast's structural rules do: `npm run cast` is `cast-check`, and every rule in
+  `.cast/rules.json` is `error` (ADR 0041) — a forbidden edge names its file and line and fails
+  the gate. oxlint's `no-restricted-imports` mirrors the Reinraum boundary and the evaluator
+  facade on top of that. cast is a Claude Code plugin and not on npm, but it is plain Node with
+  no dependencies, so CI obtains it by a shallow clone of `artkoenig/ai-blacksmith` — the check
+  runs in the lint workflow and the status-report workflow as well as locally and in every agent
+  run.
 - `npm run knip` is warn-only and deliberately outside the wrappers.
 - The Puppeteer app E2E (`node e2e/ui.test.js`, part of `npm test`) is **not** in `forge-test`:
   it is slow and browser-bound. Run it by hand when a change touches `src/ui/components/` or

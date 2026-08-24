@@ -42,13 +42,24 @@ jobs:
         run: npm run knip
         continue-on-error: true
 
-      # Die Strukturpruefung (`npm run cast`, ADR 0041) hat hier bewusst keinen
-      # Step: cast ist ein Claude-Code-Plugin und liegt nicht auf npm, laesst sich
-      # in einem Runner also nicht installieren. Sie laeuft lokal und in jedem
-      # Agentenlauf ueber `forge-lint`. Die harten Grenzen -- Evaluator-Fassade und
-      # Reinraum -- spiegelt ausserdem `no-restricted-imports` in `.oxlintrc.json`,
-      # das der Lint-Step oben ausfuehrt; sie sind in der CI also weiterhin
-      # blockierend geprueft.
+      # cast liegt nicht auf npm, ist aber blankes Node ohne jede Abhaengigkeit in
+      # einem oeffentlichen Repository: ein flacher Klon genuegt, wo `npm ci` nicht
+      # zustaendig ist. Der Klon bleibt bewusst unversioniert -- die Pruefung folgt
+      # dem aktuellen Stand des Werkzeugs.
+      - name: cast beziehen (flacher Klon, ADR 0041)
+        run: |
+          git clone --depth 1 https://github.com/artkoenig/ai-blacksmith.git "$RUNNER_TEMP/ai-blacksmith"
+          echo "$RUNNER_TEMP/ai-blacksmith/plugins/cast/bin" >> "$GITHUB_PATH"
+
+      # Die Strukturpruefung (`npm run cast`, ADR 0041). Seit die Regeln auf
+      # `error` stehen, laesst ein Verstoss diesen Step und damit den Workflow
+      # fehlschlagen: die Schichtgrenzen aus ADR 0037 sind erstmals in der CI
+      # geprueft und nicht mehr nur lokal. Die harten Grenzen -- Evaluator-Fassade
+      # und Reinraum -- spiegelt zusaetzlich `no-restricted-imports` in
+      # `.oxlintrc.json`, das der Lint-Step oben ausfuehrt.
+      - name: Strukturpruefung (cast)
+        run: npm run cast
+
       - name: Typecheck (tsc --noEmit, checkJs)
         run: npm run typecheck
 

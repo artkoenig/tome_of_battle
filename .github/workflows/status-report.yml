@@ -62,6 +62,14 @@ jobs:
       - name: Abhaengigkeiten installieren
         run: npm ci
 
+      # Ohne cast auf dem PATH meldet das Struktur-Gate `not-run` statt eines
+      # Urteils. cast liegt nicht auf npm, ist aber blankes Node ohne jede
+      # Abhaengigkeit in einem oeffentlichen Repository: ein flacher Klon genuegt.
+      - name: cast beziehen (flacher Klon, ADR 0041)
+        run: |
+          git clone --depth 1 https://github.com/artkoenig/ai-blacksmith.git "$RUNNER_TEMP/ai-blacksmith"
+          echo "$RUNNER_TEMP/ai-blacksmith/plugins/cast/bin" >> "$GITHUB_PATH"
+
       - name: Pages konfigurieren
         uses: actions/configure-pages@v5
 

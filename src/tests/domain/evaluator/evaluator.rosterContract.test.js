@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { evaluate as evaluateDataset, prepareDataset } from '../../../domain/evaluator/evaluator.js';
 import { AnchorKind, DiagnosticKind } from '../../../domain/evaluator/model.js';
-import { rosterFromRos } from '../../../domain/evaluator/__fixtures__/rosParser.js';
+import { rosterFromRos } from '../../test-utils/rosParser.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (wie in den uebrigen
 // Evaluator-Tests). Der eigene XML-Leser der Engine nutzt genau dieses Primitiv.

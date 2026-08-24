@@ -28,8 +28,9 @@ weshalb es den Prüfer überhaupt gibt.
 - **Keine Grenze fällt still weg.** Jede Regel braucht ein Gegenstück.
 - **Kein Gate, das über Nacht rot wird.** Was die neue Auswertung anders sieht
   als die alte, muss erst gezählt werden, bevor es blockiert.
-- **cast liegt nicht auf npm.** Es ist ein Plugin; ein CI-Runner kann es nicht
-  installieren.
+- **cast liegt nicht auf npm.** Es ist ein Plugin — installierbar ist es damit
+  nicht, beziehbar schon: blankes Node ohne Abhängigkeiten in einem öffentlichen
+  Repository.
 
 ## Betrachtete Optionen
 
@@ -46,9 +47,36 @@ Gewählte Option: **Option 3**. cast ist der Strukturprüfer des Projekts.
 `forge-lint`, und `scripts/project-state/graph.js` liest die Module aus
 `cast scan`.
 
-Jede Regel ist `warn`. Sie werden gelistet, mit Datei und Zeile, und lassen den
-Exitcode in Ruhe. Damit ist der Umstieg selbst kein Umbau am Code: erst die
-Zahlen, dann die Entscheidung über `error` (Folge-Issue).
+Jede Regel ist `error` und **blockiert**: ein Verstoß setzt den Exitcode und
+lässt `forge-lint` wie die CI fehlschlagen. Ein Baseline-File gibt es nicht —
+`.cast/baseline.json` existiert nicht und soll nicht entstehen, weil nichts
+zurückzuhalten ist.
+
+Der Umstieg lief zunächst mit `warn`, um erst zu zählen (siehe unten): über alle
+Einträge fand die Prüfung genau eine Kante, und die war Testgerüst im
+Evaluator-Verzeichnis. Es liegt seither im Testbaum
+(`src/tests/test-utils/rosParser.js`, `src/tests/test-utils/e2eReport.js`),
+damit fand die Prüfung nichts mehr, und die Regeln konnten ohne Umbau am Code
+auf `error` gezogen werden.
+
+### Wie die CI cast bekommt
+
+cast liegt nicht auf npm, aber es ist blankes Node ohne jede Abhängigkeit in
+einem öffentlichen Repository. Ein flacher Klon genügt:
+
+```yaml
+- run: |
+    git clone --depth 1 https://github.com/artkoenig/ai-blacksmith.git "$RUNNER_TEMP/ai-blacksmith"
+    echo "$RUNNER_TEMP/ai-blacksmith/plugins/cast/bin" >> "$GITHUB_PATH"
+```
+
+Danach löst `cast-check` (und `cast scan`) auf dem Runner auf, `npm run cast`
+läuft unverändert. So bezieht ihn der Lint-Workflow (`.github/workflows/ci.yml`,
+Step *Strukturpruefung (cast)*, blockierend) ebenso wie der
+Zustandsbericht-Workflow (`.github/workflows/status-report.yml`), dessen
+Struktur-Gate sonst mangels Werkzeug auf `not-run` stünde. Der Klon ist bewusst
+auf keine Revision festgenagelt: die Prüfung folgt dem aktuellen Stand des
+Werkzeugs.
 
 ### Was die Regeln in cast anders schreiben
 
@@ -85,10 +113,9 @@ steht in dem ADR, der sie fordert (0030, 0034, 0037, 0038, 0039).
 - **`no-orphans`.** War warn-only, cast hat keinen Regeltyp dafür, und toter Code
   ist schon durch knip abgedeckt (`npm run knip`, ebenfalls warn-only).
 
-### Was der Umstieg heute findet
+### Was die Prüfung findet
 
-Gemessen beim Umstieg (555 Module, 2196 Importe, davon 1234 auf ein Modul des
-Projekts aufgelöst; 17 Einträge unter 14 Regelnamen):
+Gezählt wurde beim Umstieg, mit `warn` (17 Einträge unter 14 Regelnamen):
 
 | Regel | Fundstellen |
 |---|---|
@@ -107,15 +134,24 @@ Projekts aufgelöst; 17 Einträge unter 14 Regelnamen):
 | `evaluation-keine-roster-abhaengigkeit` | 0 |
 | `evaluator-nur-ueber-fassade` | 1 |
 
-Die eine Fundstelle ist
+Die eine Fundstelle war
 `scripts/lib/evaluator-measurement-cases.js:17 → src/domain/evaluator/__fixtures__/rosParser.js`.
-Sie ist **neu sichtbar**, nicht neu entstanden: dependency-cruiser schloss
+Sie war **neu sichtbar**, nicht neu entstanden: dependency-cruiser schloss
 `__fixtures__/` per `options.exclude` aus dem Graphen aus, cast kennt keinen
-solchen Ausschluss. Sie bleibt bewusst stehen, statt per `allowed` weggeschrieben
-zu werden — das Folge-Issue, das die Regeln auf `error` zieht, soll sie sehen.
+solchen Ausschluss — zu Recht, denn ein Modul außerhalb der Tests, das
+Testgerüst importiert, ist eine Meldung wert. Aufgelöst wurde sie nicht per
+`allowed`, sondern am Ort: die beiden Helfer liegen jetzt unter
+`src/tests/test-utils/`, wo Tests und Messskript sie holen.
 
-Damit ist die Zahl, auf der die spätere Entscheidung steht, **1**: alle vierzehn
-Regeln zusammen kosten heute eine einzige Importkante.
+Heute meldet `npm run cast`:
+
+```
+0 violations (0 errors) in 1235 module edges against 17 rules
+```
+
+554 Module, 1235 aufgelöste Importkanten, 17 Einträge — und keine Verletzung.
+Alle Regeln zusammen kosten damit null Kanten; das ist die Zahl, auf der `error`
+steht.
 
 ### Konsequenzen (Auswirkungen)
 
@@ -123,15 +159,14 @@ Regeln zusammen kosten heute eine einzige Importkante.
   Flughöhe des Graphen ist erklärt (`layers.json`) statt in Regex-Präfixen
   verstreut. Der Zustandsbericht liest denselben Graphen, den die Prüfung
   bewertet.
-- **Negativ:** Bis zum Folge-Issue sind die Schichtregeln **unerzwungen** — eine
-  neue Verletzung erscheint im Log und lässt das Gate grün. Blockierend bleiben
-  allein Fassade und Reinraum, über den `no-restricted-imports`-Spiegel in
-  `.oxlintrc.json` (unverändert). Und: cast lässt sich in der CI nicht
-  installieren, der Workflow hat deshalb keinen Struktur-Step mehr; die Prüfung
-  läuft lokal und in jedem Agentenlauf über `forge-lint`. Im Zustandsbericht
-  steht das Gate `cast` folgerichtig auf `enforcement: unknown`.
-- **Neutral:** `.cast/layers.json` ordnet 549 der 555 Module einer Schicht zu;
-  die übrigen sechs (Konfigurationsdateien, `public/sw.js`,
+- **Negativ:** Die Prüfung hängt an einem Klon zur Laufzeit statt an einer
+  gepinnten Abhängigkeit: ändert cast seine Auswertung, ändert sich das Urteil
+  der CI ohne Commit im Projekt. Das ist gewollt (die Prüfung soll dem Werkzeug
+  folgen), aber es ist ein Preis. `no-restricted-imports` in `.oxlintrc.json`
+  bleibt daneben stehen — der zweite, editornahe Spiegel für Fassade und
+  Reinraum.
+- **Neutral:** `.cast/layers.json` ordnet 549 der 554 Module einer Schicht zu;
+  die übrigen fünf (Konfigurationsdateien, `public/sw.js`,
   `tools/rules-editor/server.js`, `docs/assets/landing.js`) bleiben
   `unassigned` — cast zählt und nennt sie, es fällt nichts weg.
 

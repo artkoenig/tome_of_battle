@@ -36,7 +36,7 @@ import {
   DiagnosticKind,
 } from '../../../domain/evaluator/model.js';
 import { createRosterBudget } from '../../../domain/evaluator/rosterBudget.js';
-import { rosterFromRos } from '../../../domain/evaluator/__fixtures__/rosParser.js';
+import { rosterFromRos } from '../../test-utils/rosParser.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

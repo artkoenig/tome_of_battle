@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { evaluate as evaluateDataset, prepareDataset } from '../../../domain/evaluator/evaluator.js';
-import { rosterFromRos } from '../../../domain/evaluator/__fixtures__/rosParser.js';
+import { rosterFromRos } from '../../test-utils/rosParser.js';
 import { AnchorKind, MessageOrigin, MessageSeverity } from '../../../domain/evaluator/model.js';
 
 const dom = new JSDOM();
