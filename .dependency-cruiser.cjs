@@ -64,18 +64,26 @@ const UI_LAYER = ['^src/ui/(?!i18n/)'];
 // sich der Griff einer tieferen Schicht danach als eigene Regel melden.
 const I18N_LAYER = '^src/ui/i18n/';
 
-// Auswertung, Schreibmodell und die Bruecke zwischen beiden. Die
-// Reinraum-Regeln oben gelten unveraendert innerhalb dieser Schicht.
-const DOMAIN_LAYER = [EVALUATOR_LAYER, EVALUATION_LAYER, ROSTER_LAYER];
-
 // Persistenz, Import und Katalog-Zerlegung. src/domain/services/ ist die einzige
 // Adresse, ueber die die UI Daten erreichen darf, und deshalb aus
 // "ui-nicht-auf-daten" ausgenommen.
 const DB_LAYER = '^src/data/db/';
 const SERVICES_LAYER = '^src/domain/services/';
-// Seit Issue 0171 ist die ganze Schicht ein Verzeichnis; src/data/rules/ (der
-// Regeltext-Index samt Namensabgleich) gehoert dazu.
+// Seit Issue 0179 liegt der Regeltext-Index samt Namensabgleich unter
+// src/domain/rules/ (vormals src/data/rules/).
+const RULES_LAYER = '^src/domain/rules/';
 const DATA_LAYER = ['^src/data/'];
+
+// Auswertung, Schreibmodell und die Bruecke zwischen beiden, sowie die
+// Persistenz-Fassade und der Regeltext-Index. Die Reinraum-Regeln oben gelten
+// unveraendert innerhalb dieser Schicht.
+const DOMAIN_LAYER = [
+  EVALUATOR_LAYER,
+  EVALUATION_LAYER,
+  ROSTER_LAYER,
+  SERVICES_LAYER,
+  RULES_LAYER,
+];
 
 module.exports = {
   forbidden: [
