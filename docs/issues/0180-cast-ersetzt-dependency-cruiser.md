@@ -41,10 +41,11 @@ zu verschwinden.
 - AC2: `forge-lint` prüft die Struktur über cast statt über `npm run depcruise` und ist auf dem
   heutigen Stand des Codes weiterhin grün (kein neuer, durch den Werkzeugwechsel entstandener
   Fehlschlag). | verify: `! grep -q depcruise .forge/config.json && forge-lint`
-- AC3: Kein npm-Script, keine `guard.rewrite`-Regel in `.forge/config.json` und kein CI-Schritt
-  ruft mehr dependency-cruiser für die Struktur-Prüfung auf. `dependency-cruiser` selbst (Paket und
-  `.dependency-cruiser.cjs`) bleibt vorerst installiert, solange `scripts/project-state/` es noch
-  braucht (siehe AC5/AC6). | verify: `! grep -qE "\"depcruise\"|\"analyze\"|dependency-cruiser" package.json .forge/config.json .github/workflows/ci.yml`
+- AC3: Der CI-Workflow ruft dependency-cruiser nicht mehr als Struktur-Check auf (der bisherige,
+  informative `continue-on-error`-Schritt entfällt ersatzlos — siehe Annahme oben). `package.json`
+  bleibt in diesem Zuschnitt unangetastet: die Scripts `depcruise`/`analyze` und die
+  `dependency-cruiser`-devDependency bleiben bestehen, weil `scripts/project-state/gates.js`
+  weiterhin `npm run depcruise` aufruft, bis AC5/AC6 das umstellen. | verify: `! grep -q "npm run depcruise" .github/workflows/ci.yml`
 - AC4: ADR 0024 ist fortgeschrieben (Status auf „Superseded" o. ä., Verweis auf die neue ADR), und
   eine neue ADR unter `docs/adr/` dokumentiert die Entscheidung für cast — inklusive der beiden
   oben festgehaltenen Annahmen (CI bleibt ohne Struktur-Gate, kein 1:1-Ersatz für
