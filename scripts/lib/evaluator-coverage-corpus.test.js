@@ -216,7 +216,7 @@ describe('worklist — the duplicated-id landmark resolves to the dataset-correc
     expect(cell).toBeDefined();
     expect(cell.occurrences).toBe(2);
     expect(cell.files).toEqual({
-      'src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1,
+      'src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1,
       'src/domain/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat': 1,
     });
 
@@ -327,7 +327,7 @@ describe('extractCells over the real corpus — Dogs of War carries a construct 
     );
     expect(cell).toBeDefined();
     expect(cell.occurrences).toBe(3);
-    expect(cell.files).toEqual({ 'src/shared/__fixtures__/whfb6/Dogs of War.cat': 3 });
+    expect(cell.files).toEqual({ 'src/tests/__fixtures__/whfb6/Dogs of War.cat': 3 });
   });
 });
 

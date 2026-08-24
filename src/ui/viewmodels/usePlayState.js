@@ -4,11 +4,11 @@ import {
   createPersistenceFailureReporter,
 } from './persistenceFailure';
 import { createInitialGameState } from '../../domain/roster/rosterDefaults';
-import '../../shared/types.js';
+import '../../domain/types.js';
 
 /**
  * Hook to manage game play state, wound trackers, CP and VP.
- * @param {import('../../shared/types.js').Roster} initialRoster
+ * @param {import('../../domain/types.js').Roster} initialRoster
  * @param {Function} setRoster
  * @param {Function} saveRosterCallback
  * @param {(message: string) => void} [reportError] app-wide error channel; a failed

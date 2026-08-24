@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { getRuleUrl } from '../../data/rules/rulesLookup';
+import { getRuleUrl } from '../../domain/rules/rulesLookup';
 import { useSettings } from './SettingsContext';
 
 /**

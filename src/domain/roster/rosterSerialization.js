@@ -1,4 +1,4 @@
-import { RosterFileError } from '../../data/services/rosterTransfer.js';
+import { RosterFileError } from '../../domain/services/rosterTransfer.js';
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
@@ -12,7 +12,7 @@ import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefau
  * (`messageKey`) und dessen Platzhalter (`messageParams`) und wird erst in der
  * Oberfläche formuliert (`describeRosterFileError` in `src/ui/viewmodels/`).
  * Das Ein- und Auspacken der `.rosz`-Datei ist Datei-Ein-/Ausgabe und liegt in
- * der Datenschicht (`src/data/services/rosterTransfer.js`).
+ * der Datenschicht (`src/domain/services/rosterTransfer.js`).
  */
 // Decimal places kept when serializing costs, to strip floating-point artifacts
 // introduced by cost-modifier arithmetic.

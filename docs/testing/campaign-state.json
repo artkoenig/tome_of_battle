@@ -116,15 +116,15 @@
   "parkedQuestions": [
     {
       "cellKey": "condition|instanceOf|id|selectionCount|child=model",
-      "question": "All six occurrences of this construct sit in the upstream corpus src/shared/__fixtures__/whfb6/ (Vampire Counts.cat), which the black-box scenario author is not allowed to read — its allow-list covers only the frozen definitive corpus src/domain/evaluator/__fixtures__/whfb6-definitive/. Should the allow-list be extended to the upstream corpus so cells that occur only there can be pinned, or should such cells be waived as out of scope for the E2E suite?",
+      "question": "All six occurrences of this construct sit in the upstream corpus src/tests/__fixtures__/whfb6/ (Vampire Counts.cat), which the black-box scenario author is not allowed to read — its allow-list covers only the frozen definitive corpus src/domain/evaluator/__fixtures__/whfb6-definitive/. Should the allow-list be extended to the upstream corpus so cells that occur only there can be pinned, or should such cells be waived as out of scope for the E2E suite?",
       "sourcesChecked": [
         "docs/agents/e2e-testcase-author.md (read allow-list)",
-        "docs/testing/worklist.json (files map: 6 of 6 occurrences in src/shared/__fixtures__/whfb6/Vampire Counts.cat)",
+        "docs/testing/worklist.json (files map: 6 of 6 occurrences in src/tests/__fixtures__/whfb6/Vampire Counts.cat)",
         "docs/battlescribe-data-format.md 7.7 (instanceOf against an id-valued scope)"
       ],
       "parkedAt": "2026-08-10",
       "status": "answered",
-      "answer": "Extend the allow-list: the scenario author may read the upstream corpus src/shared/__fixtures__/whfb6/ as well, so cells occurring only there can be pinned. Recorded in docs/agents/e2e-testcase-author.md; a scenario still names the files of one fixture set only and never mixes the two."
+      "answer": "Extend the allow-list: the scenario author may read the upstream corpus src/tests/__fixtures__/whfb6/ as well, so cells occurring only there can be pinned. Recorded in docs/agents/e2e-testcase-author.md; a scenario still names the files of one fixture set only and never mixes the two."
     },
     {
       "cellKey": "modifier|append|characteristic",

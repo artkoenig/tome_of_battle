@@ -3,9 +3,9 @@
   "name": "parent-repeat-upgrade-maneater-weapons",
   "description": "Ein <repeat field=\"selections\" scope=\"parent\" childId=\"upgrade\" value=\"1\" repeats=\"1\"> zaehlt im Eltern-Rahmen des Traegers die Auswahlen, deren aufgeloester Eintragstyp \"upgrade\" ist - den Traeger selbst eingeschlossen - und wendet den Modifikator einmal je gezaehltem Schritt an. Gepinnt an der Einheit \"Ogre Maneaters\" (b1b8-10da-ac1a-ba7c) des upstream-Katalogs Dogs of War.cat: ihr Modell (8fed-6b86-9099-db53) haelt die Gruppe \"Weapon\" (6a33-8be5-b0a4-5b42), deren Links Great Weapon (d13c-78a4-0289-7d87), Cathayan Longsword (3d48-775c-37e8-0dc0) und Brace of Handguns (70ab-1c93-f3b5-9405) je einen increment 6.0 auf die pts-Kostenart ecfa-8486-4f6c-c249 mit genau diesem repeat tragen. Alle vier Waffenziele sind type=\"upgrade\" und kosten 0 pts, der Preis entsteht also ausschliesslich aus der Wiederholung. Messbar allein ueber die engine-eigene Budget-Regel budget::ecfa-8486-4f6c-c249, denn der Effekt ist eine Kostenaenderung und keine Grenze. Drei paarweise geklammerte Aufbauten: Ogre club (kein Modifikator) = 80 pts, Great Weapon allein (Treffer 1) = 86 pts, drei Waffen zugleich (Treffer 3, je 18 pts) = 134 pts. Alle Auswahlen tragen number=\"1\", damit die Summen von der ungeklaerten .ros-Zahlenbasis (Format-Doku Paragraph 7.5) unabhaengig sind.",
   "dataset": {
-    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/shared/__fixtures__/whfb6/Dogs of War.cat"
+      "src/tests/__fixtures__/whfb6/Dogs of War.cat"
     ]
   },
   "rosters": [

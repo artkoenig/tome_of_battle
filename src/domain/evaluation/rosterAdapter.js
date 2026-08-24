@@ -1,6 +1,6 @@
 /**
  * Roster-Adapter (Issue 0121): uebersetzt das App-Roster (IndexedDB-Modell,
- * `src/shared/types.js`) in den Eingabevertrag der Evaluator-Fassade
+ * `src/domain/types.js`) in den Eingabevertrag der Evaluator-Fassade
  * (`src/domain/evaluator/evaluator.js`, `@param roster`) und liefert daneben die
  * Zuordnung App-Selection-UUID → Slot-Pfad des Berichts.
  *
@@ -74,7 +74,7 @@
  * Link-Id-Regel (Issue 084): der Verweis identifiziert die Auswahl, nicht sein
  * Ziel; kein Rueckfall.
  *
- * @param {import('../../shared/types.js').Selection} selection
+ * @param {import('../../domain/types.js').Selection} selection
  * @returns {string}
  */
 const defIdOf = (selection) => selection.entryLinkId ?? selection.selectionEntryId;
@@ -85,7 +85,7 @@ const NOTHING_SKIPPED = new Set();
 /**
  * Uebersetzt die Selektionen einer Ebene rekursiv in Evaluator-Knoten.
  *
- * @param {import('../../shared/types.js').Selection[]} selections
+ * @param {import('../../domain/types.js').Selection[]} selections
  * @returns {EvalInstanceNode[]}
  */
 function toChildren(selections) {
@@ -103,7 +103,7 @@ function toChildren(selections) {
  * wie in der Engine (`attachInstance` haengt einen unaufloesbaren Knoten samt
  * Teilbaum nicht in den Auswertungsbaum).
  *
- * @param {import('../../shared/types.js').Selection[]} selections
+ * @param {import('../../domain/types.js').Selection[]} selections
  * @param {string} parentPath  Slot-Pfad des Elternknotens (Force oder Selection).
  * @param {ReadonlySet<string>} skippedDefIds
  * @param {Map<string, string>} into
@@ -137,7 +137,7 @@ function collectSelectionPaths(selections, parentPath, skippedDefIds, into) {
  * eine `defId` loest datensatzweit auf oder eben nicht — die Menge der
  * gemeldeten `defId`s ist damit die Menge der weggefallenen Definitionen.
  *
- * @param {import('../../shared/types.js').Roster|null|undefined} roster  das App-Roster; wird nicht mutiert.
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster  das App-Roster; wird nicht mutiert.
  * @param {ReadonlySet<string>} [skippedDefIds]  die Definitions-Ids, die der
  *   Datensatz nicht kennt (leer = alles loest auf).
  * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
@@ -164,7 +164,7 @@ export function slotPathsOf(roster, skippedDefIds = NOTHING_SKIPPED) {
 /**
  * Uebersetzt ein App-Roster in den Eingabevertrag der Evaluator-Fassade.
  *
- * @param {import('../../shared/types.js').Roster} roster  das App-Roster; wird nicht mutiert.
+ * @param {import('../../domain/types.js').Roster} roster  das App-Roster; wird nicht mutiert.
  * @returns {{ evalRoster: EvalRoster, pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
  *   `evalRoster` fuer `evaluate(prepared, evalRoster)`; `pathBySelectionId`
  *   ordnet jeder App-Selection-UUID den Slot-Pfad zu, unter dem der Bericht

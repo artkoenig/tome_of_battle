@@ -1,11 +1,15 @@
 # Schichtenarchitektur UI → Fachlogik → Daten mit maschinell geprüfter Richtung
 
-- **Status:** Accepted
+- **Status:** Accepted; die Schichttabelle unten ist durch
+  [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt — `src/data/services/`
+  und `src/data/rules/` sind seitdem `src/domain/services/` und `src/domain/rules/`, Teil der
+  Fachlogik statt der Daten-Schicht
 - **Datum:** 2026-08-20
 - **Beteiligte:** Projektinhaber, Architektur-Review
 - **Zugehörige ADRs:** ergänzt ADR-0030 (Reinraum-Trennung) und ADR-0034 (Bericht als
   alleinige Quelle); wird für die Oberfläche verfeinert durch ADR-0038 (ViewModel-Muster);
-  betrifft die Regeln aus ADR-0024 (Statik-Toolchain)
+  betrifft die Regeln aus ADR-0024 (Statik-Toolchain); die Schichttabelle wird durch
+  [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt
 
 ## Kontext und Problemstellung
 

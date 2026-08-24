@@ -35,7 +35,7 @@ like a native app.
 - **Local only** — nothing is uploaded; all data stays in your browser.
 
 Catalog data is fetched at runtime and is not bundled with the app. A frozen
-subset lives in `src/shared/__fixtures__/whfb6/` and is used only by the tests.
+subset lives in `src/tests/__fixtures__/whfb6/` and is used only by the tests.
 
 ---
 
@@ -88,7 +88,7 @@ Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 
 A `Roster` holds forces, which hold a recursive tree of selections. A selection
 references its catalog definition by ID instead of copying it; definitions are
-resolved at runtime. Types are documented as JSDoc in `src/shared/types.js`.
+resolved at runtime. Types are documented as JSDoc in `src/domain/types.js`.
 
 Further reading: [`docs/project-map.md`](docs/project-map.md) (where everything
 lives), [`docs/adr/`](docs/adr/) (architecture decisions),
@@ -109,5 +109,5 @@ Knip · dependency-cruiser · TypeScript (JSDoc type checking)
 **GNU General Public License v3.0** — see [`LICENSE`](LICENSE).
 
 BattleScribe catalog data fetched at runtime, and the frozen test fixture under
-`src/shared/__fixtures__/`, belong to their respective community authors and are used
+`src/tests/__fixtures__/`, belong to their respective community authors and are used
 here for testing and demonstration.

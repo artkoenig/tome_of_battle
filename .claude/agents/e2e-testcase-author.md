@@ -41,7 +41,7 @@ If **rule** or **scenario_name** is missing, stop and say so.
    `docs/adr/0003-*`, `docs/adr/0011-*`, `docs/adr/0016-*`, `docs/adr/0031-*`.
 3. **The real catalog fixtures** — everything under
    `src/domain/evaluator/__fixtures__/whfb6-definitive/` **and** everything under
-   `src/shared/__fixtures__/whfb6/`. This is catalog **data**, not engine code. Both sets
+   `src/tests/__fixtures__/whfb6/`. This is catalog **data**, not engine code. Both sets
    are readable because the coverage inventory counts rule constructs from both,
    and constructs occurring only in the upstream `whfb6` set would otherwise be
    unpinnable. A scenario names in its manifest `dataset` the files of **one** set

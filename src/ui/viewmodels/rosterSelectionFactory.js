@@ -15,14 +15,14 @@ import {
   findForceContainingSelection,
   createSelectionFromDef as buildSelectionFromDef,
 } from '../../domain/roster';
-import '../../shared/types.js';
+import '../../domain/types.js';
 
 /**
  * Der Katalog, gegen den die Verweise eines Kontingents auflösen: seiner, ersatzweise
  * der der Liste. Bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine
  * Eintrags-Id nur innerhalb ihres Katalogs eindeutig, deshalb wird er mitgegeben.
- * @param {import('../../shared/types.js').Roster|null|undefined} roster
- * @param {import('../../shared/types.js').Force|null|undefined} force
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster
+ * @param {import('../../domain/types.js').Force|null|undefined} force
  * @returns {string|null}
  */
 export function catalogueIdOfForce(roster, force) {
@@ -31,7 +31,7 @@ export function catalogueIdOfForce(roster, force) {
 
 /**
  * Der Katalog des Kontingents, das die Selektion `selectionId` enthält.
- * @param {import('../../shared/types.js').Roster|null|undefined} roster
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster
  * @param {string} selectionId
  * @returns {string|null}
  */
@@ -43,7 +43,7 @@ export function catalogueIdContaining(roster, selectionId) {
  * Binds the selection factory to one catalogue system.
  * @param {Object} system
  * @returns {(entry: Object, categoryId: string|null, catalogueId: string|null,
- *   mandatoryMembers?: ReadonlyArray<any>) => (import('../../shared/types.js').Selection|null)}
+ *   mandatoryMembers?: ReadonlyArray<any>) => (import('../../domain/types.js').Selection|null)}
  */
 export function createSelectionFactory(system) {
   return (entry, categoryId, catalogueId, mandatoryMembers = []) =>

@@ -45,7 +45,7 @@ describe('collectCatalogFileNames', () => {
   });
 
   it('findet die eingefrorene Fixture des Repositories', () => {
-    const fixtureDir = path.join(REPO_ROOT, 'src', 'shared', '__fixtures__', 'whfb6');
+    const fixtureDir = path.join(REPO_ROOT, 'src', 'tests', '__fixtures__', 'whfb6');
 
     const fileNames = collectCatalogFileNames(fixtureDir);
 

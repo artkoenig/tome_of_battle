@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, IDs und
 Erwartungswerte sind **ausschliesslich aus den Katalogdaten** des
-**upstream**-Fixture-Satzes (`src/shared/__fixtures__/whfb6/`) und der
+**upstream**-Fixture-Satzes (`src/tests/__fixtures__/whfb6/`) und der
 Formatspezifikation ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md),
 §7.6/§7.7/§8) abgeleitet. Die Roster-Form folgt der an diesem Satz bereits
 verifizierten Gestalt (direktes `entryId`, `entryLinkId=""`, verschachtelte
@@ -25,7 +25,7 @@ gegen dieselbe `.gst`/`.cat` läuft.
 > Katalogen am **selben** `infoLink` `e0f2-8568-15f0-a384` bedingte
 > Merkmals-Modifikatoren. Verschieden ist nur, **wo** die Clan-Kategorie steht:
 >
-> | | Definitive Edition (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) | **upstream** (`src/shared/__fixtures__/whfb6/`, dieses Szenario) |
+> | | Definitive Edition (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) | **upstream** (`src/tests/__fixtures__/whfb6/`, dieses Szenario) |
 > |---|---|---|
 > | Bedingung | `scope="b77b-88d5-5e80-e178"` (**Eintrags**-Id = die Einheit selbst), `childId="<Clan-Kategorie>"` | `scope="<Clan-Kategorie>"`, `childId="model"` |
 > | Kategorie kommt an die Einheit … | per `modifier add field="category"` **an der Einheit** | **gar nicht** — nur per `categoryLink` an der Blutlinien-Aufwertung **darunter** |

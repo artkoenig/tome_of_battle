@@ -1,4 +1,4 @@
-import '../../../shared/types.js';
+import '../../../domain/types.js';
 
 /**
  * UI-Verhaltensmodell je Option/Gruppe (ADR 0029, L5; ADR 0022; ADR-0037).

@@ -3,9 +3,9 @@
   "name": "category-id-scope-instance-of",
   "description": "Eine Kategorie-Id im scope einer CONDITION loest den Zaehlrahmen auf den naechsten Vorfahren der tragenden Auswahl auf (Traeger eingeschlossen), der diese Kategorie traegt. Ein Nachfahre loest ihn NICHT auf, und ein nicht aufgeloester Rahmen laesst den gegatteten Modifikator nicht wirken. Gepinnt am Vampire Lord des upstream-Katalogs Vampire Counts.cat (ea4b-9294-3427-1fc1): am infoLink e0f2-8568-15f0-a384 haengen drei auf die Clan-Kategorien 4cae/fc4b/bf30 gegattete Merkmals-Modifikatoren, waehrend diese Kategorien im ganzen Datensatz nur von den Bloodline-Aufwertungen UNTERHALB der Einheit getragen werden (kein einziger modifier field=category im Korpus). Beobachtet ueber expect.capabilities: das Profil-Vorkommen behaelt in jeder Blutlinien-Wahl die geschriebenen Werte WS 8 und A 5. Die Erweiterung der Constraint-Ausprägung derselben Rahmenregel steht in docs/testing/category-scope-ancestor-frame/.",
   "dataset": {
-    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/shared/__fixtures__/whfb6/Vampire Counts.cat"
+      "src/tests/__fixtures__/whfb6/Vampire Counts.cat"
     ]
   },
   "rosters": [

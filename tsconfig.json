@@ -13,5 +13,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["**/*.test.js", "**/*.test.jsx", "src/shared/test-utils"]
+  "exclude": ["**/*.test.js", "**/*.test.jsx", "src/tests/test-utils"]
 }

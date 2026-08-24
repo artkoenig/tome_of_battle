@@ -16,7 +16,7 @@ import useAppNavigation from './viewmodels/useAppNavigation';
 import useAppData from './viewmodels/useAppData';
 import useRosterList from './viewmodels/useRosterList';
 import { getDiffChanges } from './viewmodels/releaseDiff';
-import { VIEWS, isImmersiveView } from '../shared/constants/views';
+import { VIEWS, isImmersiveView } from '../ui/constants/views';
 import { useTranslation } from './i18n/useTranslation';
 import { Analytics } from '@vercel/analytics/react';
 

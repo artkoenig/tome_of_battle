@@ -15,20 +15,20 @@ import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
 } from './persistenceFailure';
-import '../../shared/types.js';
+import '../../domain/types.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 150;
 
 /**
  * @param {Object} args
- * @param {import('../../shared/types.js').Roster} args.roster
+ * @param {import('../../domain/types.js').Roster} args.roster
  * @param {Object} args.system
- * @param {(roster: import('../../shared/types.js').Roster) => void} args.replaceRoster
+ * @param {(roster: import('../../domain/types.js').Roster) => void} args.replaceRoster
  *   writes a synced roster back without an undo step
  * @param {Function} args.saveRosterCallback
  * @param {(message: string) => void} [args.reportError] app-wide error channel; a failed
  *   autosave reaches the user through it instead of ending in the console.
- * @returns {{ saveNow: (roster: import('../../shared/types.js').Roster) => Promise<void> }}
+ * @returns {{ saveNow: (roster: import('../../domain/types.js').Roster) => Promise<void> }}
  */
 export function useRosterPersistence({ roster, system, replaceRoster, saveRosterCallback, reportError }) {
   const saveCallbackRef = useRef(saveRosterCallback);

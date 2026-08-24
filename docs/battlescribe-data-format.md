@@ -9,7 +9,7 @@
 > unter [`docs/bsdata-catalogue-development-wiki/`](bsdata-catalogue-development-wiki/) im Repo,
 > aktualisierbar per `git submodule update --remote` — sowie reale
 > WHFB-6th-Edition-Kataloge (heute zur Laufzeit aus dem externen Katalog-Fork bezogen, siehe
-> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/shared/__fixtures__/whfb6/`).
+> ADR-0014; ein eingefrorener Ausschnitt liegt unter `src/tests/__fixtures__/whfb6/`).
 > Alle XML-Beispiele stammen aus echten Dateien.
 >
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
@@ -838,7 +838,7 @@ Ein Modifier kann **bedingt** (`<conditions>` / `<conditionGroups>`) und/oder **
 
 | `condition`-Attribut | Bedeutung |
 |----------------------|-----------|
-| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/shared/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
+| `type` | Vergleich: `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`; dazu `greaterThanOrEqualTo`, 1× in den Fixture-Katalogen belegt (`src/tests/__fixtures__/whfb6/Orcs and Goblins.cat`) und upstream nicht dokumentiert. |
 | `field` | Was verglichen wird — z. B. `selections`, eine Kostenart oder `limit::<costTypeId>` (das **Kostenlimit** der Roster). |
 | `scope` | Bezugsrahmen. Die **geschlossene** Liste der Schlüsselwörter: `roster`, `force`, `parent`, `self`, `unit` (die umschließende Einheit) und `model-or-unit` (das nächste Modell **oder** die nächste Einheit) als Zählrahmen; `ancestor` (die Vorfahrenkette, nur mit `instanceOf`/`notInstanceOf`), `primary-catalogue` (das Armeebuch des umschließenden Kontingents, [Kasten in §7.6](#scope-primary-catalogue)) und `primary-category` (die primäre Kategorie der tragenden Auswahl) als Prüfungen. Siehe die Kästen zu [`unit`/`ancestor`](#scope-unit-ancestor) und zu [`primary-category`/`model-or-unit`](#scope-primary-category-model-or-unit). Jeder andere Wert ist eine **Vorfahren-Id** (Eintrag, Gruppe, `forceEntry`, Kategorie). |
 | `childId` | *Was* gezählt wird: eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder `any`. |
@@ -1532,7 +1532,7 @@ Nutzer mit Auto-Update-Link laden das **letzte Release** (ein getaggter Stand). 
 | `constraint`/`condition`/`repeat` | `scope` | Neun Schlüsselwörter — `parent`, `roster`, `force`, `self`, `unit`, `ancestor` (nur `condition`, [§7.7](#scope-unit-ancestor)), `primary-catalogue` ([§7.6](#scope-primary-catalogue)), `primary-category` (4× in den Fixture-Katalogen belegt, `Forces of Chaos`) und `model-or-unit` (2× belegt, `Lizardmen`; beide upstream nicht dokumentiert, [§7.7](#scope-primary-category-model-or-unit)) — **oder** eine Vorfahren-Id (Eintrag, Gruppe, `forceEntry`, Kategorie). Ein Literal `category` gibt es nicht: die Wiki-Formulierung *„any Category"* meint eine Kategorie-**Id**, und keiner der beiden eingefrorenen Korpora schreibt `scope="category"`. |
 | `modifier` | `type` | `increment`, `decrement`, `set`, `append`, `prepend`, `multiply`, `add`, `remove`, `set-primary`, `unset-primary` (`prepend`/`multiply` ohne offiziellen Schema-Beleg, siehe [§7.7](#77-modifier-condition-condition-group-repeat)) |
 | `modifier` | `field` | Constraint-`id`, `<costTypeId>`, `hidden`, `name`, `category`, `error`, `warning`, `info`, `<characteristicTypeId>` |
-| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/shared/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
+| `condition` | `type` | `lessThan`, `greaterThan`, `equalTo`, `notEqualTo`, `atLeast`, `atMost`, `instanceOf`, `notInstanceOf`, `greaterThanOrEqualTo` (1× in den Fixture-Katalogen belegt, `src/tests/__fixtures__/whfb6/Orcs and Goblins.cat`, upstream nicht dokumentiert) |
 | `conditionGroup` | `type` | `and`, `or`, `not` (`not` ohne offiziellen Schema-Beleg, siehe [§7.7](#conditiongroup--verknüpfung-mehrerer-bedingungen)) |
 
 ### 13.2 Der `field`-Wert je nach Kontext
