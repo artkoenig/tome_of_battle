@@ -1,0 +1,1744 @@
+{
+  "operations": [
+    {
+      "op": "move",
+      "module": "scripts/catalog-fork/catalogRevision.test.js",
+      "to": "tests/unit/scripts/catalog-fork/catalogRevision.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/catalog-fork/generate-catpkg.test.js",
+      "to": "tests/unit/scripts/catalog-fork/generate-catpkg.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/deployEnv.test.js",
+      "to": "tests/unit/scripts/deployEnv.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/generate-rules-index.test.js",
+      "to": "tests/unit/scripts/generate-rules-index.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/generate-schema-module.test.js",
+      "to": "tests/unit/scripts/generate-schema-module.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/lib/e2e-harness.test.js",
+      "to": "tests/unit/scripts/lib/e2e-harness.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/lib/evaluator-coverage-cells.test.js",
+      "to": "tests/unit/scripts/lib/evaluator-coverage-cells.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/lib/evaluator-coverage-corpus.test.js",
+      "to": "tests/unit/scripts/lib/evaluator-coverage-corpus.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/lib/evaluator-measurement.facadeOnly.test.js",
+      "to": "tests/unit/scripts/lib/evaluator-measurement.facadeOnly.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/lib/evaluator-measurement.test.js",
+      "to": "tests/unit/scripts/lib/evaluator-measurement.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/buildReportModel.test.js",
+      "to": "tests/unit/scripts/project-state/buildReportModel.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/complexity.test.js",
+      "to": "tests/unit/scripts/project-state/complexity.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/coverage.test.js",
+      "to": "tests/unit/scripts/project-state/coverage.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/functions.test.js",
+      "to": "tests/unit/scripts/project-state/functions.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/gates.test.js",
+      "to": "tests/unit/scripts/project-state/gates.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/graph.test.js",
+      "to": "tests/unit/scripts/project-state/graph.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/issues.test.js",
+      "to": "tests/unit/scripts/project-state/issues.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/loc.test.js",
+      "to": "tests/unit/scripts/project-state/loc.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/renderReport.test.js",
+      "to": "tests/unit/scripts/project-state/renderReport.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/project-state/tsSource.test.js",
+      "to": "tests/unit/scripts/project-state/tsSource.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/release-lockfile.test.js",
+      "to": "tests/unit/scripts/release-lockfile.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/release.test.js",
+      "to": "tests/unit/scripts/release.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/rules-crawler.test.js",
+      "to": "tests/unit/scripts/rules-crawler.test.js"
+    },
+    {
+      "op": "move",
+      "module": "scripts/versioning.test.js",
+      "to": "tests/unit/scripts/versioning.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/catalogSourceIndex.test.js",
+      "to": "tests/unit/data/db/catalogSourceIndex.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/catalogUpdate.test.js",
+      "to": "tests/unit/data/db/catalogUpdate.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/database.settings.test.js",
+      "to": "tests/unit/data/db/database.settings.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/database.systemPersistence.test.js",
+      "to": "tests/unit/data/db/database.systemPersistence.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/migrations.parserVersion.test.js",
+      "to": "tests/unit/data/db/migrations.parserVersion.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/migrations.rawXmlRecovery.test.js",
+      "to": "tests/unit/data/db/migrations.rawXmlRecovery.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/migrations.test.js",
+      "to": "tests/unit/data/db/migrations.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/db/systemImport.test.js",
+      "to": "tests/unit/data/db/systemImport.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/catalogEditor.entryUpdateSerialization.test.js",
+      "to": "tests/unit/data/parser/catalogEditor.entryUpdateSerialization.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/catalogEditor.test.js",
+      "to": "tests/unit/data/parser/catalogEditor.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/importSchemaGate.test.js",
+      "to": "tests/unit/data/parser/importSchemaGate.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/libraryDependencies.test.js",
+      "to": "tests/unit/data/parser/libraryDependencies.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/schema/battlescribeSchema.generated.test.js",
+      "to": "tests/unit/data/parser/schema/battlescribeSchema.generated.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/schemaValidator.test.js",
+      "to": "tests/unit/data/parser/schemaValidator.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.catalogueParseFailures.test.js",
+      "to": "tests/unit/data/parser/xmlParser.catalogueParseFailures.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.categoryLinkConstraints.test.js",
+      "to": "tests/unit/data/parser/xmlParser.categoryLinkConstraints.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.infoGroups.test.js",
+      "to": "tests/unit/data/parser/xmlParser.infoGroups.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.nameModifier.test.js",
+      "to": "tests/unit/data/parser/xmlParser.nameModifier.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.revision.test.js",
+      "to": "tests/unit/data/parser/xmlParser.revision.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/parser/xmlParser.staticAttributes.test.js",
+      "to": "tests/unit/data/parser/xmlParser.staticAttributes.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/rules/rulesLookup.test.js",
+      "to": "tests/unit/data/rules/rulesLookup.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/catalogRevisions.test.js",
+      "to": "tests/unit/data/services/catalogRevisions.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/dataEvents.test.js",
+      "to": "tests/unit/data/services/dataEvents.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/rosterStore.test.js",
+      "to": "tests/unit/data/services/rosterStore.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/rosterTransfer.test.js",
+      "to": "tests/unit/data/services/rosterTransfer.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/settings.test.js",
+      "to": "tests/unit/data/services/settings.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/data/services/systemLibrary.test.js",
+      "to": "tests/unit/data/services/systemLibrary.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/datasetDiagnostics.test.js",
+      "to": "tests/unit/domain/evaluation/datasetDiagnostics.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluateIdentityCache.test.js",
+      "to": "tests/unit/domain/evaluation/evaluateIdentityCache.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.describeCache.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.describeCache.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.emptyResultIdentity.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.emptyResultIdentity.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.evaluator.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.evaluator.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.forceCatalogueId.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.forceCatalogueId.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.reportIdentity.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.reportIdentity.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/evaluationCache.unresolvedSlotPaths.test.js",
+      "to": "tests/unit/domain/evaluation/evaluationCache.unresolvedSlotPaths.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/forcePaths.editorEdge.test.js",
+      "to": "tests/unit/domain/evaluation/forcePaths.editorEdge.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/listRuleGroups.test.js",
+      "to": "tests/unit/domain/evaluation/listRuleGroups.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/mandatoryListRules.test.js",
+      "to": "tests/unit/domain/evaluation/mandatoryListRules.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/recruitTree.frozenCorpus.test.js",
+      "to": "tests/unit/domain/evaluation/recruitTree.frozenCorpus.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/rosterAdapter.linkIdRuleEffect.test.js",
+      "to": "tests/unit/domain/evaluation/rosterAdapter.linkIdRuleEffect.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/rosterAdapter.test.js",
+      "to": "tests/unit/domain/evaluation/rosterAdapter.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/rosterReport.test.js",
+      "to": "tests/unit/domain/evaluation/rosterReport.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/slotIndex.test.js",
+      "to": "tests/unit/domain/evaluation/slotIndex.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/slotPaths.editorEdge.test.js",
+      "to": "tests/unit/domain/evaluation/slotPaths.editorEdge.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/useEvaluation.test.js",
+      "to": "tests/unit/domain/evaluation/useEvaluation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluation/violationStats.test.js",
+      "to": "tests/unit/domain/evaluation/violationStats.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/authorMessages.test.js",
+      "to": "tests/unit/domain/evaluator/authorMessages.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/budget.test.js",
+      "to": "tests/unit/domain/evaluator/budget.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.datasetMetadata.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.datasetMetadata.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.documentedData.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.documentedData.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.limitField.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.limitField.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.malformedXml.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.malformedXml.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.parserErrorNamespace.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.parserErrorNamespace.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogReader.sortIndex.test.js",
+      "to": "tests/unit/domain/evaluator/catalogReader.sortIndex.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/catalogSet.test.js",
+      "to": "tests/unit/domain/evaluator/catalogSet.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/causes.test.js",
+      "to": "tests/unit/domain/evaluator/causes.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/compare.instanceOf.test.js",
+      "to": "tests/unit/domain/evaluator/compare.instanceOf.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/compare.test.js",
+      "to": "tests/unit/domain/evaluator/compare.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.carrierDescendants.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.carrierDescendants.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.forceScopeNestedOccurrences.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.forceScopeNestedOccurrences.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.hiddenMin.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.hiddenMin.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.primaryCatalogueScope.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.primaryCatalogueScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.selfScopeFrame.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.selfScopeFrame.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/constraints.unlimitedSentinel.test.js",
+      "to": "tests/unit/domain/evaluator/constraints.unlimitedSentinel.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/costProjection.raiseCost.test.js",
+      "to": "tests/unit/domain/evaluator/costProjection.raiseCost.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/costProjection.raiseCostFixture.test.js",
+      "to": "tests/unit/domain/evaluator/costProjection.raiseCostFixture.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/costProjection.raiseMembers.test.js",
+      "to": "tests/unit/domain/evaluator/costProjection.raiseMembers.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/costProjection.test.js",
+      "to": "tests/unit/domain/evaluator/costProjection.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.costSumCarrierFrame.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.costSumCarrierFrame.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.costSumUnderCarrier.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.costSumUnderCarrier.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.frameOwnAnyTarget.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.frameOwnAnyTarget.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.groupFrame.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.groupFrame.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.linkedType.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.linkedType.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/countIndex.syntheticAnchors.test.js",
+      "to": "tests/unit/domain/evaluator/countIndex.syntheticAnchors.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/crossCatalog.rootEntryScope.test.js",
+      "to": "tests/unit/domain/evaluator/crossCatalog.rootEntryScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/crossCatalog.rosterDeclaredCatalogue.test.js",
+      "to": "tests/unit/domain/evaluator/crossCatalog.rosterDeclaredCatalogue.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/crossCatalog.selectionScope.test.js",
+      "to": "tests/unit/domain/evaluator/crossCatalog.selectionScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/crossCatalog.test.js",
+      "to": "tests/unit/domain/evaluator/crossCatalog.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/datasetDescription.test.js",
+      "to": "tests/unit/domain/evaluator/datasetDescription.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/datasetPreparation.test.js",
+      "to": "tests/unit/domain/evaluator/datasetPreparation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/e2e.testcatalog.test.js",
+      "to": "tests/unit/domain/evaluator/e2e.testcatalog.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/effectiveState.baseHiddenInheritance.test.js",
+      "to": "tests/unit/domain/evaluator/effectiveState.baseHiddenInheritance.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/effectiveState.hiddenGroupMembers.test.js",
+      "to": "tests/unit/domain/evaluator/effectiveState.hiddenGroupMembers.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/enumHandlerCoverage.test.js",
+      "to": "tests/unit/domain/evaluator/enumHandlerCoverage.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.linkLocalChildren.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.linkLocalChildren.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.sortIndexGroupAnchorNoCounting.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.sortIndexGroupAnchorNoCounting.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.unlinkedCategoryMax.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.unlinkedCategoryMax.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.unlinkedCategoryMinForceMaxRoster.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.unlinkedCategoryMinForceMaxRoster.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.unlinkedCategoryMixedScope.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.unlinkedCategoryMixedScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evalTree.unlinkedCategoryParentScope.test.js",
+      "to": "tests/unit/domain/evaluator/evalTree.unlinkedCategoryParentScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.bloodlineProfileFixture.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.bloodlineProfileFixture.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.corpusLinkLocalChildren.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.corpusLinkLocalChildren.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.describeDataset.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.describeDataset.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.ergofangForeignMandates.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.ergofangForeignMandates.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.measurementMetadata.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.measurementMetadata.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.measurementPhaseComposition.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.measurementPhaseComposition.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.preparedDataset.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.preparedDataset.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.primaryCatalogueFixture.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.primaryCatalogueFixture.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.rosterContract.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.rosterContract.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/evaluator.unitAncestorFixture.test.js",
+      "to": "tests/unit/domain/evaluator/evaluator.unitAncestorFixture.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/fixpoint.test.js",
+      "to": "tests/unit/domain/evaluator/fixpoint.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/groups.test.js",
+      "to": "tests/unit/domain/evaluator/groups.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/infoElements.test.js",
+      "to": "tests/unit/domain/evaluator/infoElements.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/infoProjection.namedRuleFallback.test.js",
+      "to": "tests/unit/domain/evaluator/infoProjection.namedRuleFallback.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/infoProjection.publicationSource.test.js",
+      "to": "tests/unit/domain/evaluator/infoProjection.publicationSource.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/infoProjection.test.js",
+      "to": "tests/unit/domain/evaluator/infoProjection.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/limitDerivation.test.js",
+      "to": "tests/unit/domain/evaluator/limitDerivation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifierTargets.test.js",
+      "to": "tests/unit/domain/evaluator/modifierTargets.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.groupWitness.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.groupWitness.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.percentCondition.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.percentCondition.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.repeatParentAny.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.repeatParentAny.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.setWithRepeat.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.setWithRepeat.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/modifiers.unreadableGuards.test.js",
+      "to": "tests/unit/domain/evaluator/modifiers.unreadableGuards.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/offer.hiddenGate.test.js",
+      "to": "tests/unit/domain/evaluator/offer.hiddenGate.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/offer.test.js",
+      "to": "tests/unit/domain/evaluator/offer.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/phantom.test.js",
+      "to": "tests/unit/domain/evaluator/phantom.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.ancestorScope.test.js",
+      "to": "tests/unit/domain/evaluator/query.ancestorScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.categoryScope.test.js",
+      "to": "tests/unit/domain/evaluator/query.categoryScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.characteristicGateScopes.test.js",
+      "to": "tests/unit/domain/evaluator/query.characteristicGateScopes.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.limitValue.test.js",
+      "to": "tests/unit/domain/evaluator/query.limitValue.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.limitValueForceScope.test.js",
+      "to": "tests/unit/domain/evaluator/query.limitValueForceScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.matrix.test.js",
+      "to": "tests/unit/domain/evaluator/query.matrix.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.primaryCatalogueContract.test.js",
+      "to": "tests/unit/domain/evaluator/query.primaryCatalogueContract.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.primaryCatalogueFromRoster.test.js",
+      "to": "tests/unit/domain/evaluator/query.primaryCatalogueFromRoster.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.primaryCatalogueScope.test.js",
+      "to": "tests/unit/domain/evaluator/query.primaryCatalogueScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.selfGatedInstanceOf.test.js",
+      "to": "tests/unit/domain/evaluator/query.selfGatedInstanceOf.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/query.unitScope.test.js",
+      "to": "tests/unit/domain/evaluator/query.unitScope.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.armyWideCategoryDedup.test.js",
+      "to": "tests/unit/domain/evaluator/report.armyWideCategoryDedup.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.authorMessageAnchors.test.js",
+      "to": "tests/unit/domain/evaluator/report.authorMessageAnchors.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.effectiveCategories.test.js",
+      "to": "tests/unit/domain/evaluator/report.effectiveCategories.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.entryClassification.test.js",
+      "to": "tests/unit/domain/evaluator/report.entryClassification.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.groupBehavior.test.js",
+      "to": "tests/unit/domain/evaluator/report.groupBehavior.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.hiddenSelection.test.js",
+      "to": "tests/unit/domain/evaluator/report.hiddenSelection.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.parentFrameDedup.test.js",
+      "to": "tests/unit/domain/evaluator/report.parentFrameDedup.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.sortIndex.test.js",
+      "to": "tests/unit/domain/evaluator/report.sortIndex.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.sourceId.test.js",
+      "to": "tests/unit/domain/evaluator/report.sourceId.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/report.test.js",
+      "to": "tests/unit/domain/evaluator/report.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/resolver.conditionLinkChildId.test.js",
+      "to": "tests/unit/domain/evaluator/resolver.conditionLinkChildId.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/resolver.immutability.test.js",
+      "to": "tests/unit/domain/evaluator/resolver.immutability.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/resolver.test.js",
+      "to": "tests/unit/domain/evaluator/resolver.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rootEntryLinkMandatory.dedupeBounds.test.js",
+      "to": "tests/unit/domain/evaluator/rootEntryLinkMandatory.dedupeBounds.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rootEntryLinkMandatory.sameAnchorLimits.test.js",
+      "to": "tests/unit/domain/evaluator/rootEntryLinkMandatory.sameAnchorLimits.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rootEntryLinkMandatory.test.js",
+      "to": "tests/unit/domain/evaluator/rootEntryLinkMandatory.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rosParser.entryLinkId.test.js",
+      "to": "tests/unit/domain/evaluator/rosParser.entryLinkId.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rosterBudget.test.js",
+      "to": "tests/unit/domain/evaluator/rosterBudget.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rosterBudget.unlimitedSentinel.test.js",
+      "to": "tests/unit/domain/evaluator/rosterBudget.unlimitedSentinel.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/rounding.test.js",
+      "to": "tests/unit/domain/evaluator/rounding.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/violationClassification.test.js",
+      "to": "tests/unit/domain/evaluator/violationClassification.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/callSites.catalogueCollisions.test.jsx",
+      "to": "tests/unit/domain/roster/callSites.catalogueCollisions.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/catalogResolver.catalogueCollisions.test.js",
+      "to": "tests/unit/domain/roster/catalogResolver.catalogueCollisions.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/catalogResolver.test.js",
+      "to": "tests/unit/domain/roster/catalogResolver.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/costTypeLabels.costTypeSelection.test.js",
+      "to": "tests/unit/domain/roster/costTypeLabels.costTypeSelection.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/costTypeLabels.test.js",
+      "to": "tests/unit/domain/roster/costTypeLabels.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/createRoster.test.js",
+      "to": "tests/unit/domain/roster/createRoster.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/forceEntries.lookup.test.js",
+      "to": "tests/unit/domain/roster/forceEntries.lookup.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/optionsCollector.groupConstraintIsolation.test.js",
+      "to": "tests/unit/domain/roster/optionsCollector.groupConstraintIsolation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/optionsCollector.groupedMountSubOption.integration.test.js",
+      "to": "tests/unit/domain/roster/optionsCollector.groupedMountSubOption.integration.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/optionsCollector.test.js",
+      "to": "tests/unit/domain/roster/optionsCollector.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/profileGrouping.test.js",
+      "to": "tests/unit/domain/roster/profileGrouping.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterDefaults.test.js",
+      "to": "tests/unit/domain/roster/rosterDefaults.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterSerialization.evaluator.test.js",
+      "to": "tests/unit/domain/roster/rosterSerialization.evaluator.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterSerialization.integration.test.js",
+      "to": "tests/unit/domain/roster/rosterSerialization.integration.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterSerialization.test.js",
+      "to": "tests/unit/domain/roster/rosterSerialization.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterSync.catalogueAlignment.test.js",
+      "to": "tests/unit/domain/roster/rosterSync.catalogueAlignment.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterSync.test.js",
+      "to": "tests/unit/domain/roster/rosterSync.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/rosterTree.test.js",
+      "to": "tests/unit/domain/roster/rosterTree.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/selectionFactory.test.js",
+      "to": "tests/unit/domain/roster/selectionFactory.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/selectionMembers.test.js",
+      "to": "tests/unit/domain/roster/selectionMembers.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/subSelectionEditing.test.js",
+      "to": "tests/unit/domain/roster/subSelectionEditing.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/roster/subUnit.test.js",
+      "to": "tests/unit/domain/roster/subUnit.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/App.test.jsx",
+      "to": "tests/unit/ui/App.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/AppDialogs.test.jsx",
+      "to": "tests/unit/ui/components/AppDialogs.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/Importer.test.jsx",
+      "to": "tests/unit/ui/components/Importer.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PlayMode.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/PlayMode.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PlayMode.ruleLinks.test.jsx",
+      "to": "tests/unit/ui/components/PlayMode.ruleLinks.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PlayMode.test.jsx",
+      "to": "tests/unit/ui/components/PlayMode.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PreviewBadge.test.jsx",
+      "to": "tests/unit/ui/components/PreviewBadge.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterDashboard.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/RosterDashboard.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterDashboard.test.jsx",
+      "to": "tests/unit/ui/components/RosterDashboard.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.autofill.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.autofill.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.forcePath.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.forcePath.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.listRules.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.listRules.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.ruleLinks.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.ruleLinks.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.sidebarForcePath.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.sidebarForcePath.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.test.jsx",
+      "to": "tests/unit/ui/components/RosterEditor.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RulesIndexDialog.test.jsx",
+      "to": "tests/unit/ui/components/RulesIndexDialog.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/SettingsDialog.test.jsx",
+      "to": "tests/unit/ui/components/SettingsDialog.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/appViewSwitch.parseCount.test.jsx",
+      "to": "tests/unit/ui/components/appViewSwitch.parseCount.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/AutoFillSuggestions.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/AutoFillSuggestions.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/AutoFillSuggestions.raiseCost.test.jsx",
+      "to": "tests/unit/ui/components/editor/AutoFillSuggestions.raiseCost.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryCountBadge.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryCountBadge.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.activeCatalogue.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.activeCatalogue.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.forceCatalogue.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.forceCatalogue.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.giantRare.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.giantRare.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.noRenderDerivation.test.js",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.noRenderDerivation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.raiseCost.test.jsx",
+      "to": "tests/unit/ui/components/editor/CategoryUnitAdder.raiseCost.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ForceEditorSection.forceCatalogue.test.jsx",
+      "to": "tests/unit/ui/components/editor/ForceEditorSection.forceCatalogue.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ForceEditorSection.test.jsx",
+      "to": "tests/unit/ui/components/editor/ForceEditorSection.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ListRuleChecklist.mandatory.test.jsx",
+      "to": "tests/unit/ui/components/editor/ListRuleChecklist.mandatory.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ListRuleChecklist.mandatoryNarrowViewport.test.jsx",
+      "to": "tests/unit/ui/components/editor/ListRuleChecklist.mandatoryNarrowViewport.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ListRuleChecklist.test.jsx",
+      "to": "tests/unit/ui/components/editor/ListRuleChecklist.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/NewRosterModal.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/NewRosterModal.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/NewRosterModal.test.jsx",
+      "to": "tests/unit/ui/components/editor/NewRosterModal.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/OptionGroup.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/OptionGroup.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/OptionGroup.groupConstraints.regression.test.jsx",
+      "to": "tests/unit/ui/components/editor/OptionGroup.groupConstraints.regression.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/OptionGroup.sortIndex.test.jsx",
+      "to": "tests/unit/ui/components/editor/OptionGroup.sortIndex.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterCategorySection.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterCategorySection.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterCategorySection.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterCategorySection.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterEditorTopBar.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterEditorTopBar.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterSidebar.forcePath.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterSidebar.forcePath.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterSidebar.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterSidebar.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterValidationPanel.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterValidationPanel.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterValidationPanel.test.jsx",
+      "to": "tests/unit/ui/components/editor/RosterValidationPanel.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RuleChipIcon.test.jsx",
+      "to": "tests/unit/ui/components/editor/RuleChipIcon.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.containerGroups.initialExpansion.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.containerGroups.initialExpansion.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.containerGroups.integration.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.containerGroups.integration.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.containerGroups.mixedGroup.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.containerGroups.mixedGroup.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.containerGroups.nesting.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.containerGroups.nesting.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.groupMembership.fixtureSweep.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.groupMembership.fixtureSweep.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.groupMembership.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.groupMembership.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.mandatoryInCappedGroup.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.mandatoryInCappedGroup.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.mandatoryObligation.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.mandatoryObligation.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.nestedSubOptions.integration.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.nestedSubOptions.integration.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.selectionStability.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.selectionStability.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.sortIndex.test.jsx",
+      "to": "tests/unit/ui/components/editor/SelectionConfigurator.sortIndex.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitCardList.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitCardList.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitChips.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitChips.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitChips.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitChips.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitSelectionCard.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.gatedProfileCharacteristics.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitSelectionCard.gatedProfileCharacteristics.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.subUnitDetails.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitSelectionCard.subUnitDetails.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.subUnitRuleLinks.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitSelectionCard.subUnitRuleLinks.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.test.jsx",
+      "to": "tests/unit/ui/components/editor/UnitSelectionCard.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ValidationCauses.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/ValidationCauses.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ValidationMessage.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/editor/ValidationMessage.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/sectionPropCount.test.js",
+      "to": "tests/unit/ui/components/editor/sectionPropCount.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/i18nEnglishSmoke.test.jsx",
+      "to": "tests/unit/ui/components/i18nEnglishSmoke.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/play/PlayUnitDetails.evaluator.test.jsx",
+      "to": "tests/unit/ui/components/play/PlayUnitDetails.evaluator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/play/PlayUnitDetails.infogroups.test.jsx",
+      "to": "tests/unit/ui/components/play/PlayUnitDetails.infogroups.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/play/PlayUnitDetails.test.jsx",
+      "to": "tests/unit/ui/components/play/PlayUnitDetails.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/previewHost.test.js",
+      "to": "tests/unit/ui/components/previewHost.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/rosterProviders.testUtils.test.jsx",
+      "to": "tests/unit/ui/components/rosterProviders.testUtils.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/i18nStore.test.js",
+      "to": "tests/unit/ui/i18n/i18nStore.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/languageController.test.js",
+      "to": "tests/unit/ui/i18n/languageController.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/languageDetection.test.js",
+      "to": "tests/unit/ui/i18n/languageDetection.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/localeParity.test.js",
+      "to": "tests/unit/ui/i18n/localeParity.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/translate.test.js",
+      "to": "tests/unit/ui/i18n/translate.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/violationMessageCoverage.test.js",
+      "to": "tests/unit/ui/i18n/violationMessageCoverage.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/violationMessages.test.js",
+      "to": "tests/unit/ui/i18n/violationMessages.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/SettingsContext.test.jsx",
+      "to": "tests/unit/ui/viewmodels/SettingsContext.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/capabilityEntries.test.js",
+      "to": "tests/unit/ui/viewmodels/capabilityEntries.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/configuratorSections.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/configuratorSections.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/costBudgets.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/costBudgets.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/optionRowDerivations.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/optionRowDerivations.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/selectionBehavior.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/selectionBehavior.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/standaloneRow.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/standaloneRow.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/upgradeDetailElements.test.js",
+      "to": "tests/unit/ui/viewmodels/editor/upgradeDetailElements.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useAutoFillSuggestions.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useAutoFillSuggestions.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useCategorySection.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useCategorySection.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useForceSection.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useForceSection.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useListRuleChecklist.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useListRuleChecklist.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useOptionGroup.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useOptionGroup.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useRecruitOffer.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useRecruitOffer.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useRosterSidebar.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useRosterSidebar.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useSelectionConfigurator.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useSelectionConfigurator.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useUnitCard.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useUnitCard.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useUnitChips.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useUnitChips.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useValidationPanel.test.jsx",
+      "to": "tests/unit/ui/viewmodels/editor/useValidationPanel.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerBundle.test.js",
+      "to": "tests/unit/ui/viewmodels/importerBundle.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerMessages.test.js",
+      "to": "tests/unit/ui/viewmodels/importerMessages.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerRevisionDisplay.test.js",
+      "to": "tests/unit/ui/viewmodels/importerRevisionDisplay.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/persistenceFailure.test.js",
+      "to": "tests/unit/ui/viewmodels/persistenceFailure.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/releaseDiff.test.js",
+      "to": "tests/unit/ui/viewmodels/releaseDiff.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/rosterCommands.test.js",
+      "to": "tests/unit/ui/viewmodels/rosterCommands.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/rosterContexts.test.jsx",
+      "to": "tests/unit/ui/viewmodels/rosterContexts.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/rosterSelectionFactory.test.js",
+      "to": "tests/unit/ui/viewmodels/rosterSelectionFactory.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/systemArchiveExport.test.js",
+      "to": "tests/unit/ui/viewmodels/systemArchiveExport.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useAppData.test.js",
+      "to": "tests/unit/ui/viewmodels/useAppData.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useAppNavigation.test.js",
+      "to": "tests/unit/ui/viewmodels/useAppNavigation.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useBottomSheet.test.js",
+      "to": "tests/unit/ui/viewmodels/useBottomSheet.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useImporter.test.jsx",
+      "to": "tests/unit/ui/viewmodels/useImporter.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useMandatoryListRuleAutoAdd.test.js",
+      "to": "tests/unit/ui/viewmodels/useMandatoryListRuleAutoAdd.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useNewRosterModal.test.jsx",
+      "to": "tests/unit/ui/viewmodels/useNewRosterModal.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayRoster.test.jsx",
+      "to": "tests/unit/ui/viewmodels/usePlayRoster.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayState.test.js",
+      "to": "tests/unit/ui/viewmodels/usePlayState.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayUnit.test.jsx",
+      "to": "tests/unit/ui/viewmodels/usePlayUnit.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePwaLifecycle.test.js",
+      "to": "tests/unit/ui/viewmodels/usePwaLifecycle.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterDashboard.test.jsx",
+      "to": "tests/unit/ui/viewmodels/useRosterDashboard.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterEditor.test.jsx",
+      "to": "tests/unit/ui/viewmodels/useRosterEditor.test.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterList.freshRosterIds.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterList.freshRosterIds.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterList.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterList.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterPersistence.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterPersistence.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.commands.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.commands.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.costedMandatoryAutoAdd.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.costedMandatoryAutoAdd.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.evaluator.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.evaluator.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.mandatoryAutoAdd.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.mandatoryAutoAdd.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.nestedMandatoryGroups.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.nestedMandatoryGroups.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.recruitCostAgreement.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.recruitCostAgreement.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.test.js",
+      "to": "tests/unit/ui/viewmodels/useRosterState.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRuleUrl.test.js",
+      "to": "tests/unit/ui/viewmodels/useRuleUrl.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRulesIndexDialog.test.js",
+      "to": "tests/unit/ui/viewmodels/useRulesIndexDialog.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useToast.test.js",
+      "to": "tests/unit/ui/viewmodels/useToast.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useUndoableState.test.js",
+      "to": "tests/unit/ui/viewmodels/useUndoableState.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useViewportHeight.test.js",
+      "to": "tests/unit/ui/viewmodels/useViewportHeight.test.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/__fixtures__/e2eReport.js",
+      "to": "tests/fixtures/domain/evaluator/__fixtures__/e2eReport.js"
+    },
+    {
+      "op": "move",
+      "module": "src/domain/evaluator/__fixtures__/rosParser.js",
+      "to": "tests/fixtures/domain/evaluator/__fixtures__/rosParser.js"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/editorHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/editorHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/AutoFillSuggestionsHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/AutoFillSuggestionsHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/CategoryUnitAdderHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/CategoryUnitAdderHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/ForceEditorSectionHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/ForceEditorSectionHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/ListRuleChecklistHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/ListRuleChecklistHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/RosterCategorySectionHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/RosterCategorySectionHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/RosterSidebarHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/RosterSidebarHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/RosterValidationPanelHarness.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/RosterValidationPanelHarness.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/harnesses/sectionHarnessBase.jsx",
+      "to": "tests/fixtures/shared/test-utils/harnesses/sectionHarnessBase.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/i18nTestSetup.js",
+      "to": "tests/fixtures/shared/test-utils/i18nTestSetup.js"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/rosterProviders.jsx",
+      "to": "tests/fixtures/shared/test-utils/rosterProviders.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/test-utils/subSelectionOperationsMock.js",
+      "to": "tests/fixtures/shared/test-utils/subSelectionOperationsMock.js"
+    }
+  ]
+}
