@@ -25,7 +25,7 @@ export const REPO_ROOT = path.resolve(HARNESS_DIR, '..', '..');
 // Eingefrorene Katalog-Fixture in Upstream-Form (siehe deren README). Bewusst
 // entkoppelt von den zur Laufzeit über das Netz bezogenen Katalogdaten, damit
 // jeder Lauf deterministisch und netzfrei bleibt.
-const FIXTURE_DIR = path.join(REPO_ROOT, 'src', 'shared', '__fixtures__', 'whfb6');
+const FIXTURE_DIR = path.join(REPO_ROOT, 'src', 'tests', '__fixtures__', 'whfb6');
 const CATALOG_FILE_EXTENSIONS = ['.cat', '.gst'];
 
 // Die App stößt beim Start still ein Katalog-Update gegen diesen Host an. Für

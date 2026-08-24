@@ -3,8 +3,8 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import useAppData from '../../../ui/viewmodels/useAppData';
 import { getAllSystems, getAllRosters } from '../../../data/db/database';
 import { runSystemMigrations } from '../../../data/db/migrations';
-import { VIEWS } from '../../../shared/constants/views';
-import { DATA_EVENT, emitDataChange } from '../../../data/services/dataEvents';
+import { VIEWS } from '../../../ui/constants/views';
+import { DATA_EVENT, emitDataChange } from '../../../domain/services/dataEvents';
 
 vi.mock('../../../data/db/database', () => ({
   getAllSystems: vi.fn(),
@@ -125,7 +125,7 @@ describe('useAppData — Neuladen', () => {
 });
 
 // Issue 0167 / ADR-0037: `useAppData` ist die eine Stelle, an der der
-// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über `src/data/services/`
+// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über `src/domain/services/`
 // geschrieben wurde, steht danach in der Liste — ohne Navigationswechsel und
 // ohne zweites Lesen aus der DB.
 describe('useAppData — Änderungs-Kanal der Datenschicht', () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from '../../../ui/components/PlayMode';
-import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../../shared/test-utils/editorHarness';
+import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../../tests/test-utils/editorHarness';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({

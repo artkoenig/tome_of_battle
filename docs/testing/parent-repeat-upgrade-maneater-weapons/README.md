@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln,
 Constraint-IDs und Erwartungswerte sind **ausschliesslich aus den Katalogdaten**
-des **upstream**-Fixture-Satzes `src/shared/__fixtures__/whfb6/` abgeleitet, dazu aus
+des **upstream**-Fixture-Satzes `src/tests/__fixtures__/whfb6/` abgeleitet, dazu aus
 der Formatspezifikation [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md).
 Das Eingabeformat der Roster folgt den bereits verifizierten Szenario-Fixtures
 desselben Satzes (direktes `entryId`, `entryLinkId=""` bzw. Link-Id,
@@ -17,7 +17,7 @@ und [`../decrement-cost-bloodline-casting-dice/`](../decrement-cost-bloodline-ca
   der Datensatz besteht also aus genau diesen zwei Dateien.
 
 > **Nur ein Fixture-Satz.** Dieses Szenario nutzt ausschliesslich den upstream-Satz
-> `src/shared/__fixtures__/whfb6/`. Der Definitive-Edition-Satz
+> `src/tests/__fixtures__/whfb6/`. Der Definitive-Edition-Satz
 > (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) enthält dieselben Ids teils mit
 > anderen Attributen; er wird hier **nirgends** referenziert.
 

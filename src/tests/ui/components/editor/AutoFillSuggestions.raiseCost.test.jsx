@@ -13,8 +13,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../../../shared/test-utils/harnesses/AutoFillSuggestionsHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../../../tests/test-utils/harnesses/AutoFillSuggestionsHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
 

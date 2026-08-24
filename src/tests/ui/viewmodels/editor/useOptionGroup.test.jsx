@@ -7,7 +7,7 @@ import {
   createRosterProviderWrapper,
   createEmptyRosterReport,
   createNoopRosterCommands,
-} from '../../../../shared/test-utils/rosterProviders';
+} from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Options-Gruppe (ADR-0038). `group` ist reine Struktur;

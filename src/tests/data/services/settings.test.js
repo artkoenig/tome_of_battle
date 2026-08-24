@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DATA_EVENT, subscribeToDataChanges } from '../../../data/services/dataEvents';
-import { WHFB6_LINKING_DEFAULT, loadWhfb6LinkingEnabled, saveWhfb6LinkingEnabled } from '../../../data/services/settings';
+import { DATA_EVENT, subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { WHFB6_LINKING_DEFAULT, loadWhfb6LinkingEnabled, saveWhfb6LinkingEnabled } from '../../../domain/services/settings';
 import * as database from '../../../data/db/database';
 
 vi.mock('../../../data/db/database', () => ({

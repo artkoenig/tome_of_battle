@@ -35,7 +35,7 @@ export const REPO_ROOT = resolve(dirname(currentFilePath), '..', '..');
 export const WHFB6_DEFINITIVE_DIR = resolve(REPO_ROOT, 'src', 'domain', 'evaluator', '__fixtures__', 'whfb6-definitive');
 
 /** The frozen upstream-form corpus that also feeds the app E2E harness. */
-export const WHFB6_DIR = resolve(REPO_ROOT, 'src', 'shared', '__fixtures__', 'whfb6');
+export const WHFB6_DIR = resolve(REPO_ROOT, 'src', 'tests', '__fixtures__', 'whfb6');
 
 /** Both corpora, in the order the inventory walks them. */
 export const CORPUS_DIRS = Object.freeze([WHFB6_DEFINITIVE_DIR, WHFB6_DIR]);

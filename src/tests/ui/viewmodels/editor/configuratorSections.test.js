@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { buildSections, holdsSelection, isRoleGroupName } from '../../../../ui/viewmodels/editor/configuratorSections';
-import { createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * Der Abschnittsbaum des Konfigurators, ohne Hook und ohne Provider.

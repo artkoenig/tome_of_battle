@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { VIEWS } from '../../shared/constants/views';
+import { VIEWS } from '../../ui/constants/views';
 
 /** Der Ausgangspunkt der Verlaufs-Navigation: das Heerlager ohne offenes Roster. */
 const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: null });

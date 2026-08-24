@@ -3,7 +3,7 @@ import {
   WHFB6_LINKING_DEFAULT,
   loadWhfb6LinkingEnabled,
   saveWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
-} from '../../data/services/settings';
+} from '../../domain/services/settings';
 
 // App-wide settings, deliberately scoped to the single whfb6 linking flag (see
 // ADR-0015). The context is null until a SettingsProvider mounts, which

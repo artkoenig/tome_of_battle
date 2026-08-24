@@ -16,7 +16,7 @@
  *
  * Ein **Kontingent** kann seine Definition genauso verlieren wie eine Auswahl —
  * es erscheint dann mit seiner Id. Einen Klartextnamen gibt es für diesen Fall
- * nirgends: das App-Force-Modell (`src/shared/types.js`) führt keinen (der `.ros`-Import
+ * nirgends: das App-Force-Modell (`src/domain/types.js`) führt keinen (der `.ros`-Import
  * verwirft das `name`-Attribut), und der Name der Definition ist genau das, was
  * mit ihr fehlt. Die Id ist hier also die ehrliche Auskunft, kein Notbehelf.
  */
@@ -36,7 +36,7 @@ function collectNamesByDefId(selections, into) {
  * Die Auswahlen eines Rosters, deren Definition der Datensatz nicht kennt.
  *
  * @param {ReadonlyArray<object>|null|undefined} diagnostics  `diagnostics` des Berichts.
- * @param {import('../../shared/types.js').Roster|null|undefined} roster  das App-Roster.
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster  das App-Roster.
  * @returns {Array<{ defId: string, name: string }>} je unauflösbarer Definition
  *   einmal, in der Reihenfolge der Diagnosen; Name aus dem Roster, sonst die Id.
  */

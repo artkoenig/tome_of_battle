@@ -3,7 +3,7 @@ import { SlotIndex } from '../../../domain/evaluation/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from '../../../ui/components/RosterEditor';
-import { createSubSelectionOperationsMock } from '../../../shared/test-utils/subSelectionOperationsMock';
+import { createSubSelectionOperationsMock } from '../../../tests/test-utils/subSelectionOperationsMock';
 import { useRosterCommands } from '../../../ui/viewmodels/rosterContexts';
 
 // Mock Lucide Icons

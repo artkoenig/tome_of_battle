@@ -5,7 +5,7 @@ import {
   CASTING_DICE,
   COST_TYPE_NAME,
   createGrimdarkSystem
-} from '../../../shared/__fixtures__/grimdarkSystem.js';
+} from '../../../tests/__fixtures__/grimdarkSystem.js';
 
 /**
  * Die Kostenart, in der ein Roster gemessen wird, wird ausschliesslich ueber die

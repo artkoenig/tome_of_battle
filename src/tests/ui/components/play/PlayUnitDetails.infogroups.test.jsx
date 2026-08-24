@@ -24,7 +24,7 @@ vi.mock('../../../../ui/components/editor/UnitChips', () => ({
 }));
 
 const catalogueXml = readFileSync(
-  './src/shared/__fixtures__/generic/generic-infogroups.cat',
+  './src/tests/__fixtures__/generic/generic-infogroups.cat',
   'utf-8'
 );
 

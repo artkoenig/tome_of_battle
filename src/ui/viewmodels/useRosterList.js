@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { saveRoster, deleteRoster } from '../../data/services/rosterStore';
-import { readRosterText, buildRosterFile } from '../../data/services/rosterTransfer';
+import { saveRoster, deleteRoster } from '../../domain/services/rosterStore';
+import { readRosterText, buildRosterFile } from '../../domain/services/rosterTransfer';
 import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
 } from '../../domain/roster/rosterSerialization';
 import { buildRoster } from '../../domain/roster/createRoster';
 import { evaluateAppRoster } from '../../domain/evaluation/evaluationCache';
-import { VIEWS } from '../../shared/constants/views';
+import { VIEWS } from '../../ui/constants/views';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../domain/roster';
 import { t } from '../i18n/i18nStore';
 
@@ -114,8 +114,8 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
   };
 
   /**
-   * @param {import('../../shared/types.js').Roster} roster
-   * @param {import('../../shared/constants/views.js').View} [viewMode]
+   * @param {import('../../domain/types.js').Roster} roster
+   * @param {import('../../ui/constants/views.js').View} [viewMode]
    */
   const openRoster = (roster, viewMode = VIEWS.BUILDER) => {
     const sys = systems.find(s => s.id === roster.systemId);

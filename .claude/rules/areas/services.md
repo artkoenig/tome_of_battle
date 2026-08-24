@@ -1,13 +1,14 @@
 ---
 paths:
-  - "src/data/services/**"
+  - "src/domain/services/**"
 ---
 
 # services — die Datenfassade
 
-Die einzige Adresse, über die die Oberfläche Daten erreicht (ADR-0037). Fünf Fassaden plus der
-eine Änderungs-Kanal: `rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`,
-`rosterTransfer.js`, `dataEvents.js`. Lauf: `forge-test --run src/data/services`.
+Die einzige Adresse, über die die Oberfläche Daten erreicht (ADR-0037, reklassifiziert von Daten
+nach Fachlogik durch ADR-0040/Issue 0179). Fünf Fassaden plus der eine Änderungs-Kanal:
+`rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`,
+`dataEvents.js`. Lauf: `forge-test --run src/domain/services`.
 
 - Jede Datei hier trägt ihren **Vertrag als Kopfkommentar** und hat eine eigene `*.test.js`
   daneben. Eine neue Fassade ohne beides ist unvollständig.
@@ -38,8 +39,12 @@ eine Änderungs-Kanal: `rosterStore.js`, `systemLibrary.js`, `settings.js`, `cat
   in `rosterTransfer.js` setzt `messageKey`/`messageParams`/`detail`, und
   `describeRosterFileError` in `src/ui/viewmodels/useRosterList.js` formuliert ihn.
 - Tests hier mocken die `src/data/db/`-Module mit `vi.mock` statt IndexedDB hochzufahren (es gibt kein
-  globales `fake-indexeddb`-Setup). Ein bestehender Test eines Verbrauchers, der `../db/…`
-  mockt, bleibt dadurch grün: die Fassade importiert dieselbe Modul-Id.
+  globales `fake-indexeddb`-Setup). Ein bestehender Test eines Verbrauchers bleibt dadurch grün,
+  solange er dieselbe Modul-Id mockt wie die Fassade importiert.
+- Seit dem Umzug nach `src/domain/services/` (ADR-0040) importiert eine Datei hier `src/data/db/`
+  und `src/data/parser/` über `../../data/`, nicht mehr über `../` — `domain/` und `data/` sind
+  Geschwister, keine Unterordner voneinander. Das ist erlaubt: Fachlogik darf auf Daten zugreifen,
+  nur der Rückweg ist verboten (`daten-kein-rueckgriff`).
 - In einer `vi.mock`-Fabrik darf kein Bezeichner stehen, den die Testdatei selbst importiert
   (z. B. `MissingSystemError`) — Vitest schreibt ihn auf das gehobene Modul um und die Suite
   fällt mit `Cannot access '__vi_import__' before initialization` aus. Lokal umbenennen.

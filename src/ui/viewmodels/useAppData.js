@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { loadSystems } from '../../data/services/systemLibrary';
-import { loadRosters } from '../../data/services/rosterStore';
-import { refreshSystems } from '../../data/services/catalogRevisions';
-import { DATA_EVENT, subscribeToDataChanges } from '../../data/services/dataEvents';
-import { VIEWS } from '../../shared/constants/views';
+import { loadSystems } from '../../domain/services/systemLibrary';
+import { loadRosters } from '../../domain/services/rosterStore';
+import { refreshSystems } from '../../domain/services/catalogRevisions';
+import { DATA_EVENT, subscribeToDataChanges } from '../../domain/services/dataEvents';
+import { VIEWS } from '../../ui/constants/views';
 import { t } from '../i18n/i18nStore';
 
 /**
@@ -141,7 +141,7 @@ export default function useAppData({ showToast, navigate }) {
   }, []);
 
   // Die eine Verdrahtung des Änderungs-Kanals der Datenschicht (ADR-0037,
-  // Issue 0167). Wer über `src/data/services/` schreibt, meldet den Abschluss; hier
+  // Issue 0167). Wer über `src/domain/services/` schreibt, meldet den Abschluss; hier
   // — und nur hier — zieht die App ihre Liste nach. Vorher erfuhr die
   // Roster-Liste einen im Editor gespeicherten Stand erst durch das
   // `reloadData` eines Navigationswechsels.

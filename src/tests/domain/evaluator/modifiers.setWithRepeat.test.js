@@ -14,7 +14,7 @@
  * Roster-Budgets (in den ergofang-Fixture-Daten ist es die Core-**Untergrenze**,
  * dieselbe Konstruktion). Ihr effektiver Wert ist bei **jedem** Budget ab 5000
  * exakt 6 — nicht 6 + eins je weitere 1000. Gefahren wird an den echten Fixture-Daten
- * (`src/shared/__fixtures__/whfb6/`), damit der Test dieselbe Konstruktion sieht, ueber
+ * (`src/tests/__fixtures__/whfb6/`), damit der Test dieselbe Konstruktion sieht, ueber
  * die die Doku spricht.
  */
 
@@ -26,8 +26,8 @@ import { evaluate, prepareDataset } from '../../../domain/evaluator/evaluator.js
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-const GST = 'src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst';
-const CAT = 'src/shared/__fixtures__/whfb6/Ogre Kingdoms.cat';
+const GST = 'src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst';
+const CAT = 'src/tests/__fixtures__/whfb6/Ogre Kingdoms.cat';
 const PTS = 'ecfa-8486-4f6c-c249';
 const STANDARD_FORCE = '7d9d-6c8d-4ea0-b7ad';
 const CORE_CATEGORY = '64bf-efb4-9978-26df';

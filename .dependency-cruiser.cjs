@@ -68,11 +68,11 @@ const I18N_LAYER = '^src/ui/i18n/';
 // Reinraum-Regeln oben gelten unveraendert innerhalb dieser Schicht.
 const DOMAIN_LAYER = [EVALUATOR_LAYER, EVALUATION_LAYER, ROSTER_LAYER];
 
-// Persistenz, Import und Katalog-Zerlegung. src/data/services/ ist die einzige
+// Persistenz, Import und Katalog-Zerlegung. src/domain/services/ ist die einzige
 // Adresse, ueber die die UI Daten erreichen darf, und deshalb aus
 // "ui-nicht-auf-daten" ausgenommen.
 const DB_LAYER = '^src/data/db/';
-const SERVICES_LAYER = '^src/data/services/';
+const SERVICES_LAYER = '^src/domain/services/';
 // Seit Issue 0171 ist die ganze Schicht ein Verzeichnis; src/data/rules/ (der
 // Regeltext-Index samt Namensabgleich) gehoert dazu.
 const DATA_LAYER = ['^src/data/'];
@@ -143,7 +143,7 @@ module.exports = {
     {
       name: 'viewmodel-keine-datenschicht',
       comment:
-        'ADR-0037/0038: ein ViewModel erreicht Daten ueber src/data/services/, nie ' +
+        'ADR-0037/0038: ein ViewModel erreicht Daten ueber src/domain/services/, nie ' +
         'direkt ueber src/data/db/ oder src/data/parser/. Seit Issue 0167 ohne ' +
         'Ausnahme: die Direktkanten der drei Huellen-ViewModels laufen ueber ' +
         'die Fassade.',
@@ -155,10 +155,10 @@ module.exports = {
       name: 'ui-nicht-auf-daten',
       comment:
         'ADR-0037: die Oberflaeche erreicht Daten ausschliesslich ueber ' +
-        'src/data/services/. Ein direkter Griff nach src/data/db/ oder src/data/parser/ laesst ' +
+        'src/domain/services/. Ein direkter Griff nach src/data/db/ oder src/data/parser/ laesst ' +
         'sich weder austauschen noch instrumentieren. Bestand beim Aufstellen ' +
         'der Regel: 14 Kanten (ADR-0037, Befund 1). Issue 0167 hat sie auf ' +
-        'src/data/services/ umgelenkt; die Regel steht seitdem auf error und ' +
+        'src/domain/services/ umgelenkt; die Regel steht seitdem auf error und ' +
         'friert den Zustand ein.',
       severity: 'error',
       from: { path: [...UI_LAYER, I18N_LAYER], pathNot: TEST_FILE },
@@ -265,7 +265,7 @@ module.exports = {
           TEST_FILE, // Tests haben konstruktionsbedingt keine Importeure
           '\\.config\\.(js|cjs|mjs)$', // vite/vitest-Konfiguration
           '^src/main\\.jsx$', // App-Einstieg
-          '^src/shared/test-utils/', // Test-Setup-Helfer
+          '^src/tests/test-utils/', // Test-Setup-Helfer
           '(^|/)node_modules/',
         ],
       },

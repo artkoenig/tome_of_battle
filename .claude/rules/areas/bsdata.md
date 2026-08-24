@@ -3,7 +3,7 @@ paths:
   - "docs/battlescribe-data-format.md"
   - "docs/bsdata-catalogue-development-wiki/**"
   - "src/data/parser/**"
-  - "src/shared/__fixtures__/**"
+  - "src/tests/__fixtures__/**"
   - "**/*.cat"
   - "**/*.gst"
   - "**/*.ros"
@@ -41,7 +41,7 @@ Agent liest sie, bevor er formatnahen Code oder Katalogdaten anfasst — auch Su
   `src/**/*.test.{js,jsx}` als Entry Points, also gilt ein Testkonsument als Nutzung. Wer hier
   aufräumt, prüft von Hand (`grep -rn '\bname\b' src` — nur Definition plus `.test.js` heisst tot).
 - Kataloge liegen **nicht** im Repo: sie kommen zur Laufzeit aus dem externen Fork (ADR 0014,
-  0017, 0018). Für Tests gibt es den eingefrorenen Ausschnitt unter `src/shared/__fixtures__/whfb6/` —
+  0017, 0018). Für Tests gibt es den eingefrorenen Ausschnitt unter `src/tests/__fixtures__/whfb6/` —
   der ist Fixture, kein Datenstand zum Aktualisieren.
 - Verweisziele lösen laut ADR 0032 **global über die ID** in einer flachen Tabelle auf, nicht
   katalog-lokal. Die Formatdoku beschreibt an mancher Stelle noch die katalog-lokale Lesart.

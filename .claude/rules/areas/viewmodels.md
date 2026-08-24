@@ -20,7 +20,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
   `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
 - `useAppData.js` is the **only** subscriber of the facade's change channel
-  (`services/dataEvents.js`): a write through `src/data/services/` announces itself there and the one
+  (`services/dataEvents.js`): a write through `src/domain/services/` announces itself there and the one
   roster list follows. A screen that wants to see a foreign save subscribes nowhere.
 - `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
   `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
@@ -28,7 +28,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   Hanging the start run off a repeating event re-parses every stored catalogue and drops the
   evaluation cache with it.
 - `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
-  `messageParams`/`detail` error from `src/domain/roster/` or `src/data/services/` into text.
+  `messageParams`/`detail` error from `src/domain/roster/` or `src/domain/services/` into text.
 
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
   bundles split by how often they change. The flat view `useRoster` is gone
@@ -80,7 +80,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - A ViewModel may **not** import `src/data/db/` or `src/data/parser/`: `viewmodel-keine-datenschicht` is
   an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
   shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
-  `src/data/services/` like everything else.
+  `src/domain/services/` like everything else.
 - `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
@@ -146,7 +146,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - `useValidationPanel` reads `report.violations` **without** a `?? []` fallback on purpose: a
   missing list is a broken report and must fail loudly rather than read as "all clear"
   (`RosterEditor.test.jsx` pins the throw).
-- A section component's own tests go through `src/shared/test-utils/harnesses/<Component>Harness.jsx` —
+- A section component's own tests go through `src/tests/test-utils/harnesses/<Component>Harness.jsx` —
   one file per component, not one shared module: a partial `lucide-react` mock would otherwise
   fail on the icons of a component it never renders. `sectionHarnessBase.jsx` holds the shared
   pieces, including the inversions a flat prop set needs (`costTypeLabel`, `remainingPoints`,
@@ -181,7 +181,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   `processImportedData` and `buildRoster` — roughly 2 s per case. Where the case is about state or
   derivation only, pass `system = null`: the evaluation is the frozen empty result and runs
   instantly.
-- `src/shared/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
+- `src/tests/test-utils/rosterProviders.jsx` seeds both providers (`renderWithRosterProviders`,
   `createRosterProviderWrapper`, `createEmptyRosterReport`, `createNoopRosterCommands`). Extend
   the empty report there when the report gains a field.
 - A hook test here builds its report by hand (`new Map()` of slots, folded into a `SlotIndex` by

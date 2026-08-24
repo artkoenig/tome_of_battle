@@ -7,7 +7,7 @@ import {
   importRosterFromXml,
   MissingSystemError,
 } from '../../../domain/roster/rosterSerialization';
-import { readRosterText, buildRosterFile } from '../../../data/services/rosterTransfer';
+import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
 
 /**
@@ -38,7 +38,7 @@ vi.mock('../../../domain/roster/rosterSerialization', () => ({
   importRosterFromXml: vi.fn(),
 }));
 
-vi.mock('../../../data/services/rosterTransfer', () => ({
+vi.mock('../../../domain/services/rosterTransfer', () => ({
   readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));

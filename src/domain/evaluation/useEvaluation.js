@@ -43,7 +43,7 @@ import { evaluateAppRoster } from './evaluationCache.js';
  * @param {{ rawXmls?: { gst: Array<{ name: string, content: string }>, cat: Array<{ name: string, content: string }> } } | null | undefined} system
  *   Das App-System-Objekt mit den rohen XMLs; `null`/`undefined` oder ohne
  *   (vollstaendiges) `rawXmls` → Leer-Ergebnis.
- * @param {import('../../shared/types.js').Roster | null | undefined} roster
+ * @param {import('../../domain/types.js').Roster | null | undefined} roster
  *   Das App-Roster; `null`/`undefined` → Leer-Ergebnis.
  * @returns {import('./evaluationCache.js').AppEvaluation}
  */

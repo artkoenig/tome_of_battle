@@ -1,6 +1,6 @@
 /**
  * Failing-test pin fuer Issue 0140, Kriterien 2 und 3 an den **echten**
- * ergofang-Katalogdaten des Repos (`src/shared/__fixtures__/whfb6/`) — im Muster von
+ * ergofang-Katalogdaten des Repos (`src/tests/__fixtures__/whfb6/`) — im Muster von
  * `evaluator.primaryCatalogueFixture.test.js` (echte Daten, Fassade, ein
  * einziger Auswertungslauf je Lage).
  *
@@ -45,7 +45,7 @@ import { AnchorKind } from '../../../domain/evaluator/model.js';
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-const FIXTURE_DIR = join(process.cwd(), 'src/shared/__fixtures__/whfb6');
+const FIXTURE_DIR = join(process.cwd(), 'src/tests/__fixtures__/whfb6');
 
 /** Liest eine Fixture-Katalogdatei als XML-Text. */
 function fixture(fileName) {

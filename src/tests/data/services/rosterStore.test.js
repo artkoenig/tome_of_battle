@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DATA_EVENT, subscribeToDataChanges } from '../../../data/services/dataEvents';
-import { loadRosters, loadRoster, saveRoster, deleteRoster } from '../../../data/services/rosterStore';
+import { DATA_EVENT, subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { loadRosters, loadRoster, saveRoster, deleteRoster } from '../../../domain/services/rosterStore';
 import * as database from '../../../data/db/database';
 
 vi.mock('../../../data/db/database', () => ({

@@ -1,4 +1,4 @@
-import { getAllRosters, getRoster, saveRoster as persistRoster, deleteRoster as removeRoster } from '../db/database';
+import { getAllRosters, getRoster, saveRoster as persistRoster, deleteRoster as removeRoster } from '../../data/db/database';
 import { DATA_EVENT, emitDataChange } from './dataEvents';
 
 /**
@@ -20,7 +20,7 @@ import { DATA_EVENT, emitDataChange } from './dataEvents';
  */
 
 /**
- * @returns {Promise<import('../../shared/types.js').Roster[]>}
+ * @returns {Promise<import('../../domain/types.js').Roster[]>}
  */
 export function loadRosters() {
   return getAllRosters();
@@ -28,15 +28,15 @@ export function loadRosters() {
 
 /**
  * @param {string} id
- * @returns {Promise<import('../../shared/types.js').Roster|undefined>}
+ * @returns {Promise<import('../../domain/types.js').Roster|undefined>}
  */
 export function loadRoster(id) {
   return getRoster(id);
 }
 
 /**
- * @param {import('../../shared/types.js').Roster} roster
- * @returns {Promise<import('../../shared/types.js').Roster>} das gespeicherte Roster.
+ * @param {import('../../domain/types.js').Roster} roster
+ * @returns {Promise<import('../../domain/types.js').Roster>} das gespeicherte Roster.
  */
 export async function saveRoster(roster) {
   await persistRoster(roster);

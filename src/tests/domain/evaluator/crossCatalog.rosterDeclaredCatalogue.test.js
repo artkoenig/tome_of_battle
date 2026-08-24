@@ -31,7 +31,7 @@
  * nicht. Gewaehlt ist `catalogueId` — woertlich der Name, den der Intent des
  * Issues fuer **beide** benachbarten Modelle nennt („`force.catalogueId` im
  * App-Modell, `catalogueId`-Attribut am `<force>` einer `.ros`") und den auch
- * `src/shared/types.js` (`Force.catalogueId`) fuehrt. Die `.ros`-Struktur selbst ist
+ * `src/domain/types.js` (`Force.catalogueId`) fuehrt. Die `.ros`-Struktur selbst ist
  * eine dokumentierte Luecke der Quelle (`docs/battlescribe-data-format.md`
  * §15) — hier entscheidet das Projekt, und die naheliegende Entscheidung ist,
  * die Angabe unter demselben Namen weiterzureichen, unter dem sie ueberall

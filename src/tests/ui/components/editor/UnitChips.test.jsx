@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UnitRulesChipsHarness as UnitRulesChips, UnitUpgradesChipsHarness as UnitUpgradesChips } from '../../../../shared/test-utils/editorHarness';
+import { UnitRulesChipsHarness as UnitRulesChips, UnitUpgradesChipsHarness as UnitUpgradesChips } from '../../../../tests/test-utils/editorHarness';
 
 // Both chip components decide between the 6th.whfb.app rule link and the catalogue
 // fallback through the central useRuleUrl hook (ADR-0015). These tests exercise
@@ -32,7 +32,7 @@ vi.mock('../../../../domain/roster', async () => ({
 }));
 
 const mockGetRuleUrl = vi.fn();
-vi.mock('../../../../data/rules/rulesLookup', () => ({
+vi.mock('../../../../domain/rules/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 

@@ -9,7 +9,7 @@
  * Ort für die Benachrichtigung: dieses Modul.
  *
  * Vertrag:
- * - Jeder **schreibende** Aufruf von `src/data/services/` meldet seinen Abschluss
+ * - Jeder **schreibende** Aufruf von `src/domain/services/` meldet seinen Abschluss
  *   hier, und zwar erst nachdem die Persistenz zugesagt hat. Ein Fehlschlag
  *   meldet nichts.
  * - Ein Verbraucher abonniert mit `subscribeToDataChanges` und bekommt die
@@ -38,7 +38,7 @@ export const DATA_EVENT = Object.freeze({
 /**
  * Ein Ereignis nennt seine Art und den fertig geschriebenen Gegenstand.
  *
- * @typedef {{ type: 'roster-saved', roster: import('../../shared/types.js').Roster }
+ * @typedef {{ type: 'roster-saved', roster: import('../../domain/types.js').Roster }
  *   | { type: 'roster-deleted', rosterId: string }
  *   | { type: 'system-imported', system: object }
  *   | { type: 'system-deleted', systemId: string }
@@ -50,7 +50,7 @@ const listeners = new Set();
 
 /**
  * Meldet einen abgeschlossenen Schreibvorgang an alle Abonnenten.
- * Nur `src/data/services/` ruft das auf.
+ * Nur `src/domain/services/` ruft das auf.
  *
  * @param {DataChangeEvent} event
  */

@@ -115,7 +115,7 @@ function appSystem() {
   };
 }
 
-/** Ein App-Roster (Shape aus `src/shared/types.js`): Warrior ×2 im einen Kontingent. */
+/** Ein App-Roster (Shape aus `src/domain/types.js`): Warrior ×2 im einen Kontingent. */
 function appRoster() {
   return {
     id: 'roster-uuid',

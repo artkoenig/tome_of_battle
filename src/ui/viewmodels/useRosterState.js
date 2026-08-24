@@ -31,7 +31,7 @@ import { useUndoableState } from './useUndoableState';
 import { createRosterCommands } from './rosterCommands';
 import { useRosterPersistence } from './useRosterPersistence';
 import { useMandatoryListRuleAutoAdd } from './useMandatoryListRuleAutoAdd';
-import '../../shared/types.js';
+import '../../domain/types.js';
 
 /** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
 const COUNT_INCREASE = 1;
@@ -39,7 +39,7 @@ const COUNT_DECREASE = -1;
 
 /**
  * Hält Roster, Auswahl und Kommandos eines Editors.
- * @param {import('../../shared/types.js').Roster} initialRoster
+ * @param {import('../../domain/types.js').Roster} initialRoster
  * @param {Object} system
  * @param {Function} saveRosterCallback
  * @param {(message: string) => void} [reportError] app-wide error channel; a failed

@@ -18,7 +18,7 @@
  * Increment 1 checked this for one catalogue (The Empire, definitive) only.
  * This file is the corpus-wide check the issue actually asks for: it derives,
  * from the raw XML of BOTH corpora — `src/domain/evaluator/__fixtures__/whfb6-definitive`
- * (11 catalogues) and `src/shared/__fixtures__/whfb6` (4 catalogues) — never from any
+ * (11 catalogues) and `src/tests/__fixtures__/whfb6` (4 catalogues) — never from any
  * engine module other than the facade (`prepareDataset` + `evaluate`, ADR
  * 0030, ADR 0033), every `entryLink` that declares its own children across
  * all 15 catalogue files, and asserts that a roster holding that link gets a
@@ -54,7 +54,7 @@ const PARSER = new DOMParser();
 
 const CORPORA = [
   { name: 'whfb6-definitive', dir: join(process.cwd(), 'src/domain/evaluator/__fixtures__/whfb6-definitive') },
-  { name: 'whfb6', dir: join(process.cwd(), 'src/shared/__fixtures__/whfb6') },
+  { name: 'whfb6', dir: join(process.cwd(), 'src/tests/__fixtures__/whfb6') },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

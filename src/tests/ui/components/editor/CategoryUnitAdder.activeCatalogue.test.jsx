@@ -31,7 +31,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../shared/test-utils/harnesses/CategoryUnitAdderHarness';
+import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../tests/test-utils/harnesses/CategoryUnitAdderHarness';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
 

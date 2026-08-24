@@ -7,7 +7,7 @@ import {
   createRosterProviderWrapper,
   createEmptyRosterReport,
   createNoopRosterCommands,
-} from '../../../../shared/test-utils/rosterProviders';
+} from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests des Auswahl-Konfigurators (ADR-0038).

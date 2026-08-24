@@ -126,7 +126,7 @@ function preparedDatasetOf(system) {
  * dieselben Pfade, dieselben Verletzungen, dieselben Kosten.
  *
  * @param {object|null|undefined} system  App-System-Objekt mit `rawXmls`.
- * @param {import('../../shared/types.js').Roster|null|undefined} roster  das App-Roster.
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster  das App-Roster.
  * @returns {AppEvaluation}
  */
 export function evaluateAppRoster(system, roster) {
@@ -173,7 +173,7 @@ export function evaluateAppRoster(system, roster) {
  * Ohne Diagnose bleiben die schon gebauten Zuordnungen unveraendert — der
  * Normalfall kostet nichts.
  *
- * @param {import('../../shared/types.js').Roster} roster
+ * @param {import('../../domain/types.js').Roster} roster
  * @param {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }} naivePaths
  * @param {ReadonlyArray<object>|undefined} diagnostics
  * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}

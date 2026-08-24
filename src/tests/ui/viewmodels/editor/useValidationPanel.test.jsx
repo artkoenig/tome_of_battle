@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useValidationPanel } from '../../../../ui/viewmodels/editor/useValidationPanel';
-import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests des Lagerberichts (Issue 0164): was blockiert, was nur

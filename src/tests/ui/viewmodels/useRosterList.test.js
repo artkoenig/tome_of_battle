@@ -7,7 +7,7 @@ import {
   importRosterFromXml,
   MissingSystemError,
 } from '../../../domain/roster/rosterSerialization';
-import { readRosterText, buildRosterFile, RosterFileError } from '../../../data/services/rosterTransfer';
+import { readRosterText, buildRosterFile, RosterFileError } from '../../../domain/services/rosterTransfer';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
 import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache';
 
@@ -25,7 +25,7 @@ vi.mock('../../../domain/roster/rosterSerialization', async (importOriginal) => 
   importRosterFromXml: vi.fn(),
 }));
 
-vi.mock('../../../data/services/rosterTransfer', async (importOriginal) => ({
+vi.mock('../../../domain/services/rosterTransfer', async (importOriginal) => ({
   ...await importOriginal(),
   readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),

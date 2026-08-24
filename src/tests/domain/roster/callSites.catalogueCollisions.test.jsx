@@ -4,7 +4,7 @@ import React from 'react';
 
 import { createSelectionFromDef } from '../../../domain/roster/selectionFactory.js';
 import { resolveEntry } from '../../../domain/roster/catalogResolver.js';
-import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../../shared/test-utils/editorHarness';
+import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../../tests/test-utils/editorHarness';
 import { SettingsProvider } from '../../../ui/viewmodels/SettingsContext.jsx';
 
 /**

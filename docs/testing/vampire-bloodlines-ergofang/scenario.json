@@ -3,9 +3,9 @@
   "name": "vampire-bloodlines-ergofang",
   "description": "Bloodline-Regeln der ergofang-Variante der Vampire Counts: die Bloodline liegt als Pflicht-Gruppe (min 1 / max 1, scope=parent) je Vampir-Charakter, nicht armeeweit. Die parent-/gruppen-skopierten Zaehlgrenzen feuern ueber den Gruppen-Anker (Issue 68); clan-spezifische Ausruestung (ERG-R3/R4) ist Verfuegbarkeit und daher nicht Teil des Verletzungsberichts. Eigenstaendiger VC-Katalog ohne Mercenaries-Abhaengigkeit.",
   "dataset": {
-    "gameSystem": "src/shared/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
+    "gameSystem": "src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst",
     "catalogues": [
-      "src/shared/__fixtures__/whfb6/Vampire Counts.cat"
+      "src/tests/__fixtures__/whfb6/Vampire Counts.cat"
     ]
   },
   "rosters": [

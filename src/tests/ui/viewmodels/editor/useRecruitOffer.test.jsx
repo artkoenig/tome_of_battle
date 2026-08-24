@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useRecruitOffer } from '../../../../ui/viewmodels/editor/useRecruitOffer';
-import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests des Aushebe-Angebots (Issue 0164). Die Kandidatenliste stand

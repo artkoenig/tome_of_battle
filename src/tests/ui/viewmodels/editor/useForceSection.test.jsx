@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useForceSection } from '../../../../ui/viewmodels/editor/useForceSection';
-import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Kontingent-Sektion (Issue 0164): welche Kategorien sie

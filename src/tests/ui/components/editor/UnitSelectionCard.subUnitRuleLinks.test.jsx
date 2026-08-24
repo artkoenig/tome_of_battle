@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 
 // A unit card renders its independent sub-units as further UnitSelectionCards.
 // Those nested cards carry rule chips of their own — the crew of a chariot, for

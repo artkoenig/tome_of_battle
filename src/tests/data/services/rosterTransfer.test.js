@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import JSZip from 'jszip';
-import { subscribeToDataChanges } from '../../../data/services/dataEvents';
-import { readRosterText, buildRosterFile } from '../../../data/services/rosterTransfer';
+import { subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
 
 const ROSTER_XML = '<?xml version="1.0"?><roster name="Bretonnia"></roster>';
 

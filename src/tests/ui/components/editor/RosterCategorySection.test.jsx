@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RosterCategorySectionHarness as RosterCategorySection } from '../../../../shared/test-utils/harnesses/RosterCategorySectionHarness';
+import { RosterCategorySectionHarness as RosterCategorySection } from '../../../../tests/test-utils/harnesses/RosterCategorySectionHarness';
 
 vi.mock('lucide-react', () => ({
   ChevronDown: () => <span data-testid="icon-chevron-down" />,

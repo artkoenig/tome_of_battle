@@ -2,7 +2,7 @@ import {
   WHFB6_LINKING_DEFAULT,
   getWhfb6LinkingEnabled,
   setWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
-} from '../db/database';
+} from '../../data/db/database';
 import { DATA_EVENT, emitDataChange } from './dataEvents';
 
 /**

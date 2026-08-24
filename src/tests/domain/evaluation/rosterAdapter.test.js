@@ -2,7 +2,7 @@
  * Issue 0121, Task 2 — produktiver Roster-Adapter `toEvaluatorRoster`
  * (`src/domain/evaluation/rosterAdapter.js`, existiert noch nicht; test-first).
  *
- * Der Adapter uebersetzt das App-Roster (IndexedDB-Modell, `src/shared/types.js`) in
+ * Der Adapter uebersetzt das App-Roster (IndexedDB-Modell, `src/domain/types.js`) in
  * den Eingabevertrag der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`,
  * `@param roster`) und liefert daneben `pathBySelectionId`: die Zuordnung
  * App-Selection-UUID → Slot-Pfad des Berichts.
@@ -39,9 +39,9 @@ import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-// ── App-Roster-Bausteine (Shape aus src/shared/types.js) ───────────────────────────
+// ── App-Roster-Bausteine (Shape aus src/domain/types.js) ───────────────────────────
 
-/** Eine App-Selection mit allen Pflichtfeldern aus `src/shared/types.js`. */
+/** Eine App-Selection mit allen Pflichtfeldern aus `src/domain/types.js`. */
 function appSelection({
   id,
   name = 'Selection',
@@ -53,12 +53,12 @@ function appSelection({
   return { id, name, entryLinkId, selectionEntryId, number, category: null, selections };
 }
 
-/** Eine App-Force mit allen Pflichtfeldern aus `src/shared/types.js`. */
+/** Eine App-Force mit allen Pflichtfeldern aus `src/domain/types.js`. */
 function appForce({ id, forceEntryId, catalogueId = 'cat-main', selections = [] }) {
   return { id, forceEntryId, catalogueId, selections };
 }
 
-/** Ein vollstaendiges App-Roster mit allen Pflichtfeldern aus `src/shared/types.js`. */
+/** Ein vollstaendiges App-Roster mit allen Pflichtfeldern aus `src/domain/types.js`. */
 function appRoster({
   costLimit = 1500,
   costLimitType = 'cost-pts',

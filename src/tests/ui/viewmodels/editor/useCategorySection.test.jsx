@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useCategorySection } from '../../../../ui/viewmodels/editor/useCategorySection';
-import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Kategorie-Sektion (Issue 0164).

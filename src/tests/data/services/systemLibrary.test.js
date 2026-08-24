@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DATA_EVENT, subscribeToDataChanges } from '../../../data/services/dataEvents';
+import { DATA_EVENT, subscribeToDataChanges } from '../../../domain/services/dataEvents';
 import {
   loadSystems,
   loadSystem,
@@ -8,7 +8,7 @@ import {
   deleteSystem,
   loadAvailableSystems,
   SYSTEM_IMPORT_STATUS,
-} from '../../../data/services/systemLibrary';
+} from '../../../domain/services/systemLibrary';
 import * as database from '../../../data/db/database';
 import * as systemImport from '../../../data/db/systemImport';
 import * as catalogSourceIndex from '../../../data/db/catalogSourceIndex';

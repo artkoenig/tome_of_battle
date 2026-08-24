@@ -45,8 +45,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { OptionGroupHarness as OptionGroupComponent } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { OptionGroupHarness as OptionGroupComponent } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
 import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
 
@@ -59,7 +59,7 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../data/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));

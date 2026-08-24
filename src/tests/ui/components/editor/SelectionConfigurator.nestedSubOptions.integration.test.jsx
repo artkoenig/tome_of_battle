@@ -3,8 +3,8 @@ import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
-import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../../../data/parser/xmlParser.js';
 import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
@@ -25,7 +25,7 @@ import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.j
 // the evaluator facade (slot source), the structural grouping and the nesting logic all
 // run for real.
 
-vi.mock('../../../../data/rules/rulesLookup', () => ({
+vi.mock('../../../../domain/rules/rulesLookup', () => ({
   getRuleUrl: () => null,
 }));
 
@@ -33,7 +33,7 @@ vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
-const CATALOG_DIR = path.resolve('src/shared/__fixtures__/whfb6');
+const CATALOG_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const CAT_FILE = 'Vampire Counts.cat';
 

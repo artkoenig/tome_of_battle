@@ -43,9 +43,9 @@ const indexOfOption = (selections, optionDefinitionId) =>
  * Options-Definition bereits in der Liste steht (jede Instanz einer
  * eigenständigen Untereinheit wird einzeln geführt).
  *
- * @param {import('../../shared/types.js').Selection[]} childSelections
- * @param {import('../../shared/types.js').Selection|null} newInstance frisch erzeugte Auswahl
- * @returns {import('../../shared/types.js').Selection[]}
+ * @param {import('../../domain/types.js').Selection[]} childSelections
+ * @param {import('../../domain/types.js').Selection|null} newInstance frisch erzeugte Auswahl
+ * @returns {import('../../domain/types.js').Selection[]}
  */
 export function withAddedInstance(childSelections, newInstance) {
   if (!newInstance) return childSelections;
@@ -56,9 +56,9 @@ export function withAddedInstance(childSelections, newInstance) {
  * Entfernt die Instanz mit dieser Selection-Id. Fehlt sie, bleibt die Liste
  * inhaltlich unverändert.
  *
- * @param {import('../../shared/types.js').Selection[]} childSelections
+ * @param {import('../../domain/types.js').Selection[]} childSelections
  * @param {string} instanceSelectionId
- * @returns {import('../../shared/types.js').Selection[]}
+ * @returns {import('../../domain/types.js').Selection[]}
  */
 export function withoutInstance(childSelections, instanceSelectionId) {
   return childSelections.filter(selection => selection.id !== instanceSelectionId);
@@ -72,12 +72,12 @@ export function withoutInstance(childSelections, instanceSelectionId) {
  *    `createInstance` an; eine Verringerung lässt die Liste unverändert.
  *  - Erreicht die Anzahl null, entfällt die Auswahl ersatzlos.
  *
- * @param {import('../../shared/types.js').Selection[]} childSelections
+ * @param {import('../../domain/types.js').Selection[]} childSelections
  * @param {string} optionDefinitionId Id der Options-Definition
  * @param {number} countDelta Verschiebung der Anzahl (positiv oder negativ)
- * @param {() => import('../../shared/types.js').Selection|null} createInstance
+ * @param {() => import('../../domain/types.js').Selection|null} createInstance
  *        erzeugt die Auswahl, wenn die Option noch nicht gewählt ist
- * @returns {import('../../shared/types.js').Selection[]}
+ * @returns {import('../../domain/types.js').Selection[]}
  */
 export function withChangedOptionCount(childSelections, optionDefinitionId, countDelta, createInstance) {
   const index = indexOfOption(childSelections, optionDefinitionId);

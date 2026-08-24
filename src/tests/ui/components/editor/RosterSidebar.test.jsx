@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { RosterSidebarHarness as RosterSidebar } from '../../../../shared/test-utils/harnesses/RosterSidebarHarness';
+import { RosterSidebarHarness as RosterSidebar } from '../../../../tests/test-utils/harnesses/RosterSidebarHarness';
 
 // Die Sidebar projiziert seit Issue 0121, Task 7 allein den Evaluator-Bericht:
 // die Armeeanforderungen kommen aus den categoryAnchor-Slots (`capabilities`),

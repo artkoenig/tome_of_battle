@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useUnitChips } from '../../../../ui/viewmodels/editor/useUnitChips';
-import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Chip-Reihen (ADR-0038). Der Katalog ist ein von Hand

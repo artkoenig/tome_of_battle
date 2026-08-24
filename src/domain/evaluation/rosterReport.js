@@ -30,7 +30,7 @@ import { unresolvedSelectionsOf } from './datasetDiagnostics.js';
  * Oberfläche.
  *
  * @param {Object|null|undefined} system
- * @param {import('../../shared/types.js').Roster|null|undefined} roster
+ * @param {import('../../domain/types.js').Roster|null|undefined} roster
  * @returns {RosterReport} referenzstabil, solange `system` und `roster`
  *   dieselben Objekte bleiben
  */

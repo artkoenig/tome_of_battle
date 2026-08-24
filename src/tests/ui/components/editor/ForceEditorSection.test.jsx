@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ForceEditorSectionHarness as ForceEditorSection } from '../../../../shared/test-utils/harnesses/ForceEditorSectionHarness';
+import { ForceEditorSectionHarness as ForceEditorSection } from '../../../../tests/test-utils/harnesses/ForceEditorSectionHarness';
 
 
 vi.mock('../../../../domain/roster', () => ({

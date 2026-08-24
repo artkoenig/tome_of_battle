@@ -6,12 +6,12 @@ import {
   renderWithRosterProviders,
   createEmptyRosterReport,
   createNoopRosterCommands,
-} from '../../../shared/test-utils/rosterProviders';
+} from '../../../tests/test-utils/rosterProviders';
 import { useRosterCommands, useRosterReport } from '../../../ui/viewmodels/rosterContexts';
 
 /**
  * Issue 0162, AC4 — a component can still be rendered in isolation once the two
- * contexts of ADR-0038 exist: the wrapper in `src/shared/test-utils/rosterProviders.jsx`
+ * contexts of ADR-0038 exist: the wrapper in `src/tests/test-utils/rosterProviders.jsx`
  * seeds both, with a complete but empty report, so a test only states the fields
  * it actually cares about.
  */

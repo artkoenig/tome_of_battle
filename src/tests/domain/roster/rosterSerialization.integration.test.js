@@ -13,13 +13,13 @@ import {
 import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
 import { getUnitOptions } from '../../../domain/roster/optionsCollector.js';
 
-// End-to-end round-trips against the REAL WHFB6 catalogues (src/shared/__fixtures__/whfb6)
+// End-to-end round-trips against the REAL WHFB6 catalogues (src/tests/__fixtures__/whfb6)
 // and real roster fixtures, each exactly 2000 points. These exercise the derived-cost
 // model, option-id reconciliation and the war-machine split across several armies
 // (Orcs & Goblins, Ogre Kingdoms, Vampire Counts), closing the gap where only mock
 // catalogues could be tested.
 
-const CATALOG_DIR = path.resolve('src/shared/__fixtures__/whfb6');
+const CATALOG_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const EXPECTED_TOTAL = 2000;
 

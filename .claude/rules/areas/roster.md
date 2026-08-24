@@ -38,7 +38,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   **validates**: every capability must declare `isHidden`, `isIndependentSubUnit` (booleans) and
   `primaryCategoryId` (string or null) — a missing one used to read as `false` and silently change
   what renders. `fromReport` (production) checks nothing; the engine fills those for every slot.
-  Tests reach `fromMaps` through `createEmptyRosterReport` (`src/shared/test-utils/rosterProviders.jsx`),
+  Tests reach `fromMaps` through `createEmptyRosterReport` (`src/tests/test-utils/rosterProviders.jsx`),
   which still takes the three maps flat.
 - `evaluate` in the evaluator facade has its own identity cache (WeakMap over
   `(prepared, evalRoster)`, `{ measure: true }` bypasses it). It does **not** help the app path:
@@ -55,7 +55,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   and drop the barrel line in the same change.
 - The folder is Fachlogik and therefore **translates nothing** (`keine-i18n-unter-ui`, `error`
   since Issue 0169). An error carries `messageKey`/`messageParams` (`MissingSystemError`,
-  `RosterFileError` from `src/data/services/rosterTransfer.js`); `describeRosterFileError` in
+  `RosterFileError` from `src/domain/services/rosterTransfer.js`); `describeRosterFileError` in
   `src/ui/viewmodels/useRosterList.js` is the one place that formulates them. A test here asserts on the
   key, never on German text.
 - `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
@@ -64,7 +64,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   `roster-keine-evaluation-abhaengigkeit` (`error`) holds it, test files excepted, the same way
   `roster-keine-evaluator-abhaengigkeit` does. The caller is `useRosterList.js`, in the UI layer,
   which calls `evaluateAppRoster(system, roster)` itself. Packing and unpacking the `.rosz` archive is file I/O and lives
-  in `src/data/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
+  in `src/domain/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
   in `useRosterList.js`, because the data layer may not reach back into this one.
 - A UI behaviour model does not belong here: `classifyGroupItem`/`classifyStandaloneOption` moved
   to `src/ui/viewmodels/editor/selectionBehavior.js` with Issue 0169. The catalogue-side answers to

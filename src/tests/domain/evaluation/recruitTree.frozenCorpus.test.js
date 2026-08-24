@@ -27,7 +27,7 @@ import EXPECTED_TREES from '../../../domain/evaluation/__fixtures__/recruit-tree
  */
 
 const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
-const LEGACY_DIR = path.resolve('src/shared/__fixtures__/whfb6');
+const LEGACY_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const LEGACY_GST = 'Warhammer Fantasy Battle 6th edition.gst';
 const PTS = 'ecfa-8486-4f6c-c249';

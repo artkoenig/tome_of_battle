@@ -8,7 +8,7 @@ import {
   createRosterProviderWrapper,
   createEmptyRosterReport,
   createNoopRosterCommands,
-} from '../../../../shared/test-utils/rosterProviders';
+} from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Einheitenkarte (ADR-0038). Der Bericht wird von Hand

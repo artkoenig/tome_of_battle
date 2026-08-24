@@ -3,8 +3,8 @@ import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
-import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../../../data/parser/xmlParser.js';
 import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
@@ -18,7 +18,7 @@ import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.j
  *
  * Jede Einheit (`type="unit"`) der drei Kataloge unter
  * `src/domain/evaluator/__fixtures__/whfb6-definitive/` und der drei unter
- * `src/shared/__fixtures__/whfb6/` wird als frisch ausgehobene Karte durch die
+ * `src/tests/__fixtures__/whfb6/` wird als frisch ausgehobene Karte durch die
  * Produktionsnaht gerendert (processImportedData → createSelectionFromDef →
  * toEvaluatorRoster → prepareDataset/evaluate → SelectionConfigurator), voll
  * aufgeklappt und beobachtet. Das sind 208 Karten; der Durchlauf steht einmal
@@ -51,13 +51,13 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../data/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
 const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
-const LEGACY_DIR = path.resolve('src/shared/__fixtures__/whfb6');
+const LEGACY_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const LEGACY_GST = 'Warhammer Fantasy Battle 6th edition.gst';
 const PTS = 'ecfa-8486-4f6c-c249';

@@ -3,8 +3,8 @@ import {
   buildRawFileUrl,
   deriveRevisionState,
   REVISION_STATE,
-} from '../db/catalogUpdate';
-import { runSystemMigrations } from '../db/migrations';
+} from '../../data/db/catalogUpdate';
+import { runSystemMigrations } from '../../data/db/migrations';
 
 /**
  * Fassade über den Katalog-Abgleich (ADR-0037): den Abruf der entfernten

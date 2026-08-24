@@ -3,7 +3,7 @@
   "generatedBy": "scripts/evaluator-coverage-inventory.js",
   "corpus": [
     "src/domain/evaluator/__fixtures__/whfb6-definitive",
-    "src/shared/__fixtures__/whfb6"
+    "src/tests/__fixtures__/whfb6"
   ],
   "totals": {
     "cells": 130,

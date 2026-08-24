@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useRosterSidebar } from '../../../../ui/viewmodels/editor/useRosterSidebar';
-import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Seitenleiste (Issue 0164): Punktstand, Status,

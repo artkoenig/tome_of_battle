@@ -28,7 +28,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { RosterValidationPanelHarness as RosterValidationPanel } from '../../../../shared/test-utils/harnesses/RosterValidationPanelHarness';
+import { RosterValidationPanelHarness as RosterValidationPanel } from '../../../../tests/test-utils/harnesses/RosterValidationPanelHarness';
 
 vi.mock('lucide-react', () => ({
   Play: () => <span data-testid="icon-play" />,

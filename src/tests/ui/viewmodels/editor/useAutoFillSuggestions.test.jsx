@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useAutoFillSuggestions, FILL_UP_WINDOW_POINTS } from '../../../../ui/viewmodels/editor/useAutoFillSuggestions';
-import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Auffüll-Vorschläge (Issue 0164): das Fenster, in dem das

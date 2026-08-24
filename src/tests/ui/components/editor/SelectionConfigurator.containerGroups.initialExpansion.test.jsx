@@ -3,8 +3,8 @@ import { describe, test, expect, beforeAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
-import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { processImportedData } from '../../../../data/parser/xmlParser.js';
 import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
@@ -52,7 +52,7 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../data/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
@@ -111,7 +111,7 @@ const isRowChecked = (row) => row?.querySelector('input')?.checked === true;
 
 // ── Der echte Fall: Ogre Kingdoms, Tyrant ────────────────────────────────────
 
-const CATALOG_DIR = path.resolve('src/shared/__fixtures__/whfb6');
+const CATALOG_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const GST_FILE = 'Warhammer Fantasy Battle 6th edition.gst';
 const CAT_FILE = 'Ogre Kingdoms.cat';
 const PTS = 'ecfa-8486-4f6c-c249';

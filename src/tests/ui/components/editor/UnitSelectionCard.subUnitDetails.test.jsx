@@ -22,8 +22,8 @@ import { join } from 'node:path';
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
-import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../shared/test-utils/editorHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../tests/test-utils/editorHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 
 vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,

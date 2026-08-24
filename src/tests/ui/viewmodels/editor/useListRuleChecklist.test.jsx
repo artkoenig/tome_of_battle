@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { useListRuleChecklist } from '../../../../ui/viewmodels/editor/useListRuleChecklist';
-import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../shared/test-utils/rosterProviders';
+import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../tests/test-utils/rosterProviders';
 
 /**
  * ViewModel-Tests der Listenregel-Ankreuzliste (Issue 0164): Zeilenliste,

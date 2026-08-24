@@ -9,7 +9,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 const mockGetRuleUrl = vi.fn();
-vi.mock('../../../../data/rules/rulesLookup', () => ({
+vi.mock('../../../../domain/rules/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { subscribeToDataChanges } from '../../../data/services/dataEvents';
+import { subscribeToDataChanges } from '../../../domain/services/dataEvents';
 import {
   buildRawFileUrl,
   deriveRevisionState,
   fetchCatalogText,
   REVISION_STATE,
   refreshSystems,
-} from '../../../data/services/catalogRevisions';
+} from '../../../domain/services/catalogRevisions';
 import * as catalogUpdate from '../../../data/db/catalogUpdate';
 import * as migrations from '../../../data/db/migrations';
 

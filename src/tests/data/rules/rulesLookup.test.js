@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('../../../data/rules/rules-index.json', () => ({
+vi.mock('../../../domain/rules/rules-index.json', () => ({
   default: {
     'Killing Blow': '/special-rules/killing-blow?minimal=true&utm_source=6th-builder&utm_medium=referral',
     'Regeneration': '/special-rules/regeneration?minimal=true&utm_source=6th-builder&utm_medium=referral',
@@ -24,7 +24,7 @@ vi.mock('../../../data/rules/rules-index.json', () => ({
   },
 }));
 
-vi.mock('../../../data/rules/synonyms.js', () => ({
+vi.mock('../../../domain/rules/synonyms.js', () => ({
   SYNONYMS: {
     'Immune to Psycology': 'Immune to Psychology',
     'Short Bow': 'Shortbow',
@@ -39,7 +39,7 @@ vi.mock('../../../data/rules/synonyms.js', () => ({
   },
 }));
 
-const { getRuleUrl } = await import('../../../data/rules/rulesLookup.js');
+const { getRuleUrl } = await import('../../../domain/rules/rulesLookup.js');
 
 describe('rulesLookup', () => {
   it('returns URL for a known rule name', () => {

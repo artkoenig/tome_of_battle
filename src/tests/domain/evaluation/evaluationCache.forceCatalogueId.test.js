@@ -15,7 +15,7 @@
  * Der Datensatz ist der des Issues in klein: das Kontingent ist in der
  * **Spielsystemdatei** deklariert, der Herkunftsindex aus den `.cat`-`forceEntry`s
  * kann deshalb prinzipiell nicht antworten — allein das App-Roster weiss, aus
- * welchem Armeebuch das Kontingent stammt (`Force.catalogueId`, `src/shared/types.js`;
+ * welchem Armeebuch das Kontingent stammt (`Force.catalogueId`, `src/domain/types.js`;
  * gesetzt von `src/domain/roster/createRoster.js`).
  *
  * Deshalb ist diese Datei von der revidierten Rangfolge („der Herkunftsindex

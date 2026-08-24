@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ListRuleChecklistHarness as ListRuleChecklist } from '../../../../shared/test-utils/harnesses/ListRuleChecklistHarness';
-import { createSubSelectionOperationsMock } from '../../../../shared/test-utils/subSelectionOperationsMock';
+import { ListRuleChecklistHarness as ListRuleChecklist } from '../../../../tests/test-utils/harnesses/ListRuleChecklistHarness';
+import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { t } from '../../../../ui/i18n/i18nStore';
 
 /**
@@ -75,7 +75,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 const mockGetRuleUrl = vi.fn();
-vi.mock('../../../../data/rules/rulesLookup', () => ({
+vi.mock('../../../../domain/rules/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 

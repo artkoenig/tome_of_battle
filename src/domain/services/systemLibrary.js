@@ -1,12 +1,12 @@
-import { getAllSystems, getSystem, deleteSystem as removeSystem } from '../db/database';
-import { completeSystemImport, SYSTEM_IMPORT_STATUS } from '../db/systemImport';
-import { loadAvailableSystemsFromSources } from '../db/catalogSourceIndex';
-import { extractZipFiles } from '../parser/zipExtractor';
+import { getAllSystems, getSystem, deleteSystem as removeSystem } from '../../data/db/database';
+import { completeSystemImport, SYSTEM_IMPORT_STATUS } from '../../data/db/systemImport';
+import { loadAvailableSystemsFromSources } from '../../data/db/catalogSourceIndex';
+import { extractZipFiles } from '../../data/parser/zipExtractor';
 import {
   catalogueDirectoryFromIndex,
   catalogueDirectoryFromLinks,
-} from '../parser/libraryDependencies';
-import { fetchCatalogText } from '../db/catalogUpdate';
+} from '../../data/parser/libraryDependencies';
+import { fetchCatalogText } from '../../data/db/catalogUpdate';
 import { DATA_EVENT, emitDataChange } from './dataEvents';
 
 /**
