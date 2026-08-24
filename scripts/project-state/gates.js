@@ -68,7 +68,7 @@ const ENVIRONMENT_ABORT_SIGNATURES = Object.freeze([
 export const GATE_DEFINITIONS = Object.freeze([
   { id: 'lint', label: 'oxlint', command: 'npm run lint' },
   { id: 'knip', label: 'Knip (dead code)', command: 'npm run knip' },
-  { id: 'depcruise', label: 'dependency-cruiser (structure)', command: 'npm run depcruise' },
+  { id: 'cast', label: 'cast (structure)', command: 'cast check --root .' },
   { id: 'typecheck', label: 'Typecheck (tsc --noEmit)', command: 'npm run typecheck' },
   { id: 'unit-tests', label: 'Unit/component tests', command: 'npx vitest run' },
   { id: 'maintainability', label: 'Maintainability Index', command: 'scripts/project-state/complexity.js' },

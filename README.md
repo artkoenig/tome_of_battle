@@ -58,7 +58,7 @@ npm run build      # production build (injects a fresh service worker cache vers
 npm run preview    # preview the production build
 npm run lint       # oxlint
 npm run typecheck  # tsc --noEmit over the JSDoc types
-npm run analyze    # knip (dead code) + dependency-cruiser (layering, cycles)
+npm run knip       # dead code / unused exports & deps
 npm test           # Vitest unit/component tests + the Puppeteer E2E test
 ```
 

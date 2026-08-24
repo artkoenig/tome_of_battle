@@ -17,13 +17,13 @@ function makeGates() {
       steps: [
         { run: 'npm run lint' },
         { run: 'npm run knip', 'continue-on-error': true },
-        { run: 'npm run depcruise', 'continue-on-error': true },
+        { run: 'cast check --root .', 'continue-on-error': true },
       ],
     },
     runs: {
       lint: { exitCode: 0, output: 'ok' },
       knip: { exitCode: 1, output: '26 problems' },
-      depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
+      cast: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
     },
   });
 }
@@ -175,9 +175,9 @@ describe('project-state/renderReport', () => {
       const model = makeModel({
         gates: [
           {
-            id: 'depcruise',
-            label: 'dependency-cruiser',
-            command: 'npm run depcruise',
+            id: 'cast',
+            label: 'cast (structure)',
+            command: 'cast check --root .',
             status: 'findings',
             enforcement: 'blocking',
             abortReason: null,

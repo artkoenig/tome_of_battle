@@ -25,6 +25,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join, dirname, relative, sep } from 'node:path';
+import { tmpdir } from 'node:os';
 
 import { parse as parseYaml } from 'yaml';
 
@@ -47,15 +48,24 @@ const GATE_TIMEOUT_MS = 15 * 60 * 1000;
 const FAILED_EXIT_CODE = 1;
 
 /**
+ * Pfad, unter dem `cast scan` seinen Graphen ablegt (ausserhalb des Checkouts,
+ * siehe `.claude/rules/areas/.cast.md`). Fest statt vom Werkzeug vergeben, damit
+ * dieser Lauf ihn nach dem Scan wiederfindet.
+ */
+const CAST_GRAPH_PATH = join(tmpdir(), `tome-of-battle-project-state-graph-${process.pid}.json`);
+
+/** Resolviert das `cast`-Binary wie `forge-lint`: `command -v cast`, sonst das Plugin-Verzeichnis. */
+const CAST_RESOLVE_SNIPPET = 'CAST_BIN=$(command -v cast || echo "${CLAUDE_PLUGIN_ROOT}/bin/cast")';
+
+/**
  * Was der Generator je Gate tatsaechlich ausfuehrt, wo das vom angezeigten
  * Kommando abweicht. Das angezeigte `command` aus {@link GATE_DEFINITIONS} bleibt
  * unveraendert -- es ist der Schluessel, ueber den die Wirksamkeit im CI-Workflow
- * nachgeschlagen wird. Die Abweichungen erzeugen nebenbei die Artefakte, die der
- * Bericht braucht: dependency-cruiser als JSON fuer den Graphen, vitest mit
- * Abdeckung fuer `coverage-final.json`.
+ * nachgeschlagen wird. Die Abweichung beim `unit-tests`-Gate erzeugt nebenbei das
+ * Artefakt, das der Bericht braucht: `coverage-final.json`.
  */
 const GATE_EXECUTION_OVERRIDES = Object.freeze({
-  depcruise: 'npx depcruise src --output-type json',
+  cast: `${CAST_RESOLVE_SNIPPET} && "$CAST_BIN" check --root .`,
   // `--coverage.reportOnFailure`: Vitest schreibt `coverage-final.json` sonst
   // nur bei einem durchweg gruenen Lauf -- ein einzelner roter Test (z. B. der
   // CPU-Last-Flake in e2e.testcatalog.test.js, Issue 0110) wuerde sonst die
@@ -64,9 +74,6 @@ const GATE_EXECUTION_OVERRIDES = Object.freeze({
     'npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=json --coverage.reportOnFailure',
   maintainability: 'node -e "console.log(\'Maintainability Index computed internally\')"',
 });
-
-/** Aus welcher Gate-Ausgabe der Importgraph gelesen wird. */
-const GRAPH_SOURCE_GATE_ID = 'depcruise';
 
 /**
  * @typedef {object} CommandResult
@@ -101,26 +108,43 @@ function runCommand(command) {
 }
 
 /**
- * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis. Das JSON der
- * dependency-cruiser-Ausgabe wird gesondert zurueckgegeben, damit der Graph nicht
- * einen zweiten Lauf desselben Werkzeugs braucht.
+ * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis, dazu gesondert den
+ * Importgraphen (siehe {@link scanImportGraph}).
  *
  * @returns {{ gateRuns: Record<string, import('./gates.js').GateRun>, graphStdout: string }}
  */
 function executeGates() {
   /** @type {Record<string, import('./gates.js').GateRun>} */
   const gateRuns = {};
-  let graphStdout = '';
 
   for (const gate of GATE_DEFINITIONS) {
     const command = GATE_EXECUTION_OVERRIDES[gate.id] ?? gate.command;
     process.stderr.write(`  Gate ${gate.id}: ${command}\n`);
     const result = runCommand(command);
     gateRuns[gate.id] = { exitCode: result.exitCode, output: result.output };
-    if (gate.id === GRAPH_SOURCE_GATE_ID) graphStdout = result.stdout;
   }
 
-  return { gateRuns, graphStdout };
+  return { gateRuns, graphStdout: scanImportGraph() };
+}
+
+/**
+ * Liest den Importgraphen ueber `cast scan` (statt, wie frueher, ueber
+ * dependency-cruiser als JSON, siehe Issue 0180). `cast scan` schreibt seinen
+ * Graphen als Datei ausserhalb des Checkouts -- `CAST_GRAPH` legt fest, wohin,
+ * damit dieser Aufruf sie danach lesen kann.
+ *
+ * @returns {string}  der rohe Graph-JSON-Text, oder leer, wenn der Scan scheitert.
+ */
+function scanImportGraph() {
+  const command = `${CAST_RESOLVE_SNIPPET} && CAST_GRAPH="${CAST_GRAPH_PATH}" "$CAST_BIN" scan --root .`;
+  process.stderr.write(`  Graph: ${command}\n`);
+  const result = runCommand(command);
+  if (result.exitCode !== 0) return '';
+  try {
+    return readFileSync(CAST_GRAPH_PATH, 'utf8');
+  } catch {
+    return '';
+  }
 }
 
 /** Liest eine JSON-Datei; bei fehlender oder ungueltiger Datei den Ersatzwert. */
