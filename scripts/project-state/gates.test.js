@@ -49,6 +49,15 @@ describe('project-state/gates', () => {
       );
     });
 
+    it('recognizes the POSIX-shell wording of a missing executable behind npm run', () => {
+      // Woertlich die Ausgabe von `npm run cast` ohne installiertes cast-Plugin.
+      const run = { exitCode: 127, output: '> army_builder@2.1.0 cast\n> cast-check\n\nsh: 1: cast-check: not found\n' };
+      expect(classifyGate(run)).toEqual({
+        status: GateStatus.NotRun,
+        abortReason: GateAbortReason.ExecutableNotFound,
+      });
+    });
+
     it('classifies a completely missing run as not-run with a dedicated reason', () => {
       expect(classifyGate(undefined)).toEqual({
         status: GateStatus.NotRun,

@@ -57,7 +57,13 @@ const EXIT_CODE_SUCCESS = 0;
 const ENVIRONMENT_ABORT_SIGNATURES = Object.freeze([
   { reason: GateAbortReason.UnsupportedNodeVersion, pattern: /your node version \([^)]*\) is not supported/i },
   { reason: GateAbortReason.UnsupportedNodeVersion, pattern: /unsupported engine|EBADENGINE/i },
-  { reason: GateAbortReason.ExecutableNotFound, pattern: /command not found|\bENOENT\b/i },
+  // Zwei Schreibweisen desselben Abbruchs: bash meldet `<name>: command not
+  // found`, die POSIX-Shell hinter `npm run` (`sh`) dagegen nur
+  // `sh: 1: <name>: not found`. Ohne die zweite Form gilt ein Gate, dessen
+  // Werkzeug gar nicht installiert ist -- etwa `cast` im Zustandsbericht-
+  // Workflow, der nur `npm ci` kennt (ADR 0041) -- faelschlich als "hat
+  // Befunde".
+  { reason: GateAbortReason.ExecutableNotFound, pattern: /command not found|:\s*not found\b|\bENOENT\b/i },
   { reason: GateAbortReason.ModuleNotFound, pattern: /cannot find module|ERR_MODULE_NOT_FOUND/i },
 ]);
 

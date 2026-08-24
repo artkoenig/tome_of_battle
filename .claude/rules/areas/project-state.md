@@ -12,7 +12,11 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
 - Ein Gate ist **erhobene Datenlage, kein Steuerfluss**: ein abbrechendes oder findendes Gate
   macht den Lauf nie rot. Nur ein Fehler des Orchestrators selbst beendet ihn mit Fehlercode.
 - Die drei Zustände in `gates.js` sind der Kern: `not-run` (Umgebungsabbruch, per Signatur in
-  `ENVIRONMENT_ABORT_SIGNATURES` erkannt) steht **vor** der Exit-Code-Prüfung. Ein Werkzeug, das
+  `ENVIRONMENT_ABORT_SIGNATURES` erkannt) steht **vor** der Exit-Code-Prüfung. `npm run <gate>`
+  führt über `sh` aus: ein fehlendes Werkzeug meldet sich dort als `sh: 1: <name>: not found`,
+  nicht als `command not found` — beide Wortlaute müssen in der Signatur stehen, sonst gilt ein
+  nie gelaufenes Gate (z. B. `cast`, im Berichts-Workflow nicht installierbar) als "hat Befunde".
+  Ein Werkzeug, das
   nichts geprüft hat, darf weder grün noch "hat Befunde" sein.
 - Die Gate-Id ist ein Schlüssel, der an vier Stellen zusammenpassen muss: `GATE_DEFINITIONS`
   (`gates.js`), `GATE_EXECUTION_OVERRIDES` (`generate.js`), `GATE_RUNE_EMBLEMS`
