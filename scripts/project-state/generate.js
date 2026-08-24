@@ -29,7 +29,7 @@ import { join, dirname, relative, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 import { GATE_DEFINITIONS } from './gates.js';
-import { buildImportGraph } from './graph.js';
+import { buildImportGraph, parseCastGraphPath } from './graph.js';
 import { buildReportModel } from './buildReportModel.js';
 import { renderReport } from './renderReport.js';
 
@@ -66,7 +66,9 @@ const GATE_EXECUTION_OVERRIDES = Object.freeze({
 
 /**
  * Woher der Importgraph kommt: `cast scan` schreibt ihn ausserhalb der
- * Arbeitskopie und meldet auf stdout den Pfad, unter dem er liegt (ADR 0041).
+ * Arbeitskopie und meldet auf stdout eine Zeile der Form
+ * `<n> modules scanned into <pfad>/graph.json` (ADR 0041). Der Pfad muss aus
+ * dieser Zeile geschnitten werden -- sie ist selbst kein Dateiname.
  */
 const GRAPH_SCAN_COMMAND = 'cast scan';
 
@@ -124,16 +126,20 @@ function executeGates() {
 }
 
 /**
- * Die Module des von cast erhobenen Graphen. Der Scan meldet den Pfad seiner
- * Ausgabe; laeuft er nicht durch, bleibt der Graph eben leer -- ein Werkzeug, das
- * nicht anlaeuft, macht diesen Lauf nicht rot (siehe Kopf dieses Moduls).
+ * Die Module des von cast erhobenen Graphen. Der Scan meldet seine Ausgabe in
+ * einer Berichtszeile, aus der `parseCastGraphPath` den Pfad schneidet; laeuft er
+ * nicht durch oder nennt er keinen Pfad, bleibt der Graph eben leer -- ein
+ * Werkzeug, das nicht anlaeuft, macht diesen Lauf nicht rot (siehe Kopf dieses
+ * Moduls).
  *
  * @returns {ReadonlyArray<object>}
  */
 function readCastModules() {
   const { exitCode, stdout } = runCommand(GRAPH_SCAN_COMMAND);
   if (exitCode !== 0) return [];
-  return readJsonFile(stdout.trim(), { modules: [] }).modules ?? [];
+  const graphPath = parseCastGraphPath(stdout);
+  if (!graphPath) return [];
+  return readJsonFile(graphPath, { modules: [] }).modules ?? [];
 }
 
 /** Liest eine JSON-Datei; bei fehlender oder ungueltiger Datei den Ersatzwert. */

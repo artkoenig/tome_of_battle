@@ -24,6 +24,40 @@ export const DEFAULT_LAYERS = Object.freeze([
 const SMALLEST_CYCLE_NODE_COUNT = 2;
 
 /**
+ * Die Meldezeile von `cast scan`: `<n> modules scanned into <pfad>/graph.json`.
+ * Der Pfad steht am Zeilenende hinter `into` -- er wird nicht bar gemeldet.
+ */
+const CAST_SCAN_REPORT_PATTERN = /\binto\s+(\S.*\.json)$/;
+
+/**
+ * Schneidet aus der Ausgabe von `cast scan` den Pfad der geschriebenen
+ * Graph-Datei. Der Scan meldet eine ganze Zeile, nicht bloss den Pfad; wer die
+ * Ausgabe ungeschnitten als Dateinamen nimmt, liest nie einen Graphen.
+ *
+ * Gelesen wird die letzte Zeile, die einen Pfad hergibt -- Fortschrittszeilen
+ * davor stoeren so nicht. Eine Zeile, die nur aus einem `.json`-Pfad besteht,
+ * gilt ebenfalls, damit ein knapperes Ausgabeformat den Graphen nicht verliert.
+ *
+ * @param {string} stdout
+ * @returns {string}  der Pfad, oder `''` wenn die Ausgabe keinen hergibt.
+ */
+export function parseCastGraphPath(stdout) {
+  const lines = String(stdout ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index];
+    const match = CAST_SCAN_REPORT_PATTERN.exec(line);
+    if (match) return match[1];
+    if (line.endsWith('.json') && !/\s/.test(line)) return line;
+  }
+
+  return '';
+}
+
+/**
  * @typedef {Record<string, string[]>} ImportGraph
  *   Adjazenzliste: Modulpfad -> Pfade der von ihm importierten Module.
  */

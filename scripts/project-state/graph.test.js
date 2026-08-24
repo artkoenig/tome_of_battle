@@ -1,7 +1,35 @@
 import { describe, it, expect } from 'vitest';
-import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } from './graph.js';
+import {
+  buildImportGraph,
+  findCycles,
+  findLayerViolations,
+  parseCastGraphPath,
+  DEFAULT_LAYERS,
+} from './graph.js';
 
 describe('project-state/graph', () => {
+  describe('parseCastGraphPath', () => {
+    it('cuts the path out of the report line cast scan actually prints', () => {
+      expect(parseCastGraphPath('554 modules scanned into /tmp/cast/wt-head-6a58/graph.json\n')).toBe(
+        '/tmp/cast/wt-head-6a58/graph.json',
+      );
+    });
+
+    it('takes the last line that yields a path, ignoring progress lines before it', () => {
+      const stdout = 'scanning javascript\n12 modules scanned into /tmp/cast/a/graph.json\n';
+      expect(parseCastGraphPath(stdout)).toBe('/tmp/cast/a/graph.json');
+    });
+
+    it('accepts a bare path as well, so a terser output format keeps the graph', () => {
+      expect(parseCastGraphPath('  /tmp/cast/a/graph.json  ')).toBe('/tmp/cast/a/graph.json');
+    });
+
+    it('yields no path when the output holds none', () => {
+      expect(parseCastGraphPath('nothing to scan')).toBe('');
+      expect(parseCastGraphPath('')).toBe('');
+    });
+  });
+
   describe('buildImportGraph', () => {
     it('turns the cast modules into a sorted, deduplicated adjacency list', () => {
       const castModules = [

@@ -25,7 +25,11 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
   Aussage. Gates ohne CI-Step (z. B. `cast`, das als Plugin nicht installierbar ist) sind
   dauerhaft `unknown`.
 - Der Modulgraph kommt aus cast (ADR 0041): `cast scan` schreibt ihn **außerhalb** der
-  Arbeitskopie und meldet auf stdout nur den Pfad. `generate.js` liest die Datei von dort,
+  Arbeitskopie und meldet auf stdout eine ganze Berichtszeile —
+  `554 modules scanned into /tmp/cast/<hash>/graph.json`, **nicht** den blanken Pfad. Wer die
+  Ausgabe ungeschnitten als Dateinamen nimmt, bekommt lautlos einen leeren Graphen (Issue 0180).
+  `parseCastGraphPath` in `graph.js` schneidet den Pfad heraus und ist dort getestet;
+  `generate.js` liest die Datei von dort,
   `graph.js` normalisiert `modules[].edges` (nur `resolution === 'module'` ist eine Kante) zur
   Adjazenzliste. Der Graph ist absichtlich die Eingabe, nicht das Regelurteil des Prüfers.
 - `graph.js` (Zyklen nach Tarjan, Schichtverstöße) hat im Berichtsmodell derzeit keinen
