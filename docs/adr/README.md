@@ -49,3 +49,4 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0038 | [Custom Hook als ViewModel je UI-Baustein, gespeist aus dem Auswertungsbericht](0038-custom-hooks-als-viewmodel-je-ui-baustein.md) | Accepted | 2026-08-20 |
 | 0039 | [Das Schreibmodell erreicht den Auswertungsbericht nur hereingereicht](0039-schreibmodell-erreicht-den-bericht-nur-hereingereicht.md) | Accepted | 2026-08-21 |
 | 0040 | [`src/data/services/` und `src/data/rules/` wechseln von Daten zu Fachlogik](0040-services-und-rules-von-daten-zu-fachlogik.md) | Accepted | 2026-08-24 |
+| 0041 | [cast als Strukturprüfer des Projekts](0041-cast-als-strukturpruefer.md) | Accepted | 2026-08-24 |

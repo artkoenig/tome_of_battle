@@ -8,7 +8,7 @@
       "failingPattern": ""
     },
     "lint": {
-      "command": "npm run lint && npm run depcruise",
+      "command": "npm run lint && npm run cast",
       "parser": "generic",
       "failingPattern": "^[^[:space:]]+:[0-9]+:[0-9]+|error [a-z-]+:"
     },
@@ -26,7 +26,7 @@
   "compaction": { "maxLines": 60, "headLines": 30, "tailLines": 15 },
   "guard": {
     "rewrite": [
-      { "match": "(npm|pnpm|yarn|bun) (run )?depcruise", "wrapper": "forge-lint" },
+      { "match": "(npm|pnpm|yarn|bun) (run )?cast", "wrapper": "forge-lint" },
       { "match": "(npm|pnpm|yarn|bun) (run )?analyze", "wrapper": "forge-lint" }
     ]
   },

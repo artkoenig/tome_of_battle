@@ -58,7 +58,9 @@ npm run build      # production build (injects a fresh service worker cache vers
 npm run preview    # preview the production build
 npm run lint       # oxlint
 npm run typecheck  # tsc --noEmit over the JSDoc types
-npm run analyze    # knip (dead code) + dependency-cruiser (layering, cycles)
+npm run cast       # cast: the structural rules of .cast/rules.json over the
+                   # module graph (needs the cast plugin on PATH, see ADR 0041)
+npm run analyze    # knip (dead code) + cast (layering)
 npm test           # Vitest unit/component tests + the Puppeteer E2E test
 ```
 
@@ -100,7 +102,7 @@ format), [`CLAUDE.md`](CLAUDE.md) (contributor guidelines).
 ## Tech Stack
 
 React 19 · Vite · IndexedDB · JSZip · lucide-react · Vitest · Puppeteer · oxlint ·
-Knip · dependency-cruiser · TypeScript (JSDoc type checking)
+Knip · cast · TypeScript (JSDoc type checking)
 
 ---
 

@@ -8,7 +8,7 @@
 // Das Einordnungs-Vokabular (ConstraintKind/LimitMeasure/ScopeKind) steht hier
 // als Literale, nicht als Import aus `src/domain/evaluator/model.js`: der Evaluator ist
 // von außen nur über seine Fassade erreichbar (ADR 0030, maschinell erzwungen
-// durch oxlint `no-restricted-imports` und dependency-cruiser
+// durch oxlint `no-restricted-imports`, dazu die cast-Regel
 // `evaluator-nur-ueber-fassade`), und die Fassade reicht bewusst nur den Bericht
 // heraus. Drift zwischen diesen Literalen und den echten Enums fängt
 // `violationMessageCoverage.test.js`, der das Kreuzprodukt aus den Enums selbst

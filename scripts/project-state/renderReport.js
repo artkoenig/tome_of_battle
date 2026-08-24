@@ -353,7 +353,7 @@ function renderModuleCard(item) {
 const GATE_RUNE_EMBLEMS = Object.freeze({
   lint: 'ᛏ',        // Tiwaz (Order, Precision)
   knip: 'ᚦ',        // Thurisaz (Cleansing, Pruning)
-  depcruise: 'ᚱ',   // Raido (Structure, Pathways)
+  cast: 'ᚱ',        // Raido (Structure, Pathways)
   typecheck: 'ᚨ',   // Ansuz (Wisdom, Truth)
   'unit-tests': 'ᛉ', // Algiz (Protection, Verification)
   maintainability: 'ᛗ', // Mannaz (Mind & Maintainability)

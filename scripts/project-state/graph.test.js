@@ -1,35 +1,63 @@
 import { describe, it, expect } from 'vitest';
-import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } from './graph.js';
+import {
+  buildImportGraph,
+  findCycles,
+  findLayerViolations,
+  parseCastGraphPath,
+  DEFAULT_LAYERS,
+} from './graph.js';
 
 describe('project-state/graph', () => {
-  describe('buildImportGraph', () => {
-    it('turns the cruiser module report into a sorted, deduplicated adjacency list', () => {
-      const cruiserModules = [
-        {
-          source: 'src/a.js',
-          dependencies: [
-            { resolved: 'src/c.js' },
-            { resolved: 'src/b.js' },
-            { resolved: 'src/b.js' },
-          ],
-        },
-      ];
-      expect(buildImportGraph(cruiserModules)).toEqual({ 'src/a.js': ['src/b.js', 'src/c.js'] });
+  describe('parseCastGraphPath', () => {
+    it('cuts the path out of the report line cast scan actually prints', () => {
+      expect(parseCastGraphPath('554 modules scanned into /tmp/cast/wt-head-6a58/graph.json\n')).toBe(
+        '/tmp/cast/wt-head-6a58/graph.json',
+      );
     });
 
-    it('drops core modules and imports that could not be resolved', () => {
-      const cruiserModules = [
+    it('takes the last line that yields a path, ignoring progress lines before it', () => {
+      const stdout = 'scanning javascript\n12 modules scanned into /tmp/cast/a/graph.json\n';
+      expect(parseCastGraphPath(stdout)).toBe('/tmp/cast/a/graph.json');
+    });
+
+    it('accepts a bare path as well, so a terser output format keeps the graph', () => {
+      expect(parseCastGraphPath('  /tmp/cast/a/graph.json  ')).toBe('/tmp/cast/a/graph.json');
+    });
+
+    it('yields no path when the output holds none', () => {
+      expect(parseCastGraphPath('nothing to scan')).toBe('');
+      expect(parseCastGraphPath('')).toBe('');
+    });
+  });
+
+  describe('buildImportGraph', () => {
+    it('turns the cast modules into a sorted, deduplicated adjacency list', () => {
+      const castModules = [
         {
-          source: 'src/a.js',
-          dependencies: [
-            { resolved: 'fs', coreModule: true },
-            { resolved: 'missing', couldNotResolve: true },
-            { resolved: 'src/b.js' },
-            { coreModule: false, couldNotResolve: false },
+          id: 'src/a.js',
+          edges: [
+            { to: 'src/c.js', resolution: 'module' },
+            { to: 'src/b.js', resolution: 'module' },
+            { to: 'src/b.js', resolution: 'module' },
           ],
         },
       ];
-      expect(buildImportGraph(cruiserModules)).toEqual({ 'src/a.js': ['src/b.js'] });
+      expect(buildImportGraph(castModules)).toEqual({ 'src/a.js': ['src/b.js', 'src/c.js'] });
+    });
+
+    it('drops external packages, unresolved and opaque imports', () => {
+      const castModules = [
+        {
+          id: 'src/a.js',
+          edges: [
+            { target: 'node:fs', to: null, resolution: 'external' },
+            { target: './missing.js', to: null, resolution: 'unresolved' },
+            { target: 'path.join(dir, name)', to: null, resolution: 'opaque' },
+            { to: 'src/b.js', resolution: 'module' },
+          ],
+        },
+      ];
+      expect(buildImportGraph(castModules)).toEqual({ 'src/a.js': ['src/b.js'] });
     });
 
     it('tolerates missing input', () => {

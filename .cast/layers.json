@@ -1,0 +1,15 @@
+{
+  "src/domain/evaluator/evaluator.js": "evaluator-fassade",
+  "src/domain/evaluator/**": "evaluator-intern",
+  "src/domain/evaluation/listRuleGroups.js": "anzeige-ableitungen",
+  "src/domain/evaluation/armyWideSelectorSlots.js": "anzeige-ableitungen",
+  "src/domain/evaluation/violationStats.js": "anzeige-ableitungen",
+  "src/ui/i18n/**": "i18n",
+  "src/ui/**": "ui",
+  "src/domain/**": "fachlogik",
+  "src/data/**": "daten",
+  "src/tests/**": "tests",
+  "src/**": "app",
+  "scripts/**": "werkzeuge",
+  "e2e/**": "e2e"
+}

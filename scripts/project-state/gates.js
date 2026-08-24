@@ -5,9 +5,10 @@
  *
  * Der Kern dieses Moduls ist die Unterscheidung dreier Zustaende statt zweier.
  * Ein Werkzeug, das mit einem Umgebungsfehler abbricht, hat *nichts geprueft* --
- * es darf weder als bestanden noch als "hat Befunde" gelten. Der Anlass ist
- * konkret: dependency-cruiser bricht auf einer nicht unterstuetzten Node-Version
- * mit einer Versionsmeldung ab, bevor es eine einzige Regel auswertet. Steht der
+ * es darf weder als bestanden noch als "hat Befunde" gelten. Der Anlass war
+ * konkret: der damalige Strukturpruefer brach auf einer nicht unterstuetzten
+ * Node-Version mit einer Versionsmeldung ab, bevor er eine einzige Regel
+ * auswertete. Steht der
  * Step zudem auf `continue-on-error`, meldet die CI-Oberflaeche ihn gruen. Genau
  * deshalb urteilt dieses Modul ueber Exit-Code und Ausgabe des Werkzeugs selbst
  * und nicht ueber das Ergebnis des Workflow-Steps.
@@ -49,14 +50,20 @@ const EXIT_CODE_SUCCESS = 0;
  * Umgebungsfehler statt werkzeugspezifischer Meldungen -- ein neues Gate braucht
  * hier keinen Eintrag.
  *
- * Die erste Signatur ist woertlich der Meldung von dependency-cruiser
+ * Die erste Signatur ist woertlich der Meldung des damaligen Strukturpruefers
  * nachgebildet ("ERROR: Your node version (25.0.0) is not supported."), dem
  * Anlassfall dieses Vorhabens.
  */
 const ENVIRONMENT_ABORT_SIGNATURES = Object.freeze([
   { reason: GateAbortReason.UnsupportedNodeVersion, pattern: /your node version \([^)]*\) is not supported/i },
   { reason: GateAbortReason.UnsupportedNodeVersion, pattern: /unsupported engine|EBADENGINE/i },
-  { reason: GateAbortReason.ExecutableNotFound, pattern: /command not found|\bENOENT\b/i },
+  // Zwei Schreibweisen desselben Abbruchs: bash meldet `<name>: command not
+  // found`, die POSIX-Shell hinter `npm run` (`sh`) dagegen nur
+  // `sh: 1: <name>: not found`. Ohne die zweite Form gilt ein Gate, dessen
+  // Werkzeug gar nicht installiert ist -- etwa `cast` im Zustandsbericht-
+  // Workflow, der nur `npm ci` kennt (ADR 0041) -- faelschlich als "hat
+  // Befunde".
+  { reason: GateAbortReason.ExecutableNotFound, pattern: /command not found|:\s*not found\b|\bENOENT\b/i },
   { reason: GateAbortReason.ModuleNotFound, pattern: /cannot find module|ERR_MODULE_NOT_FOUND/i },
 ]);
 
@@ -68,7 +75,7 @@ const ENVIRONMENT_ABORT_SIGNATURES = Object.freeze([
 export const GATE_DEFINITIONS = Object.freeze([
   { id: 'lint', label: 'oxlint', command: 'npm run lint' },
   { id: 'knip', label: 'Knip (dead code)', command: 'npm run knip' },
-  { id: 'depcruise', label: 'dependency-cruiser (structure)', command: 'npm run depcruise' },
+  { id: 'cast', label: 'cast (structure)', command: 'npm run cast' },
   { id: 'typecheck', label: 'Typecheck (tsc --noEmit)', command: 'npm run typecheck' },
   { id: 'unit-tests', label: 'Unit/component tests', command: 'npx vitest run' },
   { id: 'maintainability', label: 'Maintainability Index', command: 'scripts/project-state/complexity.js' },

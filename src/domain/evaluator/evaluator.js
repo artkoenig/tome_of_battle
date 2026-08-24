@@ -5,7 +5,7 @@
  * Dies ist die **einzige** legale Aussenschnittstelle des `src/domain/evaluator/`-
  * Moduls. Der Zugriff von aussen nur ueber diese Datei und die harte
  * Import-Trennung zum App-Schreibmodell `src/domain/roster/` (in beide Richtungen)
- * sind maschinell durchgesetzt (`.oxlintrc.json`, `.dependency-cruiser.cjs`).
+ * sind maschinell durchgesetzt (`.oxlintrc.json`, dazu `.cast/rules.json`).
  *
  * ── Die Fassade ist zweistufig ───────────────────────────────────────────────
  * Sie fuehrt in zwei Schritten:

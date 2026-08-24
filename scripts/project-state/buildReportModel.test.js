@@ -16,10 +16,10 @@ describe('project-state/buildReportModel', () => {
       baseInput({
         gateRuns: {
           lint: { exitCode: 0, output: 'ok' },
-          depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
+          cast: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
         },
         workflowJob: {
-          steps: [{ run: 'npm run lint' }, { run: 'npm run depcruise', 'continue-on-error': true }],
+          steps: [{ run: 'npm run lint' }, { run: 'npm run cast', 'continue-on-error': true }],
         },
       }),
     );
@@ -27,9 +27,9 @@ describe('project-state/buildReportModel', () => {
     const byId = Object.fromEntries(model.gates.map((gate) => [gate.id, gate]));
     expect(byId.lint.status).toBe(GateStatus.Passed);
     expect(byId.lint.enforcement).toBe(GateEnforcement.Blocking);
-    expect(byId.depcruise.status).toBe(GateStatus.NotRun);
-    expect(byId.depcruise.abortReason).toBe(GateAbortReason.UnsupportedNodeVersion);
-    expect(byId.depcruise.enforcement).toBe(GateEnforcement.Warning);
+    expect(byId.cast.status).toBe(GateStatus.NotRun);
+    expect(byId.cast.abortReason).toBe(GateAbortReason.UnsupportedNodeVersion);
+    expect(byId.cast.enforcement).toBe(GateEnforcement.Warning);
     // Ein Gate ohne Lauf bleibt "nicht angelaufen" statt still zu verschwinden.
     expect(byId.typecheck.status).toBe(GateStatus.NotRun);
     expect(byId.typecheck.abortReason).toBe(GateAbortReason.NoRunRecorded);
@@ -112,7 +112,7 @@ describe('project-state/buildReportModel', () => {
       baseInput({
         gateRuns: {
           lint: { exitCode: 0, output: 'ok' },
-          depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
+          cast: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
         },
         workflowJob: { steps: [{ run: 'npm run lint' }] },
       }),
@@ -131,7 +131,7 @@ describe('project-state/buildReportModel', () => {
         gateRuns: {
           lint: { exitCode: 0, output: 'ok' },
           knip: { exitCode: 0, output: 'ok' },
-          depcruise: { exitCode: 0, output: '{}' },
+          cast: { exitCode: 0, output: '{}' },
           typecheck: { exitCode: 0, output: 'ok' },
           'unit-tests': { exitCode: 0, output: 'ok' },
           maintainability: { exitCode: 0, output: 'ok' },

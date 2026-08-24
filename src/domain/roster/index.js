@@ -9,7 +9,7 @@
  * wird — Verletzungen, Verfügbarkeit, Kosten, Profile —, liefert allein der
  * Bericht der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`, ADR-0034);
  * dieses Modul importiert den Evaluator nie (Trennung wie ADR-0030,
- * maschinell geprüft in `.oxlintrc.json`/`.dependency-cruiser.cjs`).
+ * maschinell geprüft in `.oxlintrc.json`/`.cast/rules.json`).
  *
  * Dieser Index ist eine **Bequemlichkeits-Sammlung**, keine erzwungene
  * Fassade (anders als ADR-0023 für den alten Solver): Importe direkt aus den

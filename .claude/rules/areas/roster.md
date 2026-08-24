@@ -60,9 +60,11 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   key, never on German text.
 - `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
   (Issue 0174, ADR-0039) — and only produces/consumes XML **text**. Nothing under
-  `src/domain/roster/` imports `src/domain/evaluation/` any more; the blocking depcruise rule
-  `roster-keine-evaluation-abhaengigkeit` (`error`) holds it, test files excepted, the same way
-  `roster-keine-evaluator-abhaengigkeit` does. The caller is `useRosterList.js`, in the UI layer,
+  `src/domain/roster/` imports `src/domain/evaluation/` any more; the cast rule
+  `roster-keine-evaluation-abhaengigkeit` (`.cast/rules.json`, `warn` since ADR 0041) watches it,
+  test files excepted, the same way `roster-keine-evaluator-abhaengigkeit` does. Careful: only
+  the edge to the **evaluator** is still blocking, through the `no-restricted-imports` mirror in
+  `.oxlintrc.json`; for the edge to `src/domain/evaluation/` the cast warning is the only guard. The caller is `useRosterList.js`, in the UI layer,
   which calls `evaluateAppRoster(system, roster)` itself. Packing and unpacking the `.rosz` archive is file I/O and lives
   in `src/domain/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
   in `useRosterList.js`, because the data layer may not reach back into this one.
