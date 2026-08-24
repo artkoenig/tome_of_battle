@@ -1,0 +1,19 @@
+{
+  "operations": [
+    { "op": "move", "module": "data/services/catalogRevisions.js", "to": "domain/services/catalogRevisions.js" },
+    { "op": "move", "module": "data/services/dataEvents.js", "to": "domain/services/dataEvents.js" },
+    { "op": "move", "module": "data/services/rosterStore.js", "to": "domain/services/rosterStore.js" },
+    { "op": "move", "module": "data/services/rosterTransfer.js", "to": "domain/services/rosterTransfer.js" },
+    { "op": "move", "module": "data/services/settings.js", "to": "domain/services/settings.js" },
+    { "op": "move", "module": "data/services/systemLibrary.js", "to": "domain/services/systemLibrary.js" },
+    { "op": "invert", "from": "domain/services/catalogRevisions.js", "to": "data/db/catalogUpdate.js" },
+    { "op": "invert", "from": "domain/services/catalogRevisions.js", "to": "data/db/migrations.js" },
+    { "op": "invert", "from": "domain/services/rosterStore.js", "to": "data/db/database.js" },
+    { "op": "invert", "from": "domain/services/systemLibrary.js", "to": "data/db/database.js" },
+    { "op": "invert", "from": "domain/services/systemLibrary.js", "to": "data/db/systemImport.js" },
+    { "op": "invert", "from": "domain/services/systemLibrary.js", "to": "data/db/catalogSourceIndex.js" },
+    { "op": "invert", "from": "domain/services/systemLibrary.js", "to": "data/parser/zipExtractor.js" },
+    { "op": "invert", "from": "domain/services/systemLibrary.js", "to": "data/db/catalogUpdate.js" },
+    { "op": "invert", "from": "domain/services/settings.js", "to": "data/db/database.js" }
+  ]
+}

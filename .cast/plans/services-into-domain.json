@@ -1,0 +1,10 @@
+{
+  "operations": [
+    { "op": "move", "module": "data/services/catalogRevisions.js", "to": "domain/services/catalogRevisions.js" },
+    { "op": "move", "module": "data/services/dataEvents.js", "to": "domain/services/dataEvents.js" },
+    { "op": "move", "module": "data/services/rosterStore.js", "to": "domain/services/rosterStore.js" },
+    { "op": "move", "module": "data/services/rosterTransfer.js", "to": "domain/services/rosterTransfer.js" },
+    { "op": "move", "module": "data/services/settings.js", "to": "domain/services/settings.js" },
+    { "op": "move", "module": "data/services/systemLibrary.js", "to": "domain/services/systemLibrary.js" }
+  ]
+}
