@@ -50,12 +50,11 @@ to `src/tests/`. Only the entry point `src/main.jsx` and its `src/index.css` sta
 root of `src/`.
 
 `src/domain/services/` is the single address through which the UI reaches data. Four rules in
-`.dependency-cruiser.cjs` (`ui-nicht-auf-daten`, `daten-kein-rueckgriff`,
-`fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the direction. They start as
-`warn` and are pulled to `error` as each phase (issues 0161–0171) removes its
-violations; `ui-nicht-auf-daten` is `error` since issue 0167 moved the 14 direct
-UI → data edges onto the facade, and `fachlogik-kein-rueckgriff` plus
-`keine-i18n-unter-ui` since issue 0169. `src/utils/` belonged to no layer and is
+`.cast/rules.json` (`ui-nicht-auf-daten`, `daten-kein-rueckgriff`,
+`fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the direction. Issues 0161–0171
+removed their violations — all four find nothing today — but since the port from
+dependency-cruiser to cast ([ADR 0041](adr/0041-cast-als-strukturpruefer.md)) every rule is
+`warn`: `npm run cast` lists what it finds and lets the gate pass. `src/utils/` belonged to no layer and is
 dissolved: every file of it now sits in the layer it belongs to.
 
 | Folder | Responsibility |
@@ -77,11 +76,12 @@ dissolved: every file of it now sits in the layer it belongs to.
 **The Reinraum boundary.** `src/domain/evaluator/` and `src/domain/roster/` must not import
 each other in either direction, and `src/domain/evaluator/evaluator.js` is the only
 legal external entry point into the evaluator. Both rules are
-**machine-enforced**, not just documented, as blocking `error` rules in
-`.dependency-cruiser.cjs` (`evaluator-keine-roster-abhaengigkeit`,
-`roster-keine-evaluator-abhaengigkeit`, `evaluator-nur-ueber-fassade`) and
-matching `no-restricted-imports` patterns in `.oxlintrc.json`. `npm run
-depcruise` / `npm run lint` catch a violation immediately.
+**machine-enforced**, not just documented: as blocking `no-restricted-imports`
+patterns in `.oxlintrc.json`, and as the cast rules
+`evaluator-keine-roster-abhaengigkeit`, `roster-keine-evaluator-abhaengigkeit`
+and `evaluator-nur-ueber-fassade` in `.cast/rules.json`, which are `warn` since
+[ADR 0041](adr/0041-cast-als-strukturpruefer.md). `npm run lint` fails on a
+violation, `npm run cast` names it with its file and its line.
 
 ## `docs/` — the doc tree
 

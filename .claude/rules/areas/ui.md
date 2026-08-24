@@ -9,8 +9,9 @@ paths:
 
 - This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
   allowed direction). It reaches data only through `src/domain/services/`; a direct import of `src/data/db/`
-  or `src/data/parser/` fails `forge-lint` on the dependency-cruiser rule `ui-nicht-auf-daten`
-  (`error` since Issue 0167 moved the last 14 edges onto the facade — there is no exception left).
+  or `src/data/parser/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
+  Issue 0167 moved the last 14 edges onto the facade, so the rule finds nothing today; since the
+  port to cast (ADR 0041) it is `warn` — `forge-lint` lists a new edge instead of failing on it.
 - Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
   systems are already in state and roster writes arrive over the data channel.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
@@ -27,9 +28,10 @@ paths:
     `useLayoutEffect` and `useMemo` are **forbidden** here and belong in the ViewModel; that is
     where every effect, every derivation and every subscription lives. In `src/ui/viewmodels/` all
     of them are allowed.
-  - Four rules keep it, all `error`, all failing `forge-lint`: the oxlint
-    `no-restricted-imports` override on `src/ui/components/**` (the hook ban), and in
-    `.dependency-cruiser.cjs` `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
+  - Four rules keep it. Only the oxlint `no-restricted-imports` override on
+    `src/ui/components/**` (the hook ban) still fails `forge-lint`; the three module-edge rules
+    are `warn` in `.cast/rules.json` since the port to cast (ADR 0041) and are listed, not
+    blocking: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
     `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
     `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
@@ -60,7 +62,7 @@ paths:
   Such a rule is pinned by a source-reading test next to the component
   (`sectionPropCount.test.js`, `CategoryUnitAdder.noRenderDerivation.test.js` — read the `.jsx`
   with `fs`, assert on the prop list, on the imports, and on the bindings between the ViewModel
-  call and the JSX). Dependency-cruiser only covers the module edges it names, never a local
+  call and the JSX). cast only covers the module edges its rules name, never a local
   derivation.
 - A test that renders one of those leaves goes through `src/tests/test-utils/editorHarness.jsx`: the
   harnesses take the **old** flat prop set (`capabilities`, `pathBySelectionId`, `system`,

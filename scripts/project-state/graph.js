@@ -1,11 +1,11 @@
 /**
  * Reine Auswertung des Importgraphen (ohne Prozess- oder Dateizugriff, damit sie
- * testbar bleibt). Eingabe ist der bereits eingelesene Modulbericht von
- * dependency-cruiser, Ausgabe sind Zyklen und Schichtverstoesse.
+ * testbar bleibt). Eingabe sind die Module des von `cast scan` geschriebenen
+ * Graphen (ADR 0041), Ausgabe sind Zyklen und Schichtverstoesse.
  *
- * Warum die Auswertung hier noch einmal stattfindet, obwohl dependency-cruiser
- * das ebenfalls kann: genau dieses Werkzeug war der Anlass des Vorhabens, weil es
- * auf einer nicht unterstuetzten Node-Version abbrach, ohne je eine Regel zu
+ * Warum die Auswertung hier noch einmal stattfindet, obwohl der Strukturpruefer
+ * das ebenfalls kann: sein Vorgaenger war der Anlass des Vorhabens, weil er auf
+ * einer nicht unterstuetzten Node-Version abbrach, ohne je eine Regel zu
  * pruefen. Ein Graph ist eine robustere Eingabe als ein Regelurteil -- er laesst
  * sich auch aus einer anderen Quelle beschaffen.
  */
@@ -29,22 +29,23 @@ const SMALLEST_CYCLE_NODE_COUNT = 2;
  */
 
 /**
- * Normalisiert den Modulbericht von dependency-cruiser zu einer Adjazenzliste.
- * Kernmodule und nicht aufloesbare Importe fallen heraus -- sie sind keine
+ * Normalisiert die Module aus `cast scan` zu einer Adjazenzliste. Gezaehlt wird
+ * nur, was auf einem Modul des Projekts gelandet ist (`resolution: "module"`):
+ * externe Pakete, nicht aufloesbare und undurchsichtige Importe sind keine
  * Kanten im Graphen des Projekts.
  *
- * @param {ReadonlyArray<{ source: string, dependencies?: ReadonlyArray<object> }>} cruiserModules
+ * @param {ReadonlyArray<{ id: string, edges?: ReadonlyArray<{ to: string|null, resolution: string }> }>} castModules
  * @returns {ImportGraph}
  */
-export function buildImportGraph(cruiserModules) {
+export function buildImportGraph(castModules) {
   /** @type {ImportGraph} */
   const graph = {};
 
-  for (const module of cruiserModules ?? []) {
-    const targets = (module.dependencies ?? [])
-      .filter((dependency) => !dependency.coreModule && !dependency.couldNotResolve && dependency.resolved)
-      .map((dependency) => dependency.resolved);
-    graph[module.source] = [...new Set(targets)].sort();
+  for (const module of castModules ?? []) {
+    const targets = (module.edges ?? [])
+      .filter((edge) => edge.resolution === 'module' && edge.to)
+      .map((edge) => edge.to);
+    graph[module.id] = [...new Set(targets)].sort();
   }
 
   return graph;

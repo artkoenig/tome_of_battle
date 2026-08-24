@@ -7,7 +7,7 @@
  * `evaluator-measurement.js`: greift es noch in ein engine-internes Modul
  * (`datasetPreparation`, `evalTree`, `offer`, `effectiveState`, `countIndex`,
  * `fixpoint`, `constraints`, `budget`, `report`, `rosterBudget`, `model`), gibt
- * es den Nachbau noch — und mit ihm den Grund fuer die depcruise-Ausnahme
+ * es den Nachbau noch — und mit ihm den Grund fuer die Fassaden-Ausnahme
  * `EVALUATOR_MEASUREMENT`, die Kriterium 6 ersatzlos streicht.
  *
  * Dieser Test steht bewusst neben `evaluator-measurement.test.js` in einer

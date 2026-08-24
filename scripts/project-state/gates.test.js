@@ -25,7 +25,7 @@ describe('project-state/gates', () => {
       });
     });
 
-    it('classifies a dependency-cruiser node-version abort as not-run, never as green', () => {
+    it('classifies a node-version abort as not-run, never as green', () => {
       const run = { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' };
       expect(classifyGate(run)).toEqual({
         status: GateStatus.NotRun,
@@ -41,7 +41,7 @@ describe('project-state/gates', () => {
     });
 
     it('recognizes a missing executable and a missing module as not-run', () => {
-      expect(classifyGate({ exitCode: 127, output: 'depcruise: command not found' }).abortReason).toBe(
+      expect(classifyGate({ exitCode: 127, output: 'cast-check: command not found' }).abortReason).toBe(
         GateAbortReason.ExecutableNotFound,
       );
       expect(classifyGate({ exitCode: 1, output: 'Error: Cannot find module "typescript"' }).abortReason).toBe(
@@ -93,12 +93,12 @@ describe('project-state/gates', () => {
       const workflowJob = {
         steps: [
           { run: 'npm run lint' },
-          { run: 'npm run depcruise', 'continue-on-error': true },
+          { run: 'npm run cast', 'continue-on-error': true },
         ],
       };
       const runs = {
         lint: { exitCode: 0, output: 'ok' },
-        depcruise: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
+        cast: { exitCode: 1, output: 'ERROR: Your node version (25.0.0) is not supported.' },
       };
 
       const states = buildGateStates({ workflowJob, runs });
@@ -111,9 +111,9 @@ describe('project-state/gates', () => {
       expect(byId.lint.exitCode).toBe(0);
       expect(byId.lint.abortReason).toBeNull();
 
-      expect(byId.depcruise.status).toBe(GateStatus.NotRun);
-      expect(byId.depcruise.enforcement).toBe(GateEnforcement.Warning);
-      expect(byId.depcruise.abortReason).toBe(GateAbortReason.UnsupportedNodeVersion);
+      expect(byId.cast.status).toBe(GateStatus.NotRun);
+      expect(byId.cast.enforcement).toBe(GateEnforcement.Warning);
+      expect(byId.cast.abortReason).toBe(GateAbortReason.UnsupportedNodeVersion);
 
       expect(byId.typecheck.status).toBe(GateStatus.NotRun);
       expect(byId.typecheck.abortReason).toBe(GateAbortReason.NoRunRecorded);

@@ -29,6 +29,7 @@ import { join, dirname, relative, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 import { GATE_DEFINITIONS } from './gates.js';
+import { buildImportGraph } from './graph.js';
 import { buildReportModel } from './buildReportModel.js';
 import { renderReport } from './renderReport.js';
 
@@ -51,11 +52,9 @@ const FAILED_EXIT_CODE = 1;
  * Kommando abweicht. Das angezeigte `command` aus {@link GATE_DEFINITIONS} bleibt
  * unveraendert -- es ist der Schluessel, ueber den die Wirksamkeit im CI-Workflow
  * nachgeschlagen wird. Die Abweichungen erzeugen nebenbei die Artefakte, die der
- * Bericht braucht: dependency-cruiser als JSON fuer den Graphen, vitest mit
- * Abdeckung fuer `coverage-final.json`.
+ * Bericht braucht: vitest mit Abdeckung fuer `coverage-final.json`.
  */
 const GATE_EXECUTION_OVERRIDES = Object.freeze({
-  depcruise: 'npx depcruise src --output-type json',
   // `--coverage.reportOnFailure`: Vitest schreibt `coverage-final.json` sonst
   // nur bei einem durchweg gruenen Lauf -- ein einzelner roter Test (z. B. der
   // CPU-Last-Flake in e2e.testcatalog.test.js, Issue 0110) wuerde sonst die
@@ -65,8 +64,11 @@ const GATE_EXECUTION_OVERRIDES = Object.freeze({
   maintainability: 'node -e "console.log(\'Maintainability Index computed internally\')"',
 });
 
-/** Aus welcher Gate-Ausgabe der Importgraph gelesen wird. */
-const GRAPH_SOURCE_GATE_ID = 'depcruise';
+/**
+ * Woher der Importgraph kommt: `cast scan` schreibt ihn ausserhalb der
+ * Arbeitskopie und meldet auf stdout den Pfad, unter dem er liegt (ADR 0041).
+ */
+const GRAPH_SCAN_COMMAND = 'cast scan';
 
 /**
  * @typedef {object} CommandResult
@@ -101,26 +103,37 @@ function runCommand(command) {
 }
 
 /**
- * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis. Das JSON der
- * dependency-cruiser-Ausgabe wird gesondert zurueckgegeben, damit der Graph nicht
- * einen zweiten Lauf desselben Werkzeugs braucht.
+ * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis. Der Importgraph
+ * kommt gesondert dazu: cast schreibt ihn beim Scan neben die Arbeitskopie, also
+ * wird er von dort gelesen statt aus der Ausgabe eines Gates geschnitten.
  *
- * @returns {{ gateRuns: Record<string, import('./gates.js').GateRun>, graphStdout: string }}
+ * @returns {{ gateRuns: Record<string, import('./gates.js').GateRun>, importGraph: import('./graph.js').ImportGraph }}
  */
 function executeGates() {
   /** @type {Record<string, import('./gates.js').GateRun>} */
   const gateRuns = {};
-  let graphStdout = '';
 
   for (const gate of GATE_DEFINITIONS) {
     const command = GATE_EXECUTION_OVERRIDES[gate.id] ?? gate.command;
     process.stderr.write(`  Gate ${gate.id}: ${command}\n`);
     const result = runCommand(command);
     gateRuns[gate.id] = { exitCode: result.exitCode, output: result.output };
-    if (gate.id === GRAPH_SOURCE_GATE_ID) graphStdout = result.stdout;
   }
 
-  return { gateRuns, graphStdout };
+  return { gateRuns, importGraph: buildImportGraph(readCastModules()) };
+}
+
+/**
+ * Die Module des von cast erhobenen Graphen. Der Scan meldet den Pfad seiner
+ * Ausgabe; laeuft er nicht durch, bleibt der Graph eben leer -- ein Werkzeug, das
+ * nicht anlaeuft, macht diesen Lauf nicht rot (siehe Kopf dieses Moduls).
+ *
+ * @returns {ReadonlyArray<object>}
+ */
+function readCastModules() {
+  const { exitCode, stdout } = runCommand(GRAPH_SCAN_COMMAND);
+  if (exitCode !== 0) return [];
+  return readJsonFile(stdout.trim(), { modules: [] }).modules ?? [];
 }
 
 /** Liest eine JSON-Datei; bei fehlender oder ungueltiger Datei den Ersatzwert. */

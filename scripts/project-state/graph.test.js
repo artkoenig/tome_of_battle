@@ -3,33 +3,33 @@ import { buildImportGraph, findCycles, findLayerViolations, DEFAULT_LAYERS } fro
 
 describe('project-state/graph', () => {
   describe('buildImportGraph', () => {
-    it('turns the cruiser module report into a sorted, deduplicated adjacency list', () => {
-      const cruiserModules = [
+    it('turns the cast modules into a sorted, deduplicated adjacency list', () => {
+      const castModules = [
         {
-          source: 'src/a.js',
-          dependencies: [
-            { resolved: 'src/c.js' },
-            { resolved: 'src/b.js' },
-            { resolved: 'src/b.js' },
+          id: 'src/a.js',
+          edges: [
+            { to: 'src/c.js', resolution: 'module' },
+            { to: 'src/b.js', resolution: 'module' },
+            { to: 'src/b.js', resolution: 'module' },
           ],
         },
       ];
-      expect(buildImportGraph(cruiserModules)).toEqual({ 'src/a.js': ['src/b.js', 'src/c.js'] });
+      expect(buildImportGraph(castModules)).toEqual({ 'src/a.js': ['src/b.js', 'src/c.js'] });
     });
 
-    it('drops core modules and imports that could not be resolved', () => {
-      const cruiserModules = [
+    it('drops external packages, unresolved and opaque imports', () => {
+      const castModules = [
         {
-          source: 'src/a.js',
-          dependencies: [
-            { resolved: 'fs', coreModule: true },
-            { resolved: 'missing', couldNotResolve: true },
-            { resolved: 'src/b.js' },
-            { coreModule: false, couldNotResolve: false },
+          id: 'src/a.js',
+          edges: [
+            { target: 'node:fs', to: null, resolution: 'external' },
+            { target: './missing.js', to: null, resolution: 'unresolved' },
+            { target: 'path.join(dir, name)', to: null, resolution: 'opaque' },
+            { to: 'src/b.js', resolution: 'module' },
           ],
         },
       ];
-      expect(buildImportGraph(cruiserModules)).toEqual({ 'src/a.js': ['src/b.js'] });
+      expect(buildImportGraph(castModules)).toEqual({ 'src/a.js': ['src/b.js'] });
     });
 
     it('tolerates missing input', () => {
