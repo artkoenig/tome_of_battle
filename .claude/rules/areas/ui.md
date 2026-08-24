@@ -11,7 +11,7 @@ paths:
   allowed direction). It reaches data only through `src/domain/services/`; a direct import of `src/data/db/`
   or `src/data/parser/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
   Issue 0167 moved the last 14 edges onto the facade, so the rule finds nothing today; since the
-  port to cast (ADR 0041) it is `warn` — `forge-lint` lists a new edge instead of failing on it.
+  port to cast (ADR 0041) — `error` since Issue 0181, so `forge-lint` fails on a new edge.
 - Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
   systems are already in state and roster writes arrive over the data channel.
 - Most `.jsx` files are paired 1:1 with a `.test.jsx` next to them. A new component without its
@@ -30,8 +30,7 @@ paths:
     of them are allowed.
   - Four rules keep it. Only the oxlint `no-restricted-imports` override on
     `src/ui/components/**` (the hook ban) still fails `forge-lint`; the three module-edge rules
-    are `warn` in `.cast/rules.json` since the port to cast (ADR 0041) and are listed, not
-    blocking: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
+    in `.cast/rules.json` are `error` since Issue 0181 and block just as well: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
     `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
     `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,

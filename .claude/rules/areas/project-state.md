@@ -15,7 +15,8 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
   `ENVIRONMENT_ABORT_SIGNATURES` erkannt) steht **vor** der Exit-Code-Prüfung. `npm run <gate>`
   führt über `sh` aus: ein fehlendes Werkzeug meldet sich dort als `sh: 1: <name>: not found`,
   nicht als `command not found` — beide Wortlaute müssen in der Signatur stehen, sonst gilt ein
-  nie gelaufenes Gate (z. B. `cast`, im Berichts-Workflow nicht installierbar) als "hat Befunde".
+  nie gelaufenes Gate als "hat Befunde". Der Berichts-Workflow klont cast seit Issue 0181 flach
+  auf den PATH, die Signatur bleibt aber die Absicherung fuer jedes Werkzeug, das fehlt.
   Ein Werkzeug, das
   nichts geprüft hat, darf weder grün noch "hat Befunde" sein.
 - Die Gate-Id ist ein Schlüssel, der an vier Stellen zusammenpassen muss: `GATE_DEFINITIONS`
@@ -26,8 +27,9 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
 - Das **angezeigte** `command` eines Gates ist zugleich der Schlüssel, über den
   `findGateEnforcement` den Step in `.github/workflows/ci.yml` nachschlägt. Weicht der Befehl
   im Workflow ab, steht das Gate auf `enforcement: unknown` — kein Fehler, aber eine stumme
-  Aussage. Gates ohne CI-Step (z. B. `cast`, das als Plugin nicht installierbar ist) sind
-  dauerhaft `unknown`.
+  Aussage. Gates ohne CI-Step sind dauerhaft `unknown`; `cast` gehoert seit Issue 0181 nicht
+  mehr dazu — `.github/workflows/ci.yml` fuehrt `npm run cast` unter genau diesem Befehl aus,
+  also loest das Gate eine echte Wirksamkeit auf.
 - Der Modulgraph kommt aus cast (ADR 0041): `cast scan` schreibt ihn **außerhalb** der
   Arbeitskopie und meldet auf stdout eine ganze Berichtszeile —
   `554 modules scanned into /tmp/cast/<hash>/graph.json`, **nicht** den blanken Pfad. Wer die
