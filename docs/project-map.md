@@ -166,7 +166,7 @@ Three layers, easy to conflate:
 - **Evaluator measurement** (not production code): `measure-evaluator.js` /
   `measure-evaluator-browser.js` — performance against real catalog data,
   jsdom vs. real browser.
-- **`scripts/project-state/`** — generates `docs/status/index.html`
+- **`scripts/project-state/`** — generates the status report (`.report/index.html` locally, `/status` on Pages; never committed)
   (complexity, coverage, quality gates, dependency graph, issue-tracker
   aggregation).
 - **`scripts/catalog-fork/`** — CI tooling that runs **inside the external
