@@ -15,8 +15,9 @@
   `forge-test --run <pattern>` passes the pattern straight to vitest, so it filters by path or
   filename (`forge-test --run src/domain/evaluator`); pass `-t "<name>"` as the pattern to filter by
   test name.
-- `forge-lint` = `npm run lint && npm run depcruise`. oxlint's many warnings do not fail it;
-  the blocking dependency-cruiser rules (Reinraum boundary, evaluator facade) do.
+- `forge-lint` = `npm run lint && cast check --root .` (`cast` resolved via `command -v cast`, else
+  `${CLAUDE_PLUGIN_ROOT}/bin/cast`). oxlint's many warnings do not fail it; the blocking
+  `.cast/rules.json` rules (Reinraum boundary, evaluator facade, layering) do. See ADR 0041.
 - `npm run knip` is warn-only and deliberately outside the wrappers.
 - The Puppeteer app E2E (`node e2e/ui.test.js`, part of `npm test`) is **not** in `forge-test`:
   it is slow and browser-bound. Run it by hand when a change touches `src/ui/components/` or

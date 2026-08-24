@@ -1,0 +1,88 @@
+{
+  "forbidden": [
+    {
+      "name": "schichtung-parser-kein-rueckgriff",
+      "severity": "warn",
+      "from": "src/data/parser/**",
+      "to": "src/ui/components/**"
+    },
+    {
+      "name": "ableitungen-nur-in-viewmodels",
+      "severity": "error",
+      "from": "src/ui/components/**",
+      "to": "ableitung-ziel"
+    },
+    {
+      "name": "viewmodel-keine-komponente",
+      "severity": "error",
+      "from": "src/ui/viewmodels/**",
+      "to": "src/ui/components/**"
+    },
+    {
+      "name": "komponente-kein-bericht",
+      "severity": "error",
+      "from": "src/ui/components/**",
+      "to": "src/domain/evaluat*/**"
+    },
+    {
+      "name": "viewmodel-keine-datenschicht",
+      "severity": "error",
+      "from": "src/ui/viewmodels/**",
+      "to": "src/data/**"
+    },
+    {
+      "name": "ui-nicht-auf-daten",
+      "severity": "error",
+      "from": "src/ui/**",
+      "to": "src/data/**"
+    },
+    {
+      "name": "daten-kein-rueckgriff",
+      "severity": "error",
+      "from": "src/data/**",
+      "to": "src/domain/**"
+    },
+    {
+      "name": "fachlogik-kein-rueckgriff",
+      "severity": "error",
+      "from": "src/domain/**",
+      "to": "src/ui/**"
+    },
+    {
+      "name": "keine-i18n-unter-ui",
+      "severity": "error",
+      "from": "src/domain/**",
+      "to": "src/ui/i18n/**"
+    },
+    {
+      "name": "evaluator-keine-roster-abhaengigkeit",
+      "severity": "error",
+      "from": "src/domain/evaluator/**",
+      "to": "src/domain/roster/**"
+    },
+    {
+      "name": "roster-keine-evaluator-abhaengigkeit",
+      "severity": "error",
+      "from": "src/domain/roster/**",
+      "to": "src/domain/evaluator/**"
+    },
+    {
+      "name": "roster-keine-evaluation-abhaengigkeit",
+      "severity": "error",
+      "from": "src/domain/roster/**",
+      "to": "src/domain/evaluation/**"
+    },
+    {
+      "name": "evaluation-keine-roster-abhaengigkeit",
+      "severity": "error",
+      "from": "src/domain/evaluation/**",
+      "to": "src/domain/roster/**"
+    },
+    {
+      "name": "evaluator-nur-ueber-fassade",
+      "severity": "error",
+      "from": "rest",
+      "to": "evaluator-intern"
+    }
+  ]
+}

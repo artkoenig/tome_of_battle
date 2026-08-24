@@ -1,0 +1,11 @@
+{
+  "**/*.test.js": "test",
+  "**/*.test.jsx": "test",
+  "src/domain/evaluation/listRuleGroups.js": "ableitung-ziel",
+  "src/domain/evaluation/armyWideSelectorSlots.js": "ableitung-ziel",
+  "src/domain/evaluation/violationStats.js": "ableitung-ziel",
+  "src/domain/evaluator/evaluator.js": "evaluator-facade",
+  "src/domain/evaluator/__fixtures__/**": "fixtures",
+  "src/domain/evaluator/**": "evaluator-intern",
+  "**": "rest"
+}

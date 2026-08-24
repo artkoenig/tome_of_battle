@@ -1,6 +1,9 @@
 # Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen
 
-- **Status:** Accepted
+- **Status:** Superseded (0041) für die Struktur-Prüfung — der dependency-cruiser-Teil dieser
+  Entscheidung ist von ADR-0041 abgelöst: die Struktur-Prüfung (Schichtung, Reinraum-Fassade,
+  Zyklen, Waisen) läuft seit Issue 0180 über das `cast`-Plugin statt über dependency-cruiser.
+  oxlint und Knip aus dieser Entscheidung bleiben unverändert in Kraft.
 - **Datum:** 2026-07-21
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** ergänzt ADR-0006 (Testing and Automation), setzt ADR-0023 (Solver-Fassade) maschinell durch

@@ -42,15 +42,13 @@ jobs:
         run: npm run knip
         continue-on-error: true
 
-      # dependency-cruiser prueft die in ADR 0023 fixierte Solver-Fassade und die
-      # Schichtung parser -> solver -> components sowie Import-Zyklen und Waisen --
-      # Struktur-Regeln, die oxlint pro Datei nicht sieht. Wie Knip vorerst
-      # warn-only (continue-on-error): Befunde sind im Log sichtbar, blockieren
-      # die CI aber nicht, solange die bestehenden Befunde noch nicht aufgeraeumt
-      # sind.
-      - name: dependency-cruiser (statische Analyse, warn-only)
-        run: npm run depcruise
-        continue-on-error: true
+      # Die Struktur-Pruefung des Importgraphen (Schichtung, Reinraum-Fassade,
+      # Zyklen, Waisen) lief hier bis Issue 0180 informativ ueber
+      # dependency-cruiser (continue-on-error). Sie laeuft jetzt ueber das
+      # cast-Plugin in .cast/rules.json, Teil von forge-lint -- lokal und
+      # Agent-seitig, siehe ADR 0041. cast ist ein Claude-Code-Plugin-Binary,
+      # kein npm-Paket, und laeuft in diesem Runner nicht; es gibt hier
+      # ersatzlos kein gleichwertiges CI-Gate mehr dafuer.
       - name: Typecheck (tsc --noEmit, checkJs)
         run: npm run typecheck
 
