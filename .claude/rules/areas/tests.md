@@ -10,6 +10,12 @@ of (`src/domain/evaluator/foo.test.js` → `src/tests/domain/evaluator/foo.test.
 helpers (fixtures, `__fixtures__/`, test-utils) stay colocated with the source they belong to and
 did not move.
 
+- Data fixtures may stay under `src/<layer>/**/__fixtures__/`, but an executable helper module
+  (one that other files `import`) may not: cast scans `__fixtures__/` — dependency-cruiser used to
+  exclude it — so a production or `scripts/` module importing one is a blocking
+  `evaluator-nur-ueber-fassade` violation. Executable test helpers belong in
+  `src/tests/test-utils/` (`rosParser.js`, `e2eReport.js` live there for that reason), and
+  `scripts/` reaches them as `../../src/tests/test-utils/<name>.js`.
 - A test that used `__dirname`/`path.resolve(__dirname, …)` to read a *sibling source file* needed
   its path fixed on the move — the test moved one level deeper (`src/<layer>/…` →
   `src/tests/<layer>/…`) but the file it reads did not. Grep `__dirname` here before trusting a

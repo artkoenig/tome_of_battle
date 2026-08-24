@@ -3,10 +3,10 @@
  *
  * Die reine Auswertungs- und Aufbereitungslogik liegt in den Modulen daneben
  * ({@link module:project-state/buildReportModel}, `gates.js`, `coverage.js`,
- * `functions.js`, `graph.js`, `issues.js`, `renderReport.js`). Dieses Skript
+ * `functions.js`, `issues.js`, `renderReport.js`). Dieses Skript
  * beschafft die Rohdaten an den Raendern -- es fuehrt die Qualitaets-Gates aus,
- * liest `coverage-final.json`, parst den CI-Workflow, liest den Produktivcode und
- * den Import-Graphen, befragt den Git-Tracker ueber die erreichbaren Refs -- und
+ * liest `coverage-final.json`, parst den CI-Workflow, liest den Produktivcode,
+ * befragt den Git-Tracker ueber die erreichbaren Refs -- und
  * reicht sie als reine Daten an {@link buildReportModel}. Aus dem Modell erzeugt
  * {@link renderReport} die HTML-Seite, die dieses Skript schreibt.
  *
@@ -29,7 +29,6 @@ import { join, dirname, relative, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 import { GATE_DEFINITIONS } from './gates.js';
-import { buildImportGraph, parseCastGraphPath } from './graph.js';
 import { buildReportModel } from './buildReportModel.js';
 import { renderReport } from './renderReport.js';
 
@@ -65,18 +64,9 @@ const GATE_EXECUTION_OVERRIDES = Object.freeze({
 });
 
 /**
- * Woher der Importgraph kommt: `cast scan` schreibt ihn ausserhalb der
- * Arbeitskopie und meldet auf stdout eine Zeile der Form
- * `<n> modules scanned into <pfad>/graph.json` (ADR 0041). Der Pfad muss aus
- * dieser Zeile geschnitten werden -- sie ist selbst kein Dateiname.
- */
-const GRAPH_SCAN_COMMAND = 'cast scan';
-
-/**
  * @typedef {object} CommandResult
  * @property {number} exitCode
  * @property {string} output  stdout und stderr zusammen -- fuer die Klassifikation.
- * @property {string} stdout  nur stdout -- fuer maschinenlesbare Ausgaben (JSON).
  */
 
 /**
@@ -100,16 +90,15 @@ function runCommand(command) {
   return {
     exitCode: result.status ?? FAILED_EXIT_CODE,
     output: `${stdout}${stderr}${spawnError}`.trim(),
-    stdout,
   };
 }
 
 /**
- * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis. Der Importgraph
- * kommt gesondert dazu: cast schreibt ihn beim Scan neben die Arbeitskopie, also
- * wird er von dort gelesen statt aus der Ausgabe eines Gates geschnitten.
+ * Fuehrt alle Gates aus und liefert je Gate sein Rohergebnis. Ein Importgraph
+ * wird hier bewusst *nicht* erhoben: das Berichtsmodell hat keinen Graph-Eingang,
+ * ein zusaetzlicher Scan je Lauf waere Arbeit fuer einen Wert, den niemand nimmt.
  *
- * @returns {{ gateRuns: Record<string, import('./gates.js').GateRun>, importGraph: import('./graph.js').ImportGraph }}
+ * @returns {{ gateRuns: Record<string, import('./gates.js').GateRun> }}
  */
 function executeGates() {
   /** @type {Record<string, import('./gates.js').GateRun>} */
@@ -122,24 +111,7 @@ function executeGates() {
     gateRuns[gate.id] = { exitCode: result.exitCode, output: result.output };
   }
 
-  return { gateRuns, importGraph: buildImportGraph(readCastModules()) };
-}
-
-/**
- * Die Module des von cast erhobenen Graphen. Der Scan meldet seine Ausgabe in
- * einer Berichtszeile, aus der `parseCastGraphPath` den Pfad schneidet; laeuft er
- * nicht durch oder nennt er keinen Pfad, bleibt der Graph eben leer -- ein
- * Werkzeug, das nicht anlaeuft, macht diesen Lauf nicht rot (siehe Kopf dieses
- * Moduls).
- *
- * @returns {ReadonlyArray<object>}
- */
-function readCastModules() {
-  const { exitCode, stdout } = runCommand(GRAPH_SCAN_COMMAND);
-  if (exitCode !== 0) return [];
-  const graphPath = parseCastGraphPath(stdout);
-  if (!graphPath) return [];
-  return readJsonFile(graphPath, { modules: [] }).modules ?? [];
+  return { gateRuns };
 }
 
 /** Liest eine JSON-Datei; bei fehlender oder ungueltiger Datei den Ersatzwert. */

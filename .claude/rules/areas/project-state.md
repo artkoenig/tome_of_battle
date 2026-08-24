@@ -15,9 +15,14 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
   `ENVIRONMENT_ABORT_SIGNATURES` erkannt) steht **vor** der Exit-Code-Prüfung. `npm run <gate>`
   führt über `sh` aus: ein fehlendes Werkzeug meldet sich dort als `sh: 1: <name>: not found`,
   nicht als `command not found` — beide Wortlaute müssen in der Signatur stehen, sonst gilt ein
-  nie gelaufenes Gate (z. B. `cast`, im Berichts-Workflow nicht installierbar) als "hat Befunde".
-  Ein Werkzeug, das
-  nichts geprüft hat, darf weder grün noch "hat Befunde" sein.
+  nie gelaufenes Gate als "hat Befunde". Der Berichts-Workflow klont cast seit Issue 0181 flach
+  auf den PATH, die Signatur bleibt aber die Absicherung fuer jedes Werkzeug, das fehlt.
+  Ein Werkzeug, das nichts geprüft hat, darf weder grün noch "hat Befunde" sein.
+- Diese Signaturen sind **zeilengebunden** (`/^…$/im`), und die `sh`-Form verlangt das
+  Shell-Präfix. Ein ungebundenes `: not found` fängt jeden normalen Befund mit ab, der einen
+  nicht gefundenen Pfad nennt, und zeigt ein rotes Gate als abwesendes (Issue 0182) — der
+  schlimmste Fehler dieser Seite. Wer eine Signatur ergänzt, prüft beide Richtungen: Abbruch
+  erkannt **und** Befund nicht verschluckt.
 - Die Gate-Id ist ein Schlüssel, der an vier Stellen zusammenpassen muss: `GATE_DEFINITIONS`
   (`gates.js`), `GATE_EXECUTION_OVERRIDES` (`generate.js`), `GATE_RUNE_EMBLEMS`
   (`renderReport.js`) und die Fixtures in `gates.test.js`/`buildReportModel.test.js`/
@@ -26,19 +31,15 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
 - Das **angezeigte** `command` eines Gates ist zugleich der Schlüssel, über den
   `findGateEnforcement` den Step in `.github/workflows/ci.yml` nachschlägt. Weicht der Befehl
   im Workflow ab, steht das Gate auf `enforcement: unknown` — kein Fehler, aber eine stumme
-  Aussage. Gates ohne CI-Step (z. B. `cast`, das als Plugin nicht installierbar ist) sind
-  dauerhaft `unknown`.
-- Der Modulgraph kommt aus cast (ADR 0041): `cast scan` schreibt ihn **außerhalb** der
-  Arbeitskopie und meldet auf stdout eine ganze Berichtszeile —
-  `554 modules scanned into /tmp/cast/<hash>/graph.json`, **nicht** den blanken Pfad. Wer die
-  Ausgabe ungeschnitten als Dateinamen nimmt, bekommt lautlos einen leeren Graphen (Issue 0180).
-  `parseCastGraphPath` in `graph.js` schneidet den Pfad heraus und ist dort getestet;
-  `generate.js` liest die Datei von dort,
-  `graph.js` normalisiert `modules[].edges` (nur `resolution === 'module'` ist eine Kante) zur
-  Adjazenzliste. Der Graph ist absichtlich die Eingabe, nicht das Regelurteil des Prüfers.
-- `graph.js` (Zyklen nach Tarjan, Schichtverstöße) hat im Berichtsmodell derzeit keinen
-  Abnehmer — `buildReportModel` kennt keinen Graph-Eingang. Wer die Zyklen anzeigen will,
-  erweitert Modell **und** Renderer; knip meldet das Modul solange als ungenutzt (warn-only).
+  Aussage. Gates ohne CI-Step sind dauerhaft `unknown`; `cast` gehoert seit Issue 0181 nicht
+  mehr dazu — `.github/workflows/ci.yml` fuehrt `npm run cast` unter genau diesem Befehl aus,
+  also loest das Gate eine echte Wirksamkeit auf.
+- `graph.js` (Zyklen nach Tarjan, Schichtverstöße; `parseCastGraphPath` für die Berichtszeile
+  von `cast scan`, die **nicht** der blanke Pfad ist — ADR 0041, Issue 0180) hat **keinen**
+  Abnehmer mehr: `buildReportModel` kennt keinen Graph-Eingang, und `generate.js` scannt seit
+  Issue 0182 nicht mehr — ein Scan je Berichtslauf für einen Wert, den niemand nimmt. Wer die
+  Zyklen anzeigen will, erweitert Modell **und** Renderer und holt den Scan in `generate.js`
+  zurück; knip meldet das Modul solange als ungenutzt (warn-only).
 - `generate.js` schreibt Fortschritt nach **stderr**, nie nach stdout: stdout gehört den
   maschinenlesbaren Ausgaben der Gates.
 - Coverage kommt aus `coverage/coverage-final.json`, deshalb läuft das Test-Gate mit
@@ -47,3 +48,6 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
 - Erklärende Kommentare sind hier durchgehend deutsch; Testtitel sind gemischt (englisch in
   `gates.test.js`, deutsch in `renderReport.test.js`) — neue Titel folgen der Datei, in der sie
   stehen.
+- Der Bericht wird bei jedem Push frisch erzeugt und direkt ins Pages-Deployment gelegt, nie
+  committet: `docs/status/` ist gitignoriert (Issue 0182). Eine eingecheckte Kopie liefert
+  Jekyll an dem Tag als aktuell aus, an dem der Erzeugungsschritt scheitert.

@@ -12,12 +12,12 @@ means; it outranks the ADRs where the two disagree.
 
 - `src/domain/evaluator/evaluator.js` is the **only** legal entry point from outside. Importing any other
   file from outside the folder fails `forge-lint` — oxlint `no-restricted-imports` keeps it an
-  `error`. cast lists the same edge as `evaluator-nur-ueber-fassade`, `warn` since ADR 0041.
+  `error`. cast catches the same edge as `evaluator-nur-ueber-fassade`, `error` since Issue 0181.
 - The folder must not import `src/domain/roster/**`, and `src/domain/roster/**` must not import it. Both
   directions are blocking rules. The bridge is `src/domain/evaluation/rosterAdapter.js`.
 - The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
   reaches back into the UI and never imports `src/ui/i18n/` — the report carries ids, the UI
-  translates them (cast `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`, both `warn`). The
+  translates them (cast `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`, both `error` since Issue 0181). The
   Reinraum rules above are unaffected by that layering and stay stricter.
 - `catalogReader.js` is the evaluator's own XML reader, deliberately separate from
   `src/data/parser/xmlParser.js`. Changing one never implies changing the other.

@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { rosterFromRos } from '../../../domain/evaluator/__fixtures__/rosParser.js';
+import { rosterFromRos } from '../../test-utils/rosParser.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Issue 78, Harness-Bindung: der E2E-Fixture-Parser bindet eine `<selection>`

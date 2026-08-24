@@ -54,7 +54,7 @@ root of `src/`.
 `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the direction. Issues 0161–0171
 removed their violations — all four find nothing today — but since the port from
 dependency-cruiser to cast ([ADR 0041](adr/0041-cast-als-strukturpruefer.md)) every rule is
-`warn`: `npm run cast` lists what it finds and lets the gate pass. `src/utils/` belonged to no layer and is
+`error` since Issue 0181: `npm run cast` names what it finds and fails the gate. `src/utils/` belonged to no layer and is
 dissolved: every file of it now sits in the layer it belongs to.
 
 | Folder | Responsibility |
@@ -79,9 +79,10 @@ legal external entry point into the evaluator. Both rules are
 **machine-enforced**, not just documented: as blocking `no-restricted-imports`
 patterns in `.oxlintrc.json`, and as the cast rules
 `evaluator-keine-roster-abhaengigkeit`, `roster-keine-evaluator-abhaengigkeit`
-and `evaluator-nur-ueber-fassade` in `.cast/rules.json`, which are `warn` since
-[ADR 0041](adr/0041-cast-als-strukturpruefer.md). `npm run lint` fails on a
-violation, `npm run cast` names it with its file and its line.
+and `evaluator-nur-ueber-fassade` in `.cast/rules.json`, which are `error` since
+Issue 0181 ([ADR 0041](adr/0041-cast-als-strukturpruefer.md)). `npm run lint`
+fails on a violation, and so does `npm run cast`, which names it with its file
+and its line.
 
 ## `docs/` — the doc tree
 
@@ -165,7 +166,7 @@ Three layers, easy to conflate:
 - **Evaluator measurement** (not production code): `measure-evaluator.js` /
   `measure-evaluator-browser.js` — performance against real catalog data,
   jsdom vs. real browser.
-- **`scripts/project-state/`** — generates `docs/status/index.html`
+- **`scripts/project-state/`** — generates the status report (`.report/index.html` locally, `/status` on Pages; never committed)
   (complexity, coverage, quality gates, dependency graph, issue-tracker
   aggregation).
 - **`scripts/catalog-fork/`** — CI tooling that runs **inside the external

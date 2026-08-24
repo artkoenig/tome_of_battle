@@ -55,3 +55,9 @@ e2e-failure.png
 # Lokale Ausgabe des Zustandsbericht-Generators (scripts/project-state/generate.js).
 # In CI wird der Bericht direkt ins Pages-Deployment gelegt und nie committet.
 .report/
+
+# Der Zustandsbericht wird bei jedem Push frisch erzeugt und direkt ins
+# Pages-Deployment gelegt (.github/workflows/status-report.yml), nie committet.
+# Eine eingecheckte Kopie waere an dem Tag, an dem der Erzeugungsschritt
+# scheitert, eine veraltete Seite, die Jekyll als aktuell ausliefert.
+docs/status/

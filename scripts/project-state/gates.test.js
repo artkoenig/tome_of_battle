@@ -58,6 +58,19 @@ describe('project-state/gates', () => {
       });
     });
 
+    it('keeps a gate whose findings mention a path that was not found classified as findings', () => {
+      // Ein Pruefbefund, der die Worte "not found" ueber einen Pfad sagt, ist kein
+      // Umgebungsabbruch. Ihn als "nicht geprueft" zu zeigen waere der schlimmste
+      // Fehler dieser Seite: ein rotes Gate, das als abwesend erscheint.
+      const run = { exitCode: 1, output: 'src/domain/roster/index.js: not found in the report' };
+      expect(classifyGate(run)).toEqual({ status: GateStatus.Findings, abortReason: null });
+    });
+
+    it('keeps a bash wording of a missing executable an abort even with a path-shaped name', () => {
+      const run = { exitCode: 127, output: 'bash: line 1: cast-check: command not found' };
+      expect(classifyGate(run).abortReason).toBe(GateAbortReason.ExecutableNotFound);
+    });
+
     it('classifies a completely missing run as not-run with a dedicated reason', () => {
       expect(classifyGate(undefined)).toEqual({
         status: GateStatus.NotRun,

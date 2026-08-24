@@ -188,8 +188,8 @@ import { join, resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { evaluate, prepareDataset } from '../../../domain/evaluator/evaluator.js';
 import { DiagnosticKind } from '../../../domain/evaluator/model.js';
-import { violationsOf, violationOf, diagnosticsMatching } from '../../../domain/evaluator/__fixtures__/e2eReport.js';
-import { rosterFromRos } from '../../../domain/evaluator/__fixtures__/rosParser.js';
+import { violationsOf, violationOf, diagnosticsMatching } from '../../test-utils/e2eReport.js';
+import { rosterFromRos } from '../../test-utils/rosParser.js';
 
 // Relativ zum Projekt-Wurzelverzeichnis (dem cwd des Testlaufs) aufgeloest — wie
 // die uebrigen fixture-lesenden Tests des Projekts.
