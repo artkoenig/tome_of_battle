@@ -41,9 +41,16 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   report's `slots`, handed in per ADR-0039) to roster. `rosterCommandBindings.js`
   (`bindRosterCommands`, successor of the deleted `rosterCommands.js`) is **binding only**: call
   the use case, hand the result to `setRoster`, keep the UI's own selection state in step.
-  `rosterSelectionFactory.js` moved to that application layer with them; the hook that still
-  writes by effect (`useMandatoryListRuleAutoAdd.js`) appends through the use case
-  `withRaisedUnits`.
+  `rosterSelectionFactory.js` moved to that application layer with them.
+- **An invariant of the game is not a `useEffect`** (Issue 0189). The automatic addition of an
+  unambiguous mandatory list rule (§9.9) is the use case
+  `applyMandatoryListRules` (`src/contexts/armylist/application/mandatoryListRules.js`): as an
+  effect it held only while the editor was mounted, so a roster arriving by any other path — the
+  `.ros` import, a migration, a non-React caller — skipped it silently, and its tests needed a
+  renderer. `useMandatoryListRuleAutoAdd.js` is now wiring only: hand the current report in, commit
+  a changed roster through `replaceRoster` (no undo step). `useRosterList.js` runs the same use
+  case when a roster is created and when one is imported, fetching the report itself
+  (`evaluateAppRoster`, ADR-0039). A new automatic write belongs in the use case, not in a hook.
 - **No module under `src/ui/**` may name a selection-tree helper.** `childSelectionsOf`,
   `countSelections`, `mapSelectionTree`, `replaceSelectionById` and the `with*` sub-selection
   operations are gone from `contexts/armylist/model/index.js` and the cast rule
@@ -56,7 +63,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   (the write commands as a plain per-render factory over roster, report slots and the state
   writers), `useRosterPersistence.js` (catalogue sync,
   the 150 ms autosave, the unmount flush, and `saveNow` for the explicit save) and
-  `useMandatoryListRuleAutoAdd.js` (the fresh-roster §9.9 effect). `useRosterState.js` is
+  `useMandatoryListRuleAutoAdd.js` (the effect that feeds the §9.9 use case). `useRosterState.js` is
   the state apparatus and the identity-stable command wrappers, nothing else. A use-case test needs
   no React and no catalogue: an entry without a `targetId` resolves to itself, so a fake `slots`
   stub over a plain roster pins the whole write path in milliseconds — those tests live in

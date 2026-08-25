@@ -52,7 +52,9 @@ evaluator. `src/platform/persistence/` persists it in IndexedDB.
   only, no logic; non-test helpers such as `src/tests/test-utils/*.jsx` go through it too.
 - `src/contexts/ruleengine/` must not import `src/contexts/armylist/model/` (oxlint, `error`). The helper that resolves a
   capability back to its catalogue entry for the write path therefore lives in
-  `src/ui/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here.
+  `src/ui/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here —
+  für den Schreibweg der Pflichtregeln löst `mandatoryListRules.js` im Listen-Kontext selbst über
+  `findEntryInSystem` auf, kontextintern statt über die Oberfläche.
 - `getUnitOptions` takes no visibility context any more: it yields raw catalogue structure and the
   caller asks the report whether a slot is hidden.
 - No import of `src/contexts/ruleengine/engine/**` from `src/contexts/armylist/model/**`, in either direction; the rule is blocking
@@ -113,9 +115,11 @@ evaluator. `src/platform/persistence/` persists it in IndexedDB.
   from before the marker has none, differs, and is re-parsed exactly once.
 - A change to the persisted shape in `src/platform/persistence/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
-- The only automatic, choice-free write into a roster is `useRosterState.js`'s fresh-roster effect over
-  `findMissingMandatoryListRules` (`src/contexts/ruleengine/`, report-driven) — gated on `isFreshRoster`,
-  ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
+- The only automatic, choice-free write into a roster is `applyMandatoryListRules`
+  (`src/contexts/armylist/application/mandatoryListRules.js`, seit Issue 0189 ein Anwendungsfall
+  statt eines React-Effekts) über `findMissingMandatoryListRules` (`src/contexts/ruleengine/`,
+  report-driven) — gated on `isFreshRoster`, ohne Undo-Schritt. Jeder Schreibweg läuft durch ihn:
+  Anlegen, `.ros`-Import, die Editor-Sitzung. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
   Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans
   Kontingent** — ein Leser, der nur `childSlotsOf(forcePath)` fragt, sieht genau die §9.9-Regeln
   nicht, um die es geht.

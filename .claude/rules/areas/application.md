@@ -54,6 +54,24 @@ Lauf: `forge-test --run src/tests/contexts`.
 - Tests (in `src/tests/contexts/<kontext>/application/`) mocken die `src/platform/persistence/`-Module
   mit `vi.mock` statt IndexedDB hochzufahren (es gibt kein globales `fake-indexeddb`-Setup). Das
   wirkt weiterhin durch den Port hindurch: er re-exportiert die Bindungen, ersetzt sie nicht.
+- **Eine Zusage des Modells gehört hierher, nicht in einen Effekt**: `mandatoryListRules.js`
+  (`applyMandatoryListRules`, Issue 0189) ergänzt die eindeutigen Pflicht-Listenregeln (§9.9) —
+  Roster hinein, Roster heraus, `system`/`slots`/`isFreshRoster` als Argumente. Als `useEffect`
+  galt die Regel nur bei montiertem Editor; jetzt läuft **jeder** Schreibweg durch sie (Anlegen und
+  `.ros`-Import in `useRosterList.js`, Editor-Sitzung über `useMandatoryListRuleAutoAdd.js`). Das
+  Frisch-Tor ist Verhalten (kein Gerüst) und bleibt ein ausdrückliches Argument; die Erkennung
+  (`findMissingMandatoryListRules`) bleibt Projektion des Lesemodells.
+- Ein Anwendungsfall darf das Lesemodell **nur über seine eine Tür** nennen
+  (`ruleengine/readmodel/index.js`, `allowed`-Ausnahme `lesemodell-die-eine-tuer`); jeder andere
+  Pfad dorthin fällt unter `roster-keine-evaluator-abhaengigkeit` und bricht `forge-lint`.
+- Ein Test dieser Schicht rendert nichts: die Slot-Seite ist ein handgebautes
+  `{ capabilities: new Map(), pathOfForce }`, das System ein Zwei-Einträge-Katalog. Nur der
+  **Wurzel**-Pfad (ohne `/`) und ein direktes Kind des Kontingent-Pfads zählen als Kandidat —
+  ein Stub, dessen `pathOfForce` selbst keinen Trenner enthält, macht jeden fremden Slot zum
+  Wurzel-Angebot.
+- Der Barrel `armylist/model/index.js` wird von `rosterSelectionFactory.js` gelesen: eine
+  Testdatei, die ihn ohne `importOriginal()` mockt, bringt jeden Anwendungsfall, der eine Selektion
+  baut, mit "No `createSelectionFromDef` export is defined on the mock" zu Fall.
 - In einer `vi.mock`-Fabrik darf kein Bezeichner stehen, den die Testdatei selbst importiert
   (z. B. `MissingSystemError`) — Vitest schreibt ihn auf das gehobene Modul um und die Suite
   fällt mit `Cannot access '__vi_import__' before initialization` aus. Lokal umbenennen.

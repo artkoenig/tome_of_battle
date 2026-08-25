@@ -33,19 +33,37 @@ vi.mock('../../../contexts/armylist/application/rosterTransfer', async (importOr
 }));
 
 // Der Export wertet nicht mehr selbst aus (Issue 0174, ADR-0039): der Bericht
-// wird hier, in der UI-Schicht, geholt und hereingereicht.
+// wird hier, in der UI-Schicht, geholt und hereingereicht — seit Issue 0189
+// auch beim Anlegen und beim Import, fuer die Pflicht-Listenregeln.
 vi.mock('../../../contexts/ruleengine/acl/evaluationCache', () => ({
-  evaluateAppRoster: vi.fn(() => ({ costTotals: { pts: 0 }, slots: {} })),
+  evaluateAppRoster: vi.fn(() => ({ costTotals: { pts: 0 }, slots: { capabilities: new Map(), pathOfForce: () => null } })),
 }));
 
-vi.mock('../../../contexts/armylist/model', () => ({
+// Nur der Katalog-Abgleich wird ersetzt; die Fabrik hinter dem
+// Pflichtregel-Anwendungsfall (Issue 0189) liest denselben Barrel und bleibt echt.
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
+  ...await importOriginal(),
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
   reconcileImportedSelectionIds: vi.fn((roster) => roster),
 }));
 
-const report = { costTotals: { pts: 0 }, slots: {} };
 const system = { id: 'sys-1', name: 'Sys', costTypes: [{ id: 'pts' }], forceEntries: [{ id: 'force-a' }] };
 const roster = { id: 'roster-1', name: 'Alte Liste', systemId: 'sys-1' };
+
+// Ein Bericht, der genau eine eindeutige Pflicht-Listenregel als fehlend meldet
+// (Wurzel-Phantom, §9.9), und der Katalog, der ihren Eintrag kennt.
+const mandatorySlots = () => ({
+  capabilities: new Map([['rule-1', {
+    defId: 'rule-1', name: 'Regel', anchorKind: 'mandatoryPhantom',
+    isMandatoryListRule: true, isHidden: false, isIndependentSubUnit: false,
+    primaryCategoryId: 'cat-rules', raiseMembers: [],
+  }]]),
+  pathOfForce: forceId => `root/${forceId}`,
+});
+const systemWithRule = {
+  ...system,
+  catalogues: [{ id: 'cat-1', selectionEntries: [{ id: 'rule-1', name: 'Regel', type: 'upgrade' }] }],
+};
 
 function setup(overrides = {}) {
   const deps = {
@@ -105,7 +123,20 @@ describe('useRosterList — Anlegen', () => {
     expect(deps.showToast).toHaveBeenCalledWith('Fehler beim Erstellen der Liste.', 'error');
     consoleErrorSpy.mockRestore();
   });
+
+  it('ergänzt die eindeutigen Pflicht-Listenregeln des neuen Rosters (Issue 0189)', async () => {
+    evaluateAppRoster.mockReturnValue({ costTotals: { pts: 0 }, slots: mandatorySlots() });
+    const { result } = setup({ systems: [systemWithRule] });
+
+    await act(async () => {
+      await result.current.createRoster(form);
+    });
+
+    const [saved] = saveRoster.mock.calls[0];
+    expect(saved.forces[0].selections.map(selection => selection.selectionEntryId)).toEqual(['rule-1']);
+  });
 });
+
 
 describe('useRosterList — Öffnen und Abspielen', () => {
   it('navigiert beim Öffnen zur Zielansicht', () => {
@@ -231,6 +262,22 @@ describe('useRosterList — Import', () => {
     expect(deps.reloadData).toHaveBeenCalled();
   });
 
+  it('ergänzt die eindeutigen Pflicht-Listenregeln des importierten Rosters (Issue 0189)', async () => {
+    importRosterFromXml.mockReturnValue({
+      ...roster, name: 'Importiert', catalogueId: 'cat-1',
+      forces: [{ id: 'f1', catalogueId: 'cat-1', selections: [] }],
+    });
+    evaluateAppRoster.mockReturnValue({ costTotals: { pts: 0 }, slots: mandatorySlots() });
+    const { result } = setup({ systems: [systemWithRule] });
+
+    await act(async () => {
+      await result.current.importRoster(new Blob());
+    });
+
+    const [saved] = saveRoster.mock.calls[0];
+    expect(saved.forces[0].selections.map(selection => selection.selectionEntryId)).toEqual(['rule-1']);
+  });
+
   it('formuliert ein fehlendes Spielsystem als übersetzten Text, nicht als Schlüssel', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     importRosterFromXml.mockImplementationOnce(() => {
@@ -341,7 +388,10 @@ describe('useRosterList — Export', () => {
     });
 
     expect(evaluateAppRoster).toHaveBeenCalledWith(system, roster);
-    expect(exportRosterToXml).toHaveBeenCalledWith(roster, system, report);
+    // Der Bericht ist genau der, den die Fassade geliefert hat — Identitaet, nicht
+    // Gleichheit: seine Slot-Seite traegt Funktionen.
+    const [handedInReport] = evaluateAppRoster.mock.results.map(result => result.value).slice(-1);
+    expect(exportRosterToXml).toHaveBeenCalledWith(roster, system, handedInReport);
     expect(buildRosterFile).toHaveBeenCalled();
     expect(createObjectURL).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();

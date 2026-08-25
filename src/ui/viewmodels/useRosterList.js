@@ -5,6 +5,7 @@ import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
 } from '../../contexts/armylist/model/rosterSerialization';
 import { buildRoster } from '../../contexts/armylist/model/createRoster';
+import { applyMandatoryListRules } from '../../contexts/armylist/application/mandatoryListRules.js';
 import { evaluateAppRoster } from '../../contexts/ruleengine/readmodel/index.js';
 import { VIEWS } from '../../ui/constants/views';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../contexts/armylist/model';
@@ -20,6 +21,22 @@ const ERROR_MESSAGE_KEY = Object.freeze({
   renameRoster: 'rosterList.renameFailed',
   deleteRoster: 'rosterList.deleteFailed',
 });
+
+/**
+ * Ergänzt die eindeutigen Pflicht-Listenregeln eines gerade entstandenen
+ * Rosters (§9.9). Die Regel selbst ist ein Anwendungsfall des Listen-Kontexts
+ * (Issue 0189); was hier geschieht, ist allein das Holen des Berichts — das
+ * Schreibmodell wertet nicht aus (ADR-0039).
+ *
+ * @param {import('../../shared/rostermodel/types.js').Roster} roster
+ * @param {object|null|undefined} system
+ * @returns {import('../../shared/rostermodel/types.js').Roster}
+ */
+function withMandatoryListRules(roster, system) {
+  if (!system) return roster;
+  const { slots } = evaluateAppRoster(system, roster);
+  return applyMandatoryListRules(roster, { system, slots, isFreshRoster: true }) ?? roster;
+}
 
 /**
  * Kapselt das Listen-CRUD einer ganzen Roster-Sammlung: Anlegen, Öffnen,
@@ -92,7 +109,12 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     }
 
     const systemDef = systems.find(s => s.id === systemId);
-    const roster = buildRoster({ name, systemId, catId, forceEntryId, limit }, systemDef);
+    // Die §9.9-Pflichtregeln gehoeren zum Anlegen, nicht zum Editor (Issue
+    // 0189): ein Roster ist von seinem ersten gespeicherten Stand an vollstaendig.
+    const roster = withMandatoryListRules(
+      buildRoster({ name, systemId, catId, forceEntryId, limit }, systemDef),
+      systemDef
+    );
 
     try {
       await saveRoster(roster);
@@ -187,6 +209,11 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         // catalogue link ids the editor matches before syncing names/costs.
         newRoster = reconcileImportedSelectionIds(newRoster, system);
         newRoster = syncRosterSelectionsWithSystem(newRoster, system);
+        // Auch ein importiertes Roster ist in dieser Sitzung neu entstanden:
+        // seine eindeutigen Pflicht-Listenregeln werden hier ergaenzt, nicht
+        // erst, wenn jemand den Editor oeffnet (Issue 0189). Der Bericht wird
+        // wie ueberall in der UI-Schicht geholt und hineingereicht (ADR-0039).
+        newRoster = withMandatoryListRules(newRoster, system);
       }
 
       await saveRoster(newRoster);
