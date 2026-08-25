@@ -136,6 +136,9 @@ function attachInstance(parent, instance, resolved, diagnostics, nextFrameId, kn
  * eines Wurzel-`entryLink` ({@link synthesizeMandatoryPhantoms}): §9.9 verlangt,
  * am Link nur dessen eigene Grenzen auszuwerten — die vom Ziel geerbten
  * ({@link limitsOf}) feuerten sonst als falsche Pflicht mit (ADR-0032).
+ *
+ * @param {string|string[]|null} [limitScopeFilter] Ein Bezugsrahmen, eine Liste
+ *   davon, oder `null` fuer einen ungefilterten Anker.
  */
 function attachPhantom(parent, def, nextFrameId, anchorKind, limitScopeFilter = null, ownLimitsOnly = false) {
   const isForce = def.kind === DefinitionKind.FORCE;
@@ -1234,7 +1237,7 @@ function diagnoseSelectionsOutOfCatalogueScope(root, catalogueScope, primaryCata
  * `self`-skopierte Grenze am Anker den Bestand eines fremden Knotens.
  *
  * @param {{ lookup: (id: string) => object|null, definitions?: object[], groupMemberIds?: Map<string, Set<string>> }} resolved
- * @param {{ forces?: Array<{ defId: string, count?: number, catalogueId?: string|null, children?: object[] }> }} roster
+ * @param {{ forces?: Array<{ defId: string|null, count?: number, catalogueId?: string|null, children?: object[] }> }} roster
  *   Der Instanzbaum. Ein Kontingent-Knoten darf sein Armeebuch nennen
  *   (`catalogueId`, Issue 0140); die Angabe landet geprueft am Knoten
  *   ({@link attachInstance}) und gilt dort, wo der Herkunftsindex schweigt.

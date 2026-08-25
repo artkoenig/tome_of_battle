@@ -8,6 +8,7 @@ const SYSTEMS_STORE = 'systems';
 const ROSTERS_STORE = 'rosters';
 const SETTINGS_STORE = 'settings';
 
+/** @type {{ READ_ONLY: IDBTransactionMode, READ_WRITE: IDBTransactionMode }} */
 const TRANSACTION_MODE = {
   READ_ONLY: 'readonly',
   READ_WRITE: 'readwrite',
@@ -47,7 +48,9 @@ function openConnection() {
  * is only valid for that factory, so replacing the global `indexedDB` — a page
  * resetting its storage, or a test installing a fresh in-memory factory —
  * transparently forces a reconnect.
- * @type {{factory: IDBFactory, database: Promise<IDBDatabase>} | null}
+ * @typedef {{factory: IDBFactory, database: Promise<IDBDatabase>}} Connection
+ *
+ * @type {Connection | null}
  */
 let cachedConnection = null;
 
@@ -58,12 +61,20 @@ function discardConnection(connection) {
 }
 
 function connectToDatabase() {
-  if (cachedConnection && cachedConnection.factory === indexedDB) {
+  // Die Fabrik zuerst lesen: fehlt `indexedDB` ganz (Node ohne DOM), soll der
+  // ReferenceError hier fliegen — vor dem ersten Promise, das sonst als
+  // unbehandelte Ablehnung zurueckbliebe.
+  const factory = indexedDB;
+  if (cachedConnection && cachedConnection.factory === factory) {
     return cachedConnection.database;
   }
 
-  const connection = { factory: indexedDB, database: null };
-  connection.database = openConnection()
+  // Der Verbindungs-Datensatz entsteht erst mit seinem Promise, damit er nie ein
+  // `database: null` traegt. Die Rueckrufe unten laufen fruehestens im naechsten
+  // Microtask und sehen `connection` deshalb immer gesetzt.
+  /** @type {Connection} */
+  let connection;
+  const database = openConnection()
     .then((database) => {
       // A connection closed by the browser (storage cleared, database deleted)
       // or superseded by a version change must not stay cached.
@@ -79,8 +90,9 @@ function connectToDatabase() {
       throw error;
     });
 
+  connection = { factory, database };
   cachedConnection = connection;
-  return connection.database;
+  return database;
 }
 
 /**
@@ -88,7 +100,7 @@ function connectToDatabase() {
  * resolves the connection, opens the transaction, hands `executeRequest` the
  * store and settles with the request's result.
  * @param {string} storeName
- * @param {string} mode one of {@link TRANSACTION_MODE}
+ * @param {IDBTransactionMode} mode one of {@link TRANSACTION_MODE}
  * @param {(store: IDBObjectStore) => IDBRequest} executeRequest
  * @returns {Promise<*>} the request's result
  */

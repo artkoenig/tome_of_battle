@@ -8,7 +8,11 @@ import {
 // App-wide settings, deliberately scoped to the single whfb6 linking flag (see
 // ADR-0015). The context is null until a SettingsProvider mounts, which
 // useSettings() treats as a programming error.
-const SettingsContext = createContext(null);
+// Ohne Provider ist der Wert `null`; der Typ muss trotzdem den Vertrag nennen,
+// den `useSettings` erwartet — deshalb hier die Behauptung am Literal.
+const SettingsContext = createContext(
+  /** @type {{ whfb6LinkingEnabled: boolean, setWhfb6LinkingEnabled: (value: boolean) => void }|null} */ (null)
+);
 
 /**
  * Provides the whfb6 linking setting reactively to any descendant. The value is

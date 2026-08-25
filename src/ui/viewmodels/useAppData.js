@@ -23,15 +23,28 @@ const LOAD_DATA_ERROR_KEY = 'appData.loadFailed';
  * außen gereicht, damit das Listen-CRUD frische Stände optimistisch
  * veröffentlichen kann; Toast-Kanal und Navigation werden hereingereicht, damit
  * der Hook unabhängig von der Wurzelkomponente testbar bleibt.
+ */
+
+/**
+ * Die noch nicht geladenen Listen. Als Literal im `useState` faellt `[]` auf
+ * `never[]` und nimmt keinen echten Datensatz mehr an.
  *
+ * @type {Array<{ id: string, name: string, catalogues?: unknown[] }>}
+ */
+const NO_SYSTEMS = [];
+
+/** @type {import('../../domain/types.js').Roster[]} */
+const NO_ROSTERS = [];
+
+/**
  * @param {{
  *   showToast: (message: string, type?: string) => void,
  *   navigate: (view: string, rosterId?: string|null) => void,
  * }} deps
  */
 export default function useAppData({ showToast, navigate }) {
-  const [systems, setSystems] = useState([]);
-  const [rosters, setRosters] = useState([]);
+  const [systems, setSystems] = useState(NO_SYSTEMS);
+  const [rosters, setRosters] = useState(NO_ROSTERS);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Loads systems and rosters from IndexedDB into state. Local and fast — it never

@@ -26,7 +26,7 @@ import { findEntryInSystem } from '../../domain/roster';
  * @returns {object|null}
  */
 export function findCapabilityEntry(system, capability, catalogueId) {
-  if (!capability) return null;
+  if (!capability?.defId) return null;
   return findEntryInSystem(system, capability.defId, catalogueId) ?? null;
 }
 

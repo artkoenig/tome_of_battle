@@ -17,7 +17,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * @param {{ group: Object, selection: Object, selectionPath?: string|null,
  *   nestedSections?: React.ReactNode[], hasSelectedDescendant?: boolean,
  *   renderRowChildren?: (rowSelectionId: string|null) => React.ReactNode,
- *   tooltip?: Object, onShowRule?: Function }} props
+ *   tooltip?: Object, onShowRule?: Function|null }} props
  */
 export default function OptionGroupComponent({
   group,

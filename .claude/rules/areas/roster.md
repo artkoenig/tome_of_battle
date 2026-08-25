@@ -118,3 +118,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a recruit
   (`SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx`) — closing that gap is a
   user-visible change and needs its own issue.
+- `src/data/db/database.js` reads `indexedDB` into a local **before** it builds the connection
+  promise. In an environment without the global (a jsdom test without a fake factory) the
+  ReferenceError must fly before the first promise exists, or that promise stays behind as an
+  unhandled rejection and turns a green run red without failing a test.

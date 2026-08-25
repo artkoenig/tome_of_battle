@@ -55,7 +55,8 @@
  * an `evaluate`).
  *
  * @typedef {Object} EvalInstanceNode
- * @property {string} defId
+ * @property {string|null} defId  `null` bei einem Knoten ohne Definitions-Id;
+ *   er loest nicht auf und wird von der Engine als Diagnose gemeldet.
  * @property {number} count
  * @property {string} [catalogueId]  nur am Kontingent-Knoten: dessen Armeebuch.
  * @property {EvalInstanceNode[]} children
@@ -75,7 +76,8 @@
  * Ziel; kein Rueckfall.
  *
  * @param {import('../../domain/types.js').Selection} selection
- * @returns {string}
+ * @returns {string|null}  `null`, wenn die Auswahl weder Verweis noch Eintrag
+ *   nennt — sie loest dann in keinem Katalog auf.
  */
 const defIdOf = (selection) => selection.entryLinkId ?? selection.selectionEntryId;
 
@@ -105,7 +107,7 @@ function toChildren(selections) {
  *
  * @param {import('../../domain/types.js').Selection[]} selections
  * @param {string} parentPath  Slot-Pfad des Elternknotens (Force oder Selection).
- * @param {ReadonlySet<string>} skippedDefIds
+ * @param {ReadonlySet<string|null>} skippedDefIds
  * @param {Map<string, string>} into
  */
 function collectSelectionPaths(selections, parentPath, skippedDefIds, into) {
@@ -138,7 +140,7 @@ function collectSelectionPaths(selections, parentPath, skippedDefIds, into) {
  * gemeldeten `defId`s ist damit die Menge der weggefallenen Definitionen.
  *
  * @param {import('../../domain/types.js').Roster|null|undefined} roster  das App-Roster; wird nicht mutiert.
- * @param {ReadonlySet<string>} [skippedDefIds]  die Definitions-Ids, die der
+ * @param {ReadonlySet<string|null>} [skippedDefIds]  die Definitions-Ids, die der
  *   Datensatz nicht kennt (leer = alles loest auf).
  * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}
  */

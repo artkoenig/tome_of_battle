@@ -17,6 +17,7 @@ export function useRulesIndexDialog({ isOpen, onClose }) {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  /** @type {import('react').RefObject<ReturnType<typeof setTimeout>|null>} */
   const timeoutRef = useRef(null);
 
   const clearLoadTimeout = useCallback(() => {

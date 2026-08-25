@@ -5,6 +5,14 @@ import { UnitUpgradesChips, UnitRulesChips } from '../editor/UnitChips';
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**
+ * Keine Kostenarten uebergeben. Als Literal im Parameter faellt `null` auf den
+ * Typ `null`.
+ *
+ * @type {Array<Object>|null}
+ */
+const NO_COST_TYPES = null;
+
+/**
  * Die Einheitenkarte des Spielmodus — nur noch JSX (ADR-0038).
  *
  * Profil-Tabellen, Wunden, Kosten und die eigenständigen Untereinheiten kommen
@@ -14,7 +22,7 @@ export default function PlayUnitDetails({
   selection,
   system,
   roster,
-  costTypes = null,
+  costTypes = NO_COST_TYPES,
   capability = null,
   slots,
   getUnitCurrentWounds,

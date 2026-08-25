@@ -16,13 +16,21 @@ function formatLimitSuffix({ min, max }) {
 }
 
 /**
+ * Keine wirksame Grenze. Als Literal im Parameter faellt `null` auf den Typ
+ * `null`.
+ *
+ * @type {number|null}
+ */
+const NO_LIMIT = null;
+
+/**
  * Zähl-Chip im Kopf einer Kategorie: aktuelle Anzahl, dahinter die wirksamen
  * Grenzen. Trägt die Kategorie blockierende Meldungen, färbt sich der Chip.
  */
 export default function CategoryCountBadge({
   count,
-  min = null,
-  max = null,
+  min = NO_LIMIT,
+  max = NO_LIMIT,
   hasErrors
 }) {
   const limitText = formatLimitSuffix({ min, max });

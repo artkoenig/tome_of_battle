@@ -17,7 +17,9 @@ import '../../domain/types.js';
  * Geteilte, eingefrorene Instanz, damit ein fehlendes `selections`-Feld über
  * Aufrufe hinweg identitätsgleich bleibt und Identitätsvergleiche tragen.
  */
-const NO_SELECTIONS = /** @type {import('../../domain/types.js').Selection[]} */ (Object.freeze([]));
+const NO_SELECTIONS = /** @type {import('../../domain/types.js').Selection[]} */ (
+  Object.freeze(/** @type {import('../../domain/types.js').Selection[]} */ ([]))
+);
 
 /** Effektive Anzahl einer Selection, wenn sie kein `number` trägt. */
 const IMPLICIT_SELECTION_COUNT = 1;

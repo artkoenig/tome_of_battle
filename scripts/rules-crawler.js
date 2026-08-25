@@ -40,6 +40,19 @@ export const SECTIONS = [
  * sub-page URL. This supports sources like the root page `/` that link to
  * `/army/<slug>` (where `subPageSection: 'army'`).
  */
+/**
+ * @typedef {{ sourceSection: string, targetSection: string, subPageSection?: string }} Derivation
+ */
+
+/**
+ * Kein Ableitungs-Vorgabewert: als Literal im Parameter faellt das leere Array
+ * auf `never[]` und nimmt keine echte Ableitung mehr an.
+ *
+ * @type {Derivation[]}
+ */
+const NO_DERIVATIONS = [];
+
+/** @type {Derivation[]} */
 export const DERIVATIONS = [
   { sourceSection: 'magic-items', targetSection: 'magic-item' },
   { sourceSection: '', targetSection: 'unit', subPageSection: 'army' },
@@ -314,7 +327,7 @@ export async function crawlRulesIndex({
  * retained entries (e.g. a failed `magic-items → magic-item` derivation
  * retains entries starting with `/magic-item/`).
  */
-export function mergeRetainingFailedSections({ existingIndex, crawledIndex, failedSections, derivations = [] }) {
+export function mergeRetainingFailedSections({ existingIndex, crawledIndex, failedSections, derivations = NO_DERIVATIONS }) {
   const derivationPrefixes = new Map(
     derivations.map(d => {
       const label = d.sourceSection

@@ -55,9 +55,17 @@ function describeRosterFileError(err) {
   return err.detail ? `${message} (${err.detail})` : message;
 }
 
+/**
+ * Kein Roster zum Loeschen vorgemerkt. Als Literal im `useState` faellt `null`
+ * auf den Typ `null`.
+ *
+ * @type {import('../../domain/types.js').Roster|null}
+ */
+const NOTHING_TO_DELETE = null;
+
 export default function useRosterList({ systems, rosters, setRosters, reloadData, navigate, showToast }) {
   const [isNewRosterModalOpen, setIsNewRosterModalOpen] = useState(false);
-  const [rosterToDelete, setRosterToDelete] = useState(null);
+  const [rosterToDelete, setRosterToDelete] = useState(NOTHING_TO_DELETE);
   // Welche Roster-Ids in dieser Sitzung neu angelegt wurden (Issue 0138, Plan
   // Vertrag 4) — rein im Speicher, bewusst außerhalb von `Roster`/`Force` und
   // IndexedDB, damit die Markierung nie durch Speichern/Laden oder

@@ -3,13 +3,21 @@ import { X } from 'lucide-react';
 import { useBottomSheet } from '../../viewmodels/useBottomSheet';
 import { useTranslation } from '../../i18n/useTranslation';
 
+/**
+ * Kein Aussen-Container zum Erkennen eines Klicks daneben. Als Literal im
+ * Parameter faellt `null` auf den Typ `null`.
+ *
+ * @type {import('react').RefObject<HTMLElement|null>|null}
+ */
+const NO_CONTAINER = null;
+
 export default function BottomSheet({
   isOpen,
   onClose,
   title,
   children,
   desktopMode = 'popover', // 'popover' or 'modal'
-  containerRef = null // optional, to handle click outside
+  containerRef = NO_CONTAINER // optional, to handle click outside
 }) {
   const { t } = useTranslation();
   const { innerRef, renderedChildren, renderedTitle, activeClass, isRendered } =

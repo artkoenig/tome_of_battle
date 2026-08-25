@@ -30,7 +30,7 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
   const costType = costLimitTypeIdOf(roster, description?.costTypes);
 
   const totalCostOf = (selection) =>
-    slots.slotOfSelection(selection)?.totalCosts?.[costType] ?? 0;
+    (costType === null ? 0 : slots.slotOfSelection(selection)?.totalCosts?.[costType] ?? 0);
   const sortedByCostDescending = (selections) =>
     [...selections].sort((a, b) => totalCostOf(b) - totalCostOf(a));
 
@@ -72,6 +72,13 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
 const EMPTY_TOOLTIP = { visible: false, x: 0, y: 0, title: '', content: [] };
 
 /**
+ * Kein Regel-Dialog offen. Als Literal im `useState` faellt `null` auf den Typ `null`.
+ *
+ * @type {{ ruleName: string, url: string }|null}
+ */
+const NO_RULE_DIALOG = null;
+
+/**
  * @param {{
  *   system: object|null,
  *   initialRoster: object,
@@ -84,7 +91,7 @@ export function usePlayRoster({ system, initialRoster, onReportError }) {
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
   const [tooltipState, setTooltipState] = useState(EMPTY_TOOLTIP);
-  const [activeRuleDialog, setActiveRuleDialog] = useState(null);
+  const [activeRuleDialog, setActiveRuleDialog] = useState(NO_RULE_DIALOG);
 
   const report = useEvaluation(system, roster);
   const { getUnitCurrentWounds, handleAdjustWound } =

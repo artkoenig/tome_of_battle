@@ -16,6 +16,13 @@ import { useRosterState } from './useRosterState';
 const ruleGroupKeyOf = (forceId, categoryId) => `${forceId}:${categoryId}`;
 
 /**
+ * Kein Regel-Dialog offen. Als Literal im `useState` faellt `null` auf den Typ `null`.
+ *
+ * @type {{ ruleName: string, url: string }|null}
+ */
+const NO_RULE_DIALOG = null;
+
+/**
  * @param {{
  *   system: object|null,
  *   initialRoster: object,
@@ -40,7 +47,7 @@ export function useRosterEditor({ system, initialRoster, onPlay, onExportRoster,
   // verfolgen daher die (pro force+Kategorie) ausdrücklich AUSGEKLAPPTEN
   // Gruppen; ein leeres Set bedeutet: alle eingeklappt.
   const [expandedRuleGroups, setExpandedRuleGroups] = useState(() => new Set());
-  const [activeRuleDialog, setActiveRuleDialog] = useState(null);
+  const [activeRuleDialog, setActiveRuleDialog] = useState(NO_RULE_DIALOG);
 
   const isRuleGroupExpanded = useCallback(
     (forceId, categoryId) => expandedRuleGroups.has(ruleGroupKeyOf(forceId, categoryId)),

@@ -27,6 +27,14 @@ const ICON_SIZE = 14;
 // must never be pre-empted by an unrelated external-rule-link match — currently
 // only a `ListRuleChecklist` mandatory row's lock explanation. Every other call
 // site omits it and keeps the original link-first priority unchanged.
+/**
+ * Kein Info-Klick verdrahtet. Als Literal im Parameter faellt `null` auf den
+ * Typ `null` und ist danach nicht mehr aufrufbar.
+ *
+ * @type {(() => void)|null}
+ */
+const NO_INFO_CLICK = null;
+
 export default function RuleChipIcon({
   name,
   hasInfo,
@@ -34,7 +42,7 @@ export default function RuleChipIcon({
   onInfoEnter,
   onInfoMove,
   onInfoLeave,
-  onInfoClick = null,
+  onInfoClick = NO_INFO_CLICK,
   forceInfo = false,
 }) {
   const resolveRuleUrl = useRuleUrl();

@@ -195,3 +195,15 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   pure and takes only values the report already measured — it re-reads no catalogue. The
   catalogue-side twin of those questions lives once, in the report
   (`src/domain/evaluator/groupBehavior.js`); a second reading here would drift from it.
+- `strictNullChecks` is on (Issue 0185), and in a hook it bites at the state seam:
+  `useState(null)` types the state `null`, `useState([])` types it `never[]`, and the setter then
+  rejects every real value. Give the initial value a **module-level constant with a `@type`
+  annotation** (`const NO_RULE_DIALOG = null;`, `const NO_ROSTERS = [];`) and pass that — no cast
+  needed. `useRef(null)` is different: annotate the declaration
+  (`/** @type {import('react').RefObject<HTMLDivElement|null>} */`), because a ref's initial value
+  is not what the type must say. A module-level annotated constant used at **module** level
+  (`createContext(NO_X)`) does not work — control-flow narrowing pins it back to `null` there, so
+  the two context modules assert at the literal instead.
+- A JSDoc block separated from its function by anything — a `const`, a second comment — stops
+  applying, and the parameters silently fall back to `any`. Two hooks had drifted that way; keep
+  the block flush against the `export function` line.

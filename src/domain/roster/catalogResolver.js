@@ -123,7 +123,7 @@ export function foreignCatalogueIdsOf(system, ownCatalogueId) {
  *
  * @param {Object} system the parsed game system (gst plus its catalogues).
  * @param {string} entryId the (possibly catalogue-qualified) entry id.
- * @param {string|null} catalogueId the catalogue the reference was read from.
+ * @param {string|null|undefined} catalogueId the catalogue the reference was read from.
  */
 export function findEntryInSystem(system, entryId, catalogueId) {
   if (!system) return null;

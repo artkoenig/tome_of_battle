@@ -68,6 +68,7 @@ export function modelCountOf(system, roster, selection) {
 
   childSelectionsOf(selection).forEach(child => {
     const childEntryId = child.entryLinkId || child.selectionEntryId;
+    if (childEntryId === null) return;
     const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
     const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);
     if (!childResolved) return;
@@ -144,6 +145,7 @@ export function usePlayUnit({
 
     const totalMaxWounds = modelCountOf(system, roster, selection)
       * maxWoundsOf(system, roster, selection);
+    const costLimitTypeId = costLimitTypeIdOf(roster, costTypes);
 
     return {
       subUnits,
@@ -155,7 +157,7 @@ export function usePlayUnit({
       totalMaxWounds,
       // Kosten aus dem Bericht (ADR-0034): der Teilbaum-Betrag des Slots in der
       // Limit-Kostenart; das Label aus den Kostenarten der Beschreibung.
-      totalCost: slotCapability?.totalCosts?.[costLimitTypeIdOf(roster, costTypes)] ?? 0,
+      totalCost: costLimitTypeId === null ? 0 : slotCapability?.totalCosts?.[costLimitTypeId] ?? 0,
       costLabel: costLimitLabelOf(roster, costTypes),
     };
   }, [selection, system, roster, costTypes, capability, slots]);

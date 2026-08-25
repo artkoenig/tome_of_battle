@@ -29,6 +29,7 @@ export function useBottomSheet({ isOpen, onClose, title, children, desktopMode =
   const [renderedTitle, setRenderedTitle] = useState(isOpen ? title : '');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [activeClass, setActiveClass] = useState(false);
+  /** @type {import('react').RefObject<HTMLDivElement|null>} */
   const innerRef = useRef(null);
 
   useEffect(() => {

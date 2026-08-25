@@ -33,6 +33,7 @@ const AUTOSAVE_DEBOUNCE_MS = 150;
 export function useRosterPersistence({ roster, system, replaceRoster, saveRosterCallback, reportError }) {
   const saveCallbackRef = useRef(saveRosterCallback);
   saveCallbackRef.current = saveRosterCallback;
+  /** @type {import('react').RefObject<import('../../domain/types.js').Roster|null>} */
   const pendingSaveRef = useRef(null);
   const reportErrorRef = useRef(reportError);
   reportErrorRef.current = reportError;

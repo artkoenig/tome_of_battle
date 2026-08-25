@@ -5,6 +5,18 @@ import { VIEWS } from '../../ui/constants/views';
 const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: null });
 
 /**
+ * Der Startbildschirm. Als Literal im `useState` faellt der Wert auf seinen
+ * eigenen String-Literaltyp und nimmt keine andere Ansicht mehr an.
+ *
+ * @type {string}
+ */
+const INITIAL_VIEW = VIEWS.ROSTERS;
+
+/** Kein Roster ausgewaehlt. */
+/** @type {string|null} */
+const NO_SELECTED_ROSTER = null;
+
+/**
  * Kapselt die Ansichts-Navigation samt Browser-Verlauf: den `view`-Zustand, die
  * einzige Auswahl-Quelle (`selectedRosterId`) und die `navigate`-Funktion, die
  * als einzige Stelle Zustand **und** History gleichzeitig schreibt.
@@ -21,11 +33,11 @@ const INITIAL_HISTORY_STATE = Object.freeze({ view: VIEWS.ROSTERS, rosterId: nul
  * }}
  */
 export default function useAppNavigation() {
-  const [view, setView] = useState(VIEWS.ROSTERS);
+  const [view, setView] = useState(INITIAL_VIEW);
   // Einzige Quelle der Wahrheit für die Auswahl: die ID. Roster und System
   // werden daraus abgeleitet, damit eine Änderung an der Liste (etwa ein
   // Umbenennen) sofort in der geöffneten Ansicht sichtbar wird.
-  const [selectedRosterId, setSelectedRosterId] = useState(null);
+  const [selectedRosterId, setSelectedRosterId] = useState(NO_SELECTED_ROSTER);
 
   // Seed a base history entry so the first back-navigation has a defined target.
   useEffect(() => {
@@ -47,6 +59,10 @@ export default function useAppNavigation() {
 
   // Navigates to a view and pushes a history entry, so the browser back button
   // returns to whatever view/roster was active before this call.
+  /**
+   * @param {string} nextView
+   * @param {string|null} [rosterId]
+   */
   const navigate = (nextView, rosterId = null) => {
     const isSameEntry = nextView === view && rosterId === selectedRosterId;
     const historyState = { view: nextView, rosterId };

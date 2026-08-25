@@ -14,8 +14,14 @@ import React, { createContext, useContext, useMemo } from 'react';
  * sind `null`, solange kein Provider darüber hängt — die Hooks behandeln das
  * als Programmierfehler und werfen, statt still `undefined` zu liefern.
  */
-const RosterCommandsContext = createContext(null);
-const RosterReportContext = createContext(null);
+// Ohne Provider ist der Wert `null`; der Typ muss trotzdem den Vertrag nennen,
+// den die beiden Consumer-Hooks erwarten — deshalb hier die Behauptung am Literal.
+const RosterCommandsContext = createContext(
+  /** @type {Record<string, Function>|null} */ (null)
+);
+const RosterReportContext = createContext(
+  /** @type {{ report: object, roster: object, system: object, activeCatalogue: object }|null} */ (null)
+);
 
 /**
  * Stellt die Kommandos bereit. Der Wert wird unverändert durchgereicht: seine

@@ -654,6 +654,17 @@ export function coveredKeysFromManifests(manifests, index) {
 }
 
 /**
+ * Type guard for the string filters below: a plain arrow predicate does not
+ * narrow the element type of the array it filters.
+ *
+ * @param {unknown} value
+ * @returns {value is string}
+ */
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value !== '';
+}
+
+/**
  * Flattens one dataset declaration to the repo-relative files it names. The
  * paths a manifest carries are byte-identical to the ones the index is keyed
  * by, so a plain string match resolves them and no normalization is needed.
@@ -663,7 +674,7 @@ export function coveredKeysFromManifests(manifests, index) {
 function datasetFiles(dataset) {
   if (dataset === null || typeof dataset !== 'object') return [];
   const files = [dataset.gameSystem, ...(dataset.catalogues ?? [])];
-  return files.filter(file => typeof file === 'string' && file !== '');
+  return files.filter(isNonEmptyString);
 }
 
 /**
@@ -679,7 +690,7 @@ function datasetFiles(dataset) {
  */
 export function keysFromCoveredRecord(record) {
   const entries = record?.cells ?? [];
-  return entries.map(entry => entry?.key).filter(key => typeof key === 'string' && key !== '');
+  return entries.map(entry => entry?.key).filter(isNonEmptyString);
 }
 
 /**

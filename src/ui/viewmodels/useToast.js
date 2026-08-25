@@ -16,8 +16,16 @@ const TOAST_DURATION_MS = 3000;
  *   reportError: (message: string) => void,
  * }}
  */
+/**
+ * Kein Toast sichtbar. Als Literal im `useState` faellt `null` auf den Typ `null`.
+ *
+ * @type {{ message: string, type: string }|null}
+ */
+const NO_TOAST = null;
+
 export default function useToast() {
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState(NO_TOAST);
+  /** @type {import('react').RefObject<ReturnType<typeof setTimeout>|null>} */
   const toastTimeoutRef = useRef(null);
 
   const showToast = (message, type = 'success') => {

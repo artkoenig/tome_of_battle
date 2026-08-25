@@ -5,6 +5,9 @@ import { capabilityEntryOf } from '../capabilityEntries';
 import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 
+/** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
+const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
+
 /**
  * Das **Aushebe-Angebot** einer Kategorie (Issue 0164): die fertige
  * Kandidatenliste, die `CategoryUnitAdder` nur noch auf Markup abbildet.
@@ -31,9 +34,6 @@ import { useRosterReport, useRosterCommands } from '../rosterContexts';
  * @returns {{ candidates: Array<{ key: string, name: string, points: number,
  *   isBlocked: boolean, recruit: () => void }>, costTypeLabel: string }}
  */
-
-/** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */
-const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPhantom']);
 
 export function useRecruitOffer({ forceId = null, forcePath = null, categoryId = null, entries = null }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
@@ -68,7 +68,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
       candidates.push({ path, capability });
     }
 
-    const costOf = capability => capability.raiseCosts?.[costLimitType] ?? 0;
+    const costOf = capability => (costLimitType === null ? 0 : capability.raiseCosts?.[costLimitType] ?? 0);
     candidates.sort((a, b) => costOf(b.capability) - costOf(a.capability));
 
     // Der Aushebe-Callback erwartet den Katalogeintrag der Definition (die

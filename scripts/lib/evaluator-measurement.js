@@ -83,9 +83,17 @@ export function measureEvaluation(dataset, roster) {
   const prepared = prepareDataset(dataset, MEASURE);
   const report = evaluate(prepared, roster, MEASURE);
 
+  // `measurement` haengt nur im Messmodus an — hier ist er angefordert, also
+  // ist ein Fehlen ein Vertragsbruch der Fassade und keine Variante.
+  const preparation = prepared.measurement;
+  const evaluation = report.measurement;
+  if (!preparation || !evaluation) {
+    throw new Error('Messmodus angefordert, aber Vorbereitung oder Auswertung trug keine Messung.');
+  }
+
   // Die vier Abschnitte in der Reihenfolge der Fassade: die Vorbereitung vom
   // aufbereiteten Datensatz, die uebrigen drei vom Bericht.
-  const phases = { ...prepared.measurement.phases, ...report.measurement.phases };
+  const phases = { ...preparation.phases, ...evaluation.phases };
 
   return {
     phases,
@@ -93,8 +101,8 @@ export function measureEvaluation(dataset, roster) {
     // Abgelesen statt nachgezaehlt: Knotenzahlen und der Ausgang der
     // Fixpunktschleife kommen aus derselben Auswertung, deren Zeiten daneben
     // stehen — nicht aus einem zweiten Lauf und nicht aus einer eigenen Zaehlung.
-    tree: report.measurement.tree,
-    fixpoint: report.measurement.fixpoint,
+    tree: evaluation.tree,
+    fixpoint: evaluation.fixpoint,
     report,
   };
 }

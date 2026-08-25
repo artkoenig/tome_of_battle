@@ -32,7 +32,7 @@ function capEntries(entries) {
 /**
  * Liest den Commit-Hash der installierten Version — entweder direkt aus dem
  * Versionsstring (`v1.2.0+abc1234`) oder über den passenden Release-Tag.
- * @param {string} installedVersion
+ * @param {string|undefined} installedVersion
  * @param {{name: string, hash: string}[]} tags
  * @returns {string} Der Hash oder ein leerer String, wenn er unbekannt ist.
  */
@@ -40,7 +40,7 @@ function resolveInstalledHash(installedVersion, tags) {
   if (!installedVersion) return '';
 
   if (installedVersion.includes(VERSION_HASH_SEPARATOR)) {
-    return installedVersion.split(VERSION_HASH_SEPARATOR)[1];
+    return installedVersion.split(VERSION_HASH_SEPARATOR)[1] ?? '';
   }
 
   const matchedTag = tags.find(

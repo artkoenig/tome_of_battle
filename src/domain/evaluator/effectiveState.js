@@ -49,7 +49,9 @@
 import { allNodes, limitsOf } from './evalTree.js';
 import { DefinitionKind } from './model.js';
 
+/** @type {readonly never[]} */
 const EMPTY_CHARACTERISTICS = Object.freeze([]);
+/** @type {readonly never[]} */
 const NO_AUTHOR_MESSAGES = Object.freeze([]);
 
 /**
