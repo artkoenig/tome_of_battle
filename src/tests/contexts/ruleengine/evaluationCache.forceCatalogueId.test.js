@@ -16,7 +16,7 @@
  * **Spielsystemdatei** deklariert, der Herkunftsindex aus den `.cat`-`forceEntry`s
  * kann deshalb prinzipiell nicht antworten — allein das App-Roster weiss, aus
  * welchem Armeebuch das Kontingent stammt (`Force.catalogueId`, `src/shared/rostermodel/types.js`;
- * gesetzt von `src/domain/roster/createRoster.js`).
+ * gesetzt von `src/contexts/armylist/model/createRoster.js`).
  *
  * Deshalb ist diese Datei von der revidierten Rangfolge („der Herkunftsindex
  * schlaegt die Angabe des Rosters, wo er antwortet") **nicht** beruehrt: hier
@@ -74,7 +74,7 @@ function catalogueXml(letter, catalogueId) {
     </catalogue>`;
 }
 
-/** Das App-System-Objekt mit den rohen XMLs (Form aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Form aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid-0140',

@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  * walks a catalogue.
  */
 const findEntryInSystem = vi.fn();
-vi.mock('../../../domain/roster', () => ({
+vi.mock('../../../contexts/armylist/model', () => ({
   findEntryInSystem: (...args) => findEntryInSystem(...args),
 }));
 

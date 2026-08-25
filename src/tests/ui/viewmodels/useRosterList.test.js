@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useRosterList from '../../../ui/viewmodels/useRosterList';
-import { saveRoster, deleteRoster } from '../../../data/db/database';
+import { saveRoster, deleteRoster } from '../../../platform/persistence/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
   MissingSystemError,
-} from '../../../domain/roster/rosterSerialization';
-import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
-import { RosterFileError } from '../../../domain/roster/rosterFileError.js';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
+} from '../../../contexts/armylist/model/rosterSerialization';
+import { readRosterText, buildRosterFile } from '../../../contexts/armylist/application/rosterTransfer';
+import { RosterFileError } from '../../../contexts/armylist/model/rosterFileError.js';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../contexts/armylist/model';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache';
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
 }));
@@ -20,13 +20,13 @@ vi.mock('../../../data/db/database', () => ({
 // Die Fehlerklassen bleiben echt: sie tragen die `messageKey`/`messageParams`
 // der Fachlogik, und nur so prüft der Toast-Text wirklich, dass die Oberfläche
 // sie übersetzt statt den Schlüssel durchzureichen.
-vi.mock('../../../domain/roster/rosterSerialization', async (importOriginal) => ({
+vi.mock('../../../contexts/armylist/model/rosterSerialization', async (importOriginal) => ({
   ...await importOriginal(),
   exportRosterToXml: vi.fn(() => '<xml/>'),
   importRosterFromXml: vi.fn(),
 }));
 
-vi.mock('../../../domain/services/rosterTransfer', async (importOriginal) => ({
+vi.mock('../../../contexts/armylist/application/rosterTransfer', async (importOriginal) => ({
   ...await importOriginal(),
   readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
@@ -38,7 +38,7 @@ vi.mock('../../../contexts/ruleengine/acl/evaluationCache', () => ({
   evaluateAppRoster: vi.fn(() => ({ costTotals: { pts: 0 }, slots: {} })),
 }));
 
-vi.mock('../../../domain/roster', () => ({
+vi.mock('../../../contexts/armylist/model', () => ({
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
   reconcileImportedSelectionIds: vi.fn((roster) => roster),
 }));

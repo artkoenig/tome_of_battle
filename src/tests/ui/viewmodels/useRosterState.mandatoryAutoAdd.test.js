@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
+import { syncRosterSelectionsWithSystem } from '../../../contexts/armylist/model';
 import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/readmodel/mandatoryListRules';
 
 /**
@@ -20,7 +20,7 @@ import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/read
  * WIRING: gating on isFreshRoster, the no-undo-step commit, and same-session
  * re-evaluation.
  */
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),

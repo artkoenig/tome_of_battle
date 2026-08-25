@@ -3,10 +3,10 @@
   "name": "at-least-self-any-experimental-hydra-warning",
   "description": "Eine condition type=\"atLeast\" value=\"1\" field=\"selections\" scope=\"self\" childId=\"any\" macht den TRAEGER der Abfrage zu ihrem eigenen Zaehlrahmen: gezaehlt werden die Auswahlen, die der tragende Knoten selbst haelt - hier eine selectionEntryGroup, also die aus ihr gewaehlten Mitglieder, nicht der Bestand der umschliessenden Einheit, des Kontingents oder des Rosters. Gepinnt an der Dark-Elves-Gruppe \"War Hydras of Naggaroth\" (7f4e-4b7b-fbc4-a138) im Pflicht-Upgrade 3bfb-7e21-80b0-3b13 der Rare-Einheit \"War Hydra\" (424f-9a77-2a02-4cec): die Gruppe traegt einen modifier type=\"add\" field=\"warning\", dessen einzige conditionGroup type=\"and\" genau zwei Bedingungen haelt - die self/any-Bedingung und lessThan 1 selections scope=force childId=e28d-f278-f209-63bd (\"Allow experimental rules?\"). Die Autor-Warnung muss also genau dann anliegen, wenn ein Hydra-Variante aus dieser Gruppe gewaehlt ist UND das Kontingent den Schalter nicht fuehrt; in jeder anderen Kombination muss sie schweigen. Fuenf Roster: das gegatete/ungegatete Paar bei sonst gleichem Aufbau, ein voll besetzter Rahmen bei leerer Gruppe (trennt self von unit/force/roster), der bewusst umgelegte zweite Konjunkt und ein Ueberlauf mit zwei Gruppenmitgliedern.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -3,10 +3,10 @@
   "name": "equal-to-roster-royal-pegasus-gate",
   "description": "Eine condition type=\"equalTo\" field=\"selections\" scope=\"roster\" childId=\"...\" haelt NUR bei exakter Gleichheit — ein Weniger und ein Mehr machen sie gleichermassen falsch. Beleg in Bretonnia (a5c3-073c-b4e8-4284): die Wurzel-Einheit Pegasus Knights (ff3a-61e9-e154-92cc) traegt die roster-skopierte Grenze 968c-6c14-9c73-d0c5 (type=max, field=selections, scope=roster, value=1), und ihr einziger Modifikator (type=set field=968c-6c14-9c73-d0c5 value=-1) ist durch genau eine Bedingung gegattert: equalTo 1 auf den armeeweiten Bestand des shared entry Royal Pegasus (bfa3-6734-c03f-3594, includeChildSelections=true, includeChildForces=true, shared=true). Ohne Royal Pegasus (Ist 0) und mit zwei Royal Pegasus (Ist 2) ist die Bedingung falsch, die Grenze bleibt bei 1 und eine zweite Einheit Pegasus Knights reisst sie (Ist 2 / Grenze 1); mit genau einem Royal Pegasus greift der Modifikator, die Grenze steht auf dem Sentinel -1 (unbegrenzt) und darf nicht feuern. Das Paar 02/04 gegen 03 trennt equalTo von einem blossen atLeast; Roster 05 (drei Einheiten bei einem Royal Pegasus) trennt \"unbegrenzt\" von \"auf 2 angehoben\". Jede Einheit Pegasus Knights ist katalogkonform ausgebaut (3 Modelle, Pegasus, Gallant, Hand Weapon, Lance, Shield, Heavy Armour), damit ihre Pflichtgrenzen in jedem Roster mit in absent stehen koennen. Andere Armeeaufbau-Diagnosen (General-Pflicht, Core-Mindestzahl, Punktelimit) koennen zusaetzlich auftreten und sind hier ohne Belang.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Bretonnia (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

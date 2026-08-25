@@ -4,8 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { buildRoster } from '../../../domain/roster/createRoster';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
  * Issue 0162, AC1 and AC2 — `useRosterState` holds the roster, the UI selection
@@ -19,7 +19,7 @@ import { buildRoster } from '../../../domain/roster/createRoster';
  * selection.
  */
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const VAMPIRE_COUNTS_CAT = 'Vampire Counts (6th definitive edition).cat';
 

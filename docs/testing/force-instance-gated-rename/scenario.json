@@ -3,10 +3,10 @@
   "name": "force-instance-gated-rename",
   "description": "Kanonische forceEntry-Instanzpruefung (condition type=instanceOf, scope=force, forceEntry-Id in childId, Formatreferenz §7.7): ein so gegateter Namens-Modifikator greift GENAU DANN, wenn das umschliessende Kontingent eine Instanz jenes forceEntry ist. Zwei bis auf die Force identische Roster: im Kontingent 'Army of the Lichemaster (WD#309-UK)' (f37a-a93e-fa22-61a8) wird die Einheit Grave Guard zu 'Barrow Guardians', ihr Modell-Slot und ihr Profil-infoLink zu 'Barrow Guard'; im Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668) haelt die Bedingung nicht und alle drei behalten den Katalognamen 'Grave Guard'. Alle Erwartungen sind expect.capabilities (effektive Namen); zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

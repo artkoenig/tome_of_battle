@@ -7,7 +7,7 @@
  *
  * 1. **Totalitaet:** `formatViolation` waehlt fuer JEDE Kombination des
  *    veroeffentlichten Einordnungs-Vokabulars (ConstraintKind × LimitMeasure ×
- *    ScopeKind × isPercent, aus `src/domain/evaluator/model.js` — Testdateien sind von
+ *    ScopeKind × isPercent, aus `src/contexts/ruleengine/engine/model.js` — Testdateien sind von
  *    der Fassaden-Regel ausgenommen, s. `.oxlintrc.json`) mindestens einen
  *    Meldungsschluessel und wirft nie. Der Wertevorrat kommt aus den echten
  *    Enums, damit ein kuenftig wachsendes Vokabular automatisch mitgeprueft wird.
@@ -27,7 +27,7 @@ import { describe, it, expect } from 'vitest';
 import de from '../../../ui/i18n/locales/de.json';
 import en from '../../../ui/i18n/locales/en.json';
 import { SUPPORTED_LANGUAGES } from '../../../ui/i18n/constants';
-import { ConstraintKind, LimitMeasure, MessageOrigin, ScopeKind } from '../../../domain/evaluator/model.js';
+import { ConstraintKind, LimitMeasure, MessageOrigin, ScopeKind } from '../../../contexts/ruleengine/engine/model.js';
 import { formatViolation, formatViolationCauses } from '../../../ui/i18n/violationMessages';
 
 const catalogs = { de, en };

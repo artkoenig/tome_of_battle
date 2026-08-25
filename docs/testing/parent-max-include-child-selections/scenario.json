@@ -3,10 +3,10 @@
   "name": "parent-max-include-child-selections",
   "description": "Eine constraint type=max field=selections scope=parent mit shared=true, includeChildSelections=true und includeChildForces=true am Gegenstand selbst. Traeger ist der geteilte selectionEntry 'Buzgob's Knobbly Staff ' (6a95-95ff-7763-bd6d, Orcs and goblins), die Grenze ist c807-4ad1-4a8d-d2b1 (value=1); daneben traegt derselbe Eintrag die armeeweite Zwillingsgrenze 7bb9-9e7c-920b-9c2a (max 1, scope=roster). Der Bezugsrahmen der parent-Grenze ist die Eltern-Auswahl (der Shaman): sie zaehlt alle Instanzen des Traegers unterhalb dieses Rahmens - includeChildSelections=true bezieht dabei auch tiefer geschachtelte Auswahlen des Rahmens ein, gezaehlt werden aber nur Kopien des Traegers. shared=true laesst die Summe ueber ALLE Instanzen des Traegers im Rahmen laufen (ein number=2 ebenso wie zwei getrennte Selektionen). Fuenf Roster im Kontingent 'Standard (OG-AB)' (2bfa-e64a-7123-895f) pinnen: eine Kopie ist legal (auch bei tiefer Unterstruktur des Rahmens), zwei Kopien im selben Rahmen feuern mit Ist 2 / Grenze 1, zwei Kopien in ZWEI Rahmen lassen die parent-Grenze still und nur die roster-Grenze feuern. Alle Zahlen sind aus der Katalog-XML abgeleitet; kein modifier im Datensatz adressiert c807-4ad1-4a8d-d2b1 oder 7bb9-9e7c-920b-9c2a, die Grenzen bleiben also ihre geschriebenen Werte.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

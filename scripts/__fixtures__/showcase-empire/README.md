@@ -13,7 +13,7 @@ Headless-Browser ins Netz muss.
 
 - Quelle: `catpkg.json`, `Warhammer Fantasy Battle 6th edition.gst` und `Empire.cat` aus
   der ersten Katalog-Quelle `artkoenig/Warhammer-Fantasy-6th-edition@master`
-  (siehe `src/data/db/catalogUpdate.js`, `CATALOG_SOURCES`)
+  (siehe `src/platform/persistence/catalogUpdate.js`, `CATALOG_SOURCES`)
 - Stand: abgerufen 2026-07-23 (`Empire.cat` revision `11`)
 
 ## Warum das Imperium

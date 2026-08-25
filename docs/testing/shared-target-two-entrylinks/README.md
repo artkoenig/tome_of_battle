@@ -37,7 +37,7 @@ Quelle dieses Szenarios:
 ## Der Pfad im Katalog (verifiziert)
 
 Alle Zeilenangaben beziehen sich auf
-`src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat`.
+`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat`.
 
 ```
 selectionEntry "Swain" b920-b398-dc26-7f4d              (Z. 5210, unit, hidden=true)

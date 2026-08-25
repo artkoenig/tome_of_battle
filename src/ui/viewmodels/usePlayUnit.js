@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   findEntryInSystem, resolveEntry,
   MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
-} from '../../domain/roster';
+} from '../../contexts/armylist/model';
 import { costLimitLabelOf, costLimitTypeIdOf, EMPTY_SLOT_INDEX } from '../../contexts/ruleengine/readmodel/index.js';
 import { profileCellDisplayOf } from './editor/useUnitCard';
 

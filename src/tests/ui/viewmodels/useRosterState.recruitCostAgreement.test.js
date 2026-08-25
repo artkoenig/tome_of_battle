@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { buildRoster } from '../../../domain/roster/createRoster';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
  * Issue 0157, AC3: der Preis, den der Aushebe-Dialog **vor** dem Ausheben
@@ -12,7 +12,7 @@ import { buildRoster } from '../../../domain/roster/createRoster';
  * Der Dialog liest `capability.raiseCosts` am Angebots-Anker
  * (`CategoryUnitAdder.jsx`), die Karte `capability.totalCosts` am belegten Slot
  * (`UnitSelectionCard.jsx`). Der frueher danebenstehende zweite Rechenweg
- * (`getOptionDisplayCost` in `src/domain/roster/rosterCounter.js`) ist entfallen; diese
+ * (`getOptionDisplayCost` in `src/contexts/armylist/model/rosterCounter.js`) ist entfallen; diese
  * Datei haelt fest, dass die eine verbliebene Quelle beide Zahlen traegt und
  * sie nicht auseinanderlaufen, wenn ein Pflicht-Kind mitkommt.
  *

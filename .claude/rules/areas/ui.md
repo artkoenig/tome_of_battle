@@ -8,8 +8,8 @@ paths:
 # UI, components, styles, i18n
 
 - This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
-  allowed direction). It reaches data only through `src/domain/services/`; a direct import of `src/data/db/`
-  or `src/data/parser/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
+  allowed direction). It reaches data only through `src/contexts/*/application/`; a direct import of `src/platform/persistence/`
+  or `src/platform/battlescribe/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
   Issue 0167 moved the last 14 edges onto the facade, so the rule finds nothing today; since the
   port to cast (ADR 0041) — `error` since Issue 0181, so `forge-lint` fails on a new edge.
 - Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
@@ -31,11 +31,11 @@ paths:
   - Four rules keep it. Only the oxlint `no-restricted-imports` override on
     `src/ui/components/**` (the hook ban) still fails `forge-lint`; the three module-edge rules
     in `.cast/rules.json` are `error` since Issue 0181 and block just as well: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
-    `komponente-kein-bericht` (`src/ui/components/` → `src/contexts/ruleengine/`, `src/domain/evaluator/`) and
-    `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
+    `komponente-kein-bericht` (`src/ui/components/` → `src/contexts/ruleengine/`, `src/contexts/ruleengine/engine/`) and
+    `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/platform/persistence/`, `src/platform/battlescribe/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
     `usePlayRoster` and `useImporter`, whose direct data edges Issue 0167 moves onto
-    `src/domain/services/`.
+    `src/contexts/*/application/`.
   - So a component never imports the report itself. It gets it through its ViewModel, which reads
     the two roster contexts.
 - The four editor leaves (`UnitSelectionCard`, `SelectionConfigurator`, `OptionGroup`, `UnitChips`)
@@ -76,7 +76,7 @@ paths:
   library, ADR 0026) with entries in both `locales/de.json` and `locales/en.json`. A missing `en`
   key does not fail a test — it fails silently for the user.
 - `describeRosterFileError` in `viewmodels/useRosterList.js` is the only place that turns a
-  `messageKey`/`messageParams`/`detail` error from `src/domain/roster/` or `src/domain/services/` into
+  `messageKey`/`messageParams`/`detail` error from `src/contexts/armylist/model/` or `src/contexts/*/application/` into
   text. A test of that path mocks those modules with `importOriginal()` spread (`vi.mock(mod, async (importOriginal) =>
   ({ ...await importOriginal(), fn: vi.fn() }))`) so `MissingSystemError`/`RosterFileError` stay
   real and carry their keys, and asserts on the German toast text — a hand-built error with a
@@ -101,7 +101,7 @@ paths:
 - The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
   `capability.raiseMembers` of its offer slot — `useRosterState` looks it up (`findChildSlot` under the
   force, `findDescendantSlot` under a unit, since an option hangs below its group anchor) and
-  hands it to the factory. Nothing in `src/domain/roster/` derives an obligation from the catalogue any
+  hands it to the factory. Nothing in `src/contexts/armylist/model/` derives an obligation from the catalogue any
   more, so a seam that recruits without a report creates a bare selection.
 - Whether a category section appears is two report answers, both on the force's slots: the
   `categoryAnchor`'s `isHidden` (hidden plus nothing selected → no section) and whether any

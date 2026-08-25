@@ -2,7 +2,7 @@
  * `SlotIndex` — the report's slot side as one value object (Issue 0170).
  *
  * The report hands the UI three structures that never travel alone: the
- * capability record per slot path (`capabilities`, `src/domain/evaluator/evaluator.js`)
+ * capability record per slot path (`capabilities`, `src/contexts/ruleengine/evaluator.js`)
  * and the two path assignments that lead into it (`pathBySelectionId`,
  * `pathByForceId`, `rosterAdapter.js`). Every reader needs at least two of the
  * three, so they are one value with one name, and the pure lookups that used to

@@ -30,55 +30,61 @@ correction.
 
 ## `src/` — subsystem boundaries
 
-**The three layers, plus tests.** The subsystems below group into three layers, `UI →
-Fachlogik → Daten` ([ADR 0037](adr/0037-schichtenarchitektur-ui-fachlogik-daten.md)), plus
-`src/tests/` for every test file. The arrow is the *allowed* dependency direction: a
-higher layer may import a lower one, a reach back from low to high is forbidden.
+**Cut by subject, not by technology.** Since issue 0186 `src/` is cut into bounded
+contexts ([ADR 0042](adr/0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md)), and the
+old technology drawers `src/domain/` and `src/data/` are gone. The layer direction of
+[ADR 0037](adr/0037-schichtenarchitektur-ui-fachlogik-daten.md) survives it: `UI →
+contexts → platform`, with `shared/` below everything and `src/tests/` beside it. The
+arrow is the *allowed* dependency direction; a reach back is forbidden.
 
 | Layer | Directories | Responsibility |
 |---|---|---|
 | UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/styles/`, `src/ui/i18n/`, `src/ui/constants/` | Presentation and interaction |
-| Fachlogik | `src/domain/evaluator/`, `src/contexts/ruleengine/`, `src/domain/roster/`, `src/domain/services/`, `src/domain/rules/` | Evaluation, write model, translation between the two, the data facade and the rule-text index ([ADR 0040](adr/0040-services-und-rules-von-daten-zu-fachlogik.md)) |
-| Daten | `src/data/db/`, `src/data/parser/` | Persistence, import, catalogue decomposition |
+| Contexts | `src/contexts/armylist/`, `src/contexts/ruleengine/`, `src/contexts/catalog/`, `src/contexts/rulebook/` | The four bounded contexts: write model, evaluation and its read model, catalogue library, rule-text index. No context imports another (`kontext-kein-fremder-kontext`) |
+| Ports | `src/contexts/armylist/ports/storagePort.js`, `src/contexts/catalog/ports/catalogRepository.js` | The **only** two modules under `src/contexts/` that may name `src/platform/` (`kontext-nicht-auf-plattform`). Pure re-export, no logic |
+| Platform | `src/platform/persistence/`, `src/platform/battlescribe/` | Infrastructure: IndexedDB, import, catalogue decomposition. Reachable from a context only through a port |
 | Shared kernel | `src/shared/rostermodel/types.js`, `src/shared/battlescribe/battlescribeSchema.generated.js`, `src/shared/events/dataEvents.js` | Vocabulary every layer shares and nothing depends back on: the list model typedefs, the vendored XSD enums and the data-change event bus (Issue 0186) |
-| Tests | `src/tests/` | Every `*.test.*`/`*.spec.*` file under `src`, mirroring the layer it tests, plus shared test setup (`test-utils/`) and sample catalogs (`__fixtures__/`) |
+| Tests | `src/tests/` | Every `*.test.*`/`*.spec.*` file under `src`, mirroring the subtree it tests, plus shared test setup (`test-utils/`) and sample catalogs (`__fixtures__/`) |
 
-Since issue 0171 the directories carry the layer names: every subsystem lives under
-`src/ui/`, `src/domain/`, `src/data/`, `src/shared/` or `src/tests/`. Issue 0179 had
-dissolved the first `src/shared/` — a catch-all for what belonged to no layer — and moved
-`constants/views.js` to `src/ui/constants/` and `test-utils/`/`__fixtures__/` to
-`src/tests/`. Issue 0186 reintroduces `src/shared/` with a narrower meaning: the shared
-kernels of the cut by subject, three leaf modules that import nothing and that every layer
-may read (`rostermodel/types.js`, `battlescribe/battlescribeSchema.generated.js`,
-`events/dataEvents.js`). The cast rule `shared-haengt-an-nichts` keeps its fan-out at zero.
-Only the entry point `src/main.jsx` and its `src/index.css` stay at the root of `src/`.
+Issue 0179 had dissolved the first `src/shared/` — a catch-all for what belonged to no
+layer — and moved `constants/views.js` to `src/ui/constants/` and
+`test-utils/`/`__fixtures__/` to `src/tests/`. Issue 0186 reintroduces `src/shared/` with a
+narrower meaning: the shared kernels of the cut by subject, three leaf modules that import
+nothing and that every layer may read (`rostermodel/types.js`,
+`battlescribe/battlescribeSchema.generated.js`, `events/dataEvents.js`). The cast rule
+`shared-haengt-an-nichts` keeps its fan-out at zero. Only the entry point `src/main.jsx`
+and its `src/index.css` stay at the root of `src/`.
 
-`src/domain/services/` is the single address through which the UI reaches data. Four rules in
-`.cast/rules.json` (`ui-nicht-auf-daten`, `daten-kein-rueckgriff`,
-`fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) measure the direction. Issues 0161–0171
-removed their violations — all four find nothing today — but since the port from
-dependency-cruiser to cast ([ADR 0041](adr/0041-cast-als-strukturpruefer.md)) every rule is
-`error` since Issue 0181: `npm run cast` names what it finds and fails the gate. `src/utils/` belonged to no layer and is
-dissolved: every file of it now sits in the layer it belongs to.
+`src/contexts/*/application/` is the single address through which the UI reaches data — the
+old `domain/services/` facade (ADR 0037/0040), now split by subject between `armylist`
+and `catalog`, and reaching the platform only through the two ports. The 23 rules in `.cast/rules.json` measure every direction of the cut:
+`ui-nicht-auf-daten`, `plattform-kein-rueckgriff`, `fachlogik-kein-rueckgriff` and
+`keine-i18n-unter-ui` for the layering, `kontext-kein-fremder-kontext`,
+`kontext-nicht-auf-plattform`, `shared-haengt-an-nichts`, `evaluator-nur-ueber-fassade`,
+`lesemodell-nur-ueber-fassade` and `nur-die-acl-ruft-die-engine` for the cut by subject.
+Since the port from dependency-cruiser to cast
+([ADR 0041](adr/0041-cast-als-strukturpruefer.md)) every rule is `error`: `npm run cast`
+names what it finds and fails the gate.
 
 | Folder | Responsibility |
 |---|---|
-| `src/domain/services/` | The data facade (ADR 0037, reclassified from Daten to Fachlogik by ADR 0040): `rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`. The one change channel, `dataEvents.js`, is a shared kernel under `src/shared/events/` since issue 0186. Every writing call announces its completion there; `src/ui/viewmodels/useAppData.js` is the single place that subscribes. |
-| `src/data/parser/` | Imports uploaded `.cat`/`.gst`/`.zip` files: `zipExtractor.js`, `xmlParser.js`, advisory XSD validation (`schemaValidator.js`, [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)), `catalogEditor.js`. Has its own XML reader — separate from the evaluator's, a common source of confusion. |
-| `src/data/db/` | IndexedDB persistence (`database.js`: stores `systems`/`rosters`/`settings`), migrations, catalog fork fetch (`catalogUpdate.js`, [ADR 0014](adr/0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md)/[0017](adr/0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md)/[0018](adr/0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md)); see [ADR 0002](adr/0002-data-flow-and-indexeddb-storage.md). |
-| `src/domain/roster/` | The app's **write model**: builds, resolves and rewrites the selection tree (`selectionFactory.js`, `rosterTree.js`, `catalogResolver.js`, `rosterSync.js`, `rosterSerialization.js` — the `.ros` XML export/import —, `createRoster.js`, `rosterDefaults.js`, ...). Structural only — it does not judge a roster ([ADR 0011](adr/0011-roster-referenzmodell-und-serialisierungs-adapter.md)). Barrel `index.js` is convenience only, not an enforced facade. |
-| `src/domain/evaluator/` | The "Reinraum" (clean-room) rule-evaluation engine — a pure function `evaluate(catalog, roster) → report`. The **only** production engine, successor to the deleted, faulty `src/solver/` ([ADR 0029](adr/0029-zentrale-query-engine-fuer-constraint-auswertung.md) → [0030](adr/0030-zweite-eigenstaendige-auswertungs-engine.md)). Deep reference: [`evaluator-architecture.md`](evaluator-architecture.md). Its own XML reader (`catalogReader.js`) is intentionally separate from `src/data/parser/`'s. |
-| `src/contexts/ruleengine/` | The bridge between the two: `rosterAdapter.js` translates the IndexedDB roster into the evaluator's input, `evaluationCache.js` memoizes the one `evaluateAppRoster` seam, `useEvaluation.js` is the hook the editor and play mode both use. |
+| `src/contexts/armylist/application/` | The list-side data facade (ADR 0037, reclassified from Daten to Fachlogik by ADR 0040): `rosterStore.js`, `settings.js`, `rosterTransfer.js`. Reaches IndexedDB only through `../ports/storagePort.js`. |
+| `src/contexts/catalog/application/` | The catalogue-side data facade: `systemLibrary.js`, `catalogRevisions.js` — import, library listing and the catalog fork revision state. Reaches persistence and the Battlescribe reader only through `../ports/catalogRepository.js`. The one change channel, `dataEvents.js`, is a shared kernel under `src/shared/events/` since issue 0186. Every writing call announces its completion there; `src/ui/viewmodels/useAppData.js` is the single place that subscribes. |
+| `src/platform/battlescribe/` | Imports uploaded `.cat`/`.gst`/`.zip` files: `zipExtractor.js`, `xmlParser.js`, advisory XSD validation (`schemaValidator.js`, [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)), `catalogEditor.js`. Has its own XML reader — separate from the evaluator's, a common source of confusion. |
+| `src/platform/persistence/` | IndexedDB persistence (`database.js`: stores `systems`/`rosters`/`settings`), migrations, catalog fork fetch (`catalogUpdate.js`, [ADR 0014](adr/0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md)/[0017](adr/0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md)/[0018](adr/0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md)); see [ADR 0002](adr/0002-data-flow-and-indexeddb-storage.md). |
+| `src/contexts/armylist/model/` | The app's **write model**: builds, resolves and rewrites the selection tree (`selectionFactory.js`, `rosterTree.js`, `catalogResolver.js`, `rosterSync.js`, `rosterSerialization.js` — the `.ros` XML export/import —, `createRoster.js`, `rosterDefaults.js`, ...). Structural only — it does not judge a roster ([ADR 0011](adr/0011-roster-referenzmodell-und-serialisierungs-adapter.md)). Barrel `index.js` is convenience only, not an enforced facade. |
+| `src/contexts/ruleengine/engine/` | The "Reinraum" (clean-room) rule-evaluation engine — a pure function `evaluate(catalog, roster) → report`. The **only** production engine, successor to the deleted, faulty `src/solver/` ([ADR 0029](adr/0029-zentrale-query-engine-fuer-constraint-auswertung.md) → [0030](adr/0030-zweite-eigenstaendige-auswertungs-engine.md)). Deep reference: [`evaluator-architecture.md`](evaluator-architecture.md). Its own XML reader (`catalogReader.js`) is intentionally separate from `src/platform/battlescribe/`'s. |
+| `src/contexts/ruleengine/acl/`, `readmodel/` | The bridge between the two, behind the one door `readmodel/index.js` (issue 0186): `acl/rosterAdapter.js` translates the IndexedDB roster into the evaluator's input, `evaluationCache.js` memoizes the one `evaluateAppRoster` seam, `useEvaluation.js` is the hook the editor and play mode both use. |
 | `src/ui/components/` | React UI: `Importer`, `RosterDashboard`, `RosterEditor`, `PlayMode`, dialogs; subfolders `editor/`, `importer/`, `play/`. Most `.jsx` files are paired 1:1 with a `.test.jsx`. |
 | `src/ui/viewmodels/` | The ViewModel layer ([ADR 0038](adr/0038-custom-hooks-als-viewmodel-je-ui-baustein.md)): one ViewModel per screen, overlay and editor leaf (`editor/`), the roster state node (`useRosterState.js`), the two roster contexts and `SettingsContext.jsx` (whfb6 rule-linking toggle, [ADR 0015](adr/0015-settings-context-fuer-whfb6-verlinkung.md)), plus the app-level hooks `usePlayState`, `useAppData`, `useAppNavigation`, `useUndoableState` ([ADR 0013](adr/0013-generischer-undo-redo-hook.md)), `useRuleUrl`, `useToast`, `useRosterList`, `usePwaLifecycle`, `useViewportHeight`. Since Issue 0178 the layer has one directory. |
-| `src/domain/rules/` | `rules-index.json` (generated by `scripts/generate-rules-index.js`) plus lookup/synonym matching to 6th.whfb.app rule pages ([ADR 0012](adr/0012-integration-externer-regeltexte-6th-whfb-app.md)). Reclassified from Daten to Fachlogik by ADR 0040. |
+| `src/contexts/rulebook/` | `rules-index.json` (generated by `scripts/generate-rules-index.js`) plus lookup/synonym matching to 6th.whfb.app rule pages ([ADR 0012](adr/0012-integration-externer-regeltexte-6th-whfb-app.md)). Reclassified from Daten to Fachlogik by ADR 0040. |
 | `src/ui/i18n/` | Home-grown i18n, no library ([ADR 0026](adr/0026-i18n-eigenloesung-json-und-intl-ohne-library.md)): `i18nStore.js`, `translate.js`, `locales/{de,en}.json`, `violationMessages.js` for evaluator report projection. |
 | `src/ui/constants/` | Only `views.js` (moved from `src/shared/constants/` by issue 0179). |
 | `src/ui/styles/` | 33 numbered CSS layer files loaded in cascade order ([ADR 0004](adr/0004-styling-conventions.md) §6). |
 | `src/tests/` | Every relocated `*.test.*`/`*.spec.*` file, mirroring its original layer subtree, plus `test-utils/` and `__fixtures__/` (shared test setup and sample catalogs — `generic/`, `whfb6/`, `whfb6-lexicanum/`; both moved from `src/shared/` by issue 0179). |
 
-**The Reinraum boundary.** `src/domain/evaluator/` and `src/domain/roster/` must not import
-each other in either direction, and `src/domain/evaluator/evaluator.js` is the only
+**The Reinraum boundary.** `src/contexts/ruleengine/engine/` and `src/contexts/armylist/model/` must not import
+each other in either direction, and `src/contexts/ruleengine/evaluator.js` is the only
 legal external entry point into the evaluator. Both rules are
 **machine-enforced**, not just documented: as blocking `no-restricted-imports`
 patterns in `.oxlintrc.json`, and as the cast rules
@@ -117,7 +123,7 @@ and its line.
   this project's own curated, project-specific distillation of it — read
   that first, fall back to the wiki only for something it doesn't cover.
 - **`evaluator-architecture.md`** — the reference architecture for
-  `src/domain/evaluator/` (pipeline stages, invariants); what
+  `src/contexts/ruleengine/engine/` (pipeline stages, invariants); what
   [ADR 0030](adr/0030-zweite-eigenstaendige-auswertungs-engine.md) implements.
 - **`battlescribe-ui-renderer-audit.md`** — audit of how the UI renders
   BattleScribe content.
@@ -133,7 +139,7 @@ and its line.
   Never hand-edit it.
 - **`testing/`** — evaluator E2E scenario fixtures, one subfolder per
   scenario (`README.md` + `scenario.json` + `rosters/*.ros`), read by
-  `src/domain/evaluator/e2e.testcatalog.test.js`. Authored exclusively by the
+  `src/tests/contexts/ruleengine/engine/e2e.testcatalog.test.js`. Authored exclusively by the
   `e2e-testcase-author` subagent — see [Testing layers](#testing-layers).
 - **`assets/`** — images/CSS/JS backing the landing page and the status
   report.
@@ -144,14 +150,14 @@ Three layers, easy to conflate:
 
 1. **Component/unit tests** — `*.test.js`/`*.test.jsx` under `src/tests/`, mirroring the
    layer subtree of the source they cover (issue 0179), run via Vitest.
-2. **Evaluator E2E** — `src/domain/evaluator/e2e.testcatalog.test.js` (plus
+2. **Evaluator E2E** — `src/tests/contexts/ruleengine/engine/e2e.testcatalog.test.js` (plus
    `crossCatalog.test.js`) dynamically discovers scenarios under
    `docs/testing/`. Scenarios are authored **only** by the
    `e2e-testcase-author` subagent, from catalog data alone, never from
    evaluator source — see `.claude/agents/e2e-testcase-author.md`
    and [ADR 0033](adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md).
-   If a change touches only `src/domain/evaluator/`, this plus its unit tests are
-   all you need to run (`forge-test --run src/domain/evaluator`).
+   If a change touches only `src/contexts/ruleengine/engine/`, this plus its unit tests are
+   all you need to run (`forge-test --run src/contexts/ruleengine/engine`).
 3. **App E2E** — `e2e/ui.test.js` (Puppeteer smoke test over the real UI,
    `data-testid` selectors) and `e2e/pwa.test.js` (manifest/icon file
    checks), sharing the harness `scripts/lib/e2e-harness.js`. Part of
@@ -161,7 +167,7 @@ Three layers, easy to conflate:
 
 - **Codegen**: `generate-schema-module.js` (vendored `Catalogue.xsd` →
   `src/shared/battlescribe/battlescribeSchema.generated.js`),
-  `generate-rules-index.js` (→ `src/domain/rules/rules-index.json`),
+  `generate-rules-index.js` (→ `src/contexts/rulebook/rules-index.json`),
   `rules-crawler.js`.
 - **Release**: `release.js`, `versioning.js`, `deployEnv.js`.
 - **Screenshots**: `generate_screenshots.js` (offline, every main view),

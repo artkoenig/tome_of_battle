@@ -22,7 +22,7 @@ import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/s
 // die abgelesenen Werte weiterhin dieselben
 // Radio-/Checkbox-/Stepper-/Deaktivierungs-Entscheidungen treiben. Wie die
 // Engine die effektiven Werte errechnet (bedingte increments, decrements,
-// sets), ist in den Evaluator-Tests (`src/domain/evaluator/`) eigens abgedeckt; die
+// sets), ist in den Evaluator-Tests (`src/contexts/ruleengine/engine/`) eigens abgedeckt; die
 // Slot-Werte hier sind die dort belegten Ergebnisformen des Berichts.
 // ─────────────────────────────────────────────────────────────────────────────
 

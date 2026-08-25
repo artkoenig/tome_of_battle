@@ -3,8 +3,8 @@ import { renderHook, act } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { buildRoster } from '../../../domain/roster/createRoster';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
  * Issue 0145, increment 1, Kriterium 1 — a mandatory member is created at any
@@ -16,7 +16,7 @@ import { buildRoster } from '../../../domain/roster/createRoster';
  * is the very call the recruit dialog makes.
  */
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 
 /** Loads one of the six fixture catalogues, byte for byte, and parses it for real. */

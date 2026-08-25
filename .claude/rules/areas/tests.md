@@ -6,7 +6,7 @@ paths:
 # tests
 
 Every `*.test.*`/`*.spec.*` file under `src` lives here, mirroring the layer subtree it moved out
-of (`src/domain/evaluator/foo.test.js` → `src/tests/domain/evaluator/foo.test.js`). Non-test
+of (`src/contexts/ruleengine/engine/foo.test.js` → `src/tests/contexts/ruleengine/engine/foo.test.js`). Non-test
 helpers (fixtures, `__fixtures__/`, test-utils) stay colocated with the source they belong to and
 did not move.
 

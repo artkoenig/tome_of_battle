@@ -12,7 +12,7 @@
  * - `hasBlockingViolations(violations)` ⇔ mindestens eine blockierende.
  *
  * Die Violation-Fixtures folgen dem veröffentlichten Berichtsvertrag der
- * Fassade (`src/domain/evaluator/evaluator.js`; Formen wie in
+ * Fassade (`src/contexts/ruleengine/evaluator.js`; Formen wie in
  * `src/ui/i18n/violationMessages.test.js`, dort per Wegwerf-Skript gegen die
  * echte Fassade verifiziert).
  */

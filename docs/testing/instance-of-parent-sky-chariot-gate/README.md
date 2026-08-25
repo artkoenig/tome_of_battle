@@ -2,7 +2,7 @@
 
 **Rolle:** Black-Box-Test (kein Blick in den Engine-Quellcode). Alle Regeln,
 Grenz-Ids, Ist- und Grenzwerte sind **ausschließlich aus den Katalogdaten** der
-*6th Definitive Edition* (`src/domain/evaluator/__fixtures__/whfb6-definitive/`), der
+*6th Definitive Edition* (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`), der
 Format-Doku [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md)
 und der vendorten `Catalogue.xsd` **abgeleitet** — nicht aus einem Engine-Lauf.
 Die Roster-Form folgt der in bestehenden Szenarien verifizierten Gestalt

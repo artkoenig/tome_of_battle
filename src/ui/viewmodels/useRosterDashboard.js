@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { findForceEntryById } from '../../domain/roster';
+import { findForceEntryById } from '../../contexts/armylist/model';
 import { evaluateAppRoster, describeSystem, costLimitLabelOf } from '../../contexts/ruleengine/readmodel/index.js';
 import { useTranslation } from '../i18n/useTranslation';
 

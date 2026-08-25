@@ -3,10 +3,10 @@
   "name": "less-than-self-mount-and-weapon-gate",
   "description": "Eine Bedingung type=\"lessThan\" mit scope=\"self\" zaehlt im Rahmen der Auswahl, die die Abfrage traegt, die unter diesem Traeger stehenden Auswahlen, die auf die in childId genannte Id aufloesen — nennt childId eine selectionEntryGroup, zaehlt jede in dieser Gruppe getroffene Auswahl mit — und sie haelt, solange dieser Stand unter ihrem value liegt. Am Highborn der Dark Elves (79af-7092-a9a9-393d) haengen acht Sv-Modifikatoren (field=f1be-e66c-d5e1-673c) am infoLink 7ae07422-6715-4692-aeb9-89fbd4ed033f auf das Profil 3ffc-3172-37a9-a1fc (Basis Sv 11). Der sechste ist der zusaetzliche Ruestungsschritt: decrement 1 an einer conditionGroup type=\"and\" aus 'lessThan 1 Mounts (ba90-e917-dbad-292c)' UND 'atLeast 1 Shield (0b9c-d3ff-6535-74cd)' UND 'lessThan 1 CC Weapons (4c8c-ab06-0b67-d4e8)', alle scope=self, shared=true, includeChildSelections=true. Der vierte Modifikator (decrement 4) traegt gar keine Bedingung und wirkt immer. Gemessen wird je ein Paar, das sich NUR in der Nahkampfwaffe bzw. NUR im Reittier unterscheidet; als Reittier des Mount-Paares dient der Dark Pegasus, weil er als einziger leichtgewichtiger Mount keinen eigenen Sv-Modifikator traegt. Merkmalswerte sind keine zaehlende Schranke; die Aussagen laufen ueber expect.capabilities[].infoElements[].characteristics, die firing-Liste ist ueberall leer.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

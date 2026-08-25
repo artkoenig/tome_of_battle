@@ -3,10 +3,10 @@
   "name": "group-max-increment-on-choice",
   "description": "Ein modifier type=increment, dessen field die id eines Constraints nennt, addiert seinen Wert auf den effektiven Wert dieser Grenze, exakt solange seine Bedingung haelt (Ruestung+Schild-Muster, Formatdoku 9.8). Konkret: die Gruppe 'Weapons and Armour' (06c9-c170-adb2-86f5) des Vampire Count (6822-0110-a7c9-cbb0, Vampire Counts) traegt max 2 (Constraint b3b5-f872-24df-04dc, field=selections scope=parent) und zwei bedingte increment-1-Modifier auf genau diese Constraint-Id: einer haelt bei atLeast 1 des Full-Plate-Links a4d1-6e85-bee8-55d1 (scope=parent), der andere (hier inert, kein Schild gewaehlt) bei atLeast 1 des Shield-Links 071e-7d5a-a22f-3ba7. Zwei bis auf die Full-Plate-Auswahl identische Roster im Kontingent Standard (VC-AB) (e989-15b8-7eb6-9668) mit Blood-Dragon-Bloodline (9fd9-e05c-ffcb-2c4d; sie blendet den geteilten Full-Plate-Eintrag 3869-2f40-dd21-6971, Basis hidden=true, per modifierGroup erst ein) pinnen das ueber expect.capabilities: mit Full Plate effectiveMax 3, ohne Full Plate der Basiswert effectiveMax 2.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

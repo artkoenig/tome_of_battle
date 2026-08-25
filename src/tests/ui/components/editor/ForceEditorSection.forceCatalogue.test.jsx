@@ -28,7 +28,7 @@ vi.mock('lucide-react', () => ({
 
 // Ein Stub-Satz fuer BEIDE Komponenten der Kette (`ForceEditorSection` und die
 // echte `RosterCategorySection` importieren aus demselben Modul).
-vi.mock('../../../../domain/roster', () => ({
+vi.mock('../../../../contexts/armylist/model', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) ?? null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],

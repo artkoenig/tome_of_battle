@@ -4,7 +4,7 @@ import {
   findEntryInSystem,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS,
-} from '../../../domain/roster';
+} from '../../../contexts/armylist/model';
 import { useRosterReport } from '../rosterContexts';
 import { publicationRefOf, upgradeDetailElementsOf } from './upgradeDetailElements.js';
 

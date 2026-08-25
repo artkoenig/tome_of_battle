@@ -11,7 +11,7 @@ vi.mock('lucide-react', () => ({
 // Sichtbarkeit und Primär-Kategorie kommen seit Issue 0156 aus dem Bericht
 // (`categoryAnchor.isHidden`, `capability.primaryCategoryId`) — die Komponente
 // wertet den Katalog dafür nicht mehr aus, also gibt es dafür nichts zu stubben.
-vi.mock('../../../../domain/roster', () => ({
+vi.mock('../../../../contexts/armylist/model', () => ({
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   childSelectionsOf: (force) => force.selections || [],
 }));

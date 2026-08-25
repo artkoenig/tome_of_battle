@@ -1,4 +1,4 @@
-import { countSelections, UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
+import { countSelections, UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
 
 /**
  * Die Ableitungen, die sich **jede** Options-Zeile des Editors teilt — der

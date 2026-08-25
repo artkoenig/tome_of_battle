@@ -2,7 +2,7 @@
  * Issue 0121, Task 3 — React-Hook `useEvaluation`
  * (`src/contexts/ruleengine/readmodel/useEvaluation.js`, existiert noch nicht; test-first).
  *
- * Der Hook verdrahtet die Evaluator-Fassade (`src/domain/evaluator/evaluator.js`) mit
+ * Der Hook verdrahtet die Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`) mit
  * dem App-Modell: `useEvaluation(system, roster)` bereitet die rohen XMLs des
  * Systems (`system.rawXmls`) einmal je System-Objektidentitaet auf
  * (`prepareDataset`), uebersetzt das App-Roster (`toEvaluatorRoster`) und
@@ -47,7 +47,7 @@ import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, aber
 // jeder Aufruf wird gezaehlt (Kriterium 8 macht den Zaehler zum Vertrag).
-vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
+vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -57,7 +57,7 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
   };
 });
 
-import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate, describeDataset } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 
@@ -103,7 +103,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

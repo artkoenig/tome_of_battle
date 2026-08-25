@@ -3,10 +3,10 @@
   "name": "greater-than-force-unlimited-gate",
   "description": "Eine condition type=greaterThan mit field=selections, scope=force und einer Eintrags-Id in childId haelt genau dann, wenn das Kontingent STRIKT mehr Selektionen dieses Eintrags fuehrt als der value der Bedingung - und der damit gegatete set-Modifier ersetzt dann den Wert der adressierten Grenze. Konkret: Slaughtermaster (0ff3-ec4d-1c6b-6d53, Ogre Kingdoms) traegt max 0 selections scope=roster (Constraint c70d-c292-36ee-21b5) und genau einen set--1-Modifier auf diese Constraint-Id, gegatet auf greaterThan 0 selections scope=force childId=2679-58f4-1771-662d (Tyrant). Ohne Tyrant bleibt das Gatter zu, die Grenze behaelt ihren geschriebenen Basiswert 0 und feuert bei einem Slaughtermaster (Ist 1, Grenze 0). Mit mindestens einem Tyrant haelt 1 > 0, der set-Modifier schreibt den Sentinel -1 = UNBEGRENZT (nicht 'eins' und nicht 'keins'): die Grenze feuert weder bei einem noch bei zwei Slaughtermastern, und der belegte Slaughtermaster-Slot meldet effectiveMax=null/headroom=null. Alle Roster nutzen das Kontingent Standard (OK-AB) 729f-9246-5cd3-5044, in dem der Slaughtermaster NICHT per set-hidden-Gatter (instanceOf Ironskin Tribe 8711-ed16-2a44-7251) verborgen ist.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

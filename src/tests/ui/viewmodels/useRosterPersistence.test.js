@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
-vi.mock('../../../domain/roster', () => ({
+vi.mock('../../../contexts/armylist/model', () => ({
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
 }));
 
-import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
+import { syncRosterSelectionsWithSystem } from '../../../contexts/armylist/model';
 import { useRosterPersistence } from '../../../ui/viewmodels/useRosterPersistence';
 
 /**

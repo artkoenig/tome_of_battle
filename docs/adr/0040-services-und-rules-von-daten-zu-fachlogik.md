@@ -1,6 +1,10 @@
 # `src/data/services/` und `src/data/rules/` wechseln von Daten zu Fachlogik
 
-- **Status:** Accepted
+- **Status:** Accepted; die Verzeichnisnamen sind durch
+  [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) abgelöst —
+  `src/domain/services/` liegt seitdem als `src/contexts/armylist/application/` und
+  `src/contexts/catalog/application/`, `src/domain/rules/` als `src/contexts/rulebook/`.
+  Die Zuordnung zur Fachlogik statt zu den Daten bleibt genau die hier getroffene
 - **Datum:** 2026-08-24
 - **Beteiligte:** Projektinhaber, Architektur-Review
 - **Zugehörige ADRs:** ergänzt ADR-0037 (Schichtenarchitektur UI → Fachlogik → Daten) um die

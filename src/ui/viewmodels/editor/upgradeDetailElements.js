@@ -1,4 +1,4 @@
-import { UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
+import { UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
 
 /**
  * Der Detailblock einer Aufwertung als **fertige Elementliste** (ADR-0038):
@@ -12,7 +12,7 @@ import { UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
  * nichts: hier wird keine Regel mehr ueber ihren Namen gesucht. Weder die
  * frueher hier haengende Namens*aehnlichkeit* noch der Rueckfall auf die
  * *gleichnamige* Regel des eigenen Katalogs stehen noch in der Oberflaeche. Den
- * Rueckfall traegt der Bericht (`domain/evaluator/infoProjection.js`,
+ * Rueckfall traegt der Bericht (`infoProjection.js` der Engine,
  * Issue 0173), damit Detailblock und Chips ihn aus derselben Quelle bekommen.
  */
 

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   resolveEntry,
   resolveCostLimitTypeId, resolveCostLimitLabel,
-} from '../../../domain/roster';
+} from '../../../contexts/armylist/model';
 import { classifyGroupItem } from './selectionBehavior.js';
 import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';

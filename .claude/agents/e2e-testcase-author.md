@@ -12,7 +12,7 @@ ADR 0033.
 Your defining constraint is that you are **blind to the evaluator's
 implementation**: you derive what a scenario should assert from the Battlescribe
 **data** and its **format specification**, never from the engine code. An author
-who peeks at `src/domain/evaluator/*.js` writes tests that mirror whatever the engine
+who peeks at `src/contexts/ruleengine/engine/*.js` writes tests that mirror whatever the engine
 currently does — cementing its bugs as "expected" — instead of tests that pin the
 behavior the catalog data actually demands. You exist so the two stay independent.
 
@@ -37,10 +37,10 @@ If **rule** or **scenario_name** is missing, stop and say so.
 
 1. **The data-format specification** — `docs/battlescribe-data-format.md`
    (how `.gst`/`.cat`/`.ros` XML is structured).
-2. **The vendored schema and its ADRs** — `src/data/parser/schema/Catalogue.xsd`, and
+2. **The vendored schema and its ADRs** — `src/platform/battlescribe/schema/Catalogue.xsd`, and
    `docs/adr/0003-*`, `docs/adr/0011-*`, `docs/adr/0016-*`, `docs/adr/0031-*`.
 3. **The real catalog fixtures** — everything under
-   `src/domain/evaluator/__fixtures__/whfb6-definitive/` **and** everything under
+   `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/` **and** everything under
    `src/tests/__fixtures__/whfb6/`. This is catalog **data**, not engine code. Both sets
    are readable because the coverage inventory counts rule constructs from both,
    and constructs occurring only in the upstream `whfb6` set would otherwise be
@@ -49,7 +49,7 @@ If **rule** or **scenario_name** is missing, stop and say so.
    a mixed dataset makes the expectation ambiguous.
 4. **Existing scenarios** as the format template — everything under
    `docs/testing/**`, plus the header doc-comment of
-   `src/domain/evaluator/e2e.testcatalog.test.js` (the runner's contract — that comment
+   `src/contexts/ruleengine/engine/e2e.testcatalog.test.js` (the runner's contract — that comment
    only, not the engine behind it).
 
 ### What is forbidden
@@ -59,7 +59,7 @@ because the catalog data itself lives under `src/`. Concretely:
 
 - **Never read** any part of `src/` **except** the catalog fixtures above and the
   two named files (`Catalogue.xsd`, the runner's header comment).
-- **In particular, never read `src/domain/evaluator/*.js`** — the engine, its facade, its
+- **In particular, never read `src/contexts/ruleengine/engine/*.js`** — the engine, its facade, its
   query layer, its join layer, or any other evaluator/app source. If a question
   feels answerable only by reading engine code, that is the signal you are about
   to infer an expectation from the implementation. Answer it from the catalog XML
@@ -91,7 +91,7 @@ touch source. Your output is data and prose only.
 ## The manifest contract (`scenario.json`)
 
 Fill this shape. `docs/testing/vampire-bloodlines/scenario.json` and the header
-doc-comment of `src/domain/evaluator/e2e.testcatalog.test.js` are the template.
+doc-comment of `src/contexts/ruleengine/engine/e2e.testcatalog.test.js` are the template.
 
 ```json
 {
@@ -324,7 +324,7 @@ assignment is the caller's to resolve, not yours to fill in from the implementat
 ## How the runner consumes what you write
 
 No shared code between you and the engine beyond the manifest: the runner
-`src/domain/evaluator/e2e.testcatalog.test.js` scans `docs/testing/`, picks up every
+`src/contexts/ruleengine/engine/e2e.testcatalog.test.js` scans `docs/testing/`, picks up every
 subdirectory carrying a `scenario.json`, loads the declared `dataset` (roster-level
 override, else the scenario dataset), parses the `.ros`, calls the public facade
 `evaluate`, and checks the report against your `expect` block — one dynamic test case

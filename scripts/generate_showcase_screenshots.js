@@ -40,7 +40,7 @@ const SCREENSHOT_DIR = process.env.SCREENSHOT_DIR || path.join(REPO_ROOT, '.scre
 const LANGUAGE_STORAGE_KEY = 'tome-of-battle.ui-language';
 
 // Host der Katalogdateien. Nur die erste Quelle
-// (…/Warhammer-Fantasy-6th-edition/master/…, src/data/db/catalogUpdate.js) wird gespiegelt;
+// (…/Warhammer-Fantasy-6th-edition/master/…, src/platform/persistence/catalogUpdate.js) wird gespiegelt;
 // die zweite bleibt „unerreichbar" und trägt nichts zur Systemliste bei.
 const CATALOG_HOST = 'raw.githubusercontent.com';
 const MIRRORED_PATH_MARKER = '/Warhammer-Fantasy-6th-edition/master/';

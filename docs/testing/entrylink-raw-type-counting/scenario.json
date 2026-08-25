@@ -3,10 +3,10 @@
   "name": "entrylink-raw-type-counting",
   "description": "Ein ueber einen entryLink gesetzter Eintrag zaehlt unter dem rohen type-Attribut seines Ziel-Eintrags genauso wie derselbe Eintrag direkt gesetzt. Beobachtet an der Border-Patrols-Autor-Meldung des Spielsystems (childId=\"unit\", scope=\"force\"): eine per entryLink in die Vampire-Counts-Force gezogene Mercenaries-Einheit (Ogre Bulls) muss als 'unit' mitzaehlen — sowohl beim Erfuellen der Untergrenze (2 Einheiten, Meldung still) als auch beim Kippen der Obergrenze (5. Einheit, Meldung feuert). Zusaetzlich haelt das Szenario die childId=\"model\"-Zaehlung (atLeast 10, scope=self) an den direkten Skeleton-Modellen fest, damit die zweite Border-Patrols-Meldung (Infanterie 10+) kontrolliert still bleibt.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

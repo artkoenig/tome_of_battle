@@ -3,10 +3,10 @@
   "name": "author-message-severity",
   "description": "Autor-Meldungen des Katalogs (modifier type=\"add\" field=\"error\"/\"warning\"/\"info\"): haelt die Bedingung des Modifikators, liegt an der tragenden Auswahl eine Meldung mit dem Wortlaut aus dem value-Attribut und dem zugehoerigen Schweregrad an; haelt sie nicht, feuert an diesem Slot keine Meldung. Der Text bleibt unveraendert in Katalogsprache (kein Uebersetzen, kein Umformulieren). Abgedeckt sind alle drei Schweregrade: error (Skrag/Greasus, Ogre Kingdoms), warning (Bruiser, Ogre Kingdoms) und info (Vampire Fleet Captain, Vampire Counts).",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
@@ -91,10 +91,10 @@
       "file": "rosters/06-fleet-captain-info-fires.ros",
       "description": "Vampire-Counts-Kontingent 'Vampire Coast (WD#306-UK)' mit Vampire Fleet Captain und 'Border Patrols rules'. Die Bedingung des info-Modifikators (atLeast 1, scope=force) haelt — an Fleet Captains Slot liegt genau eine Autor-Meldung mit Schweregrad info und dem vollstaendigen Katalogtext an.",
       "dataset": {
-        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {
@@ -114,10 +114,10 @@
       "file": "rosters/07-fleet-captain-info-silent.ros",
       "description": "Dasselbe Kontingent nur mit dem Vampire Fleet Captain, ohne 'Border Patrols rules'. Die Bedingung haelt bei Ist 0 nicht — an Fleet Captains Slot feuert keine Autor-Meldung.",
       "dataset": {
-        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-          "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+          "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+          "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
         ]
       },
       "expect": {

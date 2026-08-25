@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
 import { PERSISTENCE_FAILURE_MESSAGE_KEY } from '../../../ui/viewmodels/persistenceFailure';
 import { t } from '../../../ui/i18n/i18nStore';
-import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
+import { syncRosterSelectionsWithSystem } from '../../../contexts/armylist/model';
 
 // Only the rules engine is stubbed. The roster-tree primitives (rosterTree.js,
 // re-exported by the src/roster-barrel, Issue 0121 Task 8) stay real: they are pure data-structure traversal
@@ -12,7 +12,7 @@ import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
 // das System dieser Tests trägt kein rawXmls, also liefert er das Leer-Ergebnis.
 // Der frühere Solver-Kostenpfad (`calculateRosterCosts` → `costs`) ist mit
 // Issue 0121, Task 7 aus dem Hook entfallen — Kosten liefert der Bericht.
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),
@@ -269,8 +269,8 @@ describe('useRosterState Hook', () => {
     // der Bericht (`capability.raiseMembers`) — ohne ihn legt das Ausheben
     // nichts an, auch nicht die Vorauswahl einer Pflichtgruppe. Die Regel, WAS
     // eine Pflichtgruppe beisteuert, ist im Evaluator gepinnt
-    // (`src/domain/evaluator/costProjection.raiseMembers.test.js`), ihre Aufloesung in
-    // `src/domain/roster/selectionFactory.test.js`.
+    // (`src/contexts/ruleengine/engine/costProjection.raiseMembers.test.js`), ihre Aufloesung in
+    // `src/contexts/armylist/model/selectionFactory.test.js`.
     const mockSave = vi.fn();
     const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, mockSave));
 

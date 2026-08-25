@@ -3,10 +3,10 @@
   "name": "category-scope-ancestor-frame",
   "description": "Nennt der scope einer Grenze eine Kategorie-Id, ist der Bezugsrahmen der naechste Vorfahre der tragenden Auswahl (Traeger eingeschlossen), der diese Kategorie traegt — kein armeeweiter Rahmen. Die Strigoi-skopierte Reittier-Sperre 6afc-566e-34d4-d35c des Master Necromancer feuert daher nie: kein Vorfahre seiner Mounts-Gruppe traegt die Kategorie Strigoi, auch dann nicht, wenn im selben Kontingent ein Strigoi-Vampir steht. Die parent-skopierte Gruppengrenze 7e5f-f372-f244-a864 derselben Gruppe belegt im Gegenzug, dass die Gruppe sehr wohl korrekt gezaehlt wird.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -3,7 +3,7 @@
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln und alle
 erwarteten Ist/Grenze-Werte unten sind **ausschließlich aus den Katalogdaten** der
 *6th Definitive Edition* **abgeleitet** — aus den `.gst`/`.cat`-XML, die auch die
-Reinraum-Engine (`src/domain/evaluator/`) als E2E-Fixtures nutzt. Sie stammen **nicht** aus
+Reinraum-Engine (`src/contexts/ruleengine/engine/`) als E2E-Fixtures nutzt. Sie stammen **nicht** aus
 einem Engine-Lauf; die Autorenschaft ist blind gegenüber dem Auswerter.
 
 - Spielsystem: `Warhammer Fantasy Battles (6th definitive edition).gst`

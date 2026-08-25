@@ -14,7 +14,7 @@
   "ignore": [
     ".worktrees/**",
     "**/.claude/**",
-    "src/data/parser/schema/**",
+    "src/platform/battlescribe/schema/**",
     "**/__fixtures__/**"
   ]
 }

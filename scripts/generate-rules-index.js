@@ -16,7 +16,7 @@ import {
 } from './rules-crawler.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_FILE = resolve(__dirname, '..', 'src', 'domain', 'rules', 'rules-index.json');
+const OUT_FILE = resolve(__dirname, '..', 'src', 'contexts', 'rulebook', 'rules-index.json');
 const EVENTS_FLAG = '--events';
 
 function formatHumanLine(event) {

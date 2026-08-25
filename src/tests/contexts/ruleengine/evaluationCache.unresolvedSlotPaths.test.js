@@ -91,7 +91,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

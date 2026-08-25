@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { childSelectionsOf, groupProfilesByType } from '../../../domain/roster';
+import { childSelectionsOf, groupProfilesByType } from '../../../contexts/armylist/model';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**

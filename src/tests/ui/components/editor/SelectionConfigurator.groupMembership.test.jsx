@@ -5,11 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
-import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
-import { rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { resolveEntry } from '../../../../contexts/armylist/model/catalogResolver.js';
+import { createSelectionFromDef } from '../../../../contexts/armylist/model/selectionFactory.js';
+import { rootSelectionsOf } from '../../../../contexts/armylist/model/rosterTree.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 /**
@@ -18,7 +18,7 @@ import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAda
  *
  * Diese Datei prueft die Kriterien 1, 3, 5, 6 und 7 am gemeldeten Fall: dem
  * **Vampire Thrall** (`e37b-c827-99ac-b706`) des echten Katalogs
- * `src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive
+ * `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive
  * edition).cat`, im Kontingent `Standard (VC-AB)`. Kriterium 2 und 4 laufen
  * ueber alle sechs Fixture-Kataloge und stehen deshalb in
  * `SelectionConfigurator.groupMembership.fixtureSweep.test.jsx`; Kriterium 4
@@ -44,12 +44,12 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
-const CATALOG_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const CATALOG_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const GST_FILE = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const CAT_FILE = 'Vampire Counts (6th definitive edition).cat';
 const PTS = 'ecfa-8486-4f6c-c249';

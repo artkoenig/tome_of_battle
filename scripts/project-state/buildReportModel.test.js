@@ -57,7 +57,7 @@ describe('project-state/buildReportModel', () => {
       baseInput({
         sources: [
           { path: 'src/solver/engine.js', source: 'function solve(a, b) {\n  if (a) return 1;\n  return a && b;\n}\n' },
-          { path: 'src/data/parser/roster.js', source: 'function parse() {\n  return 1;\n}\n' },
+          { path: 'src/platform/battlescribe/roster.js', source: 'function parse() {\n  return 1;\n}\n' },
         ],
       }),
     );

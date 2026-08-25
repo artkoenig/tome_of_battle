@@ -36,7 +36,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import NewRosterModal from '../../../../ui/components/editor/NewRosterModal';
-import { DEFAULT_ROSTER_COST_LIMIT } from '../../../../domain/roster/rosterDefaults';
+import { DEFAULT_ROSTER_COST_LIMIT } from '../../../../contexts/armylist/model/rosterDefaults';
 
 vi.mock('lucide-react', () => ({
   X: () => <span data-testid="icon-x" />,

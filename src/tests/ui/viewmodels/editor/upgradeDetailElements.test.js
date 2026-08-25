@@ -108,7 +108,7 @@ describe('upgradeDetailElementsOf ohne Rahmen', () => {
   it('sucht keine gleichnamige Regel mehr — ein Slot ohne Regelelement hat keinen Detailtext', () => {
     // Den Rueckfall auf die gleichnamige Regel des eigenen Katalogs traegt seit
     // Issue 0173 der Bericht: er steht als `kind: 'rule'` schon in
-    // `infoElements` (`domain/evaluator/infoProjection.namedRuleFallback.test.js`).
+    // `infoElements` (`contexts/ruleengine/engine/infoProjection.namedRuleFallback.test.js`).
     // Die Oberflaeche greift dafuer nicht mehr in den Katalog.
     expect(upgradeDetailElementsOf(capabilityOf({ name: 'Frostblade' }))).toEqual([]);
   });

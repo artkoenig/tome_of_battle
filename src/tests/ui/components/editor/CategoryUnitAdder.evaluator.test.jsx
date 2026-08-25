@@ -42,7 +42,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../tests/test-utils/harnesses/CategoryUnitAdderHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // Der Solver ist mit Issue 0121 geloescht; der fruehere Gift-Stub auf seine
@@ -112,7 +112,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

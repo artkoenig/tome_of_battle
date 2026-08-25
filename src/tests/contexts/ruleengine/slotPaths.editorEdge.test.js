@@ -16,7 +16,7 @@
  *   ueber `RosterEditor` an jede Einheitenkarte weiter; `PlayMode.jsx:29` liest
  *   denselben Hook.
  * - `evaluateAppRoster(system, roster)` — der Rand des **`.ros`-Exports**:
- *   `src/domain/roster/rosterSerialization.js:88` loest darueber Namen und Kosten je
+ *   `src/contexts/armylist/model/rosterSerialization.js:88` loest darueber Namen und Kosten je
  *   Selektion auf.
  *
  * Beide Raender bauen Adapter und `evaluate` heute **getrennt** zusammen. Diese
@@ -108,7 +108,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

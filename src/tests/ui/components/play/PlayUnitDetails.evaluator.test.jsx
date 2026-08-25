@@ -25,7 +25,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { PlayUnitDetailsHarness as PlayUnitDetails } from '../../../../tests/test-utils/editorHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({

@@ -1,4 +1,4 @@
-import { resolveEntry } from '../../../domain/roster';
+import { resolveEntry } from '../../../contexts/armylist/model';
 import { classifyStandaloneOption } from './selectionBehavior.js';
 import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { costBudgetTextsOf } from './costBudgets.js';

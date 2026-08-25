@@ -29,7 +29,7 @@ import { join } from 'node:path';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../tests/test-utils/harnesses/CategoryUnitAdderHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
@@ -40,7 +40,7 @@ vi.mock('../../../../ui/components/editor/BottomSheet', () => ({
   default: ({ isOpen, children }) => (isOpen ? <div data-testid="sheet">{children}</div> : null),
 }));
 
-const FIXTURE_DIR = join(process.cwd(), 'src/domain/evaluator/__fixtures__/whfb6-definitive');
+const FIXTURE_DIR = join(process.cwd(), 'src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const fixture = (fileName) => readFileSync(join(FIXTURE_DIR, fileName), 'utf8');
 
 const GST_FILE = 'Warhammer Fantasy Battles (6th definitive edition).gst';

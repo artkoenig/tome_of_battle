@@ -3,7 +3,7 @@
  * (`src/contexts/ruleengine/acl/rosterAdapter.js`, existiert noch nicht; test-first).
  *
  * Der Adapter uebersetzt das App-Roster (IndexedDB-Modell, `src/shared/rostermodel/types.js`) in
- * den Eingabevertrag der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`,
+ * den Eingabevertrag der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`,
  * `@param roster`) und liefert daneben `pathBySelectionId`: die Zuordnung
  * App-Selection-UUID → Slot-Pfad des Berichts.
  *
@@ -31,7 +31,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (Konvention der

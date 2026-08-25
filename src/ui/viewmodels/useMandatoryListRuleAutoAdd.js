@@ -20,7 +20,7 @@
 
 import { useEffect } from 'react';
 
-import { childSelectionsOf } from '../../domain/roster';
+import { childSelectionsOf } from '../../contexts/armylist/model';
 import { findMissingMandatoryListRules } from '../../contexts/ruleengine/readmodel/index.js';
 import { findCapabilityEntry } from './capabilityEntries';
 import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFactory';

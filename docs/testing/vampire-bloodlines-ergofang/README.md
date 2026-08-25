@@ -9,7 +9,7 @@ Beispiel-Datei** (`Test2.rosz`) verifiziert.
 >
 > | | **Definitive Edition** (`../vampire-bloodlines/`) | **ergofang** (dieses Set) |
 > |---|---|---|
-> | Katalog | `Vampire Counts (6th definitive edition).cat` `4d73-5ab0-9020-403c` (Fixtures der neuen Engine, `src/domain/evaluator/__fixtures__/whfb6-definitive/`) | `Vampire Counts.cat` `ea4b-9294-3427-1fc1` (`src/tests/__fixtures__/whfb6/`) |
+> | Katalog | `Vampire Counts (6th definitive edition).cat` `4d73-5ab0-9020-403c` (Fixtures der neuen Engine, `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`) | `Vampire Counts.cat` `ea4b-9294-3427-1fc1` (`src/tests/__fixtures__/whfb6/`) |
 > | Spielsystem | `0d13-7737-ea86-4662` „6th definitive edition" | `6d8e-38d9-3c69-febf` „Warhammer Fantasy Battle 6th edition" |
 > | Bloodline liegt … | als **eine** Selektion auf **Force-Ebene**, armeeweit | als **Gruppe in jedem Vampir** einzeln |
 > | Kardinalität | min 1 / max 1 je Bloodlines-Selektion (force) | **min 1 UND max 1 je Charakter** (parent) |

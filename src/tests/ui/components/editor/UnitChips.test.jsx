@@ -19,20 +19,20 @@ const mockResolveEntry = vi.fn();
 const mockGroupProfilesByType = vi.fn();
 
 // Die Komponente liest ihre Struktur-Helfer seit Issue 0121, Task 8 aus dem
-// Schreibmodell src/domain/roster/ (Sammel-Modul). Das Prädikat „eigenständige
+// Schreibmodell src/contexts/armylist/model/ (Sammel-Modul). Das Prädikat „eigenständige
 // Untereinheit" und die Schlüsselwortlisten sind ohne eigene Abhängigkeiten —
 // der Mock reicht ihre echte Umsetzung durch, statt sie zu stubben.
-vi.mock('../../../../domain/roster', async () => ({
+vi.mock('../../../../contexts/armylist/model', async () => ({
   collectUnitProfilesAndRules: (...args) => mockCollectUnitProfilesAndRules(...args),
   findEntryInSystem: (...args) => mockFindEntryInSystem(...args),
   resolveEntry: (...args) => mockResolveEntry(...args),
-  isIndependentSubUnit: (await vi.importActual('../../../../domain/roster/subUnit')).isIndependentSubUnit,
+  isIndependentSubUnit: (await vi.importActual('../../../../contexts/armylist/model/subUnit')).isIndependentSubUnit,
   groupProfilesByType: (...args) => mockGroupProfilesByType(...args),
-  ...(await vi.importActual('../../../../domain/roster/constants')),
+  ...(await vi.importActual('../../../../contexts/armylist/model/constants')),
 }));
 
 const mockGetRuleUrl = vi.fn();
-vi.mock('../../../../domain/rules/rulesLookup', () => ({
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 

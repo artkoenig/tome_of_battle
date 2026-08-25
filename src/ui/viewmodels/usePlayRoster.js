@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { saveRoster } from '../../domain/services/rosterStore';
-import { findForceEntryById, childSelectionsOf } from '../../domain/roster';
+import { saveRoster } from '../../contexts/armylist/application/rosterStore';
+import { findForceEntryById, childSelectionsOf } from '../../contexts/armylist/model';
 import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
 import { useRuleUrl } from './useRuleUrl';

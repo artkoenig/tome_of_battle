@@ -2,7 +2,7 @@
 
 Kleine, verbatim übernommene Auszüge aus dem neuen WHFB6-Datensatz
 [lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition](https://github.com/lexicanum-imperialis/Warhammer-Fantasy-Battles-6th-Definitive-edition).
-Sie verankern `src/domain/roster/`-Tests (frueher `src/solver/systemQuirks.test.js`) in **echten** Katalogdaten der
+Sie verankern `src/contexts/armylist/model/`-Tests (frueher `src/solver/systemQuirks.test.js`) in **echten** Katalogdaten der
 neuen `gameSystemId` `0d13-7737-ea86-4662` (ADR-0017), statt in erfundenen IDs.
 
 ## Herkunft
@@ -81,9 +81,9 @@ verdrahten. Driften die hartkodierten IDs von den realen Katalog-IDs ab, schläg
 der Test fehl.
 
 `vampire-selfscope-bloodline.cat.xml` hielt den Selbst-Scope-Fall fuer
-`src/domain/roster/modifierEvaluator.selfScope.test.js` fest — mit Issue 0157 ist jene
+`src/contexts/armylist/model/modifierEvaluator.selfScope.test.js` fest — mit Issue 0157 ist jene
 zweite Auswertung samt Test entfallen; die Regel gilt unveraendert fuer den
-Evaluator (`src/domain/evaluator/query.js`), und der Auszug bleibt als Beleg: Die Engine muss eine
+Evaluator (`src/contexts/ruleengine/engine/query.js`), und der Auszug bleibt als Beleg: Die Engine muss eine
 `instanceOf`-Bedingung, deren `scope` die eigene Entry-ID ist, als Suche im
 eigenen (Effektiv-Kategorie-)Teilbaum auswerten. Ohne diese Auswertung greift
 der Blutlinien-Charakteristik-Modifier nie. Von den **422** `instanceOf`-

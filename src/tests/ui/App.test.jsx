@@ -2,8 +2,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App from '../../ui/App';
-import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from '../../data/db/database';
-import { runSystemMigrations } from '../../data/db/migrations';
+import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from '../../platform/persistence/database';
+import { runSystemMigrations } from '../../platform/persistence/migrations';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -23,7 +23,7 @@ vi.mock('lucide-react', () => ({
 
 
 // Mock DB and Migrations
-vi.mock('../../data/db/database', () => ({
+vi.mock('../../platform/persistence/database', () => ({
   getAllSystems: vi.fn().mockResolvedValue([]),
   getAllRosters: vi.fn().mockResolvedValue([]),
   saveRoster: vi.fn().mockResolvedValue(null),
@@ -33,7 +33,7 @@ vi.mock('../../data/db/database', () => ({
   WHFB6_LINKING_DEFAULT: true,
 }));
 
-vi.mock('../../data/db/migrations', () => ({
+vi.mock('../../platform/persistence/migrations', () => ({
   runSystemMigrations: vi.fn((systems) => Promise.resolve({ systems: systems || [], failures: [] })),
 }));
 

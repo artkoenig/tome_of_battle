@@ -5,11 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
-import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
-import { rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { resolveEntry } from '../../../../contexts/armylist/model/catalogResolver.js';
+import { createSelectionFromDef } from '../../../../contexts/armylist/model/selectionFactory.js';
+import { rootSelectionsOf } from '../../../../contexts/armylist/model/rosterTree.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 import { SlotIndex } from '../../../../contexts/ruleengine/readmodel/slotIndex.js';
 
@@ -60,12 +60,12 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const LEGACY_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const LEGACY_GST = 'Warhammer Fantasy Battle 6th edition.gst';

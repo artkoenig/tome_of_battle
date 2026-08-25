@@ -24,7 +24,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { RosterCategorySectionHarness as RosterCategorySection } from '../../../../tests/test-utils/harnesses/RosterCategorySectionHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
@@ -50,7 +50,7 @@ const getCategoryDisplayLimitsSpy = vi.fn(() => ({
 }));
 const formatConstraintLimitSpy = vi.fn((value) => `POISON${value}`);
 
-vi.mock('../../../../domain/roster', async (importOriginal) => ({
+vi.mock('../../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   getCategoryDisplayLimits: (...args) => getCategoryDisplayLimitsSpy(...args),
   formatConstraintLimit: (...args) => formatConstraintLimitSpy(...args),

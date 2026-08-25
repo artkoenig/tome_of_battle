@@ -15,7 +15,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../../../tests/test-utils/harnesses/AutoFillSuggestionsHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 const GAME_SYSTEM_ID = 'gs-main';
@@ -65,7 +65,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
   </selectionEntries>
 </catalogue>`;
 
-/** App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ForceEditorSectionHarness as ForceEditorSection } from '../../../../tests/test-utils/harnesses/ForceEditorSectionHarness';
 
 
-vi.mock('../../../../domain/roster', () => ({
+vi.mock('../../../../contexts/armylist/model', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),

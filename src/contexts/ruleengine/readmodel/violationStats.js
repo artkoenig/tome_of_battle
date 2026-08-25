@@ -14,7 +14,7 @@
  *
  * @param {{ severity?: string } | null | undefined} violation
  *   eine Verletzung aus dem Bericht der Evaluator-Fassade
- *   (`src/domain/evaluator/evaluator.js`, `violations`).
+ *   (`src/contexts/ruleengine/evaluator.js`, `violations`).
  * @returns {boolean}
  */
 export function isBlockingViolation(violation) {

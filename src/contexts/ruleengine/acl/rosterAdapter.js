@@ -1,7 +1,7 @@
 /**
  * Roster-Adapter (Issue 0121): uebersetzt das App-Roster (IndexedDB-Modell,
  * `src/shared/rostermodel/types.js`) in den Eingabevertrag der Evaluator-Fassade
- * (`src/domain/evaluator/evaluator.js`, `@param roster`) und liefert daneben die
+ * (`src/contexts/ruleengine/evaluator.js`, `@param roster`) und liefert daneben die
  * Zuordnung App-Selection-UUID → Slot-Pfad des Berichts.
  *
  * Abbildungsregeln:
@@ -29,7 +29,7 @@
  *   Budget.
  *
  * `pathBySelectionId` und `pathByForceId` entstehen nach dem Pfad-Schema des
- * Berichts (`@returns` der Fassade, `pathOf` in `src/domain/evaluator/evalTree.js`):
+ * Berichts (`@returns` der Fassade, `pathOf` in `src/contexts/ruleengine/engine/evalTree.js`):
  * der Pfad eines belegten Slots ist die `/`-verkettete Folge der
  * Eingabe-Indizes — `forces[i]` → `"i"`, dessen j-te Selektion → `"i/j"`, usw.
  * Die Indizes bleiben stabil, weil die Engine alle synthetischen Anker nur

@@ -3,10 +3,10 @@
   "name": "multiply-cost-traditional-army",
   "description": "Ein modifier type=\"multiply\" value=\"2\" mit field=\"ecfa-8486-4f6c-c249\" (der pts-Kostenart) VERVIELFACHT die eigene Kostenart des Traegers, statt einen festen Aufschlag zu addieren. Traeger sind die drei Dwarfs-Kriegsmaschinen Gyrocopter (fe43-aa5e-3d37-9772, 140 pts), Organ Gun (b767-3b91-f82d-efb6, 120 pts) und Flame Cannon (6abc-75c5-412f-011d, 140 pts); alle drei tragen denselben Modifikator unter derselben Bedingung atLeast 1 selections scope=force childId=8424-9cb7-d1ca-56fe (\"King Alrik Ranulfsson of Karak-Hirn\") - im Katalogkommentar die Regel \"Traditional Army\", DW1-AB p.53. Da der Modifikator eine KOSTE aendert und keine zaehlende Grenze, wird er ueber das Punktebudget des Rosters gemessen: jede Bauform steht zweimal im Satz, einmal mit costLimit = Summe-1 (die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249 feuert mit der abgeleiteten Summe als actual) und einmal mit costLimit = Summe+1 (dieselbe Bauform bleibt still). Zwei verschiedene Grundkosten werden gelesen, weil 120 und 140 sich zu verschiedenen Zahlen verdoppeln: nur so trennt der Satz eine Multiplikation von einem konstanten Aufschlag. Gyrocopter: 140 ohne Alrik, 280 mit Alrik. Organ Gun: 120 ohne Alrik, 240 mit Alrik. Nicht behauptet werden die hidden-Gatter derselben Eintraege und die force-Grenze 3751-1529-9d9d-46c3 des Sonderhelden.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Dwarfs (2005) (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

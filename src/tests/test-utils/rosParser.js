@@ -26,7 +26,7 @@ const dom = new JSDOM();
  * Die Definitions-Id, unter der eine `<selection>` im Datensatz steht.
  *
  * Setzt die Identitaets-Regel des Fassaden-Vertrags um (JSDoc `@param roster`
- * an `evaluate`, `src/domain/evaluator/evaluator.js` — dort steht auch die
+ * an `evaluate`, `src/contexts/ruleengine/evaluator.js` — dort steht auch die
  * Begruendung): massgeblich ist der **Verweis** (`entryLinkId`), ueber den die
  * Auswahl gesetzt wurde. Fehlt das Attribut oder ist es leer — die Auswahl
  * steht direkt, ohne Verweis —, bleibt es bei `entryId`.

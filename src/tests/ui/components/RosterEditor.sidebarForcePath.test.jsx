@@ -55,7 +55,7 @@ vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn(),
 }));
 

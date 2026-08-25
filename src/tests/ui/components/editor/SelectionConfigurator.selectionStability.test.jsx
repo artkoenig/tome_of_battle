@@ -31,8 +31,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
@@ -44,7 +44,7 @@ vi.mock('lucide-react', () => ({
   BookOpen: () => <span data-testid="icon-book" />,
 }));
 
-vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));

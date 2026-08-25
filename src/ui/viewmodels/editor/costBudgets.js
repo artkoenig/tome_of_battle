@@ -1,4 +1,4 @@
-import { resolveCostTypeLabel } from '../../../domain/roster';
+import { resolveCostTypeLabel } from '../../../contexts/armylist/model';
 
 /**
  * Die kostenbezogenen **Höchst**grenzen eines Slots, die als Budget angezeigt

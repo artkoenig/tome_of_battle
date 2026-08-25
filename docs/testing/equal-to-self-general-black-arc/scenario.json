@@ -3,10 +3,10 @@
   "name": "equal-to-self-general-black-arc",
   "description": "Pinnt den Namens-Modifikator <modifier type=\"append\" value=\"Captain of the Black Arc\" field=\"name\" join=\" \"> der Dark-Elves-Charaktere Highborn (79af-7092-a9a9-393d) und Noble (bd43-41c0-298e-22be) fest. Beide tragen dieselbe conditionGroup type=\"and\" aus (a) <condition type=\"equalTo\" value=\"1\" field=\"selections\" scope=\"self\" childId=\"<eigener General-entryLink>\" shared=\"true\" includeChildSelections=\"true\"> - beim Highborn 7a1e-c134-434e-3313, beim Noble 030a-4b09-0210-225c, beide auf die gst-geteilte Aufwertung \"General\" 1b7c-2c90-6d96-28c9 - und (b) <condition type=\"instanceOf\" value=\"1\" field=\"selections\" scope=\"force\" childId=\"4b5b-aebb-1526-91bb\"> auf das Kontingent \"The Raiding Army (DE-AB)\". Zwei Aussagen: scope=\"self\" zaehlt NUR innerhalb der tragenden Auswahl - ein Geschwister-Charakter im selben Kontingent, der die General-Aufwertung nicht selbst traegt, behaelt seinen Katalognamen -, und equalTo haelt NUR beim genau geschriebenen Zaehlwert 1, nicht bei 0. Ein Zaehlwert ueber 1 ist auf diesen Daten nicht baubar (max 1 scope=\"parent\" a830-88fc-15ba-9584 und max 1 scope=\"force\" fc6d-21e4-3da5-17f9 an 1b7c-2c90-6d96-28c9) - dafuer gibt es deshalb bewusst kein Roster. Vier Roster: General auf dem Highborn, General auf dem Noble (Spiegelbild), gar kein General und derselbe Aufbau im Kontingent \"Standard (DE-AB)\" 26bc-729f-a188-f285, wo die zweite Bedingung der and-Gruppe faellt. Alle Erwartungen sind expect.capabilities[].name (effektiver Anzeigename); die uebrigen Namens-/hidden-Gatter des Highborn (set \"City Commander\" auf forceEntry 77cd-dafb-16af-93c0, set hidden auf 5013-f9f4-e03b-94d5) bleiben in beiden benutzten Kontingenten still.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Dark Elves (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

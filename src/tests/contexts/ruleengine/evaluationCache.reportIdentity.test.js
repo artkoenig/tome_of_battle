@@ -18,12 +18,12 @@ import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
-vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
+vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
   const actual = await importOriginal();
   return { ...actual, evaluate: vi.fn(actual.evaluate) };
 });
 
-import { evaluate } from '../../../domain/evaluator/evaluator.js';
+import { evaluate } from '../../../contexts/ruleengine/evaluator.js';
 import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 

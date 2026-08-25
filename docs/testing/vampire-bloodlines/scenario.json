@@ -3,10 +3,10 @@
   "name": "vampire-bloodlines",
   "description": "Bloodline-Regeln der Vampire Counts (6th Definitive Edition): Pflicht min 1 Bloodline (force-scope) und max 1 Clan je Bloodlines-Gruppe (parent-scope). Sichtbarkeit (hidden) und Profilwerte sind bewusst nicht Teil des Verletzungsberichts und werden daher nicht als feuernde Grenze erwartet.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -2,10 +2,10 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Importer from '../../../ui/components/Importer';
-import { getAllSystems, saveSystem, deleteSystem } from '../../../data/db/database';
-import { extractZipFiles } from '../../../data/parser/zipExtractor';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { collectSchemaWarnings } from '../../../data/parser/importSchemaGate';
+import { getAllSystems, saveSystem, deleteSystem } from '../../../platform/persistence/database';
+import { extractZipFiles } from '../../../platform/battlescribe/zipExtractor';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { collectSchemaWarnings } from '../../../platform/battlescribe/importSchemaGate';
 import JSZip from 'jszip';
 
 // Mock Lucide Icons
@@ -22,19 +22,19 @@ vi.mock('lucide-react', () => ({
 
 
 // Mock database
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   getAllSystems: vi.fn(),
   saveSystem: vi.fn(),
   deleteSystem: vi.fn(),
 }));
 
 // Mock zipExtractor
-vi.mock('../../../data/parser/zipExtractor', () => ({
+vi.mock('../../../platform/battlescribe/zipExtractor', () => ({
   extractZipFiles: vi.fn(),
 }));
 
 // Mock xmlParser
-vi.mock('../../../data/parser/xmlParser', () => ({
+vi.mock('../../../platform/battlescribe/xmlParser', () => ({
   processImportedData: vi.fn(),
 }));
 
@@ -49,7 +49,7 @@ function mockParseResult(system, failedCatalogues = []) {
 // Mock the import schema advisory. These component tests use synthetic/mock file
 // content that is not real BattleScribe XML, so the collector reports no warnings by
 // default; individual tests override it to simulate a schema-flagged import.
-vi.mock('../../../data/parser/importSchemaGate', () => ({
+vi.mock('../../../platform/battlescribe/importSchemaGate', () => ({
   collectSchemaWarnings: vi.fn().mockResolvedValue([]),
 }));
 

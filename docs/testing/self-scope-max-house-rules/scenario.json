@@ -3,10 +3,10 @@
   "name": "self-scope-max-house-rules",
   "description": "Eine max-Grenze mit scope=\"self\" macht die Traeger-Selektion selbst zum Zaehlrahmen: sie deckelt die Auswahlen UNTERHALB genau dieser Selektion, mit includeChildSelections=\"false\" nur deren direkte Kinder. Belegeintrag: \"Allow Mercenaries\" (fda5-49b9-b74c-aaf4, Kind des geteilten Eintrags \"Mercenaries and Regiments of Renown\" 6a7d-7d85-8d7e-cbce in der .gst) traegt zwei Grenzen - max 1 scope=self (714b-5314-33d4-dd68) und max 1 scope=parent (1df9-8159-156a-641f) - und haelt genau zwei direkte Kinder, beide hidden=\"true\": \"House rule: All generic DoW are Special\" (713c-28b1-0861-1ffd) und \"House rule: Category Upgrade\" (698e-c660-5c99-d481). Eine \"Allow Mercenaries\" mit BEIDEN House rules muss 714b mit Ist 2 gegen Grenze 1 feuern lassen, eine mit einer oder keiner nicht. Die parent-skopierte Schwester 1df9 zaehlt etwas anderes (wie viele \"Allow Mercenaries\" unter dem Traeger 6a7d stehen) und bleibt in JEDEM Roster stumm - genau das trennt den self-Rahmen vom parent-Rahmen. Max-Grenzen gelten unabhaengig von der Sichtbarkeit; das hidden=\"true\" der Kinder setzt 714b also nicht aus, und die Sichtbarkeit selbst ist nicht Teil des Verletzungsberichts.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -33,7 +33,7 @@ import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, jeder
 // Aufruf gezaehlt — der Zaehler ist hier Vertragsgegenstand.
-vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
+vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -43,7 +43,7 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
   };
 });
 
-import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate, describeDataset } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
@@ -84,7 +84,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',

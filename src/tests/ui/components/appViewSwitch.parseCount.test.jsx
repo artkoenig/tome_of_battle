@@ -12,7 +12,7 @@
  * Startlauf und Wiedereintritt sind seither getrennte Aufrufe; die Navigation
  * ruft keinen von beiden.
  *
- * `src/data/db/migrations.js` laeuft hier **echt** — nur die IndexedDB und die
+ * `src/platform/persistence/migrations.js` laeuft hier **echt** — nur die IndexedDB und die
  * Bildschirme sind Attrappen.
  */
 
@@ -21,7 +21,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { JSDOM } from 'jsdom';
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   getAllSystems: vi.fn().mockResolvedValue([]),
   getAllRosters: vi.fn().mockResolvedValue([]),
   saveSystem: vi.fn().mockResolvedValue(null),
@@ -33,7 +33,7 @@ vi.mock('../../../data/db/database', () => ({
 }));
 
 // Der echte Parser, aber zaehlbar — der Zaehler ist hier Vertragsgegenstand.
-vi.mock('../../../data/parser/xmlParser', async (importOriginal) => {
+vi.mock('../../../platform/battlescribe/xmlParser', async (importOriginal) => {
   const actual = await importOriginal();
   return { ...actual, processImportedData: vi.fn(actual.processImportedData) };
 });
@@ -49,9 +49,9 @@ vi.mock('../../../ui/components/RosterDashboard', () => ({
 }));
 
 import App from '../../../ui/App';
-import { getAllSystems } from '../../../data/db/database';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { PARSER_VERSION } from '../../../data/parser/parserVersion';
+import { getAllSystems } from '../../../platform/persistence/database';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { PARSER_VERSION } from '../../../platform/battlescribe/parserVersion';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

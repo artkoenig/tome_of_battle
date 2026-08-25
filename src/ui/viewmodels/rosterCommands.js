@@ -14,7 +14,7 @@ import {
   withAddedInstance,
   withoutInstance,
   withChangedOptionCount,
-} from '../../domain/roster';
+} from '../../contexts/armylist/model';
 import { catalogueIdOfForce, catalogueIdContaining, createSelectionFactory } from './rosterSelectionFactory';
 import '../../shared/rostermodel/types.js';
 

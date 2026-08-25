@@ -3,10 +3,10 @@
   "name": "info-projection",
   "description": "Info-Projektion je Slot: jeder Slot des Berichts fuehrt in infoElements die Profile und Regeltexte, die fuer ihn gelten - seine eigenen (profile/rule/infoGroup-Mitglied/infoLink) plus die seiner besetzten Unterauswahlen. Ein Verweis erscheint an der Stelle des Verweises und unter dessen Identitaet (id = infoLink-Id, nicht Ziel-Id), ein infoLink auf eine infoGroup liefert deren Mitglieder statt eines eigenen Eintrags. Werte sind effektiv: Merkmalswerte nach jedem greifenden Merkmals-Modifikator, der Name nach jedem greifenden field=name-Modifikator; der Regeltext ist die woertliche <description>. Wirksam verborgene Elemente (Basis-hidden, ueberschrieben durch einen field=hidden-Modifikator) fehlen - dieser Ausschluss wird per infoElementsAbsent geprueft, ebenso dass ein infoGroup-Verweis keinen eigenen Eintrag bildet und dass die Vererbung nur nach oben laeuft.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

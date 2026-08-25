@@ -3,14 +3,14 @@
   {
    "name": "schichtung-parser-kein-rueckgriff",
    "severity": "error",
-   "from": "src/data/parser/**",
-   "to": "src/ui/components/**"
+   "from": "src/platform/battlescribe/**",
+   "to": "src/ui/**"
   },
   {
    "name": "ableitungen-nur-in-viewmodels",
    "severity": "error",
    "from": "src/ui/components/**",
-   "to": "anzeige-ableitungen"
+   "to": "readmodel-intern"
   },
   {
    "name": "viewmodel-keine-komponente",
@@ -25,76 +25,64 @@
    "to": "src/contexts/ruleengine/**"
   },
   {
-   "name": "komponente-kein-bericht",
-   "severity": "error",
-   "from": "src/ui/components/**",
-   "to": "src/domain/evaluator/**"
-  },
-  {
    "name": "viewmodel-keine-datenschicht",
    "severity": "error",
    "from": "src/ui/viewmodels/**",
-   "to": "daten"
+   "to": "plattform"
   },
   {
    "name": "ui-nicht-auf-daten",
    "severity": "error",
    "from": "src/ui/**",
-   "to": "daten"
+   "to": "plattform"
   },
   {
-   "name": "daten-kein-rueckgriff",
+   "name": "plattform-kein-rueckgriff",
    "severity": "error",
-   "from": "daten",
+   "from": "plattform",
    "to": "src/ui/**"
   },
   {
-   "name": "daten-kein-rueckgriff",
+   "name": "plattform-kein-rueckgriff",
    "severity": "error",
-   "from": "daten",
-   "to": "src/domain/**"
+   "from": "plattform",
+   "to": "kontexte"
   },
   {
    "name": "fachlogik-kein-rueckgriff",
    "severity": "error",
-   "from": "src/domain/**",
+   "from": "kontexte",
    "to": "ui"
   },
   {
    "name": "keine-i18n-unter-ui",
    "severity": "error",
-   "from": "src/domain/**",
+   "from": "kontexte",
    "to": "i18n"
   },
   {
    "name": "keine-i18n-unter-ui",
    "severity": "error",
-   "from": "daten",
+   "from": "plattform",
    "to": "i18n"
   },
   {
    "name": "evaluator-keine-roster-abhaengigkeit",
    "severity": "error",
-   "from": "src/domain/evaluator/**",
-   "to": "src/domain/roster/**"
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/contexts/armylist/**"
   },
   {
    "name": "roster-keine-evaluator-abhaengigkeit",
    "severity": "error",
-   "from": "src/domain/roster/**",
-   "to": "src/domain/evaluator/**"
-  },
-  {
-   "name": "roster-keine-evaluation-abhaengigkeit",
-   "severity": "error",
-   "from": "src/domain/roster/**",
+   "from": "src/contexts/armylist/**",
    "to": "src/contexts/ruleengine/**"
   },
   {
    "name": "evaluation-keine-roster-abhaengigkeit",
    "severity": "error",
    "from": "src/contexts/ruleengine/**",
-   "to": "src/domain/roster/**"
+   "to": "src/shared/rostermodel/**"
   },
   {
    "name": "shared-haengt-an-nichts",
@@ -106,13 +94,13 @@
    "name": "shared-haengt-an-nichts",
    "severity": "error",
    "from": "shared",
-   "to": "daten"
+   "to": "plattform"
   },
   {
    "name": "shared-haengt-an-nichts",
    "severity": "error",
    "from": "shared",
-   "to": "src/domain/**"
+   "to": "kontexte"
   },
   {
    "name": "evaluator-nur-ueber-fassade",
@@ -121,40 +109,34 @@
    "to": "evaluator-intern"
   },
   {
-   "name": "fachlogik-kein-rueckgriff",
+   "name": "lesemodell-nur-ueber-fassade",
    "severity": "error",
-   "from": "kontexte",
-   "to": "ui"
-  },
-  {
-   "name": "keine-i18n-unter-ui",
-   "severity": "error",
-   "from": "kontexte",
-   "to": "i18n"
-  },
-  {
-   "name": "shared-haengt-an-nichts",
-   "severity": "error",
-   "from": "shared",
-   "to": "src/contexts/**"
-  },
-  {
-   "name": "daten-kein-rueckgriff",
-   "severity": "error",
-   "from": "daten",
-   "to": "src/contexts/**"
+   "from": "**",
+   "to": "readmodel-intern"
   },
   {
    "name": "lesemodell-nur-ueber-fassade",
    "severity": "error",
    "from": "**",
-   "to": "src/contexts/ruleengine/readmodel/**"
+   "to": "acl"
   },
   {
-   "name": "lesemodell-nur-ueber-fassade",
+   "name": "kontext-kein-fremder-kontext",
    "severity": "error",
-   "from": "**",
-   "to": "src/contexts/ruleengine/acl/**"
+   "from": "kontexte",
+   "to": "kontexte"
+  },
+  {
+   "name": "kontext-nicht-auf-plattform",
+   "severity": "error",
+   "from": "kontexte",
+   "to": "plattform"
+  },
+  {
+   "name": "nur-die-acl-ruft-die-engine",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/readmodel/**",
+   "to": "evaluator-fassade"
   }
  ],
  "allowed": [
@@ -171,22 +153,94 @@
    "to": "**"
   },
   {
+   "name": "evaluator-fassade-ruft-die-engine",
+   "severity": "error",
+   "from": "evaluator-fassade",
+   "to": "evaluator-intern"
+  },
+  {
    "name": "evaluator-interne-module-unter-sich",
    "severity": "error",
-   "from": "src/domain/evaluator/**",
+   "from": "evaluator-intern",
    "to": "evaluator-intern"
+  },
+  {
+   "name": "acl-kennt-beide-vokabulare",
+   "severity": "error",
+   "from": "acl",
+   "to": "evaluator-fassade"
+  },
+  {
+   "name": "acl-kennt-beide-vokabulare",
+   "severity": "error",
+   "from": "acl",
+   "to": "src/shared/rostermodel/**"
+  },
+  {
+   "name": "acl-interne-module-unter-sich",
+   "severity": "error",
+   "from": "acl",
+   "to": "acl"
+  },
+  {
+   "name": "acl-darf-das-lesemodell-nutzen",
+   "severity": "error",
+   "from": "acl",
+   "to": "readmodel-intern"
   },
   {
    "name": "lesemodell-die-eine-tuer",
    "severity": "error",
    "from": "**",
-   "to": "src/contexts/ruleengine/readmodel/index.js"
+   "to": "readmodel-fassade"
   },
   {
    "name": "lesemodell-interne-module-unter-sich",
    "severity": "error",
-   "from": "src/contexts/ruleengine/**",
-   "to": "src/contexts/ruleengine/**"
+   "from": "readmodel-fassade",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-interne-module-unter-sich",
+   "severity": "error",
+   "from": "readmodel-intern",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-darf-die-acl-nutzen",
+   "severity": "error",
+   "from": "readmodel-fassade",
+   "to": "acl"
+  },
+  {
+   "name": "lesemodell-darf-die-acl-nutzen",
+   "severity": "error",
+   "from": "readmodel-intern",
+   "to": "acl"
+  },
+  {
+   "name": "kontext-intern-armylist",
+   "severity": "error",
+   "from": "src/contexts/armylist/**",
+   "to": "src/contexts/armylist/**"
+  },
+  {
+   "name": "kontext-intern-catalog",
+   "severity": "error",
+   "from": "src/contexts/catalog/**",
+   "to": "src/contexts/catalog/**"
+  },
+  {
+   "name": "kontext-intern-rulebook",
+   "severity": "error",
+   "from": "src/contexts/rulebook/**",
+   "to": "src/contexts/rulebook/**"
+  },
+  {
+   "name": "nur-die-ports-erreichen-die-plattform",
+   "severity": "error",
+   "from": "src/contexts/*/ports/**",
+   "to": "plattform"
   }
  ]
 }

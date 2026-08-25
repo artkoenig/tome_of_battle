@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { findForceEntryById, childSelectionsOf } from '../../../domain/roster';
+import { findForceEntryById, childSelectionsOf } from '../../../contexts/armylist/model';
 import { armyWideSelectorSlotsOf, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { useRosterReport } from '../rosterContexts';

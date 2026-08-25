@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { describeSystem, costLimitLabelOf } from '../../contexts/ruleengine/readmodel/index.js';
-import { DEFAULT_ROSTER_COST_LIMIT } from '../../domain/roster/rosterDefaults';
+import { DEFAULT_ROSTER_COST_LIMIT } from '../../contexts/armylist/model/rosterDefaults';
 
 /**
  * ViewModel des Modals „Neue Armeeliste" (ADR-0038).

@@ -4,7 +4,7 @@
  *
  * Welche Listenregeln §9.9 einem frischen Kontingent ohne jede Nutzerwahl
  * mitgibt, entschied bislang ein zweiter Katalog-Durchlauf
- * (`src/domain/roster/listRules.js`): Wurzel-Pools, `min`-Constraints mit
+ * (`src/contexts/armylist/model/listRules.js`): Wurzel-Pools, `min`-Constraints mit
  * geschriebenem `scope`, Modifikatoren und die `hidden`-Auswertung, alles noch
  * einmal neben dem Evaluator. Der Bericht beantwortet dieselbe Frage bereits:
  * er zaehlt unter dem Kontingent genau die Definitionen auf, die dort

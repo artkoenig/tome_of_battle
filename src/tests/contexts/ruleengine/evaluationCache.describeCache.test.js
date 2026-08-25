@@ -33,7 +33,7 @@ import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, jeder
 // Aufruf gezaehlt — der Zaehler ist hier Vertragsgegenstand.
-vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
+vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -43,7 +43,7 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
   };
 });
 
-import { describeDataset } from '../../../domain/evaluator/evaluator.js';
+import { describeDataset } from '../../../contexts/ruleengine/evaluator.js';
 import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 

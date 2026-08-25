@@ -62,7 +62,7 @@ describe('project-state/gates', () => {
       // Ein Pruefbefund, der die Worte "not found" ueber einen Pfad sagt, ist kein
       // Umgebungsabbruch. Ihn als "nicht geprueft" zu zeigen waere der schlimmste
       // Fehler dieser Seite: ein rotes Gate, das als abwesend erscheint.
-      const run = { exitCode: 1, output: 'src/domain/roster/index.js: not found in the report' };
+      const run = { exitCode: 1, output: 'src/contexts/armylist/model/index.js: not found in the report' };
       expect(classifyGate(run)).toEqual({ status: GateStatus.Findings, abortReason: null });
     });
 

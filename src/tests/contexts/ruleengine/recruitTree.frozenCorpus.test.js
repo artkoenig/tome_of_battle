@@ -1,10 +1,10 @@
 import { describe, test, expect, beforeAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { processImportedData } from '../../../data/parser/xmlParser.js';
-import { resolveEntry } from '../../../domain/roster/catalogResolver.js';
-import { createSelectionFromDef } from '../../../domain/roster/selectionFactory.js';
-import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser.js';
+import { resolveEntry } from '../../../contexts/armylist/model/catalogResolver.js';
+import { createSelectionFromDef } from '../../../contexts/armylist/model/selectionFactory.js';
+import { prepareDataset, evaluate } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex.js';
 import EXPECTED_TREES from '../../../contexts/ruleengine/readmodel/__fixtures__/recruit-trees-pre-0157.json';
@@ -26,7 +26,7 @@ import EXPECTED_TREES from '../../../contexts/ruleengine/readmodel/__fixtures__/
  * Slot der Einheit darin suchen und seine `raiseMembers` der Fabrik geben.
  */
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const LEGACY_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const LEGACY_GST = 'Warhammer Fantasy Battle 6th edition.gst';

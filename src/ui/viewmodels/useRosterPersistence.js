@@ -10,7 +10,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { syncRosterSelectionsWithSystem } from '../../domain/roster';
+import { syncRosterSelectionsWithSystem } from '../../contexts/armylist/model';
 import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,

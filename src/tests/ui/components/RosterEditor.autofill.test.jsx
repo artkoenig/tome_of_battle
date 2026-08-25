@@ -42,7 +42,7 @@ import RosterEditor from '../../../ui/components/RosterEditor';
 
 // Nachbarn ohne Anteil an der Frage — der Pfad Roster → Bericht → Lücke →
 // Panel bleibt vollständig echt.
-vi.mock('../../../data/db/database', () => ({ saveRoster: vi.fn() }));
+vi.mock('../../../platform/persistence/database', () => ({ saveRoster: vi.fn() }));
 vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));

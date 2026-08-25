@@ -42,7 +42,7 @@ Wirkungspfad, und ein `modifier` legt insbesondere **nie** eine Grenze an
 ### Wie das Fehlen des Ziels geprueft wurde
 
 Volltextsuche nach der Zeichenfolge `ce6e` ueber **alle fuenf** Dateien des
-eingefrorenen Korpus `src/domain/evaluator/__fixtures__/whfb6-definitive/`
+eingefrorenen Korpus `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`
 (`.gst` + `Orcs and goblins` + `Mercenaries` + `Ogre Kingdoms` + `Vampire Counts`)
 sowie ueber das ganze Repository:
 

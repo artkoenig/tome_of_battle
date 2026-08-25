@@ -5,7 +5,7 @@
  * Beide Fragen des Editors — „ist diese Kategorie-Sektion eine Ankreuzliste
  * statt einer Einheiten-Liste?" und „welche Regeln stehen darin, und welche
  * davon sind angehakt?" — beantworteten bislang ein zweiter Katalog-Durchlauf
- * (`src/domain/roster/listRules.js`, Modifikatoren und Grenzen inbegriffen). Sie
+ * (`src/contexts/armylist/model/listRules.js`, Modifikatoren und Grenzen inbegriffen). Sie
  * stehen aber alle im Bericht: welche Definitionen die Kategorie unter diesem
  * Kontingent anbietet (dieselbe Aufzählung, aus der der Aushebe-Dialog seine
  * Kandidaten liest), welche davon Listenregeln sind (`isListRule`), welche eine

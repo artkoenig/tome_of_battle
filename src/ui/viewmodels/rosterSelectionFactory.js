@@ -14,7 +14,7 @@ import {
   resolveEntry,
   findForceContainingSelection,
   createSelectionFromDef as buildSelectionFromDef,
-} from '../../domain/roster';
+} from '../../contexts/armylist/model';
 import '../../shared/rostermodel/types.js';
 
 /**

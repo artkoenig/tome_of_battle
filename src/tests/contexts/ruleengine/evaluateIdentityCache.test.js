@@ -15,7 +15,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 
-import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 const dom = new JSDOM();

@@ -3,7 +3,7 @@ import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
 } from './persistenceFailure';
-import { createInitialGameState } from '../../domain/roster/rosterDefaults';
+import { createInitialGameState } from '../../contexts/armylist/model/rosterDefaults';
 import '../../shared/rostermodel/types.js';
 
 /**

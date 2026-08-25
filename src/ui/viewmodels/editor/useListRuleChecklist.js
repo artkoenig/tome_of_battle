@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf } from '../../../domain/roster';
+import { childSelectionsOf } from '../../../contexts/armylist/model';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { EMPTY_SLOT_INDEX, resolveListRuleGroupFromReport } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';

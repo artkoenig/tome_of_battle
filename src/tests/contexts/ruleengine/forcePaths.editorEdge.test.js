@@ -17,7 +17,7 @@
  * - `useEvaluation(system, roster)` — Rand des Editors (`src/ui/viewmodels/useRosterState.js`
  *   → `RosterEditor` → `ForceEditorSection`);
  * - `evaluateAppRoster(system, roster)` — Rand des `.ros`-Exports
- *   (`src/domain/roster/rosterSerialization.js`).
+ *   (`src/contexts/armylist/model/rosterSerialization.js`).
  *
  * Sollverhalten:
  * 1. Der Pfad, unter dem die Oberflaeche die Slots eines Kontingents sucht, ist

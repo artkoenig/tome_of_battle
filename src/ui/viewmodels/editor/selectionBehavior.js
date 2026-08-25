@@ -6,7 +6,7 @@ import '../../../shared/rostermodel/types.js';
  * Liegt in der Oberflächen-Schicht, weil es genau dort gebraucht wird: es
  * klassifiziert **Anzeige**-Verhalten aus den Werten, die der Bericht schon
  * gemessen hat. Die Katalog-Lesungen derselben Fragen leben nur noch einmal,
- * im Bericht (`src/domain/evaluator/groupBehavior.js`, ADR-0034).
+ * im Bericht (`groupBehavior.js` der Engine, ADR-0034).
  *
  * Der Aushebe-Dialog leitet seine Verfügbarkeit bereits aus dem Validator ab
  * (`getEntryAddAvailability`). Dieses Modul weitet dasselbe Prinzip auf die

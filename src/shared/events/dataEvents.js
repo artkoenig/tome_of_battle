@@ -9,7 +9,7 @@
  * Ort für die Benachrichtigung: dieses Modul.
  *
  * Vertrag:
- * - Jeder **schreibende** Aufruf von `src/domain/services/` meldet seinen Abschluss
+ * - Jeder **schreibende** Aufruf einer `application`-Schicht meldet seinen Abschluss
  *   hier, und zwar erst nachdem die Persistenz zugesagt hat. Ein Fehlschlag
  *   meldet nichts.
  * - Ein Verbraucher abonniert mit `subscribeToDataChanges` und bekommt die
@@ -50,7 +50,7 @@ const listeners = new Set();
 
 /**
  * Meldet einen abgeschlossenen Schreibvorgang an alle Abonnenten.
- * Nur `src/domain/services/` ruft das auf.
+ * Nur die `application`-Schichten der Kontexte rufen das auf.
  *
  * @param {DataChangeEvent} event
  */

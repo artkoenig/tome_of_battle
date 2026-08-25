@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import useAppData from '../../../ui/viewmodels/useAppData';
-import { getAllSystems, getAllRosters } from '../../../data/db/database';
-import { runSystemMigrations } from '../../../data/db/migrations';
+import { getAllSystems, getAllRosters } from '../../../platform/persistence/database';
+import { runSystemMigrations } from '../../../platform/persistence/migrations';
 import { VIEWS } from '../../../ui/constants/views';
 import { DATA_EVENT, emitDataChange } from '../../../shared/events/dataEvents';
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   getAllSystems: vi.fn(),
   getAllRosters: vi.fn(),
 }));
 
-vi.mock('../../../data/db/migrations', () => ({
+vi.mock('../../../platform/persistence/migrations', () => ({
   runSystemMigrations: vi.fn(),
 }));
 
-vi.mock('../../../data/db/catalogUpdate', () => ({
+vi.mock('../../../platform/persistence/catalogUpdate', () => ({
   fetchCatalogText: vi.fn(),
 }));
 
@@ -125,7 +125,7 @@ describe('useAppData — Neuladen', () => {
 });
 
 // Issue 0167 / ADR-0037: `useAppData` ist die eine Stelle, an der der
-// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über `src/domain/services/`
+// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über eine `application`-Schicht
 // geschrieben wurde, steht danach in der Liste — ohne Navigationswechsel und
 // ohne zweites Lesen aus der DB.
 describe('useAppData — Änderungs-Kanal der Datenschicht', () => {

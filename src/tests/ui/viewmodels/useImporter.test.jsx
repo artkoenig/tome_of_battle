@@ -21,14 +21,14 @@ const loadAvailableSystemsFromSources = vi.fn();
 const completeSystemImport = vi.fn();
 const deleteSystem = vi.fn();
 
-vi.mock('../../../data/db/catalogSourceIndex', () => ({
+vi.mock('../../../platform/persistence/catalogSourceIndex', () => ({
   loadAvailableSystemsFromSources: (...args) => loadAvailableSystemsFromSources(...args),
 }));
-vi.mock('../../../data/db/systemImport', () => ({
+vi.mock('../../../platform/persistence/systemImport', () => ({
   completeSystemImport: (...args) => completeSystemImport(...args),
   SYSTEM_IMPORT_STATUS: { COMPLETED: 'completed', MISSING_LIBRARY_DEPENDENCIES: 'missing-library-dependencies' },
 }));
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   deleteSystem: (...args) => deleteSystem(...args),
 }));
 

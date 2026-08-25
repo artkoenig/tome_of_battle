@@ -3,7 +3,11 @@
 - **Status:** Accepted; die Schichttabelle unten ist durch
   [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt — `src/data/services/`
   und `src/data/rules/` sind seitdem `src/domain/services/` und `src/domain/rules/`, Teil der
-  Fachlogik statt der Daten-Schicht
+  Fachlogik statt der Daten-Schicht. Die **Verzeichnisnamen** dieses ADR sind seit
+  [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) überholt:
+  `src/domain/` und `src/data/` gibt es nicht mehr, an ihrer Stelle stehen `src/contexts/`,
+  `src/platform/` und `src/shared/`. Die geprüfte Richtung UI → Fachlogik → Daten gilt
+  unverändert weiter, nur unter den neuen Namen
 - **Datum:** 2026-08-20
 - **Beteiligte:** Projektinhaber, Architektur-Review
 - **Zugehörige ADRs:** ergänzt ADR-0030 (Reinraum-Trennung) und ADR-0034 (Bericht als

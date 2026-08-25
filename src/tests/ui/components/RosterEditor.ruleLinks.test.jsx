@@ -66,14 +66,14 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
   }),
 }));
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn(),
 }));
 
 // Only the rules engine is stubbed; the roster-tree primitives that the barrel
 // re-exports stay real, since they are pure traversal without any rules in them
-// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/domain/roster/).
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/contexts/armylist/model/).
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 1 : 5),

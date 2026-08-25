@@ -34,7 +34,7 @@
  *   (fehlende oder leere `.gst`-Liste) → `null`.
  */
 
-import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate, describeDataset } from '../evaluator.js';
 import { toEvaluatorRoster, slotPathsOf } from './rosterAdapter.js';
 import { SlotIndex, EMPTY_SLOT_INDEX } from '../readmodel/slotIndex.js';
 

@@ -24,8 +24,8 @@ import path from 'node:path';
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../tests/test-utils/editorHarness';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
@@ -48,7 +48,7 @@ vi.mock('../../../../ui/components/editor/UnitChips', () => ({
   UnitRulesChips: () => null,
 }));
 
-const CATALOG_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const CATALOG_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const GST_FILE = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const CAT_FILE = 'Vampire Counts (6th definitive edition).cat';
 

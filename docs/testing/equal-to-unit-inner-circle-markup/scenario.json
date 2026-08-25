@@ -3,10 +3,10 @@
   "name": "equal-to-unit-inner-circle-markup",
   "description": "Pinnt die beiden <condition type=\"equalTo\" field=\"selections\" scope=\"unit\" childId=\"6e1d-9e41-114f-8128\"> am entryLink 'Knights of the Blazing Sun' f711-222f-99ff-5e01 (Ziel dfad-d77b-9156-e917) fest. Beide Bedingungen gatten je einen 'increment' auf die pts-Kostenart ecfa-8486-4f6c-c249, der per <repeat scope=\"unit\" childId=\"7b8d-8405-0e74-9f46\"> einmal je Ritter-Modell der umschliessenden Einheit greift: value=\"0\" schaltet 3 pts je Ritter frei, value=\"1\" dagegen 5 pts je Ritter. Der Zaehlrahmen ist die umschliessende Einheit 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f; gezaehlt wird die in childId benannte Aufwertung 'Knights of the Inner Circle' (entryLink 6e1d-9e41-114f-8128 -> selectionEntry 2cbd-fee0-a336-0e5d). Fuenf Roster: ohne Inner Circle (equalTo 0 haelt, 130), mit genau einem (equalTo 1 haelt, 155), mit dem GESCHWISTER-Link 'Knights of the Inner Circle (White Wolf)' 8229-6f9b-ba74-c239 -> 12c2-2826-c92f-4930 (nicht benannt, also haelt weiter equalTo 0, 145), eine Kontrolle ohne Orden, die den Eigenaufschlag des Inner Circle isoliert (130), und ein Rahmenbeweis mit zwei Regimentern, bei dem der Inner Circle in der ANDEREN Einheit steht (338, nicht 348). Ein Zaehlwert ueber 1 ist im unit-Rahmen nicht baubar (max 1 scope=\"parent\" 5454-b1cf-abc3-042a am Link plus max 1 scope=\"force\" abd1-90ab-2b66-ecff am Ziel) — dafuer gibt es deshalb bewusst kein Roster. Beobachtbar gemacht werden die Summen ueber die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249; das Punktelimit steht je Roster eine Einheit unter der korrekten Summe. Das hidden-Gatter des Blazing-Sun-Links (instanceOf force 6b0d-2c9f-2d46-b330 = 'Army of Middenland (SoC)') bleibt im Kontingent 'Standard (EM-AB)' e821-88b8-2071-6b6a geschlossen, und die force-skopierte Obergrenze der Einheit 2943-aa1c-4532-4fb2 (max 0) ist dort per set -1 aufgehoben.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -13,7 +13,7 @@ import { useRosterEditor } from '../../../ui/viewmodels/useRosterEditor';
  * pinned by `useRosterState.test.js`, not again here.
  */
 
-vi.mock('../../../data/db/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../../../platform/persistence/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
 // Der Regel-Kanal haengt am globalen whfb6-Schalter (ADR-0015). Er hat hier
 // keinen Provider ueber sich, also steht er wie in der App ohne Verknuepfung.
 vi.mock('../../../ui/viewmodels/SettingsContext', () => ({

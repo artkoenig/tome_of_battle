@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { saveRoster, deleteRoster } from '../../domain/services/rosterStore';
-import { readRosterText, buildRosterFile } from '../../domain/services/rosterTransfer';
+import { saveRoster, deleteRoster } from '../../contexts/armylist/application/rosterStore';
+import { readRosterText, buildRosterFile } from '../../contexts/armylist/application/rosterTransfer';
 import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
-} from '../../domain/roster/rosterSerialization';
-import { buildRoster } from '../../domain/roster/createRoster';
+} from '../../contexts/armylist/model/rosterSerialization';
+import { buildRoster } from '../../contexts/armylist/model/createRoster';
 import { evaluateAppRoster } from '../../contexts/ruleengine/readmodel/index.js';
 import { VIEWS } from '../../ui/constants/views';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../domain/roster';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../contexts/armylist/model';
 import { t } from '../i18n/i18nStore';
 
 /**

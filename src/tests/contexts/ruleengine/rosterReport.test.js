@@ -4,8 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 import { useRosterReportModel } from '../../../contexts/ruleengine/readmodel/rosterReport';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { buildRoster } from '../../../domain/roster/createRoster';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
  * Issue 0162, AC5 — der Bericht, den der Bericht-Kontext aus ADR-0038
@@ -18,7 +18,7 @@ import { buildRoster } from '../../../domain/roster/createRoster';
  * die des Produktionspfades, nicht die eines Leer-Ergebnisses.
  */
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const VAMPIRE_COUNTS_CAT = 'Vampire Counts (6th definitive edition).cat';
 

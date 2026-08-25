@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { resolveCostLimitTypeId, resolveCostLimitLabel } from '../../../domain/roster';
+import { resolveCostLimitTypeId, resolveCostLimitLabel } from '../../../contexts/armylist/model';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 import { buildSections } from './configuratorSections.js';
 import { findSelectionById } from './optionRowDerivations.js';

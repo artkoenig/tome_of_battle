@@ -3,10 +3,10 @@
   "name": "set-hidden-force-gate",
   "description": "Kontingent-gegatterte Sichtbarkeit via modifier type=\"set\" field=\"hidden\" (6th Definitive Edition): Die Aufwertung \"Scouts\" (ff2c-a7c6-4cab-b0fd, Basis hidden=\"true\") unter der Einheit \"Dire Wolves\" traegt einen set hidden=false-Modifikator, dessen einzige Bedingung eine instanceOf-Pruefung auf das forceEntry \"Army of Sylvania (SoC)\" (4072-c3b8-84c4-a097, scope=force) ist. Haelt die Bedingung, ersetzt der Modifikator das hidden-Flag exakt durch false (Scouts sichtbar); haelt sie nicht, bleibt der Basiswert hidden=\"true\" (Scouts verborgen). Zwei bis auf die Kontingent-entryId identische Roster pinnen beide Zweige ueber expect.capabilities[].isHidden am nicht gewaehlten Scouts-Slot (offerAnchor); zaehlende Grenzen sind nicht Gegenstand dieses Szenarios.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

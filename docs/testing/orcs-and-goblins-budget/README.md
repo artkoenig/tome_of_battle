@@ -3,7 +3,7 @@
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln sind
 **aus den Katalogdaten** der *6th Definitive Edition* abgeleitet — nicht aus einem
 Engine-Lauf. Die Erwartungswerte wurden über den manifest-getriebenen Runner
-(`src/domain/evaluator/e2e.testcatalog.test.js`) bestätigt.
+(`src/contexts/ruleengine/engine/e2e.testcatalog.test.js`) bestätigt.
 
 Das Roster stellt sein Punktebudget je Kostenart über einen `<costLimits>`-Block
 am `<roster>`-Wurzelelement ein:

@@ -3,10 +3,10 @@
   "name": "roster-scope-mandatory-chariot",
   "description": "Orcs and Goblins (6th Definitive Edition): Das Reittier 'Chariot' des Orc Bigboss traegt die Merkmals-Kategorie 'orc needs chariot' (a85e-af08-5fea-41bd). Die roster-skopierte Untergrenze der Einheit 'Orc Boar Chariot' (geschriebener Wert 0) wird per wiederholtem increment-Modifier je armeeweit gezaehlter Merkmals-Selektion um 1 angehoben. Ohne beritten-Charakter bleibt sie 0 und feuert nicht; je berittenem Charakter steigt sie um 1 und feuert, solange nicht ebenso viele Streitwagen-Einheiten in der Liste stehen. Die Geschwister-Konstrukte an der ausgeblendeten Einheit 'Savage Orc Boar Chariot' und an dem nirgends verlinkten shared entry 'Orc Boar Chariot' sind bewusst als NICHT feuernd erwartet (Verfuegbarkeit statt Zaehlung).",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

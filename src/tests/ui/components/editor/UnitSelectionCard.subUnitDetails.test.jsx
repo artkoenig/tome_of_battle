@@ -57,15 +57,15 @@ const SUB_UNIT_ENTRY = { type: 'unit', collective: false, selectionEntries: [{ i
 
 const mockResolveEntry = vi.fn();
 
-vi.mock('../../../../domain/roster', async () => ({
+vi.mock('../../../../contexts/armylist/model', async () => ({
   collectUnitProfilesAndRules: () => ({ profiles: [], rules: [] }),
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
   resolveEntry: (...args) => mockResolveEntry(...args),
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../../../domain/roster/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../../../domain/roster/rosterTree')).childSelectionsOf,
-  groupProfilesByType: (await vi.importActual('../../../../domain/roster/profileGrouping')).groupProfilesByType,
-  ...(await vi.importActual('../../../../domain/roster/constants')),
+  isIndependentSubUnit: (await vi.importActual('../../../../contexts/armylist/model/subUnit')).isIndependentSubUnit,
+  childSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).childSelectionsOf,
+  groupProfilesByType: (await vi.importActual('../../../../contexts/armylist/model/profileGrouping')).groupProfilesByType,
+  ...(await vi.importActual('../../../../contexts/armylist/model/constants')),
 }));
 
 const CHARIOT_PROFILE = {

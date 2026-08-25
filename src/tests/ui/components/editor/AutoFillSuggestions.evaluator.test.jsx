@@ -83,7 +83,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../../../tests/test-utils/harnesses/AutoFillSuggestionsHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // `lucide-react` wird hier bewusst NICHT gemockt: welche Symbole die neue
@@ -330,7 +330,7 @@ function originRoster() {
   };
 }
 
-/** App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem(catalogueXml = CATALOGUE_XML) {
   return {
     id: 'system-uuid',

@@ -32,7 +32,7 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../tests/test-utils/harnesses/CategoryUnitAdderHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
@@ -128,7 +128,7 @@ const LIBRARY_CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
 /**
  * Das App-System-Objekt: rohe XMLs plus die Katalog-Metadaten, an denen die
  * Oberflaeche Bibliothek von Armeebuch unterscheidet (Shape aus
- * `src/data/parser/xmlParser.js` / `src/data/db/systemImport.js`).
+ * `src/platform/battlescribe/xmlParser.js` / `src/platform/persistence/systemImport.js`).
  */
 function appSystem() {
   return {

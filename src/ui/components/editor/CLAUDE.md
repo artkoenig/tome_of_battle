@@ -15,7 +15,7 @@ display (`ListRuleChecklist`, `ValidationCauses`, `ValidationMessage`,
 - Test titles (the `describe`/`it` strings) are German; code comments are
   English.
 - A case that pins already-correct, existing behaviour as a regression guard is
-  marked `KONTROLLE:` in its title, same convention as `src/domain/evaluator/CLAUDE.md`.
+  marked `KONTROLLE:` in its title, same convention as the evaluator engine's own `CLAUDE.md`.
 - Naming: `<Component>.test.jsx` for a component's own baseline tests;
   `<Component>.<topic>.test.jsx` for a case that isolates one topic (e.g.
   `OptionGroup.groupConstraints.regression.test.jsx`,
@@ -143,7 +143,7 @@ than reparsed per case (see
 
 A fixture sweep (`*.fixtureSweep.test.jsx`) renders and fully expands every
 `type="unit"` entry of the six catalogues under
-`src/domain/evaluator/__fixtures__/whfb6-definitive/` and `src/tests/__fixtures__/whfb6/`
+the engine's `__fixtures__/whfb6-definitive/` and `src/tests/__fixtures__/whfb6/`
 (208 cards) once in a shared `beforeAll`, so each `test` reads an independent
 assertion off the same collected data — no `test` re-renders. A new measurement
 belongs in its own `*.fixtureSweep.test.jsx` file copying the harness rather

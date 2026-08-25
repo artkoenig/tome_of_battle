@@ -3,7 +3,7 @@
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Alle Regeln, IDs und
 Erwartungswerte sind **ausschließlich** aus den Katalogdaten der *6th Definitive
 Edition*, aus [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md)
-(§7.7, §8) und aus der vendorten [`Catalogue.xsd`](../../../src/data/parser/schema/Catalogue.xsd)
+(§7.7, §8) und aus der vendorten [`Catalogue.xsd`](../../../src/platform/battlescribe/schema/Catalogue.xsd)
 abgeleitet; die Roster-Gestalt ist an den bereits verifizierten Szenarien
 nachgebildet (direktes `entryId` beim Wurzeleintrag, `entryLinkId=""` dort,
 `entryLinkId="<Link-Id>"` bei Verweis-Slots, verschachtelte `selections` mit
@@ -254,4 +254,4 @@ wegzudefinieren. Die erwartungsgemäß heiklen Stellen:
 | *Chaos Armour\** (Roster 02; von „Chosen" freigeschaltet) | Link `a969-18a8-f7a2-1ed4` → `91d4-774c-6c6c-fba3` (Z. 7468); Link-`min` `b72c-0388-8010-ce40` (Basis 0, per `modifierGroup` auf 1), Ziel-`max 1` `0d5e-788f-dcad-d20f` |
 | Kategorie *Rare* (primär an der Einheit; Force-Grenze bei 2000 pts = 2) | `e94b-6a54-8779-cd60` (Link an der Einheit `6725-e253-28c2-af97`) — Grenze `0a44-2d3f-adfe-f3a1` (`.gst` Z. 546, Modifikator Z. 589) |
 | Kostenart „pts" (`costLimit` 2000 in beiden Rostern) | `ecfa-8486-4f6c-c249` |
-| XSD-Beleg für die vendorten Konstrukte | `src/data/parser/schema/Catalogue.xsd` Z. 492 (`join`) und Z. 518 (`prepend`) |
+| XSD-Beleg für die vendorten Konstrukte | `src/platform/battlescribe/schema/Catalogue.xsd` Z. 492 (`join`) und Z. 518 (`prepend`) |

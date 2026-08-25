@@ -17,10 +17,10 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   toggle) moved here from the one-file `src/ui/contexts/`, which is gone with it. There is no
   `src/ui/hooks/` and no `src/ui/contexts/`; `App.jsx` imports them from
   `./viewmodels/`. The layer takes small mechanics as well (`useBottomSheet` is the precedent).
-- The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
+- The suite doc is `CLAUDE.md` here: English test titles (unlike `src/contexts/*`), `useX.test.js` /
   `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
 - `useAppData.js` is the **only** subscriber of the facade's change channel
-  (`src/shared/events/dataEvents.js`): a write through `src/domain/services/` announces itself
+  (`src/shared/events/dataEvents.js`): a write through `src/contexts/*/application/` announces itself
   there and the one roster list follows. A screen that wants to see a foreign save subscribes
   nowhere.
 - `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
@@ -29,7 +29,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   Hanging the start run off a repeating event re-parses every stored catalogue and drops the
   evaluation cache with it.
 - `describeRosterFileError` in `useRosterList.js` is the only place that turns a `messageKey`/
-  `messageParams`/`detail` error from `src/domain/roster/` or `src/domain/services/` into text.
+  `messageParams`/`detail` error from `src/contexts/armylist/model/` or `src/contexts/*/application/` into text.
 
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
   bundles split by how often they change. The flat view `useRoster` is gone
@@ -55,15 +55,15 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   unmocked `resolveEntry`/`createSelectionFromDef`, the real evaluation — loads its fixture with
   `fs.readFileSync` + `processImportedData` and builds the roster with `buildRoster`; nothing about
   roster or catalogue is hand-built. `costedMandatoryAutoAdd` is synthetic-but-shape-faithful,
-  `nestedMandatoryGroups` reads `src/domain/evaluator/__fixtures__/whfb6-definitive/`.
-  Test titles here are English, unlike `src/domain/*`.
+  `nestedMandatoryGroups` reads `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`.
+  Test titles here are English, unlike `src/contexts/*`.
 - `isFreshRoster` (the node's fifth argument) gates the automatic mandatory list-rule addition
   (Issue 0138/0140, §9.9): omit it or pass `false` to keep that effect out of a case about
   `addUnit` or another seam, pass `true` only where the fresh-roster auto-add is the point.
 - `commands.addUnit(entry, categoryId, targetForceId?)` is the recruitment call the dialog makes.
   A case that measures what recruiting produces calls it inside `act(...)` and reads
   `result.current.roster.forces[0].selections`, never a lower-level factory (that is
-  `src/domain/roster`).
+  `src/contexts/armylist/model`).
 - Proving "does not render again" needs a `memo`-wrapped consumer; without it the consumer
   re-renders because its parent did and the test proves nothing.
 - `rosterContexts.jsx` passes `commands` through **unchanged**; only the report context memoizes
@@ -78,10 +78,10 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   so it fails `forge-lint`) — every effect and every memo of a screen lives here.
   Adding an override for a components path there means repeating the evaluator-facade `patterns`
   block: oxlint replaces a rule's config per override rather than merging it.
-- A ViewModel may **not** import `src/data/db/` or `src/data/parser/`: `viewmodel-keine-datenschicht` is
+- A ViewModel may **not** import `src/platform/persistence/` or `src/platform/battlescribe/`: `viewmodel-keine-datenschicht` is
   an `error` and fails `forge-lint`, and since Issue 0167 without any exception — the three
   shell ViewModels `useRosterEditor`, `usePlayRoster` and `useImporter` run through
-  `src/domain/services/` like everything else.
+  `src/contexts/*/application/` like everything else.
 - `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`) is an `error` too, so the "never
   import a component" rule above is machine-checked rather than a convention.
 - Text goes through `useTranslation()` here, not the bare `t` of `i18nStore`: a `useMemo` that
@@ -118,10 +118,10 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   looks a rule up by its name** — neither the old name-*similarity* (substring,
   last-ten-characters, a hard-wired `waaagh` case, first hit across all catalogues) nor the
   narrow equal-name fallback. The fallback lives in the report
-  (`domain/evaluator/infoProjection.js`), so the detail block and `useUnitChips` read it from the
+  (`contexts/ruleengine/engine/infoProjection.js`), so the detail block and `useUnitChips` read it from the
   same `infoElements`; a lookup re-added here would reach only one of the two.
   `publicationRefOf(source)` here is the one place the `[Book, S. 44]` form is written.
-- A component test that mocks `domain/roster` wholesale (`vi.mock('../../../domain/roster', …)`)
+- A component test that mocks `contexts/armylist/model` wholesale (`vi.mock('../../../contexts/armylist/model', …)`)
   lists the exports by hand, so a new import a ViewModel adds there fails those files with
   "No <name> export is defined on the mock" — the mock, not the ViewModel, is what is out of date.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
@@ -130,7 +130,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   to `EMPTY_SLOT_INDEX` and keeps `slots` (not the three maps) in its `useMemo` dependencies.
 - `capabilityEntries.js` here is the one place that resolves a slot back to its catalogue entry
   (`findCapabilityEntry`, `capabilityEntryOf` with the `{ id, name }` stub). It lives in this
-  folder because `src/contexts/ruleengine/` may not import `src/domain/roster/`.
+  folder because `src/contexts/ruleengine/` may not import `src/contexts/armylist/model/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
   on an import of them from `src/ui/components/`.
@@ -195,7 +195,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   (`classifyGroupItem`, `classifyStandaloneOption`: mandatory/met, radio, binary, stepper). It is
   pure and takes only values the report already measured — it re-reads no catalogue. The
   catalogue-side twin of those questions lives once, in the report
-  (`src/domain/evaluator/groupBehavior.js`); a second reading here would drift from it.
+  (`src/contexts/ruleengine/engine/groupBehavior.js`); a second reading here would drift from it.
 - `strictNullChecks` is on (Issue 0185), and in a hook it bites at the state seam:
   `useState(null)` types the state `null`, `useState([])` types it `never[]`, and the setter then
   rejects every real value. Give the initial value a **module-level constant with a `@type`

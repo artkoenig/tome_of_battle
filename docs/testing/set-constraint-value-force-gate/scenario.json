@@ -3,10 +3,10 @@
   "name": "set-constraint-value-force-gate",
   "description": "Ein modifier type=set, dessen field die id eines Constraints nennt, ersetzt dessen Wert exakt, solange die Bedingungen halten - und laesst den geschriebenen Basiswert unangetastet, solange sie nicht halten. Konkret: Der Skeletons-Modellslot (eaa1-c6a6-9aae-ae9a) im Skeletons-Regiment der Vampire Counts traegt max 40 (Constraint 6679-1132-0a76-9ba3, scope=parent) und einen set-30-Modifier auf genau diese Constraint-Id, bedingt per instanceOf auf das forceEntry Army of Sylvania (SoC) (4072-c3b8-84c4-a097). Zwei Roster, die sich NUR im Kontingent unterscheiden, pinnen das effektive Maximum des Slots: 30 im Sylvania-Kontingent, 40 im Standard-Kontingent (e989-15b8-7eb6-9668). Die unmodifizierte min-10-Grenze (ad1d-03cf-a16f-ae52) bleibt in beiden Faellen der Basiswert.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

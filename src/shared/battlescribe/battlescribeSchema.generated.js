@@ -1,7 +1,7 @@
 // AUTO-GENERATED FILE — DO NOT EDIT BY HAND.
 //
 // Generated from the vendored BattleScribe schema at
-// src/data/parser/schema/Catalogue.xsd by `npm run generate:schema`.
+// src/platform/battlescribe/schema/Catalogue.xsd by `npm run generate:schema`.
 //
 // This module is the single source of truth for the BattleScribe data format's
 // closed enum sets and canonical attribute names (see ADR 0016). Parser and
