@@ -67,14 +67,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Suppresses the 300 ms double-tap-to-zoom gesture on every control without
-   taking pinch zoom away (WCAG 1.4.4 — the viewport meta stays scalable). */
+/* The pinch-zoom gesture is blocked here (and with it the 300 ms double-tap
+   zoom), while vertical and horizontal scrolling stay intact. iOS Safari ignores
+   `user-scalable=no`, so the viewport meta alone would not hold there.
+   This knowingly gives up WCAG 1.4.4 (Resize text) on the user's instruction. */
+html,
+body,
 a,
 button,
 label,
 summary,
 [role="button"] {
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
 }
 
 a {

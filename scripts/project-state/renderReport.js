@@ -167,7 +167,7 @@ function renderDocumentHead(title) {
   return [
     '<head>',
     '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">',
     `<title>${escapeHtml(title)}</title>`,
     `<style>${REPORT_STYLES}</style>`,
     '</head>',
@@ -672,8 +672,8 @@ function escapeHtml(value) {
  *
  * Das Layout ist durchgehend in relativen Einheiten gehalten und mobil-tauglich:
  * lange Zeichenketten brechen um (`overflow-wrap`), Tabs, Ruecklink und
- * Aufklapp-Zeilen sind mindestens 44 px hoch, `touch-action: manipulation`
- * unterdrueckt den Doppeltipp-Zoom (Pinch-Zoom bleibt), die Tooltips oeffnen
+ * Aufklapp-Zeilen sind mindestens 44 px hoch, `touch-action: pan-x pan-y`
+ * unterbindet Doppeltipp- und Pinch-Zoom (beide gesperrt), die Tooltips oeffnen
  * per `:focus-within` auch ohne Zeiger, und eine Media Query fuer schmale
  * Viewports strafft die Abstaende und laesst die Tooltips umbrechen -- so bleibt
  * die Seite bei ~375 px ohne horizontales Scrollen lesbar und bedienbar.
@@ -705,9 +705,12 @@ const REPORT_STYLES = `
   --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
 }
 * { box-sizing: border-box; }
-/* touch-action: manipulation unterdrueckt den Doppeltipp-Zoom (und damit die
-   300-ms-Verzoegerung), laesst Pinch-Zoom aber unangetastet -- WCAG 1.4.4. */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: dark; touch-action: manipulation; }
+/* touch-action: pan-x pan-y unterdrueckt den Doppeltipp-Zoom (und damit die
+   300-ms-Verzoegerung); die Pinch-Geste ist damit gesperrt, Scrollen und Pannen
+   bleiben. iOS Safari ignoriert user-scalable=no, deshalb beides. WCAG 1.4.4
+   wird hier auf ausdruecklichen Wunsch bewusst aufgegeben. */
+html, body { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: pan-x pan-y; }
+html { color-scheme: dark; }
 body {
   margin: 0;
   background-color: var(--bg);
