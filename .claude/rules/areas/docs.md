@@ -21,6 +21,10 @@ Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch.
 - `docs/issues/` ist der Tracker, nicht Prosa — Format und Kommandos in
   `.claude/skills/issue-backend/SKILL.md`. `docs/issues/**/design.md` ist bewusst gitignored:
   Planungsartefakt während der Umsetzung, landet nie im PR.
+- `docs/PRD-<thema>.md` ist die Form für Produktentscheidungen, die vor dem Code fallen müssen
+  (Umbau mit sichtbarem Nutzereffekt, neues Feature). Aufbau: Problem Statement → Solution →
+  User Stories/Requirements → Technical Decisions → Out of Scope. Flach in `docs/`, kein
+  Unterordner, kein Index — Issues verlinken es relativ.
 - `docs/testing/` sind die E2E-Szenarien des Evaluators (`.ros` + `README.md` + `scenario.json`).
   Sie werden **nur** vom `e2e-testcase-author`-Subagenten geschrieben, ausschließlich aus
   Katalogdaten (ADR 0033) — nicht nebenbei in einem Implementierungslauf.
