@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/mobile-zoom-best-practices-gnm29g
 pr:
 ---
 
