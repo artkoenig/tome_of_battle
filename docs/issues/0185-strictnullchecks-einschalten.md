@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/issue-185-1u5znm
+pr: 266
 ---
 
 # strictNullChecks einschalten
