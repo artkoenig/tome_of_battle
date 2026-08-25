@@ -14,7 +14,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * die Komponente kennt weder `capabilities` noch `pathBySelectionId`.
  *
  * @param {{ selection: Object, isListRule?: boolean, tooltip?: Object,
- *   onShowRule?: Function }} props
+ *   onShowRule?: Function|null }} props
  */
 export default function SelectionConfigurator({
   selection,

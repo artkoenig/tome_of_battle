@@ -95,6 +95,8 @@ export function findMissingMandatoryListRules(slots, forcePath, context = {}) {
     if (capability.isHidden) continue;
 
     const resolvedId = resolvedDefIdOf(capability);
+    // Ohne aufgeloeste Id gibt es nichts zu deduplizieren und nichts nachzulegen.
+    if (resolvedId === undefined) continue;
     if (presentIds.has(resolvedId) || seen.has(resolvedId) || skipResolvedIds.has(resolvedId)) continue;
     seen.add(resolvedId);
 

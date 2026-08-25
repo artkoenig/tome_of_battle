@@ -19,6 +19,18 @@ const OFFLINE_EVENT = 'offline';
 const SKIP_WAITING_MESSAGE = { type: 'SKIP_WAITING' };
 
 /**
+ * Der noch nicht abgefangene Installations-Dialog des Browsers. Als Literal im
+ * `useState` faellt `null` auf den Typ `null`.
+ *
+ * @type {{ prompt: () => void, userChoice: Promise<{ outcome: string }> }|null}
+ */
+const NO_INSTALL_PROMPT = null;
+
+/** Kein wartender Service Worker. */
+/** @type {ServiceWorker|null} */
+const NO_WAITING_WORKER = null;
+
+/**
  * Kapselt den Lebenszyklus der Progressive Web App: Installierbarkeit,
  * aufgeschobene Installationsaufforderung, verfügbares Update, wartender
  * Service Worker samt Release-Information sowie den Online-/Offline-Zustand.
@@ -36,10 +48,10 @@ const SKIP_WAITING_MESSAGE = { type: 'SKIP_WAITING' };
  * }}
  */
 export default function usePwaLifecycle() {
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(NO_INSTALL_PROMPT);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState(null);
+  const [waitingWorker, setWaitingWorker] = useState(NO_WAITING_WORKER);
   const [updateRelease, setUpdateRelease] = useState(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 

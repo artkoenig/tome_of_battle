@@ -36,6 +36,7 @@ export function createSelectionFromDef({ system, resolveEntry, catalogueId, entr
   const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return null;
 
+  /** @type {import('../../domain/types.js').Selection} */
   const selection = {
     id: crypto.randomUUID(),
     entryLinkId: entry.targetId ? entry.id : null,

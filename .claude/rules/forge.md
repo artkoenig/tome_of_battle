@@ -23,6 +23,19 @@
   no dependencies, so CI obtains it by a shallow clone of `artkoenig/ai-blacksmith` — the check
   runs in the lint workflow and the status-report workflow as well as locally and in every agent
   run.
+- `forge-typecheck` = `tsc --noEmit` over `src/**` and `scripts/**` (`allowJs`/`checkJs`, so the
+  JSDoc annotations are the types). Since Issue 0185 it runs with `strictNullChecks` **and**
+  `strictFunctionTypes`: a `@param {Roster|null}` is a promise the gate keeps, and a value that
+  can be `null` may not be read unchecked. `strict` stays off because it pulls in
+  `noImplicitAny`, and `noImplicitAny` is deliberately still out — 2658 open annotations, a debt
+  to be paid folder by folder in its own issue. Write the next file null-safe rather than
+  enlarging it. Suppressing a finding is not an option: the tree carries no `@ts-ignore`,
+  `@ts-expect-error` or `@ts-nocheck`, and a JSDoc type cast (`/** @type {X} */ (value)`) is for
+  an assertion the checker genuinely cannot see — a null check or a clean default is the answer
+  everywhere else. Two shapes cause most findings and neither needs a cast: an empty literal in
+  an object field or a parameter default falls to `never[]`, and `useState(null)`/`useRef(null)`
+  falls to `null` — give the literal a named, `@type`-annotated constant next to the function
+  and pass that instead.
 - `npm run knip` is warn-only and deliberately outside the wrappers.
 - The Puppeteer app E2E (`node e2e/ui.test.js`, part of `npm test`) is **not** in `forge-test`:
   it is slow and browser-bound. Run it by hand when a change touches `src/ui/components/` or

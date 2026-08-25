@@ -9,6 +9,21 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { formatViolation } from '../../i18n/violationMessages';
 
 /**
+ * Kein Tooltip und kein Info-Fenster offen. Als Literal im `useState` faellt
+ * `null` auf den Typ `null` und nimmt keinen Inhalt mehr an.
+ *
+ * @type {{ title: string, text: import('react').ReactNode, x: number, y: number }|null}
+ */
+const NO_HOVERED_INFO = null;
+
+/** @type {{ title: string, text: import('react').ReactNode }|null} */
+const NO_ACTIVE_INFO = null;
+
+/** Kein Regel-Kanal uebergeben. */
+/** @type {((name: string) => void)|null} */
+const NO_SHOW_RULE = null;
+
+/**
  * Die Einheitenkarte — nur noch JSX (ADR-0038).
  *
  * Name, Punkte, Profil-Tabellen, Verletzungen, die eigenständigen
@@ -21,14 +36,15 @@ export default function UnitSelectionCard({
   setSelectedRosterSelection,
   costTypeLabel,
   isSubUnit = false,
-  onShowRule = null
+  onShowRule = NO_SHOW_RULE
 }) {
   const { t } = useTranslation();
-  const [activeInfo, setActiveInfo] = useState(null);
-  const [hoveredInfo, setHoveredInfo] = useState(null);
+  const [activeInfo, setActiveInfo] = useState(NO_ACTIVE_INFO);
+  const [hoveredInfo, setHoveredInfo] = useState(NO_HOVERED_INFO);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  /** @type {import('react').RefObject<HTMLDivElement|null>} */
   const menuRef = useRef(null);
 
   const card = useUnitCard({ selection, isSubUnit });

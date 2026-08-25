@@ -23,7 +23,7 @@ function normalizeToTags(browserLanguages) {
  * @returns {string} a code from {@link SUPPORTED_LANGUAGES}
  */
 export function detectLanguage({ storedLanguage, browserLanguages } = {}) {
-  if (SUPPORTED_LANGUAGES.includes(storedLanguage)) {
+  if (storedLanguage != null && SUPPORTED_LANGUAGES.includes(storedLanguage)) {
     return storedLanguage;
   }
 

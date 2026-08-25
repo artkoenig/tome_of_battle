@@ -9,7 +9,10 @@ import { initializeLanguage } from './ui/i18n/languageController'
 // `lang` attribute is correct from the start (ADR 0026).
 initializeLanguage()
 
-createRoot(document.getElementById('root')).render(
+const rootElement = document.getElementById('root')
+if (!rootElement) throw new Error('Kein #root im Dokument — die App hat keinen Einhängepunkt.')
+
+createRoot(rootElement).render(
   <StrictMode>
     <App />
   </StrictMode>,

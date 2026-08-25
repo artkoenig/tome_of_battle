@@ -105,13 +105,15 @@ const EMPTY_RESULT = Object.freeze({
  * @returns {object|null} der undurchsichtige Griff der Evaluator-Fassade.
  */
 function preparedDatasetOf(system) {
-  const gameSystem = system?.rawXmls?.gst?.[0]?.content;
+  const rawXmls = system?.rawXmls;
+  if (!system || !rawXmls) return null;
+  const gameSystem = rawXmls.gst?.[0]?.content;
   if (gameSystem === undefined) return null;
   let prepared = preparedBySystem.get(system);
   if (prepared === undefined) {
     prepared = prepareDataset({
       gameSystem,
-      catalogues: (system.rawXmls.cat ?? []).map(file => file.content),
+      catalogues: (rawXmls.cat ?? []).map(file => file.content),
     });
     preparedBySystem.set(system, prepared);
   }

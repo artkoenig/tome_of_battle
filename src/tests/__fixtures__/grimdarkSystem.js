@@ -277,7 +277,11 @@ export function createVampireSelection({ id = 'sel-vampire', itemEntryIds = [] }
   };
 }
 
-export function createRoster({ name = 'Test Roster', costLimit = 1000, selections = [] } = {}) {
+/** Leere Auswahlliste als Vorgabewert — im Parameter fiele `[]` auf `never[]`. */
+/** @type {object[]} */
+const NO_SELECTIONS = [];
+
+export function createRoster({ name = 'Test Roster', costLimit = 1000, selections = NO_SELECTIONS } = {}) {
   return {
     name,
     costLimit,

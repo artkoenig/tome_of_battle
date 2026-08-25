@@ -121,6 +121,8 @@ function killProcessTree(proc, signal = 'SIGTERM') {
  * transpiliert den Modulgraphen erst beim ersten Seitenaufruf on-demand, was auf
  * kalten CI-Runnern unter Last die Import-Warteschwelle überschritt und den Lauf
  * reproduzierbar riss (siehe ADR 0006).
+ *
+ * @returns {Promise<void>}
  */
 function buildApp() {
   return new Promise((resolve, reject) => {

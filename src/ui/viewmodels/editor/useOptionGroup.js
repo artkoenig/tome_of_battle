@@ -66,7 +66,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
     const groupSingleChoice = groupCapability?.isSingleChoice === true;
     const isGroupCapReached = groupCapability?.isBlocked === true;
 
-    const pointsOf = (capability) => capability.costs?.[costTypeId] ?? 0;
+    const pointsOf = (capability) => (costTypeId === null ? 0 : capability.costs?.[costTypeId] ?? 0);
     const currentPoints = found.reduce((sum, row) => sum + pointsOf(row.capability) * row.count, 0);
 
     const selectedItemsSummary = found
@@ -172,7 +172,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
           resolved,
           name: capability.name,
           count,
-          points: capability.costs?.[costTypeId] ?? 0,
+          points: costTypeId === null ? 0 : capability.costs?.[costTypeId] ?? 0,
           costTypeLabel,
           descText: optionDescriptionOf(capability),
           detailElements: upgradeDetailElementsOf(capability),

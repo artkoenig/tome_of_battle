@@ -10,6 +10,17 @@ import { useListRuleChecklist } from '../../viewmodels/editor/useListRuleCheckli
 import { useTranslation } from '../../i18n/useTranslation';
 
 /**
+ * Kein Tooltip und kein Info-Fenster offen. Als Literal im `useState` faellt
+ * `null` auf den Typ `null` und nimmt keinen Inhalt mehr an.
+ *
+ * @type {{ title: string, text: import('react').ReactNode, x: number, y: number }|null}
+ */
+const NO_HOVERED_INFO = null;
+
+/** @type {{ title: string, text: import('react').ReactNode }|null} */
+const NO_ACTIVE_INFO = null;
+
+/**
  * Ankreuzliste der „Special list rules" einer Kategorie. Jede Katalog-Listenregel
  * wird datengetrieben aufgezählt (ob im Roster präsent oder nicht) und als
  * Ankreuzfeld dargestellt — angehakt ⇔ präsent. Anhaken fügt die Regel-Selektion
@@ -32,8 +43,8 @@ export default function ListRuleChecklist({
 }) {
   const { t } = useTranslation();
   const { rows } = useListRuleChecklist({ forceId, forcePath, categoryId });
-  const [activeInfo, setActiveInfo] = useState(null);
-  const [hoveredInfo, setHoveredInfo] = useState(null);
+  const [activeInfo, setActiveInfo] = useState(NO_ACTIVE_INFO);
+  const [hoveredInfo, setHoveredInfo] = useState(NO_HOVERED_INFO);
   // Eingeklappte Behälter, nach `resolvedId`. Fehlt ein Eintrag, gilt die Zeile
   // als ausgeklappt (Standard nach dem Anhaken), sodass Unteroptionen sofort
   // konfigurierbar sind, aber jederzeit ohne Abwählen einklappbar bleiben.

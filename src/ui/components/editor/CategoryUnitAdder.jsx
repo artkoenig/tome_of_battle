@@ -5,6 +5,17 @@ import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
 
 /**
+ * Keine Kategorie und keine kuratierte Eintragsliste. Als Literal im
+ * Parameter faellt `null` auf den Typ `null`.
+ *
+ * @type {string|null}
+ */
+const NO_CATEGORY = null;
+
+/** @type {Array<Object>|null} */
+const NO_ENTRIES = null;
+
+/**
  * Aushebe-Dialog einer Kategorie (Issue 0121, Task 6; ADR-0035/0036).
  *
  * Seit Issue 0164 rechnet die Komponente nichts mehr: die Kandidatenliste
@@ -16,12 +27,13 @@ import BottomSheet from './BottomSheet';
 export default function CategoryUnitAdder({
   forceId = null,
   forcePath = null,
-  categoryId = null,
+  categoryId = NO_CATEGORY,
   categoryName,
-  entries = null
+  entries = NO_ENTRIES
 }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  /** @type {import('react').RefObject<HTMLDivElement|null>} */
   const wrapperRef = useRef(null);
   const { candidates, costTypeLabel } = useRecruitOffer({ forceId, forcePath, categoryId, entries });
 

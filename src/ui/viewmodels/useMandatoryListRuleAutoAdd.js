@@ -57,9 +57,10 @@ export function useMandatoryListRuleAutoAdd({ roster, system, slots, isFreshRost
 
       missing.forEach(({ resolvedId }) => claimedResolvedIds.add(resolvedId));
       const newSelections = missing
-        .map(({ entry, categoryId, mandatoryMembers }) =>
-          createSelectionFromDef(entry, categoryId, catalogueId, mandatoryMembers))
-        .filter(Boolean);
+        .flatMap(({ entry, categoryId, mandatoryMembers }) => {
+          const created = createSelectionFromDef(entry, categoryId, catalogueId, mandatoryMembers);
+          return created ? [created] : [];
+        });
       if (newSelections.length === 0) return force;
 
       anyAdded = true;

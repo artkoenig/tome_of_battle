@@ -62,7 +62,7 @@ export function createRosterCommands({
    * Hebt `entry` in genau ein Kontingent aus.
    * @param {Object} entry Katalogeintrag, aus dem die Selektion gebaut wird
    * @param {string} categoryId Kategorie, unter der die Einheit geführt wird
-   * @param {string} [targetForceId] Kontingent der aktiven Ansicht; ohne Angabe
+   * @param {string|null} [targetForceId] Kontingent der aktiven Ansicht; ohne Angabe
    *   das erste Kontingent des Rosters
    */
   const addUnit = (entry, categoryId, targetForceId = null) => {

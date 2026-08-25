@@ -469,10 +469,11 @@ function renderOpenIssues(openIssues) {
     const parts = issue.id.split('/');
     const parentId = parts[0];
 
-    if (!groupMap.has(parentId)) {
-      groupMap.set(parentId, { parentId, mainIssue: null, children: [] });
+    let group = groupMap.get(parentId);
+    if (group === undefined) {
+      group = { parentId, mainIssue: null, children: [] };
+      groupMap.set(parentId, group);
     }
-    const group = groupMap.get(parentId);
     if (parts.length === 1) {
       group.mainIssue = issue;
     } else {

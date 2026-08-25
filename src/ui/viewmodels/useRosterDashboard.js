@@ -67,6 +67,13 @@ function groupCards(rosters, systems, t) {
 }
 
 /**
+ * Kein Aktions-Blatt offen. Als Literal im `useState` faellt `null` auf den Typ `null`.
+ *
+ * @type {string|null}
+ */
+const NO_ROSTER_ACTIONS = null;
+
+/**
  * @param {{
  *   rosters?: object[],
  *   systems?: object[],
@@ -85,11 +92,12 @@ export function useRosterDashboard({
   onDeleteRoster,
 } = {}) {
   const { t, language } = useTranslation();
+  /** @type {import('react').RefObject<HTMLInputElement|null>} */
   const fileInputRef = useRef(null);
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
-  const [rosterActionsRosterId, setRosterActionsRosterId] = useState(null);
+  const [rosterActionsRosterId, setRosterActionsRosterId] = useState(NO_ROSTER_ACTIONS);
 
   // Ein Bericht je Liste, gerechnet wenn sich Listen oder Systeme ändern —
   // nicht bei jedem Render der Hülle.
@@ -131,6 +139,7 @@ export function useRosterDashboard({
   const deleteFromSheet = useCallback(() => {
     const id = rosterActionsRosterId;
     setRosterActionsRosterId(null);
+    if (id === null) return;
     onDeleteRoster?.(id, { stopPropagation() {} });
   }, [rosterActionsRosterId, onDeleteRoster]);
 

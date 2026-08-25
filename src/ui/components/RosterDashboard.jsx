@@ -5,6 +5,17 @@ import BottomSheet from './editor/BottomSheet';
 import { useTranslation } from '../i18n/useTranslation';
 
 /**
+ * Noch keine Listen uebergeben. Als Literal im Parameter faellt `[]` auf
+ * `never[]` und nimmt keinen echten Datensatz mehr an.
+ *
+ * @type {Array<Object>}
+ */
+const NO_ROSTERS = [];
+
+/** @type {Array<Object>} */
+const NO_SYSTEMS = [];
+
+/**
  * Die Bibliotheks-Hülle — nur noch JSX (ADR-0038).
  *
  * Gruppierung, Kartenwerte und der Umbenenn-/Aktions-Zustand kommen aus
@@ -12,8 +23,8 @@ import { useTranslation } from '../i18n/useTranslation';
  * Map-Schleife des Renders: sie steht als fertiger Wert je Karte im ViewModel.
  */
 export default function RosterDashboard({
-  rosters = [],
-  systems = [],
+  rosters = NO_ROSTERS,
+  systems = NO_SYSTEMS,
   onOpenRoster,
   onDeleteRoster,
   onRenameRoster,

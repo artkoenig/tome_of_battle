@@ -112,6 +112,11 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   //   which must attach under the mount's selection rather than as a sibling of it on
   //   the unit. It is threaded unchanged through the group/link recursion, since a
   //   display group inside an option is still nested under that same owning selection.
+  /**
+   * @type {{ groupName: string|null, groupId: string|null, groupConstraints: object[]|null,
+   *   groupModifiers: object[]|null, groupAncestors: Array<{ id: string|null, name: string|null }>,
+   *   ownerSelectionId: string|null }}
+   */
   const ROOT_GROUP_CONTEXT = {
     groupName: null,
     groupId: null,

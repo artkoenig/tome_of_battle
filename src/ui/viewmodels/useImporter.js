@@ -34,20 +34,52 @@ import { hasRawXmls, downloadSystemArchive } from './systemArchiveExport';
  */
 
 /**
+ * Ein im Katalog-Index angebotenes System, so wie `loadAvailableSystems` es
+ * liefert — die Felder, die dieser Ablauf davon liest.
+ *
+ * @typedef {{
+ *   id: string,
+ *   name?: string,
+ *   rawBaseUrl: string,
+ *   gst: { fileName: string },
+ *   catalogues: Array<{ id: string, name: string, fileName: string }>,
+ * }} IndexSystem
+ */
+
+/** Ein installiertes System, so weit dieser Bildschirm es liest. */
+/** @typedef {{ id: string, name: string, catalogues?: unknown[] }} InstalledSystem */
+
+/** @type {string|null} */
+const NO_MESSAGE = null;
+
+/** Kein System zum Loeschen vorgemerkt. */
+/** @type {InstalledSystem|null} */
+const NOTHING_TO_DELETE = null;
+
+/** Keine Meldung. Als Literal im `useState` faellt `null` auf den Typ `null`. */
+/** Noch kein Katalog-Index geladen. */
+/** @type {IndexSystem[]} */
+const NO_INDEX_SYSTEMS = [];
+
+/** Keine installierten Systeme uebergeben. */
+/** @type {InstalledSystem[]} */
+const NO_SYSTEMS = [];
+
+/**
  * @param {{
- *   systems?: object[],
+ *   systems?: InstalledSystem[],
  *   onSystemImported?: () => Promise<void>|void,
  *   onReportError?: (message: string) => void,
  * }} args
  */
-export function useImporter({ systems = [], onSystemImported, onReportError } = {}) {
+export function useImporter({ systems = NO_SYSTEMS, onSystemImported, onReportError } = {}) {
   const { t, language } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState(null);
-  const [systemToDelete, setSystemToDelete] = useState(null);
+  const [error, setError] = useState(NO_MESSAGE);
+  const [successMsg, setSuccessMsg] = useState(NO_MESSAGE);
+  const [systemToDelete, setSystemToDelete] = useState(NOTHING_TO_DELETE);
 
-  const [availableSystems, setAvailableSystems] = useState([]);
+  const [availableSystems, setAvailableSystems] = useState(NO_INDEX_SYSTEMS);
   const [selectedBundleSysId, setSelectedBundleSysId] = useState('');
   const [selectedCats, setSelectedCats] = useState({});
 
@@ -106,7 +138,7 @@ export function useImporter({ systems = [], onSystemImported, onReportError } = 
     const result = await importSystem({ gstFiles, catFiles, catalogueDirectory });
 
     if (result.status === SYSTEM_IMPORT_STATUS.MISSING_LIBRARY_DEPENDENCIES) {
-      setError(buildMissingLibraryDependencyMessage(result.missingDependencies, t));
+      setError(buildMissingLibraryDependencyMessage(result.missingDependencies ?? [], t));
       return;
     }
 

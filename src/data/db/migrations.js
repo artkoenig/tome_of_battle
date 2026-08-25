@@ -77,7 +77,7 @@ async function updateStoredSystemFromItsSource(system, fetchText) {
  * catalog updates are skipped and only local re-processing runs.
  *
  * @param {Array} systems - The list of currently loaded systems from IndexedDB.
- * @param {(url: string) => Promise<string>} [fetchText] - Network fetcher for catalog
+ * @param {((url: string) => Promise<string>)|null} [fetchText] - Network fetcher for catalog
  *   resources (index JSON and .cat/.gst text). Omit to disable network updates.
  * @returns {Promise<{systems: Array, failures: Array<{id: string, name: string}>,
  *   unrecoverable: Array<{id: string, name: string}>}>} `unrecoverable` fuehrt die

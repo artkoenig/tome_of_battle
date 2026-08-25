@@ -76,9 +76,11 @@ export function buildImportGraph(castModules) {
   const graph = {};
 
   for (const module of castModules ?? []) {
-    const targets = (module.edges ?? [])
-      .filter((edge) => edge.resolution === 'module' && edge.to)
-      .map((edge) => edge.to);
+    /** @type {string[]} */
+    const targets = [];
+    for (const edge of module.edges ?? []) {
+      if (edge.resolution === 'module' && typeof edge.to === 'string' && edge.to !== '') targets.push(edge.to);
+    }
     graph[module.id] = [...new Set(targets)].sort();
   }
 
@@ -132,6 +134,9 @@ export function findCycles(graph) {
     let member;
     do {
       member = stack.pop();
+      // Der Stapel traegt in Tarjans Schleife immer noch den Startknoten; ein
+      // leerer Stapel waere ein Bruch der Invariante, kein Normalfall.
+      if (member === undefined) break;
       onStack.delete(member);
       component.push(member);
     } while (member !== node);

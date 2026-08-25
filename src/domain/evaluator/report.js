@@ -69,22 +69,34 @@ const SINGLE_CHOICE_GROUP_MAX = 1;
 /** Kein Traeger, keine wiederholbaren Optionen. */
 const NO_REPEATABLE_IDS = Object.freeze(new Set());
 
-/** Die Pflicht-Mitglieder eines Slots ohne Aushebe-Projektion: keine. */
+/**
+ * Die Pflicht-Mitglieder eines Slots ohne Aushebe-Projektion: keine.
+ * @type {readonly never[]}
+ */
 const NO_RAISE_MEMBERS = Object.freeze([]);
 
 /** Der Normalfall: die Auswertung ist konvergiert, kein Slot ist instabil. */
 const NO_UNSTABLE_NODES = new Set();
 
-/** Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer. */
+/**
+ * Ohne Profiltyp-Deklarationen bleiben die Klartext-Namen der Merkmale leer.
+ * @type {readonly never[]}
+ */
 const NO_PROFILE_TYPES = Object.freeze([]);
 
-/** Ohne Quellen-Deklarationen bleibt der Klartext-Name einer Buchquelle leer. */
+/**
+ * Ohne Quellen-Deklarationen bleibt der Klartext-Name einer Buchquelle leer.
+ * @type {readonly never[]}
+ */
 const NO_PUBLICATIONS = Object.freeze([]);
 
 /** Ohne bekannte Kategorie-IDs ist jeder ID-Bezugsrahmen ein Eintrags-Rahmen. */
 const NO_CATEGORY_IDS = new Set();
 
-/** Ohne deklarierte Kostenarten traegt `costTotals` nur die belegten Vorkommen. */
+/**
+ * Ohne deklarierte Kostenarten traegt `costTotals` nur die belegten Vorkommen.
+ * @type {readonly never[]}
+ */
 const NO_DECLARED_COST_TYPES = Object.freeze([]);
 
 /** Ohne Herkunftsindex bleibt die Herkunft jedes Slots unbekannt (`null`). */
@@ -97,7 +109,10 @@ const NO_ANCHOR_OCCUPANCIES = new Map();
 const NO_LIBRARY_CATALOGUES = Object.freeze(new Set());
 const NO_FORCE_CATALOGUES = Object.freeze(new Map());
 
-/** Ein Bericht ohne Dokumente des Datensatzes — dann entfaellt der Regel-Rueckfall. */
+/**
+ * Ein Bericht ohne Dokumente des Datensatzes — dann entfaellt der Regel-Rueckfall.
+ * @type {readonly never[]}
+ */
 const NO_DOCUMENTS = Object.freeze([]);
 
 /**

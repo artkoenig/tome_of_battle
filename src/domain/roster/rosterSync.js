@@ -4,7 +4,10 @@ import { childSelectionsOf, mapSelectionTree, traverseSelectionTree } from './ro
 import { isIndependentSubUnit } from './subUnit.js';
 import '../../domain/types.js';
 
-/** Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf. */
+/**
+ * Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf.
+ * @type {readonly never[]}
+ */
 const NO_FORCES = Object.freeze([]);
 
 /**

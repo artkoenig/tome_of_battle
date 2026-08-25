@@ -111,7 +111,7 @@ export { prepareDataset } from './datasetPreparation.js';
  * @param {import('./datasetPreparation.js').PreparedDataset} prepared
  *   Das Ergebnis von {@link prepareDataset} — derselbe Griff darf beliebig oft und
  *   fuer beliebig viele Roster wiederverwendet werden.
- * @param {{ forces?: Array<{ defId: string, count: number, catalogueId?: string|null, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
+ * @param {{ forces?: Array<{ defId: string|null, count: number, catalogueId?: string|null, children?: object[] }>, costLimits?: Array<{ costTypeId: string, value: number }> }} roster
  *   Das vollstaendige, aus `.ros` geparste Roster: der Instanzbaum (`forces`)
  *   **und** die eingestellten Kostengrenzen je Kostenart (`costLimits`, die
  *   Zuordnung Kostenart → Grenzwert, analog `<costLimits>`). Fehlt `costLimits`,

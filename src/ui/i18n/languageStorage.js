@@ -7,7 +7,7 @@ import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGUAGES } from './constants';
 export function readStoredLanguage() {
   try {
     const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return SUPPORTED_LANGUAGES.includes(stored) ? stored : null;
+    return stored !== null && SUPPORTED_LANGUAGES.includes(stored) ? stored : null;
   } catch (error) {
     // Console-only by design: a blocked or unavailable localStorage only means
     // the app cannot remember a manual choice, so detection falls back to the

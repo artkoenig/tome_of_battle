@@ -42,7 +42,10 @@ import { UNLIMITED } from './model.js';
 /** Die leere Kostensicht eines Knotens, den die Projektion nicht kennt. */
 const NO_COSTS = Object.freeze({});
 
-/** Die leere Mitglieder-Sicht eines Knotens, den die Projektion nicht kennt. */
+/**
+ * Die leere Mitglieder-Sicht eines Knotens, den die Projektion nicht kennt.
+ * @type {readonly never[]}
+ */
 const NO_MEMBERS = Object.freeze([]);
 
 /** Addiert einen Betrag auf eine Kostenart eines Kosten-Records. */

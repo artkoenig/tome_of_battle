@@ -37,6 +37,18 @@ import '../../domain/types.js';
 const COUNT_INCREASE = 1;
 const COUNT_DECREASE = -1;
 
+/** Keine Auswahl markiert. */
+/** @type {string|null} */
+const NO_SELECTION = null;
+
+/**
+ * Die Kommandos vor dem ersten Render-Durchlauf. Als `null`-Literal in `useRef`
+ * faellt die Ref auf den Typ `null` und traegt die Kommandos nie.
+ *
+ * @type {Record<string, Function>}
+ */
+const NO_COMMANDS_YET = {};
+
 /**
  * Hält Roster, Auswahl und Kommandos eines Editors.
  * @param {import('../../domain/types.js').Roster} initialRoster
@@ -59,7 +71,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
     canUndo,
     canRedo
   } = useUndoableState(initialRoster);
-  const [selectedSelectionId, setSelectedSelectionId] = useState(null);
+  const [selectedSelectionId, setSelectedSelectionId] = useState(NO_SELECTION);
 
   // Validierung und Kosten kommen seit Issue 0121 (Tasks 5 und 7) aus dem
   // Evaluator-Bericht (ADR 0030/0034): Verletzungen, Fähigkeitsdatensätze,
@@ -94,7 +106,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
 
   // Die Fassung dieses Renders. Die nach außen gereichten Kommandos rufen sie
   // über die Ref auf, statt selbst neu zu entstehen — daher ihre Identität.
-  const currentCommandsRef = useRef(null);
+  const currentCommandsRef = useRef(NO_COMMANDS_YET);
   currentCommandsRef.current = {
     ...createRosterCommands({
       roster, system, slots, setRoster, selectedSelectionId, setSelectedSelectionId, saveNow,

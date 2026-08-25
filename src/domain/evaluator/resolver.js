@@ -712,13 +712,20 @@ function assertUnresolved(definitionNodes, infoRoots) {
  *   Schreibzugriff: ein abgewiesener Aufruf laesst den Graphen unveraendert.
  */
 export function resolveCatalogue(catalogue) {
+  // Diese drei Sammelfelder stehen bewusst als eigene Bindungen vor dem Sammler:
+  // als Objektliteral-Feld faellt ein leeres Array auf `never[]`, und weder der
+  // spaetere Lesezugriff auf `link.targetId` noch `diagnostics.push(...)` waere
+  // dann noch pruefbar.
+  const entryLinks = [];
+  const categoryLinks = [];
+  const diagnostics = [];
   const collector = {
     byId: new Map(),
     categoryIds: new Set(),
-    diagnostics: [],
+    diagnostics,
     definitionNodes: [],
-    entryLinks: [],
-    categoryLinks: [],
+    entryLinks,
+    categoryLinks,
     infoRoots: [...(catalogue.infos ?? [])],
   };
   const rootForest = [
@@ -729,7 +736,7 @@ export function resolveCatalogue(catalogue) {
   for (const definition of [...rootForest, ...(catalogue.sharedEntries ?? [])]) {
     collectDefinition(definition, collector);
   }
-  const { byId, categoryIds, diagnostics, definitionNodes, entryLinks, categoryLinks, infoRoots } = collector;
+  const { byId, categoryIds, definitionNodes, infoRoots } = collector;
 
   // Vorbedingung, geprueft vor dem ersten Schreibzugriff: die Knoten duerfen
   // nicht schon einmal aufgeloest (und damit eingefroren) worden sein.
