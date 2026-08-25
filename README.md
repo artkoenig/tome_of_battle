@@ -90,7 +90,7 @@ Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 
 A `Roster` holds forces, which hold a recursive tree of selections. A selection
 references its catalog definition by ID instead of copying it; definitions are
-resolved at runtime. Types are documented as JSDoc in `src/domain/types.js`.
+resolved at runtime. Types are documented as JSDoc in `src/shared/rostermodel/types.js`.
 
 Further reading: [`docs/project-map.md`](docs/project-map.md) (where everything
 lives), [`docs/adr/`](docs/adr/) (architecture decisions),

@@ -20,8 +20,9 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - The suite doc is `CLAUDE.md` here: English test titles (unlike `src/domain/*`), `useX.test.js` /
   `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
 - `useAppData.js` is the **only** subscriber of the facade's change channel
-  (`services/dataEvents.js`): a write through `src/domain/services/` announces itself there and the one
-  roster list follows. A screen that wants to see a foreign save subscribes nowhere.
+  (`src/shared/events/dataEvents.js`): a write through `src/domain/services/` announces itself
+  there and the one roster list follows. A screen that wants to see a foreign save subscribes
+  nowhere.
 - `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
   `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
   catalog refresh; `reloadData` — what `useRosterList` gets — reads IndexedDB and nothing else.

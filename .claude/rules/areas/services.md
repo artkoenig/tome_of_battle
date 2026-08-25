@@ -6,9 +6,10 @@ paths:
 # services — die Datenfassade
 
 Die einzige Adresse, über die die Oberfläche Daten erreicht (ADR-0037, reklassifiziert von Daten
-nach Fachlogik durch ADR-0040/Issue 0179). Fünf Fassaden plus der eine Änderungs-Kanal:
-`rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`,
-`dataEvents.js`. Lauf: `forge-test --run src/domain/services`.
+nach Fachlogik durch ADR-0040/Issue 0179). Fünf Fassaden: `rosterStore.js`, `systemLibrary.js`,
+`settings.js`, `catalogRevisions.js`, `rosterTransfer.js`. Der eine Änderungs-Kanal liegt seit
+Issue 0186 nicht mehr hier, sondern im gemeinsamen Kern: `src/shared/events/dataEvents.js`.
+Lauf: `forge-test --run src/domain/services`.
 
 - Jede Datei hier trägt ihren **Vertrag als Kopfkommentar** und hat eine eigene `*.test.js`
   daneben. Eine neue Fassade ohne beides ist unvollständig.
@@ -25,9 +26,9 @@ nach Fachlogik durch ADR-0040/Issue 0179). Fünf Fassaden plus der eine Änderun
 - Wer hier einfügt, muss beim UI-seitigen `setRosters` prüfen: das Ereignis hat den Stand
   womöglich schon eingesetzt. Blindes Anhängen ergibt das Roster doppelt
   (`useRosterList.createRoster` hält das Muster vor).
-- Die Ereignisarten sind eine getypte Union (`DataChangeEvent` in `dataEvents.js`). Ein neues
-  Feld nur im `emitDataChange`-Aufruf lässt `forge-typecheck` rot werden — die Union zuerst
-  erweitern.
+- Die Ereignisarten sind eine getypte Union (`DataChangeEvent` in
+  `src/shared/events/dataEvents.js`). Ein neues Feld nur im `emitDataChange`-Aufruf lässt
+  `forge-typecheck` rot werden — die Union zuerst erweitern.
 - Die Schicht kennt `src/ui/i18n/` nicht (`keine-i18n-unter-ui`) und greift nicht auf die
   Deutung eines Rosters zurück. `daten-kein-rueckgriff` (`.cast/rules.json`) verbietet den Weg
   von `daten` (= `src/data/**`) nach `src/domain/**`; seit ADR-0040 liegt diese Schicht selbst
