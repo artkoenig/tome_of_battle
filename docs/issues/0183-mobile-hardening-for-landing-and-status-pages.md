@@ -1,7 +1,7 @@
 ---
 status: done
 branch: claude/mobile-zoom-best-practices-gnm29g
-pr:
+pr: 263
 ---
 
 # Harden the landing page and the status page for mobile devices
