@@ -1,0 +1,6 @@
+{
+  "operations": [
+    { "op": "move", "module": "data/parser/schema/battlescribeSchema.generated.js", "to": "shared/battlescribe/battlescribeSchema.generated.js" },
+    { "op": "move", "module": "domain/types.js", "to": "shared/battlescribe/types.js" }
+  ]
+}

@@ -1,0 +1,252 @@
+{
+  "operations": [
+    {
+      "op": "move",
+      "module": "data/parser/schema/battlescribeSchema.generated.js",
+      "to": "shared/battlescribe/battlescribeSchema.generated.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/types.js",
+      "to": "shared/rostermodel/types.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/rosterAdapter.js",
+      "to": "contexts/ruleengine/acl/rosterAdapter.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/evaluationCache.js",
+      "to": "contexts/ruleengine/acl/evaluationCache.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/slotIndex.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/costDisplays.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/violationStats.js",
+      "to": "contexts/ruleengine/readmodel/violationStats.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/listRuleGroups.js",
+      "to": "contexts/ruleengine/readmodel/listRuleGroups.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/mandatoryListRules.js",
+      "to": "contexts/ruleengine/readmodel/mandatoryListRules.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/rosterReport.js",
+      "to": "contexts/ruleengine/readmodel/rosterReport.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/armyWideSelectorSlots.js",
+      "to": "contexts/ruleengine/readmodel/armyWideSelectorSlots.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/datasetDiagnostics.js",
+      "to": "contexts/ruleengine/readmodel/datasetDiagnostics.js"
+    },
+    {
+      "op": "move",
+      "module": "domain/evaluation/useEvaluation.js",
+      "to": "contexts/ruleengine/readmodel/useEvaluation.js"
+    },
+    {
+      "op": "split",
+      "module": "contexts/ruleengine/readmodel/useEvaluation.js",
+      "into": [
+        {
+          "id": "contexts/ruleengine/readmodel/useEvaluation.js",
+          "imports": [
+            "contexts/ruleengine/acl/rosterAdapter.js"
+          ],
+          "importedBy": [
+            "contexts/ruleengine/readmodel/index.js"
+          ]
+        },
+        {
+          "id": "contexts/ruleengine/readmodel/index.js",
+          "imports": [
+            "contexts/ruleengine/readmodel/slotIndex.js",
+            "contexts/ruleengine/readmodel/costDisplays.js",
+            "contexts/ruleengine/readmodel/violationStats.js",
+            "contexts/ruleengine/readmodel/listRuleGroups.js",
+            "contexts/ruleengine/readmodel/mandatoryListRules.js",
+            "contexts/ruleengine/readmodel/rosterReport.js",
+            "contexts/ruleengine/readmodel/armyWideSelectorSlots.js",
+            "contexts/ruleengine/readmodel/datasetDiagnostics.js",
+            "contexts/ruleengine/acl/rosterAdapter.js",
+            "contexts/ruleengine/acl/evaluationCache.js"
+          ],
+          "importedBy": [
+            "ui/viewmodels/useRosterState.js"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useRosterState.js",
+      "to": "contexts/ruleengine/readmodel/rosterReport.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useRosterList.js",
+      "to": "contexts/ruleengine/acl/evaluationCache.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useRosterDashboard.js",
+      "to": "contexts/ruleengine/acl/evaluationCache.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useRosterDashboard.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/usePlayUnit.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/usePlayUnit.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/usePlayRoster.js",
+      "to": "contexts/ruleengine/readmodel/useEvaluation.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/usePlayRoster.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useNewRosterModal.js",
+      "to": "contexts/ruleengine/acl/evaluationCache.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useNewRosterModal.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/useMandatoryListRuleAutoAdd.js",
+      "to": "contexts/ruleengine/readmodel/mandatoryListRules.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useValidationPanel.js",
+      "to": "contexts/ruleengine/readmodel/violationStats.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useValidationPanel.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useRosterSidebar.js",
+      "to": "contexts/ruleengine/readmodel/violationStats.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useRosterSidebar.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useRosterSidebar.js",
+      "to": "contexts/ruleengine/readmodel/costDisplays.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useRecruitOffer.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useListRuleChecklist.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useListRuleChecklist.js",
+      "to": "contexts/ruleengine/readmodel/listRuleGroups.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useForceSection.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useForceSection.js",
+      "to": "contexts/ruleengine/readmodel/armyWideSelectorSlots.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useCategorySection.js",
+      "to": "contexts/ruleengine/readmodel/violationStats.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useCategorySection.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useCategorySection.js",
+      "to": "contexts/ruleengine/readmodel/listRuleGroups.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    },
+    {
+      "op": "redirect",
+      "from": "ui/viewmodels/editor/useAutoFillSuggestions.js",
+      "to": "contexts/ruleengine/readmodel/slotIndex.js",
+      "via": "contexts/ruleengine/readmodel/index.js"
+    }
+  ]
+}
