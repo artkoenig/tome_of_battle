@@ -24,15 +24,15 @@ import { childSelectionsOf } from '../../domain/roster';
 import { findMissingMandatoryListRules } from '../../domain/evaluation/mandatoryListRules';
 import { findCapabilityEntry } from './capabilityEntries';
 import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFactory';
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /**
  * @param {Object} args
- * @param {import('../../domain/types.js').Roster} args.roster
+ * @param {import('../../shared/rostermodel/types.js').Roster} args.roster
  * @param {Object} args.system
  * @param {import('../../domain/evaluation/slotIndex.js').SlotIndex} args.slots
  * @param {boolean} [args.isFreshRoster] true when the roster was created in this session
- * @param {(roster: import('../../domain/types.js').Roster) => void} args.replaceRoster
+ * @param {(roster: import('../../shared/rostermodel/types.js').Roster) => void} args.replaceRoster
  */
 export function useMandatoryListRuleAutoAdd({ roster, system, slots, isFreshRoster, replaceRoster }) {
   useEffect(() => {

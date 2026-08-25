@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { loadSystems } from '../../domain/services/systemLibrary';
 import { loadRosters } from '../../domain/services/rosterStore';
 import { refreshSystems } from '../../domain/services/catalogRevisions';
-import { DATA_EVENT, subscribeToDataChanges } from '../../domain/services/dataEvents';
+import { DATA_EVENT, subscribeToDataChanges } from '../../shared/events/dataEvents';
 import { VIEWS } from '../../ui/constants/views';
 import { t } from '../i18n/i18nStore';
 
@@ -33,7 +33,7 @@ const LOAD_DATA_ERROR_KEY = 'appData.loadFailed';
  */
 const NO_SYSTEMS = [];
 
-/** @type {import('../../domain/types.js').Roster[]} */
+/** @type {import('../../shared/rostermodel/types.js').Roster[]} */
 const NO_ROSTERS = [];
 
 /**

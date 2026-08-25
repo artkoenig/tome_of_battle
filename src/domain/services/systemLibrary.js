@@ -7,7 +7,7 @@ import {
   catalogueDirectoryFromLinks,
 } from '../../data/parser/libraryDependencies';
 import { fetchCatalogText } from '../../data/db/catalogUpdate';
-import { DATA_EVENT, emitDataChange } from './dataEvents';
+import { DATA_EVENT, emitDataChange } from '../../shared/events/dataEvents';
 
 /**
  * Fassade über die installierten Spielsysteme und den Import neuer (ADR-0037).

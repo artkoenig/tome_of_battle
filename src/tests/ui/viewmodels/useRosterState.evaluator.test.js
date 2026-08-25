@@ -81,7 +81,7 @@ function appSystem() {
 }
 
 /**
- * Ein App-Roster (Shape aus `src/domain/types.js`): Warrior ×2 im einen Kontingent —
+ * Ein App-Roster (Shape aus `src/shared/rostermodel/types.js`): Warrior ×2 im einen Kontingent —
  * eine echte Verletzung der max-1-Grenze, Kosten 2 × 10 = 20 pts.
  * (`costLimit` ist das Feld des Adapter-Vertrags; `costLimitValue` steht
  * daneben, weil der Alt-Pfad des Hooks es historisch las.)

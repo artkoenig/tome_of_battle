@@ -24,9 +24,8 @@ export const VENDORED_XSD_PATH = resolve(repoRoot, 'src', 'data', 'parser', 'sch
 export const GENERATED_MODULE_PATH = resolve(
   repoRoot,
   'src',
-  'data',
-  'parser',
-  'schema',
+  'shared',
+  'battlescribe',
   'battlescribeSchema.generated.js',
 );
 

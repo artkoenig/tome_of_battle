@@ -103,7 +103,7 @@ function appSystem() {
   };
 }
 
-/** Eine App-Selection (Shape aus `src/domain/types.js`). */
+/** Eine App-Selection (Shape aus `src/shared/rostermodel/types.js`). */
 function selection(id, selectionEntryId, selections = []) {
   return {
     id,

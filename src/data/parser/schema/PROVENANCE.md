@@ -26,7 +26,8 @@ import validation, via a namespace swap between `catalogue`, `gameSystem` and
 
 ## Generated artifact
 
-`battlescribeSchema.generated.js` in this directory is produced from this XSD by
+`src/shared/battlescribe/battlescribeSchema.generated.js` (shared kernel, outside this
+directory since Issue 0186) is produced from this XSD by
 `npm run generate:schema`
 ([`scripts/generate-schema-module.js`](../../../scripts/generate-schema-module.js)).
 It is committed. A guard check
@@ -41,6 +42,7 @@ drifted — so any change to the XSD forces a conscious regeneration and review.
 2. Update the **Pin** table above (commit, date, SHA-256; run
    `shasum -a 256 Catalogue.xsd`).
 3. Run `npm run generate:schema` and review the diff in
-   `battlescribeSchema.generated.js` — new or changed enum values / attribute
+   `src/shared/battlescribe/battlescribeSchema.generated.js` — new or changed enum
+   values / attribute
    names surface here.
 4. Commit the XSD, the regenerated module and this file together.

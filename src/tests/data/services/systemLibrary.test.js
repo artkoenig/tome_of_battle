@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DATA_EVENT, subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { DATA_EVENT, subscribeToDataChanges } from '../../../shared/events/dataEvents';
 import {
   loadSystems,
   loadSystem,

@@ -4,7 +4,7 @@ import useAppData from '../../../ui/viewmodels/useAppData';
 import { getAllSystems, getAllRosters } from '../../../data/db/database';
 import { runSystemMigrations } from '../../../data/db/migrations';
 import { VIEWS } from '../../../ui/constants/views';
-import { DATA_EVENT, emitDataChange } from '../../../domain/services/dataEvents';
+import { DATA_EVENT, emitDataChange } from '../../../shared/events/dataEvents';
 
 vi.mock('../../../data/db/database', () => ({
   getAllSystems: vi.fn(),

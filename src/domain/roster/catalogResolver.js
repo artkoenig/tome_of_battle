@@ -1,4 +1,4 @@
-import { InfoLinkKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { InfoLinkKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 
 // A Battlescribe entry id may be qualified with the catalogue it came from
 // ("<catalogueId>::<entryId>"); only the trailing part identifies the entry.

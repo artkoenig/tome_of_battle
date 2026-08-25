@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DATA_EVENT, emitDataChange, subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { DATA_EVENT, emitDataChange, subscribeToDataChanges } from '../../../shared/events/dataEvents';
 
 describe('dataEvents', () => {
   const unsubscribers = [];

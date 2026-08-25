@@ -59,7 +59,7 @@ function describeRosterFileError(err) {
  * Kein Roster zum Loeschen vorgemerkt. Als Literal im `useState` faellt `null`
  * auf den Typ `null`.
  *
- * @type {import('../../domain/types.js').Roster|null}
+ * @type {import('../../shared/rostermodel/types.js').Roster|null}
  */
 const NOTHING_TO_DELETE = null;
 
@@ -122,7 +122,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
   };
 
   /**
-   * @param {import('../../domain/types.js').Roster} roster
+   * @param {import('../../shared/rostermodel/types.js').Roster} roster
    * @param {import('../../ui/constants/views.js').View} [viewMode]
    */
   const openRoster = (roster, viewMode = VIEWS.BUILDER) => {

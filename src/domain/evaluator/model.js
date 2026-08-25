@@ -26,7 +26,7 @@ export {
   ConstraintKind,
   ConditionGroupKind,
   InfoLinkKind,
-} from '../../data/parser/schema/battlescribeSchema.generated.js';
+} from '../../shared/battlescribe/battlescribeSchema.generated.js';
 
 /**
  * Diskriminator des gezaehlten Feldes einer Query. `SELECTION_COUNT` zaehlt

@@ -1,4 +1,4 @@
-import { ConstraintKind, ModifierKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { ConstraintKind, ModifierKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 import { AnchorKind } from './model.js';
 
 /**

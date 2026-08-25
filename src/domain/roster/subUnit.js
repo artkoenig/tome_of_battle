@@ -9,7 +9,7 @@
  * geben — vorher lagen sechs Kopien vor, zwei davon mit gegensätzlicher
  * Behandlung eines fehlenden `collective`-Attributs.
  */
-import { SelectionEntryKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { SelectionEntryKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 
 /** Nur diese Eintragsarten können eine eigenständige Untereinheit sein. */
 const SUB_UNIT_ENTRY_KINDS = Object.freeze([SelectionEntryKind.UNIT, SelectionEntryKind.MODEL]);

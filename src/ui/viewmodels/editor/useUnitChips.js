@@ -154,7 +154,7 @@ const getUpgradeDescription = (capability) => {
 const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /**
- * @param {{ selection: import('../../../domain/types.js').Selection }} args
+ * @param {{ selection: import('../../../shared/rostermodel/types.js').Selection }} args
  * @returns {{ upgrades: object[], rules: object[], system: Object|null }}
  */
 export function useUnitChips({ selection }) {

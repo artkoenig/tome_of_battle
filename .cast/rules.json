@@ -97,6 +97,24 @@
       "to": "src/domain/roster/**"
     },
     {
+      "name": "shared-haengt-an-nichts",
+      "severity": "error",
+      "from": "shared",
+      "to": "src/ui/**"
+    },
+    {
+      "name": "shared-haengt-an-nichts",
+      "severity": "error",
+      "from": "shared",
+      "to": "daten"
+    },
+    {
+      "name": "shared-haengt-an-nichts",
+      "severity": "error",
+      "from": "shared",
+      "to": "src/domain/**"
+    },
+    {
       "name": "evaluator-nur-ueber-fassade",
       "severity": "error",
       "from": "**",

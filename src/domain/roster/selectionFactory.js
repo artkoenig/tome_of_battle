@@ -1,6 +1,6 @@
-import { EntryLinkKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { EntryLinkKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 import { findMemberDefById } from './selectionMembers.js';
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /**
  * Reine, geteilte Selektions-Fabrik: erzeugt aus einem Katalog-Eintrag/-Link einen
@@ -30,13 +30,13 @@ import '../../domain/types.js';
  *   die Pflicht-Mitglieder dieses Slots aus dem Bericht. Ohne sie entsteht der
  *   Knoten allein — der Bericht kennt dann keinen Slot für diese Stelle, und wo
  *   er keine Pflicht sieht, legt die Fabrik auch keine an.
- * @returns {import('../../domain/types.js').Selection|null}  der Knoten, oder null bei unauflösbarem Eintrag.
+ * @returns {import('../../shared/rostermodel/types.js').Selection|null}  der Knoten, oder null bei unauflösbarem Eintrag.
  */
 export function createSelectionFromDef({ system, resolveEntry, catalogueId, entry, categoryId = null, mandatoryMembers = [] }) {
   const resolved = resolveEntry(system, entry, catalogueId);
   if (!resolved) return null;
 
-  /** @type {import('../../domain/types.js').Selection} */
+  /** @type {import('../../shared/rostermodel/types.js').Selection} */
   const selection = {
     id: crypto.randomUUID(),
     entryLinkId: entry.targetId ? entry.id : null,

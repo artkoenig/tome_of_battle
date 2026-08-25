@@ -1,4 +1,4 @@
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /**
  * Traversierungs-Primitive des Roster-Baums.
@@ -17,23 +17,23 @@ import '../../domain/types.js';
  * Geteilte, eingefrorene Instanz, damit ein fehlendes `selections`-Feld über
  * Aufrufe hinweg identitätsgleich bleibt und Identitätsvergleiche tragen.
  */
-const NO_SELECTIONS = /** @type {import('../../domain/types.js').Selection[]} */ (
-  Object.freeze(/** @type {import('../../domain/types.js').Selection[]} */ ([]))
+const NO_SELECTIONS = /** @type {import('../../shared/rostermodel/types.js').Selection[]} */ (
+  Object.freeze(/** @type {import('../../shared/rostermodel/types.js').Selection[]} */ ([]))
 );
 
 /** Effektive Anzahl einer Selection, wenn sie kein `number` trägt. */
 const IMPLICIT_SELECTION_COUNT = 1;
 
 /** Prädikat, das jede Selection akzeptiert (Vorgabe für {@link countSelections}). */
-/** @type {(selection: import('../../domain/types.js').Selection) => boolean} */
+/** @type {(selection: import('../../shared/rostermodel/types.js').Selection) => boolean} */
 const MATCHES_EVERY_SELECTION = () => true;
 
 /**
  * Die Kind-Selections eines Baumknotens. Knoten ist jede Struktur mit einem
  * `selections`-Feld — eine Selection ebenso wie eine Force, die die Wurzel ihres
  * eigenen Teilbaums bildet.
- * @param {{selections?: import('../../domain/types.js').Selection[]}|null|undefined} node
- * @returns {import('../../domain/types.js').Selection[]} nie `null`/`undefined`
+ * @param {{selections?: import('../../shared/rostermodel/types.js').Selection[]}|null|undefined} node
+ * @returns {import('../../shared/rostermodel/types.js').Selection[]} nie `null`/`undefined`
  */
 export function childSelectionsOf(node) {
   return node?.selections ?? NO_SELECTIONS;
@@ -42,8 +42,8 @@ export function childSelectionsOf(node) {
 /**
  * Die Wurzel-Selections des gesamten Rosters: die obersten Selections aller
  * Forces, zu einer Liste verflacht.
- * @param {import('../../domain/types.js').Roster|null|undefined} roster
- * @returns {import('../../domain/types.js').Selection[]}
+ * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster
+ * @returns {import('../../shared/rostermodel/types.js').Selection[]}
  */
 export function rootSelectionsOf(roster) {
   return (roster?.forces ?? NO_SELECTIONS).flatMap(force => childSelectionsOf(force));
@@ -52,7 +52,7 @@ export function rootSelectionsOf(roster) {
 /**
  * Die eigene Anzahl einer Selection, unabhängig von ihrem Elternknoten. Fehlt
  * `number`, zählt die Selection einfach.
- * @param {import('../../domain/types.js').Selection} selection
+ * @param {import('../../shared/rostermodel/types.js').Selection} selection
  * @returns {number}
  */
 export function ownCountOf(selection) {
@@ -67,8 +67,8 @@ export function ownCountOf(selection) {
  * Anzahl, Katalog-Id, Elternknoten) mit der Traversierung, statt in jedem
  * Aufrufer von Hand durch eine eigene Rekursion gefädelt zu werden.
  *
- * @param {import('../../domain/types.js').Selection[]|null|undefined} selections
- * @param {(selection: import('../../domain/types.js').Selection, context: any) => any} visit
+ * @param {import('../../shared/rostermodel/types.js').Selection[]|null|undefined} selections
+ * @param {(selection: import('../../shared/rostermodel/types.js').Selection, context: any) => any} visit
  * @param {any} [rootContext] Kontext der obersten Ebene
  */
 export function traverseSelectionTree(selections, visit, rootContext) {
@@ -87,7 +87,7 @@ export function traverseSelectionTree(selections, visit, rootContext) {
  * Kinder entsteht — Gesamtkosten eines Teilbaums, Serialisierung geschachtelter
  * XML-Elemente.
  *
- * @param {import('../../domain/types.js').Selection} selection Wurzel des Teilbaums
+ * @param {import('../../shared/rostermodel/types.js').Selection} selection Wurzel des Teilbaums
  * @param {{descend?: (selection: any, context: any) => any, combine: (selection: any, context: any, childResults: any[]) => any}} handlers
  * @param {any} [context] Kontext der Wurzel
  */
@@ -102,7 +102,7 @@ export function foldSelectionTree(selection, handlers, context) {
 
 /**
  * Sucht eine Selection beliebiger Tiefe anhand ihrer Id.
- * @returns {import('../../domain/types.js').Selection|null}
+ * @returns {import('../../shared/rostermodel/types.js').Selection|null}
  */
 export function findSelectionById(selections, selectionId) {
   if (!selectionId) return null;
@@ -116,7 +116,7 @@ export function findSelectionById(selections, selectionId) {
 
 /**
  * Sucht eine Selection beliebiger Tiefe im gesamten Roster anhand ihrer Id.
- * @returns {import('../../domain/types.js').Selection|null}
+ * @returns {import('../../shared/rostermodel/types.js').Selection|null}
  */
 export function findSelectionInRoster(roster, selectionId) {
   return findSelectionById(rootSelectionsOf(roster), selectionId);
@@ -140,7 +140,7 @@ export function someSelection(selections, predicate) {
  * die Kostenanzeige, Optionsanzeige und Profilsammlung gleichermaßen brauchen,
  * um die force-bezogenen Kategoriezählungen der Selection zuzuordnen.
  *
- * @param {import('../../domain/types.js').Roster|null|undefined} roster
+ * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster
  * @param {string} selectionId
  * @returns {Object|null} die Force oder `null`
  */
@@ -171,7 +171,7 @@ export function countSelections(selections, { includeChildSelections = false, pr
  * zuerst abgebildet, dann erzeugt `transform` aus Knoten und bereits
  * abgebildeten Kindern den Ersatzknoten. Der Eingabebaum bleibt unberührt.
  *
- * @param {import('../../domain/types.js').Selection} selection
+ * @param {import('../../shared/rostermodel/types.js').Selection} selection
  * @param {(selection: any, mappedChildren: any[]) => any} transform
  */
 export function mapSelectionTree(selection, transform) {
@@ -191,9 +191,9 @@ function withReplacedAt(nodes, index, node) {
  * passende Selection, wird die Eingabeliste unverändert zurückgegeben, sodass
  * Aufrufer „nichts geändert" an der Identität erkennen.
  *
- * @param {import('../../domain/types.js').Selection[]|null|undefined} selections
+ * @param {import('../../shared/rostermodel/types.js').Selection[]|null|undefined} selections
  * @param {string} selectionId
- * @param {(selection: import('../../domain/types.js').Selection) => import('../../domain/types.js').Selection} replaceSelection
+ * @param {(selection: import('../../shared/rostermodel/types.js').Selection) => import('../../shared/rostermodel/types.js').Selection} replaceSelection
  */
 export function replaceSelectionById(selections, selectionId, replaceSelection) {
   const nodes = selections ?? NO_SELECTIONS;

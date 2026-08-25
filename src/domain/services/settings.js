@@ -3,7 +3,7 @@ import {
   getWhfb6LinkingEnabled,
   setWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
 } from '../../data/db/database';
-import { DATA_EVENT, emitDataChange } from './dataEvents';
+import { DATA_EVENT, emitDataChange } from '../../shared/events/dataEvents';
 
 /**
  * Fassade über die App-Einstellungen (ADR-0037).

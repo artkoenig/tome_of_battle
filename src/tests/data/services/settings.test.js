@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DATA_EVENT, subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { DATA_EVENT, subscribeToDataChanges } from '../../../shared/events/dataEvents';
 import { WHFB6_LINKING_DEFAULT, loadWhfb6LinkingEnabled, saveWhfb6LinkingEnabled } from '../../../domain/services/settings';
 import * as database from '../../../data/db/database';
 

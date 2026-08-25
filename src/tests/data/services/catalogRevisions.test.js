@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { subscribeToDataChanges } from '../../../domain/services/dataEvents';
+import { subscribeToDataChanges } from '../../../shared/events/dataEvents';
 import {
   buildRawFileUrl,
   deriveRevisionState,

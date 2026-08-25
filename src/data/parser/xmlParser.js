@@ -1,4 +1,4 @@
-import { AttributeName, SelectionEntryKind } from './schema/battlescribeSchema.generated.js';
+import { AttributeName, SelectionEntryKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 import { PARSER_VERSION } from './parserVersion.js';
 
 /**

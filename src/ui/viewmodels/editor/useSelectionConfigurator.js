@@ -19,7 +19,7 @@ import { findSelectionById } from './optionRowDerivations.js';
  * In dieses ViewModel ist `editor/optionNesting.js` aufgegangen — die Zuordnung
  * Zeile → Roster-Selektion ist eine Ableitung des Konfigurators.
  *
- * @param {{ selection: import('../../../domain/types.js').Selection }} args
+ * @param {{ selection: import('../../../shared/rostermodel/types.js').Selection }} args
  * @returns {{ sections: object[], sectionsForRow: (rowSelectionId: string|null) => object[],
  *   system: Object|null, costTypeLabel: string }}
  */

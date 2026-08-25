@@ -16,7 +16,7 @@ import {
   withChangedOptionCount,
 } from '../../domain/roster';
 import { catalogueIdOfForce, catalogueIdContaining, createSelectionFactory } from './rosterSelectionFactory';
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /** Ohne benanntes Ziel-Kontingent hebt die App in das erste des Rosters aus. */
 const FALLBACK_FORCE_INDEX = 0;
@@ -25,9 +25,9 @@ const FALLBACK_FORCE_INDEX = 0;
  * Das eine Kontingent, in das eine ausgehobene Einheit gehört: das der aktiven
  * Ansicht, ersatzweise das erste des Rosters. Ein `.ros`-Import bringt beliebig
  * viele Kontingente mit, deshalb muss das Ziel eindeutig bestimmt sein.
- * @param {import('../../domain/types.js').Force[]} forces
+ * @param {import('../../shared/rostermodel/types.js').Force[]} forces
  * @param {string|null} targetForceId
- * @returns {import('../../domain/types.js').Force|null}
+ * @returns {import('../../shared/rostermodel/types.js').Force|null}
  */
 export function findTargetForce(forces, targetForceId) {
   if (!forces?.length) return null;
@@ -37,13 +37,13 @@ export function findTargetForce(forces, targetForceId) {
 /**
  * The write commands for one render of the state node.
  * @param {Object} args
- * @param {import('../../domain/types.js').Roster} args.roster
+ * @param {import('../../shared/rostermodel/types.js').Roster} args.roster
  * @param {Object} args.system
  * @param {import('../../domain/evaluation/slotIndex.js').SlotIndex} args.slots
  * @param {Function} args.setRoster undoable roster writer
  * @param {string|null} args.selectedSelectionId
  * @param {(selectionId: string|null) => void} args.setSelectedSelectionId
- * @param {(roster: import('../../domain/types.js').Roster) => Promise<void>} args.saveNow
+ * @param {(roster: import('../../shared/rostermodel/types.js').Roster) => Promise<void>} args.saveNow
  */
 export function createRosterCommands({
   roster, system, slots, setRoster, selectedSelectionId, setSelectedSelectionId, saveNow,
@@ -154,7 +154,7 @@ export function createRosterCommands({
    * Roster — durch das Ergebnis von `changeChildSelections`. Die gemeinsame
    * Verdrahtung aller Unter-Auswahl-Operationen mit dem Roster-State.
    * @param {string} unitSelectionId
-   * @param {(childSelections: import('../../domain/types.js').Selection[]) => import('../../domain/types.js').Selection[]} changeChildSelections
+   * @param {(childSelections: import('../../shared/rostermodel/types.js').Selection[]) => import('../../shared/rostermodel/types.js').Selection[]} changeChildSelections
    */
   const updateUnitChildSelections = (unitSelectionId, changeChildSelections) => {
     setRoster(prev => {

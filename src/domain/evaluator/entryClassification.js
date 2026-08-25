@@ -1,4 +1,4 @@
-import { ConstraintKind, SelectionEntryKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { ConstraintKind, SelectionEntryKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 import { DefinitionKind, ScopeKeyword } from './model.js';
 
 /**

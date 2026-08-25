@@ -1,6 +1,6 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { isIndependentSubUnit } from './subUnit.js';
-import { EntryLinkKind } from '../../data/parser/schema/battlescribeSchema.generated.js';
+import { EntryLinkKind } from '../../shared/battlescribe/battlescribeSchema.generated.js';
 
 /**
  * Die Modifikatoren einer Definition **flach**: die eigenen plus die aus jeder

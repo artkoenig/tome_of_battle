@@ -38,7 +38,7 @@ export const DATA_EVENT = Object.freeze({
 /**
  * Ein Ereignis nennt seine Art und den fertig geschriebenen Gegenstand.
  *
- * @typedef {{ type: 'roster-saved', roster: import('../../domain/types.js').Roster }
+ * @typedef {{ type: 'roster-saved', roster: import('../rostermodel/types.js').Roster }
  *   | { type: 'roster-deleted', rosterId: string }
  *   | { type: 'system-imported', system: object }
  *   | { type: 'system-deleted', systemId: string }

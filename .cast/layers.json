@@ -8,6 +8,7 @@
   "src/ui/**": "ui",
   "src/domain/**": "fachlogik",
   "src/data/**": "daten",
+  "src/shared/**": "shared",
   "src/tests/**": "tests",
   "src/**": "app",
   "scripts/**": "werkzeuge",

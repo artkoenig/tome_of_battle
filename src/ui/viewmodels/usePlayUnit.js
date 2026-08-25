@@ -104,7 +104,7 @@ export function profileTableHeadersOf(profiles) {
 
 /**
  * @param {{
- *   selection: import('../../domain/types.js').Selection,
+ *   selection: import('../../shared/rostermodel/types.js').Selection,
  *   system: object|null,
  *   roster: object|null,
  *   costTypes?: object[]|null,

@@ -9,7 +9,7 @@ import {
   ConditionKind,
   ConditionGroupKind,
   AttributeName,
-} from '../../../../data/parser/schema/battlescribeSchema.generated.js';
+} from '../../../../shared/battlescribe/battlescribeSchema.generated.js';
 
 const allEnums = {
   SelectionEntryKind,

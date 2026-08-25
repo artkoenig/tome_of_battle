@@ -2,7 +2,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
 import { childSelectionsOf, mapSelectionTree, traverseSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /**
  * Leere Force-Liste für Roster ohne `forces` — vermeidet Sonderfälle im Ablauf.
@@ -112,9 +112,9 @@ function syncSelectionTree(selection, system, catalogueId) {
  * Roster, oder — wenn nichts abzugleichen war — exakt das übergebene, sodass
  * Aufrufer „unverändert" am Identitätsvergleich erkennen.
  *
- * @param {import('../../domain/types.js').Roster} roster
+ * @param {import('../../shared/rostermodel/types.js').Roster} roster
  * @param {Object} system
- * @returns {import('../../domain/types.js').Roster} das abgeglichene Roster
+ * @returns {import('../../shared/rostermodel/types.js').Roster} das abgeglichene Roster
  */
 export function syncRosterSelectionsWithSystem(roster, system) {
   if (!roster || !system) return roster;
@@ -214,9 +214,9 @@ function reconcileUnitTree(unitSelection, system, catalogueId) {
  * Aufrufer „unverändert" am Identitätsvergleich erkennen. Natively erzeugte und
  * bereits angeglichene Roster kommen daher unverändert zurück (idempotent).
  *
- * @param {import('../../domain/types.js').Roster} roster
+ * @param {import('../../shared/rostermodel/types.js').Roster} roster
  * @param {Object} system
- * @returns {import('../../domain/types.js').Roster} das angeglichene Roster
+ * @returns {import('../../shared/rostermodel/types.js').Roster} das angeglichene Roster
  */
 export function reconcileImportedSelectionIds(roster, system) {
   if (!roster || !system) return roster;

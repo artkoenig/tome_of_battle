@@ -38,16 +38,20 @@ higher layer may import a lower one, a reach back from low to high is forbidden.
 | Layer | Directories | Responsibility |
 |---|---|---|
 | UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/styles/`, `src/ui/i18n/`, `src/ui/constants/` | Presentation and interaction |
-| Fachlogik | `src/domain/evaluator/`, `src/domain/evaluation/`, `src/domain/roster/`, `src/domain/services/`, `src/domain/rules/`, `src/domain/types.js` | Evaluation, write model, translation between the two, the data facade and the rule-text index ([ADR 0040](adr/0040-services-und-rules-von-daten-zu-fachlogik.md)) |
+| Fachlogik | `src/domain/evaluator/`, `src/domain/evaluation/`, `src/domain/roster/`, `src/domain/services/`, `src/domain/rules/` | Evaluation, write model, translation between the two, the data facade and the rule-text index ([ADR 0040](adr/0040-services-und-rules-von-daten-zu-fachlogik.md)) |
 | Daten | `src/data/db/`, `src/data/parser/` | Persistence, import, catalogue decomposition |
+| Shared kernel | `src/shared/rostermodel/types.js`, `src/shared/battlescribe/battlescribeSchema.generated.js`, `src/shared/events/dataEvents.js` | Vocabulary every layer shares and nothing depends back on: the list model typedefs, the vendored XSD enums and the data-change event bus (Issue 0186) |
 | Tests | `src/tests/` | Every `*.test.*`/`*.spec.*` file under `src`, mirroring the layer it tests, plus shared test setup (`test-utils/`) and sample catalogs (`__fixtures__/`) |
 
 Since issue 0171 the directories carry the layer names: every subsystem lives under
-`src/ui/`, `src/domain/`, `src/data/` or `src/tests/`. Issue 0179 dissolved `src/shared/`,
-the former home for what belonged to no layer: `constants/views.js` moved to
-`src/ui/constants/`, `types.js` to `src/domain/types.js`, and `test-utils/`/`__fixtures__/`
-to `src/tests/`. Only the entry point `src/main.jsx` and its `src/index.css` stay at the
-root of `src/`.
+`src/ui/`, `src/domain/`, `src/data/`, `src/shared/` or `src/tests/`. Issue 0179 had
+dissolved the first `src/shared/` — a catch-all for what belonged to no layer — and moved
+`constants/views.js` to `src/ui/constants/` and `test-utils/`/`__fixtures__/` to
+`src/tests/`. Issue 0186 reintroduces `src/shared/` with a narrower meaning: the shared
+kernels of the cut by subject, three leaf modules that import nothing and that every layer
+may read (`rostermodel/types.js`, `battlescribe/battlescribeSchema.generated.js`,
+`events/dataEvents.js`). The cast rule `shared-haengt-an-nichts` keeps its fan-out at zero.
+Only the entry point `src/main.jsx` and its `src/index.css` stay at the root of `src/`.
 
 `src/domain/services/` is the single address through which the UI reaches data. Four rules in
 `.cast/rules.json` (`ui-nicht-auf-daten`, `daten-kein-rueckgriff`,
@@ -59,7 +63,7 @@ dissolved: every file of it now sits in the layer it belongs to.
 
 | Folder | Responsibility |
 |---|---|
-| `src/domain/services/` | The data facade (ADR 0037, reclassified from Daten to Fachlogik by ADR 0040): `rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`, plus the one change channel `dataEvents.js`. Every writing call announces its completion there; `src/ui/viewmodels/useAppData.js` is the single place that subscribes. |
+| `src/domain/services/` | The data facade (ADR 0037, reclassified from Daten to Fachlogik by ADR 0040): `rosterStore.js`, `systemLibrary.js`, `settings.js`, `catalogRevisions.js`, `rosterTransfer.js`. The one change channel, `dataEvents.js`, is a shared kernel under `src/shared/events/` since issue 0186. Every writing call announces its completion there; `src/ui/viewmodels/useAppData.js` is the single place that subscribes. |
 | `src/data/parser/` | Imports uploaded `.cat`/`.gst`/`.zip` files: `zipExtractor.js`, `xmlParser.js`, advisory XSD validation (`schemaValidator.js`, [ADR 0016](adr/0016-battlescribe-xsd-als-vendored-konformitaetsquelle.md)), `catalogEditor.js`. Has its own XML reader — separate from the evaluator's, a common source of confusion. |
 | `src/data/db/` | IndexedDB persistence (`database.js`: stores `systems`/`rosters`/`settings`), migrations, catalog fork fetch (`catalogUpdate.js`, [ADR 0014](adr/0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md)/[0017](adr/0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md)/[0018](adr/0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md)); see [ADR 0002](adr/0002-data-flow-and-indexeddb-storage.md). |
 | `src/domain/roster/` | The app's **write model**: builds, resolves and rewrites the selection tree (`selectionFactory.js`, `rosterTree.js`, `catalogResolver.js`, `rosterSync.js`, `rosterSerialization.js` — the `.ros` XML export/import —, `createRoster.js`, `rosterDefaults.js`, ...). Structural only — it does not judge a roster ([ADR 0011](adr/0011-roster-referenzmodell-und-serialisierungs-adapter.md)). Barrel `index.js` is convenience only, not an enforced facade. |
@@ -156,7 +160,7 @@ Three layers, easy to conflate:
 ## `scripts/` — automation, not app code
 
 - **Codegen**: `generate-schema-module.js` (vendored `Catalogue.xsd` →
-  `src/data/parser/schema/battlescribeSchema.generated.js`),
+  `src/shared/battlescribe/battlescribeSchema.generated.js`),
   `generate-rules-index.js` (→ `src/domain/rules/rules-index.json`),
   `rules-crawler.js`.
 - **Release**: `release.js`, `versioning.js`, `deployEnv.js`.
