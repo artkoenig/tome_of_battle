@@ -25,7 +25,12 @@ Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch.
   Sie werden **nur** vom `e2e-testcase-author`-Subagenten geschrieben, ausschließlich aus
   Katalogdaten (ADR 0033) — nicht nebenbei in einem Implementierungslauf.
 - `docs/` wird als GitHub Pages ausgeliefert (Jekyll). `docs/index.html` ist die committete
-  Platzhalter-Wurzel; `/status` ist reine Build-Ausgabe des Zustandsbericht-Workflows und wird
-  nie committet.
+  Landing-Page (statisches HTML plus `docs/assets/landing.css` und `landing.js`, kein Build-Schritt,
+  kein Test deckt sie ab — Kriterien werden per `grep` geprüft); `/status` ist reine Build-Ausgabe
+  des Zustandsbericht-Workflows und wird nie committet.
+- In `docs/assets/` liegen die Bilder der Landing-Page. Es ist **kein** Bildwerkzeug installiert
+  (kein sharp, kein PIL, kein ImageMagick). Ein PNG verkleinern geht nur mit einem eigenen
+  Node-Skript über `zlib` (inflate → unfilter → Box-Downsampling → deflate); das funktioniert für
+  8-Bit-, nicht-interlaced-PNGs, und genau die liegen hier.
 - Querverweise zwischen den Dokumenten sind relative Links. Wer eine Datei umbenennt, zieht die
   Verweise nach — kaputte Links fallen in keinem Test auf.
