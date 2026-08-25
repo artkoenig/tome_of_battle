@@ -2,7 +2,9 @@
    Epic Battlefield - Dark Fantasy Design System & Landing Page Styles
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+/* The web font is loaded from index.html (preconnect + <link>), not through an
+   @import here: an @import is discovered only after this file has been parsed,
+   which delays the font request by a whole round trip. */
 
 :root {
   /* Color Palette */
@@ -51,6 +53,9 @@
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  /* iOS boosts the font of a body-width block in landscape unless this is pinned. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -60,6 +65,16 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Suppresses the 300 ms double-tap-to-zoom gesture on every control without
+   taking pinch zoom away (WCAG 1.4.4 — the viewport meta stays scalable). */
+a,
+button,
+label,
+summary,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 a {
@@ -155,6 +170,11 @@ img {
 }
 
 .lang-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
   padding: 0.35rem 0.7rem;
   font-family: var(--font-heading);
   font-weight: 600;
@@ -225,6 +245,8 @@ img {
 .hero-section {
   position: relative;
   min-height: 100vh;
+  /* Visible viewport: a mobile URL bar must not push the fold off-screen. */
+  min-height: 100dvh;
   padding-top: 140px;
   padding-bottom: 100px;
   display: flex;
@@ -552,16 +574,67 @@ img {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .nav-links {
-    display: none;
+  /* The navigation stays reachable instead of vanishing: the header wraps into
+     two rows and the links keep a 44px tap target. */
+  .nav-wrapper {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.5rem 0;
+    row-gap: 0.25rem;
   }
-  
+
+  .nav-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
   .status-banner {
     flex-direction: column;
     text-align: center;
   }
   
   .hero-section {
-    padding-top: 120px;
+    padding-top: 160px;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-links {
+    gap: 0.85rem;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+  }
+}
+
+/* Reduced motion: no smooth scrolling, no transitions, no animations. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
   }
 }
