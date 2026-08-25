@@ -1,7 +1,7 @@
 ---
 status: done
 branch: claude/mobile-zoom-best-practices-gnm29g
-pr:
+pr: 264
 ---
 
 # Block pinch zoom on the landing page and the status page
