@@ -1,4 +1,4 @@
-import { RosterFileError } from '../../domain/services/rosterTransfer.js';
+import { RosterFileError } from './rosterFileError.js';
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';

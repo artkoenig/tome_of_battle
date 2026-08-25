@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
 
+import { RosterFileError } from '../roster/rosterFileError.js';
+
 /**
  * Fassade über den Datei-Austausch eines Rosters (ADR-0037): das Auspacken einer
  * `.ros`/`.rosz`-Datei zu ihrem XML-Text und das Packen eines solchen Textes zu
@@ -13,34 +15,16 @@ import JSZip from 'jszip';
  * - `buildRosterFile(rosterName, xmlText)` liefert `{ blob, fileName }` — ein
  *   fertiges `.rosz` samt dateisystemtauglichem Namen. Den Download löst die
  *   Oberfläche aus: ein `<a download>` ist Darstellung, keine Persistenz.
- * - `RosterFileError` ist der Fehler, den beide Richtungen werfen. Er trägt den
- *   Übersetzungsschlüssel, nicht den Text: die
- *   Schicht übersetzt nicht (`keine-i18n-unter-ui`), die Oberfläche formuliert.
+ * - `RosterFileError` ist der Fehler, den beide Richtungen werfen. Er wohnt im
+ *   Schreibmodell (`src/domain/roster/rosterFileError.js`), weil er das
+ *   Dateiformat beschreibt, und trägt den Übersetzungsschlüssel, nicht den
+ *   Text: die Schicht übersetzt nicht (`keine-i18n-unter-ui`), die Oberfläche
+ *   formuliert.
  *
  * Beides schreibt nichts in die Ablage und meldet deshalb nichts über
  * `dataEvents`. Ein Import wird erst durch `rosterStore.saveRoster` bleibend —
  * und meldet sich dort.
  */
-
-/**
- * Ein Fehler des Datei-Austauschs. `messageKey`/`messageParams` benennen den
- * Nutzertext, `detail` trägt die technische Ergänzung (z. B. die Meldung der
- * ZIP-Bibliothek), die die Oberfläche in Klammern anhängt.
- */
-export class RosterFileError extends Error {
-  /**
-   * @param {string} messageKey
-   * @param {Object|null} [messageParams]
-   * @param {string|null} [detail]
-   */
-  constructor(messageKey, messageParams = null, detail = null) {
-    super(messageKey);
-    this.name = 'RosterFileError';
-    this.messageKey = messageKey;
-    this.messageParams = messageParams;
-    this.detail = detail;
-  }
-}
 
 // Zeichen, die in einem Dateinamen nicht vorkommen dürfen.
 const UNSAFE_FILE_NAME_CHARS = /[/\\?%*:|"<>]/g;

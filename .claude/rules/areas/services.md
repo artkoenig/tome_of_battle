@@ -28,15 +28,20 @@ nach Fachlogik durch ADR-0040/Issue 0179). Fünf Fassaden plus der eine Änderun
 - Die Ereignisarten sind eine getypte Union (`DataChangeEvent` in `dataEvents.js`). Ein neues
   Feld nur im `emitDataChange`-Aufruf lässt `forge-typecheck` rot werden — die Union zuerst
   erweitern.
-- Die Schicht kennt `src/ui/i18n/` nicht (`keine-i18n-unter-ui`) und greift nicht auf
-  `src/domain/roster/`/`src/domain/evaluation/` zurück (`daten-kein-rueckgriff`). Deshalb liefert
+- Die Schicht kennt `src/ui/i18n/` nicht (`keine-i18n-unter-ui`) und greift nicht auf die
+  Deutung eines Rosters zurück. `daten-kein-rueckgriff` (`.cast/rules.json`) verbietet den Weg
+  von `daten` (= `src/data/**`) nach `src/domain/**`; seit ADR-0040 liegt diese Schicht selbst
+  unter `src/domain/`, ein Import aus `src/domain/roster/` fällt also nicht darunter — Issue 0187
+  holt `RosterFileError` genau so von dort. Der **fachliche** Verzicht bleibt: deshalb liefert
   `rosterTransfer` nur den Datei-Inhalt **so, wie die Datei ihn trägt**; der Abgleich
   mit dem installierten System bleibt beim Aufrufer: `readRosterText` liefert den XML-Text,
   gedeutet wird er von `src/domain/roster/rosterSerialization.js`, zusammengesetzt in
   `useRosterList`. `src/utils/` als regelkonformer Umweg gibt es seit Issue 0169 nicht mehr —
   beide Schichtregeln sind blockierend.
-- Ein Fehler dieser Schicht trägt seinen Übersetzungsschlüssel, nie den Text: `rosterFileError`
-  in `rosterTransfer.js` setzt `messageKey`/`messageParams`/`detail`, und
+- Ein Fehler dieser Schicht trägt seinen Übersetzungsschlüssel, nie den Text: `RosterFileError`
+  wohnt seit Issue 0187 im Schreibmodell (`src/domain/roster/rosterFileError.js`) — er beschreibt
+  das Dateiformat, nicht die Fassade —, `rosterTransfer.js` importiert ihn von dort und setzt
+  `messageKey`/`messageParams`/`detail`, und
   `describeRosterFileError` in `src/ui/viewmodels/useRosterList.js` formuliert ihn.
 - Tests hier mocken die `src/data/db/`-Module mit `vi.mock` statt IndexedDB hochzufahren (es gibt kein
   globales `fake-indexeddb`-Setup). Ein bestehender Test eines Verbrauchers bleibt dadurch grün,

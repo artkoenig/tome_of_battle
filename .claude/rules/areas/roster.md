@@ -55,7 +55,8 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   and drop the barrel line in the same change.
 - The folder is Fachlogik and therefore **translates nothing** (`keine-i18n-unter-ui`, `error`
   since Issue 0169). An error carries `messageKey`/`messageParams` (`MissingSystemError`,
-  `RosterFileError` from `src/domain/services/rosterTransfer.js`); `describeRosterFileError` in
+  `RosterFileError` in `src/domain/roster/rosterFileError.js`, seit Issue 0187 hier statt in
+  `src/domain/services/rosterTransfer.js`, das ihn nun von hier importiert); `describeRosterFileError` in
   `src/ui/viewmodels/useRosterList.js` is the one place that formulates them. A test here asserts on the
   key, never on German text.
 - `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`

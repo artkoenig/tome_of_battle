@@ -7,7 +7,8 @@ import {
   importRosterFromXml,
   MissingSystemError,
 } from '../../../domain/roster/rosterSerialization';
-import { readRosterText, buildRosterFile, RosterFileError } from '../../../domain/services/rosterTransfer';
+import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
+import { RosterFileError } from '../../../domain/roster/rosterFileError.js';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
 import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache';
 
