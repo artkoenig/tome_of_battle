@@ -6,7 +6,7 @@ import {
   importRosterFromXml,
   MissingSystemError
 } from '../../../domain/roster/rosterSerialization.js';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 // Setup DOMParser and Crypto for the test Node environment
 beforeAll(() => {

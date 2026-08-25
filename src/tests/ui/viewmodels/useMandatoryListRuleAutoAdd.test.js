@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
-vi.mock('../../../domain/evaluation/mandatoryListRules', () => ({
+vi.mock('../../../contexts/ruleengine/readmodel/mandatoryListRules', () => ({
   findMissingMandatoryListRules: vi.fn(() => []),
 }));
 vi.mock('../../../ui/viewmodels/capabilityEntries', () => ({
   findCapabilityEntry: vi.fn(capability => ({ id: capability.defId, name: capability.defId })),
 }));
 
-import { findMissingMandatoryListRules } from '../../../domain/evaluation/mandatoryListRules';
+import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/readmodel/mandatoryListRules';
 import { useMandatoryListRuleAutoAdd } from '../../../ui/viewmodels/useMandatoryListRuleAutoAdd';
 
 /**

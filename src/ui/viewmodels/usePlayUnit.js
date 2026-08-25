@@ -3,8 +3,7 @@ import {
   findEntryInSystem, resolveEntry,
   MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
 } from '../../domain/roster';
-import { costLimitLabelOf, costLimitTypeIdOf } from '../../domain/evaluation/costDisplays';
-import { EMPTY_SLOT_INDEX } from '../../domain/evaluation/slotIndex';
+import { costLimitLabelOf, costLimitTypeIdOf, EMPTY_SLOT_INDEX } from '../../contexts/ruleengine/readmodel/index.js';
 import { profileCellDisplayOf } from './editor/useUnitCard';
 
 /**
@@ -109,7 +108,7 @@ export function profileTableHeadersOf(profiles) {
  *   roster: object|null,
  *   costTypes?: object[]|null,
  *   capability?: object|null,
- *   slots?: import('../../domain/evaluation/slotIndex.js').SlotIndex,
+ *   slots?: import('../../contexts/ruleengine/readmodel/index.js').SlotIndex,
  *   getUnitCurrentWounds: (selectionId: string, totalMaxWounds: number) => number,
  *   isSubUnit?: boolean,
  * }} args

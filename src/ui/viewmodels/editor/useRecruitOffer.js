@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { resolveCostLimitTypeId, resolveCostLimitLabel } from '../../../domain/roster';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
+import { EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 
 /** Die Ankerarten, deren Slots im Dialog als Kandidaten erscheinen. */

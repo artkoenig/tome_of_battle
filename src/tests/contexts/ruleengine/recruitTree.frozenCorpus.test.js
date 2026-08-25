@@ -5,9 +5,9 @@ import { processImportedData } from '../../../data/parser/xmlParser.js';
 import { resolveEntry } from '../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../domain/roster/selectionFactory.js';
 import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex.js';
-import EXPECTED_TREES from '../../../domain/evaluation/__fixtures__/recruit-trees-pre-0157.json';
+import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex.js';
+import EXPECTED_TREES from '../../../contexts/ruleengine/readmodel/__fixtures__/recruit-trees-pre-0157.json';
 
 /**
  * Issue 0157, Kriterium 1 — das Ausheben legt denselben Auswahlbaum an wie vor

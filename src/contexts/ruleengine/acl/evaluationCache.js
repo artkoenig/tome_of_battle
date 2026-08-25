@@ -34,16 +34,16 @@
  *   (fehlende oder leere `.gst`-Liste) → `null`.
  */
 
-import { prepareDataset, evaluate, describeDataset } from '../evaluator/evaluator.js';
+import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
 import { toEvaluatorRoster, slotPathsOf } from './rosterAdapter.js';
-import { SlotIndex, EMPTY_SLOT_INDEX } from './slotIndex.js';
+import { SlotIndex, EMPTY_SLOT_INDEX } from '../readmodel/slotIndex.js';
 
 /**
  * Das Ergebnis der App-Auswertung — die Form, die die ganze Oberflaeche liest.
  *
  * @typedef {Object} AppEvaluation
  * @property {ReadonlyArray<object>} violations  Verletzungen aus dem Bericht der Fassade.
- * @property {import('./slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts
+ * @property {import('../readmodel/slotIndex.js').SlotIndex} slots  Die Slot-Seite des Berichts
  *   als **ein** Wertobjekt (Issue 0170): die Faehigkeitsdatensaetze je Slot-Pfad
  *   und die beiden Pfadzuordnungen, die in sie hineinfuehren, samt der reinen
  *   Lookups darauf. Die drei Strukturen reist niemand mehr einzeln.
@@ -128,7 +128,7 @@ function preparedDatasetOf(system) {
  * dieselben Pfade, dieselben Verletzungen, dieselben Kosten.
  *
  * @param {object|null|undefined} system  App-System-Objekt mit `rawXmls`.
- * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster  das App-Roster.
+ * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster  das App-Roster.
  * @returns {AppEvaluation}
  */
 export function evaluateAppRoster(system, roster) {
@@ -175,7 +175,7 @@ export function evaluateAppRoster(system, roster) {
  * Ohne Diagnose bleiben die schon gebauten Zuordnungen unveraendert — der
  * Normalfall kostet nichts.
  *
- * @param {import('../../shared/rostermodel/types.js').Roster} roster
+ * @param {import('../../../shared/rostermodel/types.js').Roster} roster
  * @param {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }} naivePaths
  * @param {ReadonlyArray<object>|undefined} diagnostics
  * @returns {{ pathBySelectionId: Map<string, string>, pathByForceId: Map<string, string> }}

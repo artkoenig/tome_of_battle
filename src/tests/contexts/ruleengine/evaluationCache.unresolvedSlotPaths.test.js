@@ -22,7 +22,7 @@
  * 4. Ohne `unresolvedDefinition`-Diagnose bleibt die Zuordnung wie heute.
  *
  * Beobachtet wird am Rand, den die Oberflaeche benutzt: `evaluateAppRoster`
- * (`src/domain/evaluation/evaluationCache.js`) — welcher Faehigkeitsdatensatz gehoert zu
+ * (`src/contexts/ruleengine/acl/evaluationCache.js`) — welcher Faehigkeitsdatensatz gehoert zu
  * welcher App-Selection-UUID. Der Adapter allein kann Aufloesbarkeit nicht
  * kennen; wo die Korrektur sitzt, ist deshalb bewusst offen gelassen.
  *
@@ -35,7 +35,7 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

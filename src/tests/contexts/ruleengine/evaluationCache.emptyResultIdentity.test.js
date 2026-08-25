@@ -28,8 +28,8 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useEvaluation } from '../../../domain/evaluation/useEvaluation.js';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

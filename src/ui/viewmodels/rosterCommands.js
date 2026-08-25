@@ -39,7 +39,7 @@ export function findTargetForce(forces, targetForceId) {
  * @param {Object} args
  * @param {import('../../shared/rostermodel/types.js').Roster} args.roster
  * @param {Object} args.system
- * @param {import('../../domain/evaluation/slotIndex.js').SlotIndex} args.slots
+ * @param {import('../../contexts/ruleengine/readmodel/index.js').SlotIndex} args.slots
  * @param {Function} args.setRoster undoable roster writer
  * @param {string|null} args.selectedSelectionId
  * @param {(selectionId: string|null) => void} args.setSelectedSelectionId

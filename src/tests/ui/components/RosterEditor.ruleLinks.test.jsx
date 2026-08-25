@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from '../../../ui/components/RosterEditor';

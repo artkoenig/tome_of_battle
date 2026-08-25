@@ -10,7 +10,7 @@ import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
 import { rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 /**
  * Issue 0143 — „Die Einheitenkarte verliert die Gruppenzugehoerigkeit:

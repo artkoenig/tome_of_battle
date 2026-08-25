@@ -82,7 +82,7 @@
       }
     },
     {
-      "files": ["src/domain/evaluation/**"],
+      "files": ["src/contexts/ruleengine/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -94,7 +94,7 @@
               },
               {
                 "group": ["**/roster/**"],
-                "message": "Die Auswertungs-Bruecke src/domain/evaluation/ braucht das Schreibmodell src/domain/roster/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
+                "message": "Die Auswertungs-Bruecke src/contexts/ruleengine/ braucht das Schreibmodell src/domain/roster/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
               }
             ]
           }

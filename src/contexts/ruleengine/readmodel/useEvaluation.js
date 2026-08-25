@@ -35,7 +35,7 @@
  */
 
 import { useMemo } from 'react';
-import { evaluateAppRoster } from './evaluationCache.js';
+import { evaluateAppRoster } from '../acl/evaluationCache.js';
 
 /**
  * Wertet ein App-Roster gegen die Katalogdaten seines Systems aus.
@@ -43,9 +43,9 @@ import { evaluateAppRoster } from './evaluationCache.js';
  * @param {{ rawXmls?: { gst: Array<{ name: string, content: string }>, cat: Array<{ name: string, content: string }> } } | null | undefined} system
  *   Das App-System-Objekt mit den rohen XMLs; `null`/`undefined` oder ohne
  *   (vollstaendiges) `rawXmls` → Leer-Ergebnis.
- * @param {import('../../shared/rostermodel/types.js').Roster | null | undefined} roster
+ * @param {import('../../../shared/rostermodel/types.js').Roster | null | undefined} roster
  *   Das App-Roster; `null`/`undefined` → Leer-Ergebnis.
- * @returns {import('./evaluationCache.js').AppEvaluation}
+ * @returns {import('../acl/evaluationCache.js').AppEvaluation}
  */
 export function useEvaluation(system, roster) {
   return useMemo(() => evaluateAppRoster(system, roster), [system, roster]);

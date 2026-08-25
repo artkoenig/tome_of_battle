@@ -7,8 +7,8 @@
  * behauptet wird, faellt in der Oberfläche lautlos aus.
  */
 import { describe, it, expect } from 'vitest';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex.js';
-import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups.js';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex.js';
+import { resolveListRuleGroupFromReport } from '../../../contexts/ruleengine/readmodel/listRuleGroups.js';
 
 const CATEGORY = 'cat-list-rules';
 

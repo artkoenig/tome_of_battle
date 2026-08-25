@@ -5,7 +5,7 @@ import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
 } from '../../domain/roster/rosterSerialization';
 import { buildRoster } from '../../domain/roster/createRoster';
-import { evaluateAppRoster } from '../../domain/evaluation/evaluationCache';
+import { evaluateAppRoster } from '../../contexts/ruleengine/readmodel/index.js';
 import { VIEWS } from '../../ui/constants/views';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../domain/roster';
 import { t } from '../i18n/i18nStore';

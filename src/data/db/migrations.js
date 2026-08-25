@@ -17,7 +17,7 @@ function hasStoredXml(system) {
  * This is the whole point of the marker (Issue 0168): without it every migration
  * run re-parsed every stored catalogue — megabytes of XML — and handed the app a
  * brand-new system object, which invalidated the identity-keyed evaluation cache
- * (`src/domain/evaluation/evaluationCache.js`) along the way. A system stored before the
+ * (`src/contexts/ruleengine/acl/evaluationCache.js`) along the way. A system stored before the
  * marker existed carries no `parserVersion`, differs from the current one and is
  * therefore re-parsed exactly once; the write that follows stamps the marker, so
  * the next start leaves it alone.

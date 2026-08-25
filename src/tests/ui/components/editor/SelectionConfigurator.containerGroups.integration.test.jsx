@@ -12,7 +12,7 @@ import { replaceSelectionById, rootSelectionsOf } from '../../../../domain/roste
 import { withChangedOptionCount } from '../../../../domain/roster/subSelectionEditing.js';
 import { getUnitOptions } from '../../../../domain/roster/optionsCollector.js';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 /**
  * Issue 0131 — Eine „Container-Gruppe" (ein `selectionEntryGroup`, dessen Kinder

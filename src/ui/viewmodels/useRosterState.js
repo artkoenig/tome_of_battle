@@ -26,7 +26,7 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 
 import { findSelectionInRoster } from '../../domain/roster';
-import { useRosterReportModel } from '../../domain/evaluation/rosterReport';
+import { useRosterReportModel } from '../../contexts/ruleengine/readmodel/index.js';
 import { useUndoableState } from './useUndoableState';
 import { createRosterCommands } from './rosterCommands';
 import { useRosterPersistence } from './useRosterPersistence';

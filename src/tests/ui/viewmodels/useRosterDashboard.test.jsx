@@ -16,7 +16,7 @@ import { renderHook, act } from '@testing-library/react';
 const evaluateAppRoster = vi.fn(() => ({ costTotals: { pts: 120 } }));
 const describeSystem = vi.fn(() => ({ costTypes: [{ id: 'pts', name: 'Punkte' }] }));
 
-vi.mock('../../../domain/evaluation/evaluationCache', () => ({
+vi.mock('../../../contexts/ruleengine/acl/evaluationCache', () => ({
   evaluateAppRoster: (...args) => evaluateAppRoster(...args),
   describeSystem: (...args) => describeSystem(...args),
 }));

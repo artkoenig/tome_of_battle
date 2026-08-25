@@ -16,7 +16,7 @@
  * aktualisieren sich `violations` und `costTotals`.
  *
  * Aufbau: synthetisches System mit `system.rawXmls` (Muster und Datensatz aus
- * `src/domain/evaluation/useEvaluation.test.js`); die erwarteten Werte wurden per
+ * `src/contexts/ruleengine/readmodel/useEvaluation.test.js`); die erwarteten Werte wurden per
  * Wegwerf-Skript gegen die echte Fassade verifiziert (Warrior ×2 gegen
  * max 1 je Kontingent → genau eine Verletzung, Kosten 20 pts; ohne die
  * Auswahl → keine Verletzung, Kosten 0 pts).

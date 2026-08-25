@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PlayUnitDetails from '../../../../ui/components/play/PlayUnitDetails';
-import { evaluateAppRoster } from '../../../../domain/evaluation/evaluationCache.js';
+import { evaluateAppRoster } from '../../../../contexts/ruleengine/acl/evaluationCache.js';
 
 // End-to-end renderer coverage for infoGroups (slice 04, umgestellt mit Issue
 // 0121, Task 7): a profile bundled through an inline infoGroup must actually

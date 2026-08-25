@@ -10,7 +10,7 @@ import {
   syncRosterSelectionsWithSystem,
   resolveEntry
 } from '../../../domain/roster/index.js';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 import { getUnitOptions } from '../../../domain/roster/optionsCollector.js';
 
 // End-to-end round-trips against the REAL WHFB6 catalogues (src/tests/__fixtures__/whfb6)

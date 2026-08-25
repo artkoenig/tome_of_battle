@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
 
-import { useRosterReportModel } from '../../../domain/evaluation/rosterReport';
+import { useRosterReportModel } from '../../../contexts/ruleengine/readmodel/rosterReport';
 import { processImportedData } from '../../../data/parser/xmlParser';
 import { buildRoster } from '../../../domain/roster/createRoster';
 

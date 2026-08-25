@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { saveRoster } from '../../domain/services/rosterStore';
 import { findForceEntryById, childSelectionsOf } from '../../domain/roster';
-import { useEvaluation } from '../../domain/evaluation/useEvaluation';
-import { costLimitTypeIdOf, extraResourceTotalsOf } from '../../domain/evaluation/costDisplays';
+import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
 import { useRuleUrl } from './useRuleUrl';
 import { useTranslation } from '../i18n/useTranslation';

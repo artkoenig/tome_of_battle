@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { describeSystem } from '../../domain/evaluation/evaluationCache';
-import { costLimitLabelOf } from '../../domain/evaluation/costDisplays';
+import { describeSystem, costLimitLabelOf } from '../../contexts/ruleengine/readmodel/index.js';
 import { DEFAULT_ROSTER_COST_LIMIT } from '../../domain/roster/rosterDefaults';
 
 /**

@@ -3,7 +3,7 @@
  * Falsifikator.
  *
  * Seit der Zusammenlegung von Hook und Direktaufruf cached
- * `src/domain/evaluation/evaluationCache.js` neben `prepareDataset` auch
+ * `src/contexts/ruleengine/acl/evaluationCache.js` neben `prepareDataset` auch
  * `describeDataset` je aufbereitetem Datensatz. Diese Zusage stand bisher nur
  * im Log des Issues: der Pruefer hat den Cache probeweise ausgeschaltet und
  * **alle** Faelle blieben gruen. Diese Datei schliesst die Beweisluecke — sie
@@ -44,8 +44,8 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
 });
 
 import { describeDataset } from '../../../domain/evaluator/evaluator.js';
-import { useEvaluation } from '../../../domain/evaluation/useEvaluation.js';
-import { evaluateAppRoster, describeSystem } from '../../../domain/evaluation/evaluationCache.js';
+import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

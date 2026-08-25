@@ -12,7 +12,7 @@ import { replaceSelectionById, rootSelectionsOf } from '../../../../domain/roste
 import { withChangedOptionCount } from '../../../../domain/roster/subSelectionEditing.js';
 import { getUnitOptions } from '../../../../domain/roster/optionsCollector.js';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // Issue 57/05 — the visual counterpart to the 57/04 data-model fix, exercised through the
 // REAL editor against the REAL Vampire Counts catalogue. The same shape as the reported

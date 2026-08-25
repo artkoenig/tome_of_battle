@@ -10,8 +10,8 @@ import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
 import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
 import { rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
-import { SlotIndex } from '../../../../domain/evaluation/slotIndex.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { SlotIndex } from '../../../../contexts/ruleengine/readmodel/slotIndex.js';
 
 /**
  * Issue 0145, increment 2, Kriterien 3, 4 und 6 — über ALLE Einheiten der

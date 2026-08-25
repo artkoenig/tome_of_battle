@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { SlotIndex, EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex.js';
+import { SlotIndex, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/slotIndex.js';
 
 const CATEGORY = 'cat-core';
 

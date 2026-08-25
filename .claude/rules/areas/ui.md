@@ -31,7 +31,7 @@ paths:
   - Four rules keep it. Only the oxlint `no-restricted-imports` override on
     `src/ui/components/**` (the hook ban) still fails `forge-lint`; the three module-edge rules
     in `.cast/rules.json` are `error` since Issue 0181 and block just as well: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
-    `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
+    `komponente-kein-bericht` (`src/ui/components/` → `src/contexts/ruleengine/`, `src/domain/evaluator/`) and
     `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
     `usePlayRoster` and `useImporter`, whose direct data edges Issue 0167 moves onto
@@ -92,7 +92,7 @@ paths:
   slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
   `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`, plus
   `isHidden`, `primaryCategoryId` and the info projection `infoElements`. Read them
-  through `report.slots`, the `SlotIndex` of `src/domain/evaluation/slotIndex.js` (`slotOfSelection`,
+  through `report.slots`, the `SlotIndex` of `src/contexts/ruleengine/readmodel/slotIndex.js` (`slotOfSelection`,
   `isIndependentSubUnitSlot`, `childSlotsOf`, `findCategoryAnchorSlot`, `hasUnitSlotsInCategory`),
   or through the derivations next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`), which
   take that index rather than a bare `capabilities` map.

@@ -24,8 +24,8 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
 });
 
 import { evaluate } from '../../../domain/evaluator/evaluator.js';
-import { useEvaluation } from '../../../domain/evaluation/useEvaluation.js';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

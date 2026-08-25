@@ -28,8 +28,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { exportRosterToXml } from '../../../domain/roster/rosterSerialization.js';
 import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache.js';
+import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

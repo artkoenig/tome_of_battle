@@ -1,5 +1,5 @@
 /**
- * Issue 0121, Task 5 — Blockierungs-Helfer `src/domain/evaluation/violationStats.js`
+ * Issue 0121, Task 5 — Blockierungs-Helfer `src/contexts/ruleengine/readmodel/violationStats.js`
  * (existiert noch nicht; test-first).
  *
  * Intention: Die UI braucht eine eine Stelle, die entscheidet, welche
@@ -22,7 +22,7 @@ import {
   isBlockingViolation,
   countBlockingViolations,
   hasBlockingViolations,
-} from '../../../domain/evaluation/violationStats.js';
+} from '../../../contexts/ruleengine/readmodel/violationStats.js';
 
 /** Eine abgeleitete Verletzung in der veröffentlichten Berichtsform. */
 function derivedViolation({ severity = 'error' } = {}) {

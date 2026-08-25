@@ -10,7 +10,7 @@ import {
 import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
 import { RosterFileError } from '../../../domain/roster/rosterFileError.js';
 import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
-import { evaluateAppRoster } from '../../../domain/evaluation/evaluationCache';
+import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache';
 
 vi.mock('../../../data/db/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
@@ -34,7 +34,7 @@ vi.mock('../../../domain/services/rosterTransfer', async (importOriginal) => ({
 
 // Der Export wertet nicht mehr selbst aus (Issue 0174, ADR-0039): der Bericht
 // wird hier, in der UI-Schicht, geholt und hereingereicht.
-vi.mock('../../../domain/evaluation/evaluationCache', () => ({
+vi.mock('../../../contexts/ruleengine/acl/evaluationCache', () => ({
   evaluateAppRoster: vi.fn(() => ({ costTotals: { pts: 0 }, slots: {} })),
 }));
 

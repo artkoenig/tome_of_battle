@@ -21,7 +21,7 @@
 import { useEffect } from 'react';
 
 import { childSelectionsOf } from '../../domain/roster';
-import { findMissingMandatoryListRules } from '../../domain/evaluation/mandatoryListRules';
+import { findMissingMandatoryListRules } from '../../contexts/ruleengine/readmodel/index.js';
 import { findCapabilityEntry } from './capabilityEntries';
 import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFactory';
 import '../../shared/rostermodel/types.js';
@@ -30,7 +30,7 @@ import '../../shared/rostermodel/types.js';
  * @param {Object} args
  * @param {import('../../shared/rostermodel/types.js').Roster} args.roster
  * @param {Object} args.system
- * @param {import('../../domain/evaluation/slotIndex.js').SlotIndex} args.slots
+ * @param {import('../../contexts/ruleengine/readmodel/index.js').SlotIndex} args.slots
  * @param {boolean} [args.isFreshRoster] true when the roster was created in this session
  * @param {(roster: import('../../shared/rostermodel/types.js').Roster) => void} args.replaceRoster
  */

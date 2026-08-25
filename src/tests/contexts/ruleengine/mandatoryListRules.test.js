@@ -6,8 +6,8 @@
  * dem Nutzer aus dem Nichts erscheinen darf und was nicht.
  */
 import { describe, it, expect } from 'vitest';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex.js';
-import { findMissingMandatoryListRules } from '../../../domain/evaluation/mandatoryListRules.js';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex.js';
+import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/readmodel/mandatoryListRules.js';
 
 /** Ein Faehigkeits-Datensatz des Berichts in der Lesart dieses Moduls. */
 const capabilityOf = (overrides = {}) => ({

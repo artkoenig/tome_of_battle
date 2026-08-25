@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
 
 import { childSelectionsOf } from '../../../domain/roster';
-import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups';
-import { isBlockingViolation } from '../../../domain/evaluation/violationStats';
+import { resolveListRuleGroupFromReport, isBlockingViolation, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
 import { useRosterReport } from '../rosterContexts';
 
 /**

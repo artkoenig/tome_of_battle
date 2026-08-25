@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
 import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
-import { findMissingMandatoryListRules } from '../../../domain/evaluation/mandatoryListRules';
+import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/readmodel/mandatoryListRules';
 
 /**
  * Issue 0138 — the auto-add effect in useRosterState.js (Plan contracts 5/6):
  * a 5th `isFreshRoster` parameter gates an effect that, per force, asks
  * `findMissingMandatoryListRules` (since Issue 0157 a **report** reader in
- * `src/domain/evaluation/`) and commits any hits via `replaceRoster` (no undo step),
+ * `src/contexts/ruleengine/`) and commits any hits via `replaceRoster` (no undo step),
  * re-evaluating on every roster change so a newly-visible mandatory rule is
  * picked up within the same session (AC3).
  *
@@ -26,7 +26,7 @@ vi.mock('../../../domain/roster', async (importOriginal) => ({
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
 
-vi.mock('../../../domain/evaluation/mandatoryListRules', () => ({
+vi.mock('../../../contexts/ruleengine/readmodel/mandatoryListRules', () => ({
   findMissingMandatoryListRules: vi.fn(() => []),
 }));
 

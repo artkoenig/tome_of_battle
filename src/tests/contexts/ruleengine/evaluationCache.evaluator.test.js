@@ -1,6 +1,6 @@
 /**
  * Issue 0121, Task 7 — modulweiter Auswertungs-Cache
- * (`src/domain/evaluation/evaluationCache.js`, existiert noch nicht; test-first).
+ * (`src/contexts/ruleengine/acl/evaluationCache.js`, existiert noch nicht; test-first).
  *
  * Intention:
  * - `evaluateAppRoster(system, roster)` liefert dieselbe Ergebnisform wie
@@ -21,7 +21,7 @@
  *   fehlschlagen müssen.
  *
  * Aufbau: Spy-Muster und synthetischer Datensatz aus
- * `src/domain/evaluation/useEvaluation.test.js` (Fassade als zählender
+ * `src/contexts/ruleengine/readmodel/useEvaluation.test.js` (Fassade als zählender
  * Durchreich-Mock; Erwartungen aus `docs/battlescribe-data-format.md`
  * §7.5/§7.6 abgeleitet und per Wegwerf-Skript gegen die echte Fassade
  * verifiziert: Warrior ×2 gegen max 1 → eine Verletzung, Kosten 20 pts).
@@ -44,9 +44,9 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
 });
 
 import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
-import { useEvaluation } from '../../../domain/evaluation/useEvaluation.js';
-import { evaluateAppRoster, describeSystem } from '../../../domain/evaluation/evaluationCache.js';
+import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;

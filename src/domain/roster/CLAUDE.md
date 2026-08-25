@@ -4,7 +4,7 @@ Unit tests for the app's write model (ADR 0022/0023): the selection factory,
 sub-selection editing, the tree helpers, catalogue resolution (`resolveEntry`/
 `findEntryInSystem`), catalogue sync, and the cost-type labels in `costTypeLabels.js`. Anything the
 report answers (costs, visibility, profiles, list rules, entry classification
-and **which members a raise creates**) is **not** tested here — it lives in `src/domain/evaluation/`
+and **which members a raise creates**) is **not** tested here — it lives in `src/contexts/ruleengine/`
 and `src/domain/evaluator/`. Framework: vitest, plain `describe`/`it`. Run the whole
 directory: `forge-test --run src/domain/roster`; a single file: `forge-test --run src/domain/roster/<file>.test.js`.
 

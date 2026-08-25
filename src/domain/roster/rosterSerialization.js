@@ -89,7 +89,7 @@ export class MissingSystemError extends Error {
  * die flache Summe der Selektionskosten deckt sich damit mit dem Summenblock.
  *
  * Der Bericht wird **hereingereicht** (Issue 0174, ADR-0039): das Schreibmodell
- * wertet nichts aus und ruft die Auswertungs-Brücke `src/domain/evaluation/`
+ * wertet nichts aus und ruft die Auswertungs-Brücke `src/contexts/ruleengine/`
  * nicht mehr auf. Der Aufrufer liegt in der Oberfläche und besorgt den Bericht
  * dort, wo er ihn ohnehin haben darf (`evaluateAppRoster(system, roster)`).
  *

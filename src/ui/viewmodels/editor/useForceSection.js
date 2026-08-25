@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
 
 import { findForceEntryById, childSelectionsOf } from '../../../domain/roster';
-import { armyWideSelectorSlotsOf } from '../../../domain/evaluation/armyWideSelectorSlots';
+import { armyWideSelectorSlotsOf, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
 import { useRosterReport } from '../rosterContexts';
 
 /**

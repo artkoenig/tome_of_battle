@@ -78,7 +78,7 @@ export function profileCellDisplayOf(characteristic) {
  * (`capability.isIndependentSubUnit`, Issue 0156) — die Karte löst dafür keinen
  * Katalog-Eintrag mehr auf.
  * @param {import('../../../shared/rostermodel/types.js').Selection} selection Wurzel der Karte
- * @param {import('../../../domain/evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
+ * @param {import('../../../contexts/ruleengine/readmodel/index.js').SlotIndex} slots Slot-Seite des Berichts
  * @returns {Set<string>}
  */
 export function collectCardSelectionIds(selection, slots) {
@@ -101,7 +101,7 @@ export function collectCardSelectionIds(selection, slots) {
  * Kontingent- oder Kategorie-Ebene, synthetische Anker) und missgebildete
  * Einträge fallen heraus.
  * @param {object[]|null|undefined} violations Verletzungen der Evaluator-Fassade
- * @param {import('../../../domain/evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
+ * @param {import('../../../contexts/ruleengine/readmodel/index.js').SlotIndex} slots Slot-Seite des Berichts
  * @param {import('../../../shared/rostermodel/types.js').Selection} selection Wurzel der Karte
  * @returns {object[]}
  */

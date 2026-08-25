@@ -26,7 +26,7 @@ import { render } from '@testing-library/react';
 import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../tests/test-utils/editorHarness';
 import { processImportedData } from '../../../../data/parser/xmlParser.js';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,

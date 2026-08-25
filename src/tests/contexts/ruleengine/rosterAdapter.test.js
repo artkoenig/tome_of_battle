@@ -1,6 +1,6 @@
 /**
  * Issue 0121, Task 2 — produktiver Roster-Adapter `toEvaluatorRoster`
- * (`src/domain/evaluation/rosterAdapter.js`, existiert noch nicht; test-first).
+ * (`src/contexts/ruleengine/acl/rosterAdapter.js`, existiert noch nicht; test-first).
  *
  * Der Adapter uebersetzt das App-Roster (IndexedDB-Modell, `src/shared/rostermodel/types.js`) in
  * den Eingabevertrag der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`,
@@ -32,7 +32,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import { prepareDataset, evaluate } from '../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // JSDOM stellt DOMParser fuer den Node-Testlauf bereit (Konvention der
 // Evaluator-Tests, z. B. `evaluator.rosterContract.test.js`).

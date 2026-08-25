@@ -1,13 +1,13 @@
 ---
 paths:
   - "src/domain/roster/**"
-  - "src/domain/evaluation/**"
+  - "src/contexts/ruleengine/**"
   - "src/data/db/**"
 ---
 
 # Write model, bridge and persistence
 
-`src/domain/roster/` builds and rewrites the selection tree. `src/domain/evaluation/` translates it for the
+`src/domain/roster/` builds and rewrites the selection tree. `src/contexts/ruleengine/` translates it for the
 evaluator. `src/data/db/` persists it in IndexedDB.
 
 - What `src/domain/roster/` still is: catalogue resolution (`catalogResolver.js`), the selection factory
@@ -26,7 +26,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   `modifierContext.js`, and with them the whole of `rosterCounter.js` (`getSelectionOwnCosts` /
   `getSelectionTotalCost` / `computeRosterCounts` / `aggregateRosterCategoryCounts`, next to the
   earlier `getOptionDisplayCost` / `calculateRosterCosts` / `getExtraResourceTotals`). What is
-  left of that file is `costTypeLabels.js` — the cost-type id and its label, nothing else. Their answers live in `src/domain/evaluation/`
+  left of that file is `costTypeLabels.js` — the cost-type id and its label, nothing else. Their answers live in `src/contexts/ruleengine/`
   (`listRuleGroups.js`, `mandatoryListRules.js`, `costDisplays.js`, `slotIndex.js`) reading the
   report. A test that needs a roster cost total uses `evaluateAppRoster(system, roster).costTotals`.
 - The report's slot side is **one** value object since Issue 0170: `SlotIndex`
@@ -43,13 +43,20 @@ evaluator. `src/data/db/` persists it in IndexedDB.
 - `evaluate` in the evaluator facade has its own identity cache (WeakMap over
   `(prepared, evalRoster)`, `{ measure: true }` bypasses it). It does **not** help the app path:
   `toEvaluatorRoster` builds a fresh `evalRoster` per call, so `evaluationCache.js` stays the seam.
-- `src/domain/evaluation/` must not import `src/domain/roster/` (oxlint, `error`). The helper that resolves a
+- `src/contexts/ruleengine/` has **one door**: `readmodel/index.js`. `acl/` (roster ⇄ evaluator
+  translation, the memoized cache) and the other `readmodel/` modules are internal — no viewmodel,
+  component or other context may name them. The cast rule `lesemodell-nur-ueber-fassade`
+  (`.cast/rules.json`, `error` since Issue 0186) blocks it, `*.test.js`/`*.test.jsx` excepted; the
+  index itself is exempted by the `allowed` entry `lesemodell-die-eine-tuer`. A name missing
+  outside gets a re-export line in `index.js`, never a direct import. The index holds re-exports
+  only, no logic; non-test helpers such as `src/tests/test-utils/*.jsx` go through it too.
+- `src/contexts/ruleengine/` must not import `src/domain/roster/` (oxlint, `error`). The helper that resolves a
   capability back to its catalogue entry for the write path therefore lives in
   `src/ui/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here.
 - `getUnitOptions` takes no visibility context any more: it yields raw catalogue structure and the
   caller asks the report whether a slot is hidden.
 - No import of `src/domain/evaluator/**` from `src/domain/roster/**`, in either direction; the rule is blocking
-  in `forge-lint`. Anything that needs both belongs in `src/domain/evaluation/`.
+  in `forge-lint`. Anything that needs both belongs in `src/contexts/ruleengine/`.
 - `src/domain/roster/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
   a module. A re-export nobody imports makes `npm run knip` red; import from the module directly
   and drop the barrel line in the same change.
@@ -61,7 +68,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   key, never on German text.
 - `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
   (Issue 0174, ADR-0039) — and only produces/consumes XML **text**. Nothing under
-  `src/domain/roster/` imports `src/domain/evaluation/` any more; the cast rule
+  `src/domain/roster/` imports `src/contexts/ruleengine/` any more; the cast rule
   `roster-keine-evaluation-abhaengigkeit` (`.cast/rules.json`, `error` since Issue 0181) watches it,
   test files excepted, the same way `roster-keine-evaluator-abhaengigkeit` does. Both edges fail
   `forge-lint`: cast itself exits non-zero on them. The edge to the **evaluator** is blocking
@@ -79,7 +86,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   mit der Katalog-Id als Kontext, ADR 0032), and the profile
   extractors beside `groupProfilesByType`. `rulesEvaluator.js` is now `profileGrouping.js` — the
   name says what it does, and nothing in it evaluates.
-- `evaluateAppRoster` in `src/domain/evaluation/` is the single memoized seam; adding a second call path
+- `evaluateAppRoster` in `src/contexts/ruleengine/` is the single memoized seam; adding a second call path
   into the evaluator silently defeats `evaluationCache.js`.
 - `evaluationCache.js` caches on **three** levels, all WeakMaps over object identity: the prepared
   dataset per system object, the description per prepared dataset, and the whole report per
@@ -95,12 +102,12 @@ evaluator. `src/data/db/` persists it in IndexedDB.
 - A change to the persisted shape in `src/data/db/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
 - The only automatic, choice-free write into a roster is `useRosterState.js`'s fresh-roster effect over
-  `findMissingMandatoryListRules` (`src/domain/evaluation/`, report-driven) — gated on `isFreshRoster`,
+  `findMissingMandatoryListRules` (`src/contexts/ruleengine/`, report-driven) — gated on `isFreshRoster`,
   ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
   Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans
   Kontingent** — ein Leser, der nur `childSlotsOf(forcePath)` fragt, sieht genau die §9.9-Regeln
   nicht, um die es geht.
-- Anzeige-Felder, die `src/domain/evaluation/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
+- Anzeige-Felder, die `src/contexts/ruleengine/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
   die Evaluator-E2E prueft den Bericht, nicht seine Uebersetzung. `listRuleGroups.js` (`checked`,
   `mandatory`, `isContainer`, `isBinary` fuer `ListRuleChecklist.jsx`) haengt allein an
   `listRuleGroups.test.js` mit handgebauter `capabilities`-Map. Wer hier ein Feld ergaenzt,
@@ -113,7 +120,7 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   system with no `rawXmls`) therefore creates a bare selection; that is the contract, not a bug.
 - The reading of "which children must this slot create" moved, it did not change: the recruited
   tree is the same for all 208 units of the fixture corpus, pinned by
-  `src/domain/evaluation/recruitTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
+  `src/tests/contexts/ruleengine/recruitTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
   A group without a `min` still obliges nothing (even where a member declares one), a `min` a link
   inherits from its shared target obliges nothing, and a **hidden** obligation is created like any
   other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a recruit

@@ -125,12 +125,12 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   lists the exports by hand, so a new import a ViewModel adds there fails those files with
   "No <name> export is defined on the mock" — the mock, not the ViewModel, is what is out of date.
 - The report's slot side arrives as `report.slots`, one `SlotIndex`
-  (`src/domain/evaluation/slotIndex.js`) with the lookups as methods — never as `capabilities` +
+  (`src/contexts/ruleengine/readmodel/slotIndex.js`) with the lookups as methods — never as `capabilities` +
   `pathBySelectionId` + `pathByForceId` side by side. A ViewModel that may see no report falls back
   to `EMPTY_SLOT_INDEX` and keeps `slots` (not the three maps) in its `useMemo` dependencies.
 - `capabilityEntries.js` here is the one place that resolves a slot back to its catalogue entry
   (`findCapabilityEntry`, `capabilityEntryOf` with the `{ id, name }` stub). It lives in this
-  folder because `src/domain/evaluation/` may not import `src/domain/roster/`.
+  folder because `src/contexts/ruleengine/` may not import `src/domain/roster/`.
 - The report derivations `evaluation/listRuleGroups.js`, `armyWideSelectorSlots.js` and
   `violationStats.js` are read **here only** — `ableitungen-nur-in-viewmodels` fails `forge-lint`
   on an import of them from `src/ui/components/`.
@@ -173,7 +173,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
   reintroduce it (`editor/optionRowDerivations.test.js` pins the case).
-- The report the context carries is `useRosterReportModel` (`src/domain/evaluation/rosterReport.js`),
+- The report the context carries is `useRosterReportModel` (`src/contexts/ruleengine/readmodel/rosterReport.js`),
   referentially stable per `(system, roster)`. A new derived field belongs in that bundle,
   memoized, or it destroys the stability every consumer depends on.
 - Files here use the classic JSX runtime: a `.jsx` file (and its test) must `import React` or it

@@ -1,6 +1,6 @@
 /**
  * Issue 0121, Task 3 — React-Hook `useEvaluation`
- * (`src/domain/evaluation/useEvaluation.js`, existiert noch nicht; test-first).
+ * (`src/contexts/ruleengine/readmodel/useEvaluation.js`, existiert noch nicht; test-first).
  *
  * Der Hook verdrahtet die Evaluator-Fassade (`src/domain/evaluator/evaluator.js`) mit
  * dem App-Modell: `useEvaluation(system, roster)` bereitet die rohen XMLs des
@@ -58,8 +58,8 @@ vi.mock('../../../domain/evaluator/evaluator.js', async (importOriginal) => {
 });
 
 import { prepareDataset, evaluate, describeDataset } from '../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../domain/evaluation/rosterAdapter.js';
-import { useEvaluation } from '../../../domain/evaluation/useEvaluation.js';
+import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 
 // JSDOM stellt DOMParser fuer den Testlauf bereit (Konvention der
 // Evaluator-Tests, z. B. `costProjection.test.js`, `rosterAdapter.test.js`).

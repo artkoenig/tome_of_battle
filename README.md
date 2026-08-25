@@ -84,7 +84,7 @@ Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 - `src/domain/evaluator/` — the rules engine, hard-isolated from the write model and
   reached only through its facade `evaluate({ gameSystem, catalogues }, roster) → report`.
   Pure function with its own parser, data model and report.
-- `src/domain/evaluation/` — the bridge that feeds the report into the UI.
+- `src/contexts/ruleengine/` — the bridge that feeds the report into the UI.
 - `src/ui/components/`, `App.jsx` — the views (`rosters`, `importer`, `builder`,
   `play`), switched without a router; responsive above a 900px breakpoint.
 

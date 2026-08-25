@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { unresolvedSelectionsOf } from '../../../domain/evaluation/datasetDiagnostics.js';
+import { unresolvedSelectionsOf } from '../../../contexts/ruleengine/readmodel/datasetDiagnostics.js';
 
 /**
  * Reproduktion des Befunds aus der Prüfung zu Issue 0121: ein stilles

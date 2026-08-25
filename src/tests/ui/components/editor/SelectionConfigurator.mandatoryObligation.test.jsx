@@ -37,7 +37,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 import { processImportedData } from '../../../../data/parser/xmlParser.js';
 
 vi.mock('lucide-react', () => ({

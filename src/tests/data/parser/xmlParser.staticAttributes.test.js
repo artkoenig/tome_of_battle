@@ -2,7 +2,7 @@ import { test, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { parseGameSystemXML, parseCatalogueXML } from '../../../data/parser/xmlParser';
 import { groupProfilesByType } from '../../../domain/roster/profileGrouping';
-import { extraResourceTotalsOf } from '../../../domain/evaluation/costDisplays';
+import { extraResourceTotalsOf } from '../../../contexts/ruleengine/readmodel/costDisplays';
 
 beforeAll(() => {
   const dom = new JSDOM();

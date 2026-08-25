@@ -84,7 +84,7 @@ import { render, fireEvent } from '@testing-library/react';
 import { AutoFillSuggestionsHarness as AutoFillSuggestions } from '../../../../tests/test-utils/harnesses/AutoFillSuggestionsHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
 import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // `lucide-react` wird hier bewusst NICHT gemockt: welche Symbole die neue
 // Implementierung nutzt, ist ihre Sache — eine Attrappe mit fester Icon-Liste

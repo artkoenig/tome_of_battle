@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 
 import { childSelectionsOf } from '../../../domain/roster';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
-import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups';
+import { EMPTY_SLOT_INDEX, resolveListRuleGroupFromReport } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 

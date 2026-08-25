@@ -14,7 +14,7 @@ means; it outranks the ADRs where the two disagree.
   file from outside the folder fails `forge-lint` — oxlint `no-restricted-imports` keeps it an
   `error`. cast catches the same edge as `evaluator-nur-ueber-fassade`, `error` since Issue 0181.
 - The folder must not import `src/domain/roster/**`, and `src/domain/roster/**` must not import it. Both
-  directions are blocking rules. The bridge is `src/domain/evaluation/rosterAdapter.js`.
+  directions are blocking rules. The bridge is `src/contexts/ruleengine/readmodel/rosterAdapter.js`.
 - The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
   reaches back into the UI and never imports `src/ui/i18n/` — the report carries ids, the UI
   translates them (cast `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`, both `error` since Issue 0181). The
@@ -64,7 +64,7 @@ means; it outranks the ADRs where the two disagree.
   a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
   `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
   engine taste: they are the reading a recruit has always followed, and
-  `src/domain/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  `src/tests/contexts/ruleengine/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
   tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
   (`src/domain/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
   and that sweep fails first.

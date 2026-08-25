@@ -36,7 +36,7 @@ function collectNamesByDefId(selections, into) {
  * Die Auswahlen eines Rosters, deren Definition der Datensatz nicht kennt.
  *
  * @param {ReadonlyArray<object>|null|undefined} diagnostics  `diagnostics` des Berichts.
- * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster  das App-Roster.
+ * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster  das App-Roster.
  * @returns {Array<{ defId: string, name: string }>} je unauflösbarer Definition
  *   einmal, in der Reihenfolge der Diagnosen; Name aus dem Roster, sonst die Id.
  */

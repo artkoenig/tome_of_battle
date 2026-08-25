@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from '../../../ui/components/PlayMode';
@@ -66,7 +66,7 @@ const { evaluationStub } = vi.hoisted(() => ({
   evaluationStub: { current: null },
 }));
 
-vi.mock('../../../domain/evaluation/useEvaluation', () => ({
+vi.mock('../../../contexts/ruleengine/readmodel/useEvaluation', () => ({
   useEvaluation: () => evaluationStub.current ?? {
     slots: SlotIndex.fromMaps(),
     costTotals: {},
