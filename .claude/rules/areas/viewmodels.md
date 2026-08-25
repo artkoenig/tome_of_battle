@@ -34,16 +34,33 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - `useRosterState.js` is the editor's one state node: roster, UI selection and commands, in three
   bundles split by how often they change. The flat view `useRoster` is gone
   (Issue 0175): consumers and tests read `roster`, `report.*`, `commands.*` off the node itself.
-- The state node is cut along the same 300-line rule (Issue 0176): `rosterCommands.js`
-  (`createRosterCommands` — the write commands as a plain per-render factory over roster, report
-  slots and the state writers, plus `findTargetForce`), `useRosterPersistence.js` (catalogue sync,
-  the 150 ms autosave, the unmount flush, and `saveNow` for the explicit save),
-  `useMandatoryListRuleAutoAdd.js` (the fresh-roster §9.9 effect) and `rosterSelectionFactory.js`
-  (`catalogueIdOfForce`, `catalogueIdContaining`, `createSelectionFactory`). `useRosterState.js` is
-  the state apparatus and the identity-stable command wrappers, nothing else. A command test needs
+- **A ViewModel calls a use case; it never rewrites the selection tree itself** (Issue 0188). The
+  write commands are use cases of the list context — `raiseUnit`, `removeUnit`, `copyUnit`,
+  `addSubSelectionInstance`/`removeSubSelectionInstance`/`changeOptionCount`, `renameRoster` under
+  `src/contexts/armylist/application/` — plain functions from roster (plus the `system` and the
+  report's `slots`, handed in per ADR-0039) to roster. `rosterCommandBindings.js`
+  (`bindRosterCommands`, successor of the deleted `rosterCommands.js`) is **binding only**: call
+  the use case, hand the result to `setRoster`, keep the UI's own selection state in step.
+  `rosterSelectionFactory.js` moved to that application layer with them; the hook that still
+  writes by effect (`useMandatoryListRuleAutoAdd.js`) appends through the use case
+  `withRaisedUnits`.
+- **No module under `src/ui/**` may name a selection-tree helper.** `childSelectionsOf`,
+  `countSelections`, `mapSelectionTree`, `replaceSelectionById` and the `with*` sub-selection
+  operations are gone from `contexts/armylist/model/index.js` and the cast rule
+  `baum-helfer-nicht-in-der-ui` (`error`) blocks the direct import of `model/rosterTree.js` and
+  `model/subSelectionEditing.js` from here. Ask the aggregate a named question instead —
+  `unitsOfForce(force)`, `subSelectionsOf(selection)`, `countOptionInstances(unit, defId)` — and
+  add the next one to the model rather than reaching for the walker. A component test that mocks
+  the model barrel lists those names by hand, so a new one has to be added to the mock too.
+- The state node is cut along the same 300-line rule (Issue 0176): `rosterCommandBindings.js`
+  (the write commands as a plain per-render factory over roster, report slots and the state
+  writers), `useRosterPersistence.js` (catalogue sync,
+  the 150 ms autosave, the unmount flush, and `saveNow` for the explicit save) and
+  `useMandatoryListRuleAutoAdd.js` (the fresh-roster §9.9 effect). `useRosterState.js` is
+  the state apparatus and the identity-stable command wrappers, nothing else. A use-case test needs
   no React and no catalogue: an entry without a `targetId` resolves to itself, so a fake `slots`
-  stub and a `setRoster` that applies the updater to a local roster pin the whole write path in
-  milliseconds.
+  stub over a plain roster pins the whole write path in milliseconds — those tests live in
+  `src/tests/contexts/armylist/application/` and may not render anything.
 - The `commands` bundle is identity-stable for the hook's whole lifetime: implementations are
   rebuilt each render into `currentCommandsRef`, the exported functions are `useMemo(…, [])`
   wrappers calling through it. Returning a freshly built command object (or memoizing it on

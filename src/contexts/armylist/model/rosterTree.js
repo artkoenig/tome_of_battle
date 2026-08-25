@@ -40,6 +40,30 @@ export function childSelectionsOf(node) {
 }
 
 /**
+ * Die Einheiten, die ein Kontingent führt — seine Wurzel-Selections.
+ *
+ * Die benannte Frage an das Aggregat, mit der eine Ansicht auskommt, ohne den
+ * Baum-Helfer {@link childSelectionsOf} zu kennen (Issue 0188).
+ * @param {{selections?: import('../../../shared/rostermodel/types.js').Selection[]}|null|undefined} force
+ * @returns {import('../../../shared/rostermodel/types.js').Selection[]}
+ */
+export function unitsOfForce(force) {
+  return childSelectionsOf(force);
+}
+
+/**
+ * Die Unter-Auswahlen einer Selektion — Optionen, Ausrüstung, Untereinheiten.
+ *
+ * Das Gegenstück zu {@link unitsOfForce} eine Ebene tiefer, ebenfalls als
+ * benannte Frage statt als Baum-Helfer.
+ * @param {{selections?: import('../../../shared/rostermodel/types.js').Selection[]}|null|undefined} selection
+ * @returns {import('../../../shared/rostermodel/types.js').Selection[]}
+ */
+export function subSelectionsOf(selection) {
+  return childSelectionsOf(selection);
+}
+
+/**
  * Die Wurzel-Selections des gesamten Rosters: die obersten Selections aller
  * Forces, zu einer Liste verflacht.
  * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster

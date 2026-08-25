@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   findEntryInSystem, resolveEntry,
-  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
+  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, subSelectionsOf
 } from '../../contexts/armylist/model';
 import { costLimitLabelOf, costLimitTypeIdOf, EMPTY_SLOT_INDEX } from '../../contexts/ruleengine/readmodel/index.js';
 import { profileCellDisplayOf } from './editor/useUnitCard';
@@ -65,7 +65,7 @@ export function modelCountOf(system, roster, selection) {
   let totalModels = 0;
   let hasModelChildren = false;
 
-  childSelectionsOf(selection).forEach(child => {
+  subSelectionsOf(selection).forEach(child => {
     const childEntryId = child.entryLinkId || child.selectionEntryId;
     if (childEntryId === null) return;
     const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
@@ -130,7 +130,7 @@ export function usePlayUnit({
     // Eigenständige Untereinheiten bekommen ihre eigene Karte. Ob eine
     // Unter-Auswahl eine ist, sagt der Bericht (`capability.isIndependentSubUnit`,
     // Issue 0156) — die Spielansicht löst dafür keinen Katalog-Eintrag auf.
-    const subUnits = childSelectionsOf(selection).filter(subSelection =>
+    const subUnits = subSelectionsOf(selection).filter(subSelection =>
       slots.isIndependentSubUnitSlot(subSelection));
 
     // Der Fähigkeitsdatensatz des Slots dieser Auswahl (ADR-0034): direkt

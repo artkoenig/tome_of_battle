@@ -13,6 +13,18 @@
    "to": "readmodel-intern"
   },
   {
+   "name": "baum-helfer-nicht-in-der-ui",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/contexts/armylist/model/rosterTree.js"
+  },
+  {
+   "name": "baum-helfer-nicht-in-der-ui",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/contexts/armylist/model/subSelectionEditing.js"
+  },
+  {
    "name": "viewmodel-keine-komponente",
    "severity": "error",
    "from": "src/ui/viewmodels/**",

@@ -59,7 +59,8 @@ vi.mock('../../../../contexts/armylist/model', async () => ({
   // the no-name-modifier case, which returns the selection's raw name unchanged.
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
   isIndependentSubUnit: (await vi.importActual('../../../../contexts/armylist/model/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).childSelectionsOf,
+  subSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).subSelectionsOf,
+  unitsOfForce: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).unitsOfForce,
   groupProfilesByType: (await vi.importActual('../../../../contexts/armylist/model/profileGrouping')).groupProfilesByType,
   ...(await vi.importActual('../../../../contexts/armylist/model/constants'))
 }));

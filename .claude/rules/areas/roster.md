@@ -57,6 +57,18 @@ evaluator. `src/platform/persistence/` persists it in IndexedDB.
   caller asks the report whether a slot is hidden.
 - No import of `src/contexts/ruleengine/engine/**` from `src/contexts/armylist/model/**`, in either direction; the rule is blocking
   in `forge-lint`. Anything that needs both belongs in `src/contexts/ruleengine/`.
+- The **write use cases** live in `src/contexts/armylist/application/` since Issue 0188:
+  `raiseUnit.js` (`raiseUnit`, `withRaisedUnits`, `findTargetForce`), `removeUnit.js`,
+  `copyUnit.js`, `renameRoster.js`, `subSelectionUseCases.js` (`addSubSelectionInstance`,
+  `removeSubSelectionInstance`, `changeOptionCount`) and `rosterSelectionFactory.js`. Each is a
+  plain function from roster to roster; `system` and the report's `slots` are **handed in**
+  (ADR-0039) and typed as `Object`, so nothing here imports the read model. Their tests are in
+  `src/tests/contexts/armylist/application/` and render nothing.
+- The tree helpers are the write model's own tool: `childSelectionsOf`, `countSelections`,
+  `mapSelectionTree`, `replaceSelectionById` and the `with*` sub-selection operations are no
+  longer on the barrel, and `baum-helfer-nicht-in-der-ui` (`.cast/rules.json`, `error`) blocks
+  `src/ui/**` from importing `rosterTree.js`/`subSelectionEditing.js` directly. What the UI gets
+  instead are named aggregate queries — `unitsOfForce`, `subSelectionsOf`, `countOptionInstances`.
 - `src/contexts/armylist/model/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
   a module. A re-export nobody imports makes `npm run knip` red; import from the module directly
   and drop the barrel line in the same change.

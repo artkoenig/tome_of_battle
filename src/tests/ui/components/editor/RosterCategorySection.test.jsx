@@ -13,7 +13,7 @@ vi.mock('lucide-react', () => ({
 // wertet den Katalog dafür nicht mehr aus, also gibt es dafür nichts zu stubben.
 vi.mock('../../../../contexts/armylist/model', () => ({
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
-  childSelectionsOf: (force) => force.selections || [],
+  unitsOfForce: (force) => force.selections || [],
 }));
 
 // Der Zähl-Chip liest seit Issue 0121, Task 7 den categoryAnchor-Slot des

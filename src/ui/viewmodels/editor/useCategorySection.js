@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf } from '../../../contexts/armylist/model';
+import { unitsOfForce } from '../../../contexts/armylist/model';
 import { resolveListRuleGroupFromReport, isBlockingViolation, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { useRosterReport } from '../rosterContexts';
@@ -47,10 +47,10 @@ export function useCategorySection({ force, forcePath = null, categoryLink }) {
     const categoryAnchor = slots.findCategoryAnchorSlot(forcePath, categoryId)
       ?? slots.findCategoryAnchorSlot(forcePath, categoryLink?.id);
     const isHidden = categoryAnchor?.isHidden === true;
-    const selections = childSelectionsOf(force).filter(s => s.category === categoryId);
+    const selections = unitsOfForce(force).filter(s => s.category === categoryId);
 
     const selectionByPath = new Map();
-    for (const selection of childSelectionsOf(force)) {
+    for (const selection of unitsOfForce(force)) {
       const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }

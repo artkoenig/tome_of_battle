@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf } from '../../../contexts/armylist/model';
+import { unitsOfForce } from '../../../contexts/armylist/model';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { EMPTY_SLOT_INDEX, resolveListRuleGroupFromReport } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
@@ -39,7 +39,7 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
 
   const { isListRuleGroup, states } = useMemo(() => {
     const selectionByPath = new Map();
-    for (const selection of childSelectionsOf(force)) {
+    for (const selection of unitsOfForce(force)) {
       const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }

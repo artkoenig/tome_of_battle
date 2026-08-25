@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { childSelectionsOf, groupProfilesByType } from '../../../contexts/armylist/model';
+import { subSelectionsOf, groupProfilesByType } from '../../../contexts/armylist/model';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**
@@ -85,10 +85,10 @@ export function collectCardSelectionIds(selection, slots) {
   const cardSelectionIds = new Set();
   const addSubtree = (node) => {
     cardSelectionIds.add(node.id);
-    childSelectionsOf(node).forEach(addSubtree);
+    subSelectionsOf(node).forEach(addSubtree);
   };
   cardSelectionIds.add(selection.id);
-  childSelectionsOf(selection)
+  subSelectionsOf(selection)
     .filter(child => !slots.isIndependentSubUnitSlot(child))
     .forEach(addSubtree);
   return cardSelectionIds;
@@ -129,7 +129,7 @@ export function selectionViolationsForCard(violations, slots, selection) {
  */
 export function parentSelectionIdOf(roster, childId) {
   const walk = (node) => {
-    for (const child of childSelectionsOf(node)) {
+    for (const child of subSelectionsOf(node)) {
       if (child.id === childId) return node.id;
       const found = walk(child);
       if (found) return found;

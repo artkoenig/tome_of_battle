@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { findForceEntryById, childSelectionsOf } from '../../../contexts/armylist/model';
+import { findForceEntryById, unitsOfForce } from '../../../contexts/armylist/model';
 import { armyWideSelectorSlotsOf, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { useRosterReport } from '../rosterContexts';
@@ -43,10 +43,10 @@ export function useForceSection({ force, forcePath = null }) {
     const armyWideSelectorIds = new Set(armyWideSelectorSlots.flatMap(capability =>
       [capability.defId, capability.targetDefId].filter(Boolean)));
     const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
-    const armyWideSelections = childSelectionsOf(force).filter(belongsToArmyWideSelector);
+    const armyWideSelections = unitsOfForce(force).filter(belongsToArmyWideSelector);
 
     const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
-    const uncategorizedSelections = childSelectionsOf(force).filter(s =>
+    const uncategorizedSelections = unitsOfForce(force).filter(s =>
       !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
     return { categoryLinks, armyWideEntries, armyWideSelections, uncategorizedSelections };

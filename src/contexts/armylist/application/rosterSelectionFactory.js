@@ -1,6 +1,6 @@
 /**
- * The selection factory of the editor's state node (Issue 0176, cut out of
- * `useRosterState.js`).
+ * Die Selektions-Fabrik der Schreib-Anwendungsfälle (Issue 0188, aus
+ * `src/ui/viewmodels/rosterSelectionFactory.js` hierher gezogen).
  *
  * Shared selection factory (SSOT, ADR-0022): `system`/`resolveEntry` are
  * injected. **Which** mandatory members come along has been the report's answer
@@ -14,15 +14,15 @@ import {
   resolveEntry,
   findForceContainingSelection,
   createSelectionFromDef as buildSelectionFromDef,
-} from '../../contexts/armylist/model';
-import '../../shared/rostermodel/types.js';
+} from '../model/index.js';
+import '../../../shared/rostermodel/types.js';
 
 /**
  * Der Katalog, gegen den die Verweise eines Kontingents auflösen: seiner, ersatzweise
  * der der Liste. Bei mehreren gleichzeitig geladenen Katalogen (ADR-0018) ist eine
  * Eintrags-Id nur innerhalb ihres Katalogs eindeutig, deshalb wird er mitgegeben.
- * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster
- * @param {import('../../shared/rostermodel/types.js').Force|null|undefined} force
+ * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster
+ * @param {import('../../../shared/rostermodel/types.js').Force|null|undefined} force
  * @returns {string|null}
  */
 export function catalogueIdOfForce(roster, force) {
@@ -31,7 +31,7 @@ export function catalogueIdOfForce(roster, force) {
 
 /**
  * Der Katalog des Kontingents, das die Selektion `selectionId` enthält.
- * @param {import('../../shared/rostermodel/types.js').Roster|null|undefined} roster
+ * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster
  * @param {string} selectionId
  * @returns {string|null}
  */
@@ -43,7 +43,7 @@ export function catalogueIdContaining(roster, selectionId) {
  * Binds the selection factory to one catalogue system.
  * @param {Object} system
  * @returns {(entry: Object, categoryId: string|null, catalogueId: string|null,
- *   mandatoryMembers?: ReadonlyArray<any>) => (import('../../shared/rostermodel/types.js').Selection|null)}
+ *   mandatoryMembers?: ReadonlyArray<any>) => (import('../../../shared/rostermodel/types.js').Selection|null)}
  */
 export function createSelectionFactory(system) {
   return (entry, categoryId, catalogueId, mandatoryMembers = []) =>

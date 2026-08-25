@@ -31,7 +31,7 @@ vi.mock('lucide-react', () => ({
 vi.mock('../../../../contexts/armylist/model', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) ?? null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
-  childSelectionsOf: (force) => force.selections || [],
+  unitsOfForce: (force) => force.selections || [],
 }));
 
 /** Der Dialog als Beobachter: er meldet, welche Katalog-Id bei ihm ankommt. */

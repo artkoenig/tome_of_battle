@@ -29,7 +29,8 @@ vi.mock('../../../../contexts/armylist/model', async () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
   // Reines Zugriffs-Primitiv auf die direkten Kind-Selections — echte
   // Implementierung durchreichen (ihre Semantik ist in rosterTree.test.js abgedeckt).
-  childSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).childSelectionsOf,
+  subSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).subSelectionsOf,
+  unitsOfForce: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).unitsOfForce,
 }));
 
 vi.mock('../../../../ui/components/editor/UnitChips', () => ({

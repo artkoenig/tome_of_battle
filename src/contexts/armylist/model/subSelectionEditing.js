@@ -10,7 +10,7 @@
  * Alle Funktionen sind rein: Die übergebene Liste bleibt unberührt, zurück kommt
  * eine neue Liste (oder — wenn nichts zu tun war — die unveränderte Eingabe).
  */
-import { ownCountOf } from './rosterTree.js';
+import { countSelections, ownCountOf } from './rosterTree.js';
 
 /** Anzahl, mit der eine frisch angelegte Auswahl in die Liste eintritt. */
 const INITIAL_SELECTION_COUNT = 1;
@@ -37,6 +37,24 @@ const withReplacedIndex = (selections, index, replacement) =>
  */
 const indexOfOption = (selections, optionDefinitionId) =>
   selections.findIndex(selection => optionDefinitionIdOf(selection) === optionDefinitionId);
+
+/**
+ * Wie oft die Options-Definition `optionDefinitionId` im Teilbaum der Einheit
+ * gewählt ist — die Summe der effektiven Anzahlen, beliebige Tiefe eingerechnet.
+ *
+ * Die benannte Frage, mit der eine Ansicht die Anzahl einer Option erfährt,
+ * ohne den Zähl-Helfer `countSelections` selbst zu bedienen (Issue 0188).
+ *
+ * @param {{selections?: import('../../../shared/rostermodel/types.js').Selection[]}|null|undefined} unitSelection
+ * @param {string} optionDefinitionId
+ * @returns {number}
+ */
+export function countOptionInstances(unitSelection, optionDefinitionId) {
+  return countSelections(unitSelection?.selections, {
+    includeChildSelections: true,
+    predicate: (selection) => optionDefinitionIdOf(selection) === optionDefinitionId,
+  });
+}
 
 /**
  * Fügt eine eigenständig geführte Instanz hinzu — auch dann, wenn dieselbe

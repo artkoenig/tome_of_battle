@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { saveRoster } from '../../contexts/armylist/application/rosterStore';
-import { findForceEntryById, childSelectionsOf } from '../../contexts/armylist/model';
+import { findForceEntryById, unitsOfForce } from '../../contexts/armylist/model';
 import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
 import { useRuleUrl } from './useRuleUrl';
@@ -41,7 +41,7 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
     const categoryLinks = forceDef?.categoryLinks || [];
 
     categoryLinks.forEach(link => {
-      const selections = childSelectionsOf(force)
+      const selections = unitsOfForce(force)
         .filter(s => s.category === link.targetId && isBattlefieldSelection(s));
       if (selections.length === 0) return;
 
@@ -54,7 +54,7 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
     });
 
     const matchedCategoryIds = new Set(categoryLinks.map(link => link.targetId));
-    const uncategorized = childSelectionsOf(force)
+    const uncategorized = unitsOfForce(force)
       .filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
     if (uncategorized.length > 0) {
       groups.push({

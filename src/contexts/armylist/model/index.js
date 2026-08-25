@@ -14,10 +14,17 @@
  * Dieser Index ist eine **Bequemlichkeits-Sammlung**, keine erzwungene
  * Fassade (anders als ADR-0023 für den alten Solver): Importe direkt aus den
  * Fachmodulen sind legitim; Tests sprechen die Fachmodule bewusst direkt an.
+ *
+ * Seit Issue 0188 führt der Index die **Baum-Helfer** nicht mehr: `childSelectionsOf`,
+ * `countSelections`, `mapSelectionTree`, `replaceSelectionById` und die
+ * Unter-Auswahl-Operationen sind Werkzeug des Schreibmodells und seiner
+ * Anwendungsfälle (`src/contexts/armylist/application/`). Die Oberfläche stellt
+ * dem Aggregat stattdessen benannte Fragen — `unitsOfForce`, `subSelectionsOf`,
+ * `countOptionInstances` —, und die cast-Regel `baum-helfer-nicht-in-der-ui`
+ * hält den direkten Weg zu.
  */
 export {
-  childSelectionsOf, countSelections, findForceContainingSelection,
-  findSelectionInRoster, mapSelectionTree, replaceSelectionById
+  findForceContainingSelection, findSelectionInRoster, subSelectionsOf, unitsOfForce
 } from './rosterTree.js';
 export { findEntryInSystem, findRuleByName, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
 export {
@@ -29,4 +36,4 @@ export { getUnitOptions } from './optionsCollector.js';
 export { groupProfilesByType } from './profileGrouping.js';
 export { createSelectionFromDef } from './selectionFactory.js';
 export { MODEL_COUNT_PROFILE_TYPES, UPGRADE_DETAILS_KEYWORDS } from './constants.js';
-export { withAddedInstance, withChangedOptionCount, withoutInstance } from './subSelectionEditing.js';
+export { countOptionInstances } from './subSelectionEditing.js';

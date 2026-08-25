@@ -8,7 +8,7 @@ vi.mock('../../../../contexts/armylist/model', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
-  childSelectionsOf: (force) => force.selections || []
+  unitsOfForce: (force) => force.selections || []
 }));
 
 // Welche Pflicht keine Kategorie des Kontingents anbietet, sagt seit Issue 0156

@@ -1,4 +1,4 @@
-import { countSelections, UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
+import { countOptionInstances, UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
 
 /**
  * Die Ableitungen, die sich **jede** Options-Zeile des Editors teilt — der
@@ -57,13 +57,8 @@ export const resolveRowSelectionId = (rootSelection, ownerSelectionId, option, r
  * @param {string} optionEntryId
  * @returns {number}
  */
-export const subSelectionCountOf = (unitSelection, optionEntryId) => {
-  const matchesOption = (sel) => (sel.entryLinkId || sel.selectionEntryId) === optionEntryId;
-  return countSelections(unitSelection.selections, {
-    includeChildSelections: true,
-    predicate: matchesOption,
-  });
-};
+export const subSelectionCountOf = (unitSelection, optionEntryId) =>
+  countOptionInstances(unitSelection, optionEntryId);
 
 /** Die Buchquelle eines Info-Eintrags als Anhang eines Beschreibungstextes. */
 const sourceSuffixOf = (source) => {

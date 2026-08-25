@@ -18,7 +18,8 @@
  * auslöst, rendert bei einer Roster-Bearbeitung nicht neu.
  *
  * Was hier steht, ist der Zustandsapparat. Die Schreib-Kommandos liegen in
- * `rosterCommands.js`, Katalog-Abgleich und Autosave in `useRosterPersistence.js`,
+ * `rosterCommandBindings.js` — dünne Bindungen an die Anwendungsfälle des
+ * Listen-Kontexts (Issue 0188) —, Katalog-Abgleich und Autosave in `useRosterPersistence.js`,
  * das automatische Setzen von Pflicht-Listenregeln in
  * `useMandatoryListRuleAutoAdd.js` (Issue 0176).
  */
@@ -28,7 +29,7 @@ import { useState, useMemo, useRef, useCallback } from 'react';
 import { findSelectionInRoster } from '../../contexts/armylist/model';
 import { useRosterReportModel } from '../../contexts/ruleengine/readmodel/index.js';
 import { useUndoableState } from './useUndoableState';
-import { createRosterCommands } from './rosterCommands';
+import { bindRosterCommands } from './rosterCommandBindings';
 import { useRosterPersistence } from './useRosterPersistence';
 import { useMandatoryListRuleAutoAdd } from './useMandatoryListRuleAutoAdd';
 import '../../shared/rostermodel/types.js';
@@ -108,7 +109,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   // über die Ref auf, statt selbst neu zu entstehen — daher ihre Identität.
   const currentCommandsRef = useRef(NO_COMMANDS_YET);
   currentCommandsRef.current = {
-    ...createRosterCommands({
+    ...bindRosterCommands({
       roster, system, slots, setRoster, selectedSelectionId, setSelectedSelectionId, saveNow,
     }),
     undo,

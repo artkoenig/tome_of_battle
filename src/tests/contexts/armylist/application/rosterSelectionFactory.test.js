@@ -4,7 +4,7 @@ import {
   catalogueIdOfForce,
   catalogueIdContaining,
   createSelectionFactory,
-} from '../../../ui/viewmodels/rosterSelectionFactory';
+} from '../../../../contexts/armylist/application/rosterSelectionFactory.js';
 
 /**
  * Issue 0176 — the selection factory cut out of `useRosterState`. An entry

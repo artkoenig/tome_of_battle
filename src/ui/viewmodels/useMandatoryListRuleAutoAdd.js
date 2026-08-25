@@ -20,10 +20,13 @@
 
 import { useEffect } from 'react';
 
-import { childSelectionsOf } from '../../contexts/armylist/model';
+import { unitsOfForce } from '../../contexts/armylist/model';
+import {
+  catalogueIdOfForce, createSelectionFactory
+} from '../../contexts/armylist/application/rosterSelectionFactory.js';
+import { withRaisedUnits } from '../../contexts/armylist/application/raiseUnit.js';
 import { findMissingMandatoryListRules } from '../../contexts/ruleengine/readmodel/index.js';
 import { findCapabilityEntry } from './capabilityEntries';
-import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFactory';
 import '../../shared/rostermodel/types.js';
 
 /**
@@ -39,21 +42,21 @@ export function useMandatoryListRuleAutoAdd({ roster, system, slots, isFreshRost
     if (!roster || !system || !isFreshRoster) return;
 
     const createSelectionFromDef = createSelectionFactory(system);
-    let anyAdded = false;
     // Eine armeeweite Pflicht wird genau einmal gesetzt: was ein frueheres
     // Kontingent dieses Durchlaufs uebernommen hat, faellt fuer die spaeteren
     // heraus (der Bericht des naechsten Durchlaufs meldet sie dann als belegt).
     const claimedResolvedIds = new Set();
-    const updatedForces = (roster.forces || []).map(force => {
+    let nextRoster = roster;
+    for (const force of roster.forces || []) {
       const catalogueId = catalogueIdOfForce(roster, force);
       const carriedEntryIds = new Set(
-        childSelectionsOf(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
+        unitsOfForce(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
       );
       const missing = findMissingMandatoryListRules(slots, slots.pathOfForce(force.id), {
         entryOf: (capability) => findCapabilityEntry(system, capability, catalogueId),
         skipResolvedIds: claimedResolvedIds,
       }).filter(({ entry, defId }) => entry && !carriedEntryIds.has(defId));
-      if (missing.length === 0) return force;
+      if (missing.length === 0) continue;
 
       missing.forEach(({ resolvedId }) => claimedResolvedIds.add(resolvedId));
       const newSelections = missing
@@ -61,14 +64,13 @@ export function useMandatoryListRuleAutoAdd({ roster, system, slots, isFreshRost
           const created = createSelectionFromDef(entry, categoryId, catalogueId, mandatoryMembers);
           return created ? [created] : [];
         });
-      if (newSelections.length === 0) return force;
 
-      anyAdded = true;
-      return { ...force, selections: [...childSelectionsOf(force), ...newSelections] };
-    });
+      // Das Anhängen an das Kontingent ist Sache des Anwendungsfalls (Issue 0188).
+      nextRoster = withRaisedUnits(nextRoster, force.id, newSelections);
+    }
 
-    if (anyAdded) {
-      replaceRoster({ ...roster, forces: updatedForces });
+    if (nextRoster !== roster) {
+      replaceRoster(nextRoster);
     }
   }, [roster, system, isFreshRoster, replaceRoster, slots]);
 }
