@@ -312,24 +312,24 @@ F3 (the port) and F4 (the read-model facade) completely. It does **not** close F
 or F7 — those are model changes, and no `cast plan` can simulate them. They belong in their own
 issues, in this order:
 
-- **Stage 4 — the aggregate gets its behaviour (closes F1).** Move `createRosterCommands` from
+- **Stage 4 (issue 0188) — the aggregate gets its behaviour (closes F1).** Move `createRosterCommands` from
   `src/ui/viewmodels/rosterCommands.js` into `contexts/armylist/application/` as named use
   cases (`raiseUnit`, `removeUnit`, `changeOptionCount`, ...). The UI keeps its hooks, but they
   become thin: call the use case, hold the result. Measurable acceptance: no module under
   `src/ui/**` imports a tree helper (`mapSelectionTree`, `replaceSelectionById`,
   `childSelectionsOf`) any more — expressible as a cast rule, so the gate holds it.
-- **Stage 5 — the invariant moves into the model (closes F2).** `useMandatoryListRuleAutoAdd`
+- **Stage 5 (issue 0189) — the invariant moves into the model (closes F2).** `useMandatoryListRuleAutoAdd`
   becomes a function on the roster use case that every write path runs through, including
   `.ros` import and migration. The hook shrinks to a call. Acceptance: the rule can be tested
   without rendering a component.
-- **Stage 6 — play mode becomes a context (closes F5).** `gameState` leaves the roster
+- **Stage 6 (issue 0190) — play mode becomes a context (closes F5).** `gameState` leaves the roster
   aggregate and gets `contexts/play/` plus its own store record. Two aggregates, two lifetimes,
   two undo histories. This is the largest of the follow-ups and the one with a visible user
   effect, so it needs a version bump and its own PRD.
-- **Stage 7 — an ACL for the editor (closes F6).** `categoryLink.targetId` and friends stop at
+- **Stage 7 (issue 0191) — an ACL for the editor (closes F6).** `categoryLink.targetId` and friends stop at
   a translation boundary the way they already do for the evaluator. A cast rule
   `ui/** -> shared/battlescribe/**` = forbidden makes it permanent.
-- **Stage 8 — one glossary (closes F7).** Decide per term whether `Force` or `Kontingent` is
+- **Stage 8 (issue 0192) — one glossary (closes F7).** Decide per term whether `Force` or `Kontingent` is
   the name, write it into `docs/` once, and rename in code. Cheap, mechanical, and it removes
   the double translation every reader currently performs.
 
@@ -341,5 +341,11 @@ simulation accepted and the part that pays for itself immediately (`shared` fan-
 to 1). Stages 4-8 are separate issues; 4 and 5 give the most value per line changed, 6 is the
 one to plan properly rather than to squeeze in.
 
-Do not start any of it by hand: the plan files are here so `/forge:issue` can turn each stage
-into an issue with acceptance criteria, and `/forge:work` can run it.
+Every measure is filed. Stages 1-3 are one issue with three increments (**0186**); the model
+changes are **0188** (write commands become use cases), **0189** (the invariant leaves the React
+effect), **0190** (play mode becomes its own context, the only one with a user-visible effect and
+a PRD), **0191** (an ACL for the editor) and **0192** (one glossary). **0187** is the one-liner
+that moves `RosterFileError` into the model and unlocks the rule 0186 cannot switch on.
+
+Run them with `/forge:work <id>`, never by hand. Suggested order: 0187 -> 0186 -> 0188 -> 0189 ->
+0191 -> 0190 -> 0192.
