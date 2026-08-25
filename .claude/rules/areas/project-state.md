@@ -58,9 +58,11 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
   CSS: Tabs ueber versteckte Radios, Tooltips ueber `:hover` **und** `:focus-within` auf
   `.gate-card`/`.vial-container` (die tragen dafuer `tabindex="0"` — ohne Fokus gaebe es sie auf
   dem Telefon nicht). Die einzige entfernte Ressource ist der Google-Fonts-`@import`.
-- Mobil gilt hier: `touch-action: manipulation` auf `html`, Bedienflaechen >= 44px auch **in**
+- Mobil gilt hier: `touch-action: pan-x pan-y` auf `html, body`, Bedienflaechen >= 44px auch **in**
   `@media (max-width: 30rem)` (dort schrumpft nur die Polsterung), Tooltips brechen unter 30rem
   um, und ein `prefers-reduced-motion`-Block nimmt Runenpuls und Blaeschen zurueck. Kein
-  `user-scalable`/`maximum-scale` — Pinch-Zoom bleibt (WCAG 1.4.4).
+  Das Viewport-Meta traegt `maximum-scale=1, user-scalable=no`: die Pinch-Geste ist gesperrt
+  (0184), WCAG 1.4.4 dafuer bewusst aufgegeben. `touch-action` ist noetig, weil iOS Safari
+  `user-scalable=no` ignoriert.
 - Die Seite erzeugt **keine** Tabelle; Regeln fuer `table.grid`/`.table-scroll` waren tot und
   sind weg. Wer eine Tabelle einfuehrt, bringt ihre Regeln selbst mit.

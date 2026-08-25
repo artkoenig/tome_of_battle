@@ -131,13 +131,13 @@ describe('project-state/renderReport', () => {
   });
 
   describe('Bedienbarkeit auf dem Telefon', () => {
-    it('unterdrueckt den Doppeltipp-Zoom, laesst Pinch-Zoom aber zu', () => {
+    it('sperrt Doppeltipp- und Pinch-Zoom', () => {
       const html = renderReport(makeModel());
-      expect(html).toMatch(/touch-action:\s*manipulation/);
-      // WCAG 1.4.4: die Seite darf das Vergroessern nie verbieten.
-      expect(html).not.toMatch(/user-scalable/);
-      expect(html).not.toMatch(/maximum-scale/);
-      expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
+      expect(html).toMatch(/touch-action:\s*pan-x\s+pan-y/);
+      // WCAG 1.4.4 ist hier bewusst aufgegeben: die Seite verbietet das Zoomen.
+      expect(html).toMatch(/user-scalable=no/);
+      expect(html).toMatch(/maximum-scale=1/);
+      expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">');
     });
 
     it('oeffnet Gate- und Vial-Tooltip ohne Zeiger und ohne Skript', () => {
