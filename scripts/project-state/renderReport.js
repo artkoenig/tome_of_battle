@@ -3,11 +3,11 @@
  * (ohne Datei- oder Netzzugriff, damit sie testbar bleibt). Eingabe ist ein fertiges
  * Datenmodell, Ausgabe der vollstaendige HTML-Text.
  *
- * "In sich geschlossen" heisst woertlich: die erzeugte Seite laedt keine Schriften,
- * Skripte oder Daten nach. Alles Layout liegt in einem eingebetteten `<style>`, die
- * Umschaltung der Bereiche ist reines CSS (versteckte Radio-Inputs mit Labels), es
- * gibt kein `<script>`. Damit funktioniert die Seite offline und veraltet nicht
- * durch entfernte Ressourcen.
+ * "In sich geschlossen" heisst: die erzeugte Seite laedt keine Skripte und keine
+ * Daten nach. Alles Layout liegt in einem eingebetteten `<style>`, die Umschaltung
+ * der Bereiche ist reines CSS (versteckte Radio-Inputs mit Labels), es gibt kein
+ * `<script>` und kein `<link>`. Einzige entfernte Ressource ist die Schrift, die
+ * der Stil per `@import` holt; faellt sie aus, greifen die Ersatzfamilien.
  *
  * Jeder angezeigte Inhalt leitet sich aus der Live-Messung ab -- es gibt keinen
  * hand-gepflegten Text mehr, der der gemessenen Realitaet widersprechen koennte
@@ -15,9 +15,9 @@
  * aus). Das Gesamturteil entsteht aus den gemessenen Gate-Zustaenden
  * ({@link module:project-state/buildReportModel}); hier wird es nur dargestellt.
  *
- * Die Seite ist bewusst mobil-tauglich: relative Einheiten, breite Tabellen liegen
- * je in einem eigenen `overflow-x`-Container, sodass ein schmaler Viewport (~375 px)
- * ohne horizontales Scrollen der Seite lesbar bleibt.
+ * Die Seite ist bewusst mobil-tauglich: relative Einheiten, umbrechende lange
+ * Zeichenketten und Bedienflaechen von mindestens 44 px, sodass ein schmaler
+ * Viewport (~375 px) ohne horizontales Scrollen mit dem Daumen bedienbar bleibt.
  *
  * Der Zeitpunkt kommt als fertiger Text herein, nicht aus `new Date()` -- so bleibt
  * die Funktion deterministisch und im Test ohne Uhr pruefbar.
@@ -322,7 +322,7 @@ function renderModuleCard(item) {
     '</div>',
     '<div class="module-vials-row">',
     // Complexity Vial (Alchemisten-Reagenzglas mit SIG-Flüssigkeiten)
-    '<div class="vial-container">',
+    '<div class="vial-container" tabindex="0">',
     '<span class="vial-label">Complexity</span>',
     '<div class="vial vial-segmented">',
     rp.veryHighPercent > 0 ? `<div class="vial-segment vial-segment-very-high" style="height: ${rp.veryHighPercent}%" title="Very High Risk (>25): ${rp.veryHighPercent}% LOC"></div>` : '',
@@ -335,7 +335,7 @@ function renderModuleCard(item) {
     `<div class="vial-tooltip" role="tooltip">${complexityTooltip}</div>`,
     '</div>',
     // Coverage Vial
-    '<div class="vial-container">',
+    '<div class="vial-container" tabindex="0">',
     '<span class="vial-label">Coverage</span>',
     '<div class="vial">',
     `<div class="vial-liquid vial-liquid-${covTone}" style="height: ${covPct}%">`,
@@ -391,7 +391,7 @@ function renderGates(gates) {
       ].join('');
 
       return [
-        '<div class="gate-card rune-card">',
+        '<div class="gate-card rune-card" tabindex="0">',
         '<div class="rune-wrapper">',
         `<div class="rune-stone rune-${status.tone}">`,
         `<span class="rune-glyph" title="Rune ${escapeHtml(runeGlyph)}">${escapeHtml(runeGlyph)}</span>`,
@@ -660,10 +660,10 @@ function escapeHtml(value) {
  * Das eingebettete Stylesheet. Es nimmt den Look der Anwendung auf (ADR 0004,
  * Gothic-/Tabletop-Thema): Pergament, Gold und Obsidian-Dunkel. Die Farbwerte sind
  * aus `src/ui/styles/01-tokens.css` uebernommen (kopiert, nicht importiert -- die Seite
- * bleibt eigenstaendig). Schriften sind bewusst self-contained: kein Nachladen von
- * Google Fonts, sondern der Fallback-Serifen-Stack der App; der App-Look wird ueber
- * Palette, Gold und Layout getragen, nicht ueber Cinzel/Lora selbst. Helles und
- * dunkles Erscheinungsbild ueber `prefers-color-scheme`, beide in der App-Palette.
+ * bleibt eigenstaendig). Die Schriften (Cinzel, Outfit, Inter) holt ein `@import`
+ * von Google Fonts; jede hat einen System-Fallback, faellt der Abruf aus, bleibt der
+ * Look ueber Palette, Gold und Layout erhalten. Die Seite ist durchgehend dunkel
+ * (`color-scheme: dark`) -- es gibt keine helle Variante.
  * Die Zustaende tragen ihre Bedeutung ueber Symbol und Text; die Farben sind Zugabe.
  *
  * Die beiden Bereiche sind echte Tabs, ganz ohne JavaScript: versteckte
@@ -671,10 +671,12 @@ function escapeHtml(value) {
  * Geschwister-Selektor blendet je genau ein Panel ein.
  *
  * Das Layout ist durchgehend in relativen Einheiten gehalten und mobil-tauglich:
- * breite Tabellen liegen je in einem eigenen `overflow-x`-Container (`.table-scroll`),
- * lange Zeichenketten brechen um (`overflow-wrap`), und eine Media Query fuer schmale
- * Viewports strafft die Abstaende -- so bleibt die Seite bei ~375 px ohne
- * horizontales Scrollen lesbar.
+ * lange Zeichenketten brechen um (`overflow-wrap`), Tabs, Ruecklink und
+ * Aufklapp-Zeilen sind mindestens 44 px hoch, `touch-action: manipulation`
+ * unterdrueckt den Doppeltipp-Zoom (Pinch-Zoom bleibt), die Tooltips oeffnen
+ * per `:focus-within` auch ohne Zeiger, und eine Media Query fuer schmale
+ * Viewports strafft die Abstaende und laesst die Tooltips umbrechen -- so bleibt
+ * die Seite bei ~375 px ohne horizontales Scrollen lesbar und bedienbar.
  */
 const REPORT_STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
@@ -703,7 +705,9 @@ const REPORT_STYLES = `
   --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; color-scheme: dark; }
+/* touch-action: manipulation unterdrueckt den Doppeltipp-Zoom (und damit die
+   300-ms-Verzoegerung), laesst Pinch-Zoom aber unangetastet -- WCAG 1.4.4. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: dark; touch-action: manipulation; }
 body {
   margin: 0;
   background-color: var(--bg);
@@ -724,6 +728,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  min-height: 44px;
   padding: 0.4rem 0.85rem;
   border-radius: 6px;
   background: rgba(212, 175, 55, 0.1);
@@ -752,7 +757,7 @@ h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
 .tabs { position: relative; }
 .tab-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
 .tablist { display: flex; flex-wrap: wrap; gap: .5rem; border-bottom: 2px solid var(--border); margin: 0 0 1.75rem; }
-.tab { cursor: pointer; user-select: none; padding: .6rem 1.25rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .9rem; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; transition: all 0.2s ease; }
+.tab { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; user-select: none; padding: .6rem 1.25rem; font-family: var(--font-heading); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .9rem; color: var(--muted); border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; transition: all 0.2s ease; }
 .tab:hover { color: var(--accent); background: rgba(255, 255, 255, 0.03); }
 .panel { display: none; }
 #tab-healthcheck:checked ~ .panel-healthcheck,
@@ -773,12 +778,6 @@ h4 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); }
 .prose :first-child { margin-top: 0; }
 .prose :last-child { margin-bottom: 0; }
 code { font-family: var(--font-mono); font-size: .85em; color: var(--accent); background: rgba(255, 255, 255, 0.05); padding: 0.15em 0.4em; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.08); }
-.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: .75rem; border-radius: 8px; border: 1px solid var(--border); }
-table.grid { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--surface); }
-table.grid th, table.grid td { text-align: left; padding: .65rem .85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
-table.grid th { color: var(--accent); font-family: var(--font-subheading); font-weight: 600; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid var(--border); }
-td.num { text-align: right; white-space: nowrap; }
-.fraction { display: block; color: var(--muted); font-size: .8em; }
 .badge { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em; border-radius: 4px; font-size: .75rem; font-weight: 700; font-family: var(--font-subheading); text-transform: uppercase; letter-spacing: 0.04em; }
 .badge-symbol { font-weight: 700; }
 .badge-ok { background: var(--ok-bg); color: var(--ok-fg); border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -808,15 +807,17 @@ td.num { text-align: right; white-space: nowrap; }
 .gate-card-status-warn { color: var(--warn-fg); }
 .gate-card-status-inert { color: var(--muted); }
 .gate-card .gate-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
-.gate-card:hover { z-index: 60; }
-.gate-card:hover .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.gate-card:hover, .gate-card:focus-within { z-index: 60; }
+.gate-card:hover .gate-tooltip,
+.gate-card:focus-within .gate-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.gate-card:focus-visible, .vial-container:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 3px; border-radius: 12px; }
 
 /* Gate Findings Details */
 .gate-findings-details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 1.25rem; box-shadow: var(--shadow); }
-.gate-findings-summary { cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
+.gate-findings-summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-family: var(--font-subheading); font-weight: 700; font-size: 0.9rem; color: var(--accent); user-select: none; }
 .gate-findings-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.85rem; }
 .gate-finding-item { border: 1px solid rgba(212, 175, 55, 0.25); border-radius: 8px; background: rgba(13, 17, 26, 0.65); padding: 0.5rem 0.75rem; }
-.gate-finding-header { cursor: pointer; display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
+.gate-finding-header { cursor: pointer; display: flex; align-items: center; min-height: 44px; gap: 0.6rem; font-family: var(--font-subheading); font-size: 0.88rem; color: var(--text); user-select: none; }
 .rune-glyph-small { font-family: serif; font-size: 1.1rem; font-weight: 900; color: var(--accent); }
 .gate-finding-body { margin-top: 0.5rem; overflow-x: auto; }
 .gate-finding-body pre { margin: 0; padding: 0.75rem 0.85rem; background: #080b12; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); font-size: 0.8rem; color: #e2e8f0; white-space: pre-wrap; word-break: break-all; max-height: 22rem; overflow-y: auto; }
@@ -850,7 +851,7 @@ td.num { text-align: right; white-space: nowrap; }
 .module-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.25rem; display: flex; gap: 0.5rem; }
 .module-vials-row { display: flex; justify-content: space-around; align-items: flex-end; padding: 0.4rem 0.5rem; gap: 1rem; }
 .vial-container { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; cursor: help; }
-.vial-container:hover { z-index: 60; }
+.vial-container:hover, .vial-container:focus-within { z-index: 60; }
 .vial-label { font-family: var(--font-subheading); font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .vial { position: relative; width: 2.2rem; height: 6.5rem; background: rgba(8, 12, 20, 0.75); border: 2px solid rgba(212, 175, 55, 0.45); border-top-width: 1px; border-radius: 2px 2px 16px 16px; box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.6); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
 .vial::before { content: ""; position: absolute; top: -1px; left: -2px; right: -2px; height: 2px; background: rgba(212, 175, 55, 0.5); border-radius: 2px 2px 0 0; z-index: 5; }
@@ -871,14 +872,15 @@ td.num { text-align: right; white-space: nowrap; }
 .vial-segment-very-high { background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%); }
 .vial-value-badge { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; color: var(--accent); }
 .vial-container .vial-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); opacity: 0; pointer-events: none; background: #111622; border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.65rem 0.85rem; box-shadow: var(--shadow); z-index: 1000; width: max-content; max-width: 90vw; white-space: nowrap; transition: opacity 0.2s ease, transform 0.2s ease; backdrop-filter: blur(12px); }
-.vial-container:hover .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
+.vial-container:hover .vial-tooltip,
+.vial-container:focus-within .vial-tooltip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(-4px); }
 .tooltip-header { border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
 .tooltip-grid { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--muted); }
 .tooltip-grid strong { color: var(--text); font-family: var(--font-mono); }
 .issue-card { position: relative; background-color: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.85rem; overflow: hidden; box-shadow: var(--shadow); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
 .issue-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 8px 20px -4px rgba(212, 175, 55, 0.2); }
 .issue-card[open] { border-color: var(--border-strong); box-shadow: 0 10px 24px -4px rgba(212, 175, 55, 0.25); }
-.issue-card-summary { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; user-select: none; list-style: none; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.2s ease; }
+.issue-card-summary { display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0.75rem 1rem; cursor: pointer; user-select: none; list-style: none; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.2s ease; }
 .issue-card-summary::-webkit-details-marker { display: none; }
 .issue-card-summary:hover { background-color: rgba(212, 175, 55, 0.06); }
 .issue-card-header-main { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
@@ -901,11 +903,34 @@ td.num { text-align: right; white-space: nowrap; }
 .issue-card-sub { margin-top: 0.5rem; margin-bottom: 0.25rem; border: 1px solid rgba(212, 175, 55, 0.2); background-color: rgba(0, 0, 0, 0.25); border-radius: 6px; }
 .issue-card-sub .issue-card-summary { padding: 0.6rem 0.85rem; background-color: rgba(255, 255, 255, 0.02); }
 .issue-card-sub .issue-card-title { font-size: 0.88rem; color: var(--text); }
+/* Schmaler Viewport: die Abstaende straffen, aber nie die Bedienflaeche --
+   die 44 px bleiben, gekuerzt wird nur die Polsterung. Die Tooltips duerfen
+   hier nicht mehr einzeilig sein, sonst schneidet der Rand sie ab. */
 @media (max-width: 30rem) {
   .page { padding: 1rem .85rem 3rem; }
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.25rem; }
   .verdict { padding: 1rem; }
-  .tab { padding: .5rem .9rem; font-size: .82rem; }
+  .tab { min-height: 44px; padding: .5rem .9rem; font-size: .82rem; }
+  .gate-card .gate-tooltip,
+  .vial-container .vial-tooltip {
+    width: auto;
+    max-width: min(17rem, calc(100vw - 2rem));
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+  .tooltip-header { white-space: normal; }
+}
+
+/* AC: wer Bewegung abbestellt hat, bekommt Runenpuls und Blaeschen nicht zu
+   sehen -- die Zustaende stehen ohnehin in Symbol und Text. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .rune-card:hover, .module-card:hover, .issue-card:hover { transform: none; }
 }
 `.trim();

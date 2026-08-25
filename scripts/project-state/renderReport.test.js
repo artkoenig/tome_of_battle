@@ -130,6 +130,57 @@ describe('project-state/renderReport', () => {
     });
   });
 
+  describe('Bedienbarkeit auf dem Telefon', () => {
+    it('unterdrueckt den Doppeltipp-Zoom, laesst Pinch-Zoom aber zu', () => {
+      const html = renderReport(makeModel());
+      expect(html).toMatch(/touch-action:\s*manipulation/);
+      // WCAG 1.4.4: die Seite darf das Vergroessern nie verbieten.
+      expect(html).not.toMatch(/user-scalable/);
+      expect(html).not.toMatch(/maximum-scale/);
+      expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
+    });
+
+    it('oeffnet Gate- und Vial-Tooltip ohne Zeiger und ohne Skript', () => {
+      const html = renderReport(makeModel());
+      // Fokussierbar, damit ein Tipp auf dem Telefon den Tooltip aufschlaegt.
+      expect(html).toContain('<div class="gate-card rune-card" tabindex="0">');
+      expect(html).toContain('<div class="vial-container" tabindex="0">');
+      expect(html).toContain('.gate-card:focus-within .gate-tooltip');
+      expect(html).toContain('.vial-container:focus-within .vial-tooltip');
+      expect(html).not.toMatch(/<script/i);
+    });
+
+    it('laesst die Tooltips auf schmalem Viewport umbrechen statt sie abzuschneiden', () => {
+      const html = renderReport(makeModel());
+      const narrow = html.slice(html.indexOf('@media (max-width: 30rem)'));
+      expect(narrow).toContain('.vial-container .vial-tooltip');
+      expect(narrow).toMatch(/white-space:\s*normal/);
+    });
+
+    it('haelt Tabs, Ruecklink und Aufklapp-Zeilen bei mindestens 44px', () => {
+      const html = renderReport(makeModel());
+      expect(html).toMatch(/\.tab \{[^}]*min-height:\s*44px/);
+      expect(html).toMatch(/\.back-link \{[^}]*min-height:\s*44px/s);
+      expect(html).toMatch(/\.issue-card-summary \{[^}]*min-height:\s*44px/);
+      // Auch unterhalb des Umbruchs, wo frueher nur die Polsterung schrumpfte.
+      const narrow = html.slice(html.indexOf('@media (max-width: 30rem)'));
+      expect(narrow).toMatch(/\.tab \{[^}]*min-height:\s*44px/);
+    });
+
+    it('nimmt Runenpuls und Blaeschen zurueck, wenn Bewegung abbestellt ist', () => {
+      const html = renderReport(makeModel());
+      expect(html).toContain('@media (prefers-reduced-motion: reduce)');
+      expect(html).toMatch(/animation-iteration-count:\s*1\s*!important/);
+    });
+
+    it('traegt keine Regeln fuer eine Tabelle, die die Seite nie erzeugt', () => {
+      const html = renderReport(makeModel());
+      expect(html).not.toContain('table-scroll');
+      expect(html).not.toContain('table.grid');
+      expect(html).not.toContain('<table');
+    });
+  });
+
   describe('Header und Metadaten', () => {
     it('setzt den Erhebungszeitpunkt aus dem Modell ein', () => {
       const html = renderReport(makeModel({ generatedAt: '2099-01-01 00:00 UTC' }));

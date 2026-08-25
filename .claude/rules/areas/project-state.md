@@ -51,3 +51,16 @@ Erzeugt `.report/index.html` (`npm run status-report`, im CI der Zustandsbericht
 - Der Bericht wird bei jedem Push frisch erzeugt und direkt ins Pages-Deployment gelegt, nie
   committet: `docs/status/` ist gitignoriert (Issue 0182). Eine eingecheckte Kopie liefert
   Jekyll an dem Tag als aktuell aus, an dem der Erzeugungsschritt scheitert.
+- Das gesamte Stylesheet der Seite ist **ein** Template-Literal (`REPORT_STYLES` in
+  `renderReport.js`) — es gibt keine `.css`-Datei. Wer den Look aendert, aendert diese Konstante,
+  und `renderReport.test.js` prueft CSS per `toContain`/`toMatch` auf dem HTML-Text.
+- Kein `<script>` und kein `<link>` im Ergebnis (Test pinnt beides). Jede Interaktion ist reines
+  CSS: Tabs ueber versteckte Radios, Tooltips ueber `:hover` **und** `:focus-within` auf
+  `.gate-card`/`.vial-container` (die tragen dafuer `tabindex="0"` — ohne Fokus gaebe es sie auf
+  dem Telefon nicht). Die einzige entfernte Ressource ist der Google-Fonts-`@import`.
+- Mobil gilt hier: `touch-action: manipulation` auf `html`, Bedienflaechen >= 44px auch **in**
+  `@media (max-width: 30rem)` (dort schrumpft nur die Polsterung), Tooltips brechen unter 30rem
+  um, und ein `prefers-reduced-motion`-Block nimmt Runenpuls und Blaeschen zurueck. Kein
+  `user-scalable`/`maximum-scale` — Pinch-Zoom bleibt (WCAG 1.4.4).
+- Die Seite erzeugt **keine** Tabelle; Regeln fuer `table.grid`/`.table-scroll` waren tot und
+  sind weg. Wer eine Tabelle einfuehrt, bringt ihre Regeln selbst mit.
