@@ -3,494 +3,494 @@
     {
       "op": "merge",
       "modules": [
-        "src/contexts/armylist/acl/index.js",
-        "src/contexts/armylist/acl/catalogTranslation.js"
+        "contexts/armylist/acl/index.js",
+        "contexts/armylist/acl/catalogTranslation.js"
       ],
-      "into": "src/contexts/armylist/acl/catalogTranslation.js"
+      "into": "contexts/armylist/acl/catalogTranslation.js"
     },
     {
       "op": "merge",
       "modules": [
-        "src/platform/persistence/database.js",
-        "src/platform/persistence/migrations.js"
+        "platform/persistence/database.js",
+        "platform/persistence/migrations.js"
       ],
-      "into": "src/platform/persistence/database.js"
+      "into": "platform/persistence/database.js"
     },
     {
       "op": "split",
-      "module": "src/platform/persistence/database.js",
+      "module": "platform/persistence/database.js",
       "into": [
         {
-          "id": "src/roster/rosterRepositoryStore.js",
+          "id": "roster/rosterRepositoryStore.js",
           "importedBy": [
-            "src/contexts/armylist/ports/storagePort.js"
+            "contexts/armylist/ports/storagePort.js"
           ]
         },
         {
-          "id": "src/catalog/catalogRepositoryStore.js",
+          "id": "catalog/catalogRepositoryStore.js",
           "importedBy": [
-            "src/contexts/catalog/ports/catalogRepository.js",
-            "src/platform/persistence/systemImport.js",
-            "src/platform/battlescribe/parserVersion.js"
+            "contexts/catalog/ports/catalogRepository.js",
+            "platform/persistence/systemImport.js",
+            "platform/battlescribe/parserVersion.js"
           ]
         },
         {
-          "id": "src/game/gameRepositoryStore.js",
+          "id": "game/gameRepositoryStore.js",
           "importedBy": [
-            "src/contexts/play/ports/storagePort.js"
+            "contexts/play/ports/storagePort.js"
           ]
         }
       ]
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/acl/catalogTranslation.js",
-      "to": "src/roster/catalogTranslation.js"
+      "module": "contexts/armylist/acl/catalogTranslation.js",
+      "to": "roster/catalogTranslation.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/copyUnit.js",
-      "to": "src/roster/copyUnit.js"
+      "module": "contexts/armylist/application/copyUnit.js",
+      "to": "roster/copyUnit.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/mandatoryListRules.js",
-      "to": "src/roster/mandatoryListRules.js"
+      "module": "contexts/armylist/application/mandatoryListRules.js",
+      "to": "roster/mandatoryListRules.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/raiseUnit.js",
-      "to": "src/roster/raiseUnit.js"
+      "module": "contexts/armylist/application/raiseUnit.js",
+      "to": "roster/raiseUnit.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/removeUnit.js",
-      "to": "src/roster/removeUnit.js"
+      "module": "contexts/armylist/application/removeUnit.js",
+      "to": "roster/removeUnit.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/renameRoster.js",
-      "to": "src/roster/renameRoster.js"
+      "module": "contexts/armylist/application/renameRoster.js",
+      "to": "roster/renameRoster.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/rosterSelectionFactory.js",
-      "to": "src/roster/rosterSelectionFactory.js"
+      "module": "contexts/armylist/application/rosterSelectionFactory.js",
+      "to": "roster/rosterSelectionFactory.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/rosterStore.js",
-      "to": "src/roster/rosterStore.js"
+      "module": "contexts/armylist/application/rosterStore.js",
+      "to": "roster/rosterStore.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/rosterTransfer.js",
-      "to": "src/roster/rosterTransfer.js"
+      "module": "contexts/armylist/application/rosterTransfer.js",
+      "to": "roster/rosterTransfer.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/settings.js",
-      "to": "src/roster/settings.js"
+      "module": "contexts/armylist/application/settings.js",
+      "to": "roster/settings.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/application/subSelectionUseCases.js",
-      "to": "src/roster/subSelectionUseCases.js"
+      "module": "contexts/armylist/application/subSelectionUseCases.js",
+      "to": "roster/subSelectionUseCases.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/catalogResolver.js",
-      "to": "src/roster/catalogResolver.js"
+      "module": "contexts/armylist/model/catalogResolver.js",
+      "to": "roster/catalogResolver.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/constants.js",
-      "to": "src/roster/constants.js"
+      "module": "contexts/armylist/model/constants.js",
+      "to": "roster/constants.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/costTypeLabels.js",
-      "to": "src/roster/costTypeLabels.js"
+      "module": "contexts/armylist/model/costTypeLabels.js",
+      "to": "roster/costTypeLabels.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/createRoster.js",
-      "to": "src/roster/createRoster.js"
+      "module": "contexts/armylist/model/createRoster.js",
+      "to": "roster/createRoster.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/forceEntries.js",
-      "to": "src/roster/forceEntries.js"
+      "module": "contexts/armylist/model/forceEntries.js",
+      "to": "roster/forceEntries.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/index.js",
-      "to": "src/roster/index.js"
+      "module": "contexts/armylist/model/index.js",
+      "to": "roster/index.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/optionsCollector.js",
-      "to": "src/roster/optionsCollector.js"
+      "module": "contexts/armylist/model/optionsCollector.js",
+      "to": "roster/optionsCollector.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/profileGrouping.js",
-      "to": "src/roster/profileGrouping.js"
+      "module": "contexts/armylist/model/profileGrouping.js",
+      "to": "roster/profileGrouping.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/rosterDefaults.js",
-      "to": "src/roster/rosterDefaults.js"
+      "module": "contexts/armylist/model/rosterDefaults.js",
+      "to": "roster/rosterDefaults.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/rosterFileError.js",
-      "to": "src/roster/rosterFileError.js"
+      "module": "contexts/armylist/model/rosterFileError.js",
+      "to": "roster/rosterFileError.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/rosterSerialization.js",
-      "to": "src/roster/rosterSerialization.js"
+      "module": "contexts/armylist/model/rosterSerialization.js",
+      "to": "roster/rosterSerialization.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/rosterSync.js",
-      "to": "src/roster/rosterSync.js"
+      "module": "contexts/armylist/model/rosterSync.js",
+      "to": "roster/rosterSync.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/rosterTree.js",
-      "to": "src/roster/rosterTree.js"
+      "module": "contexts/armylist/model/rosterTree.js",
+      "to": "roster/rosterTree.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/selectionFactory.js",
-      "to": "src/roster/selectionFactory.js"
+      "module": "contexts/armylist/model/selectionFactory.js",
+      "to": "roster/selectionFactory.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/selectionMembers.js",
-      "to": "src/roster/selectionMembers.js"
+      "module": "contexts/armylist/model/selectionMembers.js",
+      "to": "roster/selectionMembers.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/subSelectionEditing.js",
-      "to": "src/roster/subSelectionEditing.js"
+      "module": "contexts/armylist/model/subSelectionEditing.js",
+      "to": "roster/subSelectionEditing.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/model/subUnit.js",
-      "to": "src/roster/subUnit.js"
+      "module": "contexts/armylist/model/subUnit.js",
+      "to": "roster/subUnit.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/armylist/ports/storagePort.js",
-      "to": "src/roster/rosterRepository.js"
+      "module": "contexts/armylist/ports/storagePort.js",
+      "to": "roster/rosterRepository.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/catalog/application/catalogRevisions.js",
-      "to": "src/catalog/catalogRevisions.js"
+      "module": "contexts/catalog/application/catalogRevisions.js",
+      "to": "catalog/catalogRevisions.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/catalog/application/systemLibrary.js",
-      "to": "src/catalog/systemLibrary.js"
+      "module": "contexts/catalog/application/systemLibrary.js",
+      "to": "catalog/systemLibrary.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/catalog/ports/catalogRepository.js",
-      "to": "src/catalog/catalogRepository.js"
+      "module": "contexts/catalog/ports/catalogRepository.js",
+      "to": "catalog/catalogRepository.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/play/application/gameStore.js",
-      "to": "src/game/gameStore.js"
+      "module": "contexts/play/application/gameStore.js",
+      "to": "game/gameStore.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/play/index.js",
-      "to": "src/game/index.js"
+      "module": "contexts/play/index.js",
+      "to": "game/index.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/play/model/game.js",
-      "to": "src/game/game.js"
+      "module": "contexts/play/model/game.js",
+      "to": "game/game.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/play/ports/storagePort.js",
-      "to": "src/game/gameRepository.js"
+      "module": "contexts/play/ports/storagePort.js",
+      "to": "game/gameRepository.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/rulebook/rulesLookup.js",
-      "to": "src/rulebook/rulesLookup.js"
+      "module": "contexts/rulebook/rulesLookup.js",
+      "to": "rulebook/rulesLookup.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/rulebook/synonyms.js",
-      "to": "src/rulebook/synonyms.js"
+      "module": "contexts/rulebook/synonyms.js",
+      "to": "rulebook/synonyms.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/acl/evaluationCache.js",
-      "to": "src/report/evaluationCache.js"
+      "module": "contexts/ruleengine/acl/evaluationCache.js",
+      "to": "report/evaluationCache.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/acl/rosterAdapter.js",
-      "to": "src/report/rosterAdapter.js"
+      "module": "contexts/ruleengine/acl/rosterAdapter.js",
+      "to": "report/rosterAdapter.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/authorMessages.js",
-      "to": "src/report/authorMessages.js"
+      "module": "contexts/ruleengine/engine/authorMessages.js",
+      "to": "report/authorMessages.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/budget.js",
-      "to": "src/report/budget.js"
+      "module": "contexts/ruleengine/engine/budget.js",
+      "to": "report/budget.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/catalogReader.js",
-      "to": "src/report/catalogReader.js"
+      "module": "contexts/ruleengine/engine/catalogReader.js",
+      "to": "report/catalogReader.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/catalogSet.js",
-      "to": "src/report/catalogSet.js"
+      "module": "contexts/ruleengine/engine/catalogSet.js",
+      "to": "report/catalogSet.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/causes.js",
-      "to": "src/report/causes.js"
+      "module": "contexts/ruleengine/engine/causes.js",
+      "to": "report/causes.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/constraints.js",
-      "to": "src/report/constraints.js"
+      "module": "contexts/ruleengine/engine/constraints.js",
+      "to": "report/constraints.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/costProjection.js",
-      "to": "src/report/costProjection.js"
+      "module": "contexts/ruleengine/engine/costProjection.js",
+      "to": "report/costProjection.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/countIndex.js",
-      "to": "src/report/countIndex.js"
+      "module": "contexts/ruleengine/engine/countIndex.js",
+      "to": "report/countIndex.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/datasetDescription.js",
-      "to": "src/report/datasetDescription.js"
+      "module": "contexts/ruleengine/engine/datasetDescription.js",
+      "to": "report/datasetDescription.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/datasetPreparation.js",
-      "to": "src/report/datasetPreparation.js"
+      "module": "contexts/ruleengine/engine/datasetPreparation.js",
+      "to": "report/datasetPreparation.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/effectiveState.js",
-      "to": "src/report/effectiveState.js"
+      "module": "contexts/ruleengine/engine/effectiveState.js",
+      "to": "report/effectiveState.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/entryClassification.js",
-      "to": "src/report/entryClassification.js"
+      "module": "contexts/ruleengine/engine/entryClassification.js",
+      "to": "report/entryClassification.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/evalTree.js",
-      "to": "src/report/evalTree.js"
+      "module": "contexts/ruleengine/engine/evalTree.js",
+      "to": "report/evalTree.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/fixpoint.js",
-      "to": "src/report/fixpoint.js"
+      "module": "contexts/ruleengine/engine/fixpoint.js",
+      "to": "report/fixpoint.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/groupBehavior.js",
-      "to": "src/report/groupBehavior.js"
+      "module": "contexts/ruleengine/engine/groupBehavior.js",
+      "to": "report/groupBehavior.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/infoProjection.js",
-      "to": "src/report/infoProjection.js"
+      "module": "contexts/ruleengine/engine/infoProjection.js",
+      "to": "report/infoProjection.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/measurement.js",
-      "to": "src/report/measurement.js"
+      "module": "contexts/ruleengine/engine/measurement.js",
+      "to": "report/measurement.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/model.js",
-      "to": "src/report/model.js"
+      "module": "contexts/ruleengine/engine/model.js",
+      "to": "report/model.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/modifiers.js",
-      "to": "src/report/modifiers.js"
+      "module": "contexts/ruleengine/engine/modifiers.js",
+      "to": "report/modifiers.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/offer.js",
-      "to": "src/report/offer.js"
+      "module": "contexts/ruleengine/engine/offer.js",
+      "to": "report/offer.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/query.js",
-      "to": "src/report/query.js"
+      "module": "contexts/ruleengine/engine/query.js",
+      "to": "report/query.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/report.js",
-      "to": "src/report/report.js"
+      "module": "contexts/ruleengine/engine/report.js",
+      "to": "report/report.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/resolver.js",
-      "to": "src/report/resolver.js"
+      "module": "contexts/ruleengine/engine/resolver.js",
+      "to": "report/resolver.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/rosterBudget.js",
-      "to": "src/report/rosterBudget.js"
+      "module": "contexts/ruleengine/engine/rosterBudget.js",
+      "to": "report/rosterBudget.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/rounding.js",
-      "to": "src/report/rounding.js"
+      "module": "contexts/ruleengine/engine/rounding.js",
+      "to": "report/rounding.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/engine/violationClassification.js",
-      "to": "src/report/violationClassification.js"
+      "module": "contexts/ruleengine/engine/violationClassification.js",
+      "to": "report/violationClassification.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/evaluator.js",
-      "to": "src/report/evaluation.js"
+      "module": "contexts/ruleengine/evaluator.js",
+      "to": "report/evaluation.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/armyWideSelectorSlots.js",
-      "to": "src/report/armyWideSelectorSlots.js"
+      "module": "contexts/ruleengine/readmodel/armyWideSelectorSlots.js",
+      "to": "report/armyWideSelectorSlots.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/costDisplays.js",
-      "to": "src/report/costDisplays.js"
+      "module": "contexts/ruleengine/readmodel/costDisplays.js",
+      "to": "report/costDisplays.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/datasetDiagnostics.js",
-      "to": "src/report/datasetDiagnostics.js"
+      "module": "contexts/ruleengine/readmodel/datasetDiagnostics.js",
+      "to": "report/datasetDiagnostics.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/index.js",
-      "to": "src/report/index.js"
+      "module": "contexts/ruleengine/readmodel/index.js",
+      "to": "report/index.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/listRuleGroups.js",
-      "to": "src/report/listRuleGroups.js"
+      "module": "contexts/ruleengine/readmodel/listRuleGroups.js",
+      "to": "report/listRuleGroups.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/mandatoryListRules.js",
-      "to": "src/report/mandatoryListRules.js"
+      "module": "contexts/ruleengine/readmodel/mandatoryListRules.js",
+      "to": "report/mandatoryListRules.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/rosterReport.js",
-      "to": "src/report/rosterReport.js"
+      "module": "contexts/ruleengine/readmodel/rosterReport.js",
+      "to": "report/rosterReport.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/slotIndex.js",
-      "to": "src/report/slotIndex.js"
+      "module": "contexts/ruleengine/readmodel/slotIndex.js",
+      "to": "report/slotIndex.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/useEvaluation.js",
-      "to": "src/report/useEvaluation.js"
+      "module": "contexts/ruleengine/readmodel/useEvaluation.js",
+      "to": "report/useEvaluation.js"
     },
     {
       "op": "move",
-      "module": "src/contexts/ruleengine/readmodel/violationStats.js",
-      "to": "src/report/violationStats.js"
+      "module": "contexts/ruleengine/readmodel/violationStats.js",
+      "to": "report/violationStats.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/catalogEditor.js",
-      "to": "src/catalog/catalogEditor.js"
+      "module": "platform/battlescribe/catalogEditor.js",
+      "to": "catalog/catalogEditor.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/importSchemaGate.js",
-      "to": "src/catalog/importSchemaGate.js"
+      "module": "platform/battlescribe/importSchemaGate.js",
+      "to": "catalog/importSchemaGate.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/libraryDependencies.js",
-      "to": "src/catalog/libraryDependencies.js"
+      "module": "platform/battlescribe/libraryDependencies.js",
+      "to": "catalog/libraryDependencies.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/parserVersion.js",
-      "to": "src/catalog/parserVersion.js"
+      "module": "platform/battlescribe/parserVersion.js",
+      "to": "catalog/parserVersion.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/schemaValidator.js",
-      "to": "src/catalog/schemaValidator.js"
+      "module": "platform/battlescribe/schemaValidator.js",
+      "to": "catalog/schemaValidator.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/xmlParser.js",
-      "to": "src/catalog/systemFactory.js"
+      "module": "platform/battlescribe/xmlParser.js",
+      "to": "catalog/systemFactory.js"
     },
     {
       "op": "move",
-      "module": "src/platform/battlescribe/zipExtractor.js",
-      "to": "src/catalog/systemArchive.js"
+      "module": "platform/battlescribe/zipExtractor.js",
+      "to": "catalog/systemArchive.js"
     },
     {
       "op": "move",
-      "module": "src/platform/persistence/catalogSourceIndex.js",
-      "to": "src/catalog/catalogSourceIndex.js"
+      "module": "platform/persistence/catalogSourceIndex.js",
+      "to": "catalog/catalogSourceIndex.js"
     },
     {
       "op": "move",
-      "module": "src/platform/persistence/catalogUpdate.js",
-      "to": "src/catalog/catalogUpdate.js"
+      "module": "platform/persistence/catalogUpdate.js",
+      "to": "catalog/catalogUpdate.js"
     },
     {
       "op": "move",
-      "module": "src/platform/persistence/systemImport.js",
-      "to": "src/catalog/systemImport.js"
+      "module": "platform/persistence/systemImport.js",
+      "to": "catalog/systemImport.js"
     },
     {
       "op": "move",
-      "module": "src/shared/battlescribe/battlescribeSchema.generated.js",
-      "to": "src/catalog/battlescribeSchema.generated.js"
+      "module": "shared/battlescribe/battlescribeSchema.generated.js",
+      "to": "catalog/battlescribeSchema.generated.js"
     },
     {
       "op": "move",
-      "module": "src/shared/events/dataEvents.js",
-      "to": "src/roster/dataEvents.js"
+      "module": "shared/events/dataEvents.js",
+      "to": "roster/dataEvents.js"
     },
     {
       "op": "move",
-      "module": "src/shared/rostermodel/types.js",
-      "to": "src/roster/types.js"
+      "module": "shared/rostermodel/types.js",
+      "to": "roster/types.js"
     }
   ]
 }
