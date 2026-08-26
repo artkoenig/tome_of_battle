@@ -142,15 +142,43 @@ dokumentiert, damit ein künftiger Leser sie nicht für einen Fehler hält. Sie
 werden **nicht** als Test geführt, der die Lücke als erwartetes Verhalten
 festschreibt.
 
-- **B1 — Eine reine MAX-Kategorie ohne MIN wird nicht erzwungen.** Eine
-  Grenze der Join-Schicht wird nur ausgewertet, wenn ein Anker existiert. Für eine
-  `categoryEntry` synthetisiert die Join-Schicht einen Phantom-Anker **nur**, wenn
-  die Kategorie eine MIN-Grenze trägt (Kategorien sind selbst nie Roster-Instanzen).
-  Eine `categoryEntry` mit ausschließlich einer MAX-Grenze (ohne MIN) erhält daher
-  keinen Anker und bleibt effektiv **unbegrenzt** — eine endliche reine MAX-Kategorie
-  wird also nicht geprüft. (Der reale Fall des Unbegrenzt-Sentinels,
-  [BSData-Doku](../battlescribe-data-format.md) §7.6, fällt ohnehin damit
-  zusammen.) Die alte Engine erzwang die Kategoriegrenze unabhängig von einer MIN.
+**B1 ist seit Issue 0092 überholt** — der Nachtrag unten sagt, was die Engine heute
+tut; nur B2 gilt unverändert.
+
+- **B1 — ~~Eine reine MAX-Kategorie ohne MIN wird nicht erzwungen.~~ Überholt
+  durch Issue 0092.**
+
+  > **Nachtrag (Issue 0206, 2026-08-26).** Diese Entscheidung wurde von
+  > **Issue 0092** aufgehoben; die Aufhebung war bis hierher nirgends festgehalten.
+  > Der Anker einer `categoryEntry` hängt **nicht** an einer MIN-Grenze: die
+  > Join-Schicht hängt an **jeden** `categoryLink` einer Force einen Phantom-Anker,
+  > bedingungslos; im ungelinkten Fall genügt **irgendeine** Grenze im Rahmen
+  > (`ROSTER`/`FORCE`/`PARENT`), nicht eigens eine MIN. Eine MIN-Grenze bekäme ihren
+  > Anker ohnehin schon über die Synthese der Pflicht-Phantome — eine Kategorie mit
+  > ausschließlich MAX-Grenzen bliebe ohne diesen Schritt ankerlos und ihre Grenze
+  > still unausgewertet, und genau das war der Defekt, den 0092 behoben hat. Eine
+  > reine MAX-Kategoriegrenze wird also **geprüft**, wie in der alten Engine.
+  > Verifiziert wurde für diesen Nachtrag die Engine, nicht der alte Text: der Code
+  > gilt, B1 ist Historie.
+  >
+  > Festgenagelt ist das Verhalten end-to-end vom Szenario
+  > [`docs/testing/army-standard-bearer/`](../testing/army-standard-bearer/) — die
+  > `categoryEntry "Battle standard bearer"` (`2ef7-3efe-a448-423f`) trägt
+  > ausschließlich MAX-Grenzen, und deren Verletzung (`2a1d-03a1-b48c-64ad`,
+  > Ist 2 / Grenze 1) wird dort gemeldet. Für B1 gilt der Satz oben, dass die
+  > Charakteristik nicht als Test geführt wird, damit nicht mehr.
+
+  *Ursprünglicher Wortlaut (Stand Issue 67), als Beleg dafür, dass die Entscheidung
+  so getroffen und später umgekehrt wurde:*
+
+  > Eine Grenze der Join-Schicht wird nur ausgewertet, wenn ein Anker existiert. Für eine
+  > `categoryEntry` synthetisiert die Join-Schicht einen Phantom-Anker **nur**, wenn
+  > die Kategorie eine MIN-Grenze trägt (Kategorien sind selbst nie Roster-Instanzen).
+  > Eine `categoryEntry` mit ausschließlich einer MAX-Grenze (ohne MIN) erhält daher
+  > keinen Anker und bleibt effektiv **unbegrenzt** — eine endliche reine MAX-Kategorie
+  > wird also nicht geprüft. (Der reale Fall des Unbegrenzt-Sentinels,
+  > [BSData-Doku](../battlescribe-data-format.md) §7.6, fällt ohnehin damit
+  > zusammen.) Die alte Engine erzwang die Kategoriegrenze unabhängig von einer MIN.
 - **B2 — `forceEntry`-eigenes Punktelimit.** Das Format drückt „dieses
   (Sonder-)Heer muss ≥ N Punkte bauen" über das `limit::`-Muster aus
   ([BSData-Doku](../battlescribe-data-format.md) §5.6). Eine als Kosten-Summe
