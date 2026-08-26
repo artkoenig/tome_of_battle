@@ -11,6 +11,7 @@
  * eine neue Liste (oder — wenn nichts zu tun war — die unveränderte Eingabe).
  */
 import { countSelections, ownCountOf } from './rosterTree.js';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 
 /** Anzahl, mit der eine frisch angelegte Auswahl in die Liste eintritt. */
 const INITIAL_SELECTION_COUNT = 1;
@@ -22,7 +23,7 @@ const EMPTY_SELECTION_COUNT = 0;
  * Die Katalog-Id, über die eine Selection ihrer Options-Definition zugeordnet
  * wird: der verlinkte Eintrag, ersatzweise der direkte Eintrag.
  */
-const optionDefinitionIdOf = (selection) => selection.entryLinkId || selection.selectionEntryId;
+const optionDefinitionIdOf = selectionIdentityId;
 
 /** Neue Liste ohne den Eintrag an `index`. */
 const withoutIndex = (selections, index) => selections.filter((_, position) => position !== index);

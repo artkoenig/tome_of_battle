@@ -1,4 +1,5 @@
 import { countOptionInstances, UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 
 /**
  * Die Ableitungen, die sich **jede** Options-Zeile des Editors teilt — der
@@ -45,7 +46,7 @@ export const resolveRowSelectionId = (rootSelection, ownerSelectionId, option, o
   const optionKey = option?.id;
   const targetKey = optionRef?.targetDefId || optionRef?.defId;
   const match = (owner.selections || []).find(sel => {
-    const key = sel.entryLinkId || sel.selectionEntryId;
+    const key = selectionIdentityId(sel);
     return key === optionKey || key === targetKey || key === optionRef?.defId;
   });
   return match?.id ?? null;

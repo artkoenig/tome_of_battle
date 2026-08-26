@@ -4,6 +4,7 @@ import { forceCategoriesOf } from '../../../contexts/armylist/acl';
 import { unitsOfForce } from '../../../contexts/armylist/model';
 import { armyWideSelectorSlotsOf, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 import { useRosterReport } from '../rosterContexts';
 
 /**
@@ -42,7 +43,7 @@ export function useForceSection({ force, forcePath = null }) {
       capabilityEntryOf(system, capability, forceCatalogueId));
     const armyWideSelectorIds = new Set(armyWideSelectorSlots.flatMap(capability =>
       [capability.defId, capability.targetDefId].filter(Boolean)));
-    const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
+    const belongsToArmyWideSelector = s => armyWideSelectorIds.has(selectionIdentityId(s));
     const armyWideSelections = unitsOfForce(force).filter(belongsToArmyWideSelector);
 
     /** @type {Set<string|null>} */

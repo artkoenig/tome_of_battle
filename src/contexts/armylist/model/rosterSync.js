@@ -2,6 +2,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { getUnitOptions } from './optionsCollector.js';
 import { childSelectionsOf, mapSelectionTree, traverseSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
+import { importedCatalogueEntryId } from '../../../shared/rostermodel/selectionIds.js';
 import '../../../shared/rostermodel/types.js';
 
 /**
@@ -57,17 +58,14 @@ function withoutLegacyCosts(selection) {
   return stripped;
 }
 
-/** Die Id, unter der eine Selection ihren Katalogeintrag referenziert. */
-function catalogueEntryIdOf(selection) {
-  return selection.selectionEntryId || selection.entryLinkId;
-}
+
 
 /**
  * Die aufgelöste Katalogdefinition hinter einer Selection — oder `null`, wenn
  * die Selection auf keinen (mehr) auffindbaren Eintrag verweist.
  */
 function catalogueEntryOf(selection, system, catalogueId) {
-  const entryId = catalogueEntryIdOf(selection);
+  const entryId = importedCatalogueEntryId(selection);
   if (!entryId) return null;
 
   const entryDef = findEntryInSystem(system, entryId, catalogueId);
@@ -147,7 +145,7 @@ function optionsByCanonicalIdOf(unitSelection, system, catalogueId) {
  * Eingabe selbst, wenn sie diese Ids bereits trägt.
  */
 function withOptionIdsAligned(selection, optionsByCanonicalId) {
-  const option = optionsByCanonicalId.get(catalogueEntryIdOf(selection));
+  const option = optionsByCanonicalId.get(importedCatalogueEntryId(selection));
   if (!option) return selection;
 
   const entryLinkId = option.targetId ? option.id : null;

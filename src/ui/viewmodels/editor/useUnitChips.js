@@ -7,6 +7,7 @@ import {
   UPGRADE_DETAILS_KEYWORDS,
 } from '../../../contexts/armylist/model';
 import { useRosterReport } from '../rosterContexts';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 import { publicationRefOf, upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
 /**
@@ -34,7 +35,7 @@ const getSelectedUpgrades = (sel, system, activeCatalogueId, slots) => {
   const collect = (node) => {
     if (!node.selections) return;
     node.selections.forEach(subSel => {
-      const entryId = subSel.entryLinkId || subSel.selectionEntryId;
+      const entryId = selectionIdentityId(subSel);
       const entry = findEntryInSystem(system, entryId, activeCatalogueId);
       const resolved = resolveEntry(system, entry, activeCatalogueId);
 

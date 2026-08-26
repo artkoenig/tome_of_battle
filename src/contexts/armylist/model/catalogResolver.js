@@ -122,7 +122,9 @@ export function foreignCatalogueIdsOf(system, ownCatalogueId) {
  * supplies one.
  *
  * @param {Object} system the parsed game system (gst plus its catalogues).
- * @param {string} entryId the (possibly catalogue-qualified) entry id.
+ * @param {string|null|undefined} entryId the (possibly catalogue-qualified) entry
+ *   id. A selection that names neither a link nor an entry has none; the lookup
+ *   then misses like any unknown id and the caller sees `null`.
  * @param {string|null|undefined} catalogueId the catalogue the reference was read from.
  */
 export function findEntryInSystem(system, entryId, catalogueId) {

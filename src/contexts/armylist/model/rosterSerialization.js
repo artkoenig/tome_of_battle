@@ -4,6 +4,7 @@ import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { resolveCostLimitTypeId } from './costTypeLabels.js';
 import { DEFAULT_ROSTER_COST_LIMIT } from './rosterDefaults.js';
+import { importedCatalogueEntryId, selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 
 /**
  * `.ros`-Serialisierung des Schreibmodells (ADR-0037: Fachlogik).
@@ -178,7 +179,7 @@ function serializeSelection(sel, indent, ctx, currentCatalogueId) {
 
   const capability = slots.slotOfSelection(sel);
   const entryId = sel.selectionEntryId || '';
-  const entryLinkId = sel.entryLinkId || '';
+  const entryLinkId = sel.entryLinkId ? sel.entryLinkId : '';
   const count = sel.number || 1;
 
   const resolved = resolveSelectionEntry(system, sel, currentCatalogueId);
@@ -217,11 +218,16 @@ function serializeSelection(sel, indent, ctx, currentCatalogueId) {
 }
 
 /**
- * Resolves the catalogue entry a selection references (link id or entry id).
+ * Resolves the catalogue entry a selection references.
+ *
+ * Runs on export, i.e. on a reconciled roster, and therefore asks for the
+ * selection's **identity** — exactly one of the two ids is set there, so the
+ * answer is the same as before, and the site no longer reads as a precedent for
+ * the pre-import order.
  */
 function resolveSelectionEntry(system, selection, catalogueId) {
   if (!system) return null;
-  const entryId = selection.selectionEntryId || selection.entryLinkId;
+  const entryId = selectionIdentityId(selection);
   if (!entryId) return null;
   const entryDef = findEntryInSystem(system, entryId, catalogueId);
   return entryDef ? resolveEntry(system, entryDef, catalogueId) : null;
@@ -400,7 +406,9 @@ function parseSelectionNode(node, system, catalogueId) {
 function checkNeedsSplit(selection, system, catalogueId) {
   if (!system || !selection.number || selection.number <= 1) return false;
 
-  const entryId = selection.selectionEntryId || selection.entryLinkId;
+  // Laeuft **vor** `reconcileImportedSelectionIds` auf einer frisch geparsten
+  // fremden Datei: massgeblich ist das Ziel, das die Datei nennt.
+  const entryId = importedCatalogueEntryId(selection);
   if (!entryId) return false;
 
   const entry = findEntryInSystem(system, entryId, catalogueId);

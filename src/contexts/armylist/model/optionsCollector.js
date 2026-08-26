@@ -1,6 +1,7 @@
 import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { EntryLinkKind } from '../../../shared/battlescribe/battlescribeSchema.generated.js';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 
 /**
  * Die Modifikatoren einer Definition **flach**: die eigenen plus die aus jeder
@@ -45,7 +46,7 @@ const flattenedModifiers = (source) => {
  */
 export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
   if (!activeCatalogueId) return [];
-  const entryId = unitSelection.entryLinkId || unitSelection.selectionEntryId;
+  const entryId = selectionIdentityId(unitSelection);
   const rawEntry = findEntryInSystem(system, entryId, activeCatalogueId);
   const resolved = resolveEntry(system, rawEntry, activeCatalogueId);
 
@@ -212,7 +213,7 @@ export const getUnitOptions = (system, activeCatalogueId, unitSelection) => {
 
   const collectFromActiveSelections = (currentSel) => {
     currentSel.selections?.forEach(subSel => {
-      const subEntryId = subSel.entryLinkId || subSel.selectionEntryId;
+      const subEntryId = selectionIdentityId(subSel);
       const subRawEntry = findEntryInSystem(system, subEntryId, activeCatalogueId);
       const subResolved = resolveEntry(system, subRawEntry, activeCatalogueId);
       if (subResolved) {

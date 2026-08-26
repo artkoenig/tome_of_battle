@@ -27,6 +27,7 @@ import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFac
 import { withRaisedUnits } from './raiseUnit.js';
 import { findMissingMandatoryListRules } from '../../ruleengine/readmodel/index.js';
 import '../../../shared/rostermodel/types.js';
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
 
 /**
  * Ergaenzt jede eindeutige, fehlende Pflicht-Listenregel je Kontingent.
@@ -54,7 +55,7 @@ export function applyMandatoryListRules(roster, { system, slots, isFreshRoster =
   for (const force of roster.forces || []) {
     const catalogueId = catalogueIdOfForce(roster, force);
     const carriedEntryIds = new Set(
-      unitsOfForce(force).map(selection => selection.entryLinkId || selection.selectionEntryId)
+      unitsOfForce(force).map(selectionIdentityId)
     );
     const missing = findMissingMandatoryListRules(slots, slots.pathOfForce(force.id), {
       entryOf: (capability) => entryOfCapability(system, capability, catalogueId),

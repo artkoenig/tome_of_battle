@@ -17,7 +17,7 @@
  *   als ungefiltert. Ein Kontingent **ohne** Armeebuch-Id geht wie bisher ohne
  *   die Angabe durch; dann entscheidet allein der Herkunftsindex aus den
  *   Katalogdaten.
- * - Selection → `{ defId: entryLinkId || selectionEntryId, count: number,
+ * - Selection → `{ defId: selectionIdentityId(selection), count: number,
  *   children }`. Das ist die **Link-Id-Regel** (Issue 084, dokumentiert am
  *   Fassaden-Rand): eine ueber einen `entryLink` gesetzte Auswahl geht unter
  *   der Id des **Verweises**, nie unter der Ziel-Id — ohne Rueckfall. Nur so
@@ -50,6 +50,18 @@
  * Der Adapter ist rein: das App-Roster wird gelesen, nie mutiert.
  */
 
+import { selectionIdentityId } from '../../../shared/rostermodel/selectionIds.js';
+
+/**
+ * Die Identitaets-Id einer App-Selection, weitergereicht an das Lesemodell.
+ *
+ * Der Reinraum darf das Roster-Modell nicht kennen; die ACL ist die einzige
+ * Schicht, die beide Vokabulare spricht, und damit die Tuer, durch die die
+ * Regel nach innen gelangt (`datasetDiagnostics.js` schlaegt darueber den Namen
+ * einer Auswahl nach).
+ */
+export { selectionIdentityId };
+
 /**
  * Ein Knoten des Evaluator-Instanzbaums (Vertrag der Fassade, `@param roster`
  * an `evaluate`).
@@ -73,13 +85,10 @@
 /**
  * Die Definitions-Id, unter der eine App-Selection uebergeben wird —
  * Link-Id-Regel (Issue 084): der Verweis identifiziert die Auswahl, nicht sein
- * Ziel; kein Rueckfall.
- *
- * @param {import('../../../shared/rostermodel/types.js').Selection} selection
- * @returns {string|null}  `null`, wenn die Auswahl weder Verweis noch Eintrag
- *   nennt — sie loest dann in keinem Katalog auf.
+ * Ziel. Das ist die Identitaets-Regel des Roster-Modells; sie steht einmal, in
+ * `src/shared/rostermodel/selectionIds.js`.
  */
-const defIdOf = (selection) => selection.entryLinkId ?? selection.selectionEntryId;
+const defIdOf = selectionIdentityId;
 
 /** Die leere Ueberspringmenge: alles loest auf (der Normalfall). */
 const NOTHING_SKIPPED = new Set();

@@ -20,6 +20,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
 
+import { selectionIdentityId } from '../../shared/rostermodel/selectionIds.js';
+
 const dom = new JSDOM();
 
 /**
@@ -31,11 +33,18 @@ const dom = new JSDOM();
  * Auswahl gesetzt wurde. Fehlt das Attribut oder ist es leer — die Auswahl
  * steht direkt, ohne Verweis —, bleibt es bei `entryId`.
  *
+ * Das ist dieselbe Regel wie im Roster-Modell, und sie steht nur dort: die
+ * XML-Attribute heissen anders (`entryId` statt `selectionEntryId`), die
+ * Reihenfolge entscheidet {@link selectionIdentityId}.
+ *
  * @param {Element} selection Ein `<selection>`-Element.
  * @returns {string | null} Die Definitions-Id der Auswahl.
  */
 function defIdOf(selection) {
-  return selection.getAttribute('entryLinkId') || selection.getAttribute('entryId');
+  return selectionIdentityId({
+    entryLinkId: selection.getAttribute('entryLinkId'),
+    selectionEntryId: selection.getAttribute('entryId'),
+  });
 }
 
 /**

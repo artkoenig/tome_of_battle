@@ -6,6 +6,7 @@ import {
 } from '../../contexts/armylist/model';
 import { costLimitLabelOf, costLimitTypeIdOf, EMPTY_SLOT_INDEX } from '../../contexts/ruleengine/readmodel/index.js';
 import { profileCellDisplayOf } from './editor/useUnitCard';
+import { selectionIdentityId } from '../../shared/rostermodel/selectionIds.js';
 
 /**
  * ViewModel der Einheitenkarte im Spielmodus (ADR-0038).
@@ -23,7 +24,7 @@ const WOUND_CHARACTERISTIC_NAMES = ['w', 'wounds', 'l', 'lp', 'lebenspunkte'];
  * nennt; ohne Fundstelle 1.
  */
 export function maxWoundsOf(system, roster, selection) {
-  const entryId = selection.entryLinkId || selection.selectionEntryId;
+  const entryId = selectionIdentityId(selection);
   const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
   const resolved = resolveEntry(system, entry, roster?.catalogueId);
   if (!resolved) return 1;
@@ -57,7 +58,7 @@ export function maxWoundsOf(system, roster, selection) {
  * Summe der Modell-Kinder — und ohne solche wieder die eigene Anzahl.
  */
 export function modelCountOf(system, roster, selection) {
-  const entryId = selection.entryLinkId || selection.selectionEntryId;
+  const entryId = selectionIdentityId(selection);
   const entry = findEntryInSystem(system, entryId, roster?.catalogueId);
   const resolved = resolveEntry(system, entry, roster?.catalogueId);
 
@@ -68,7 +69,7 @@ export function modelCountOf(system, roster, selection) {
   let hasModelChildren = false;
 
   subSelectionsOf(selection).forEach(child => {
-    const childEntryId = child.entryLinkId || child.selectionEntryId;
+    const childEntryId = selectionIdentityId(child);
     if (childEntryId === null) return;
     const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
     const childResolved = resolveEntry(system, childEntry, roster?.catalogueId);

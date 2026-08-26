@@ -11,8 +11,9 @@
  *
  * Die Diagnose selbst nennt nur die Definitions-Id. Den Namen, den der Nutzer
  * kennt, trägt seine eigene Auswahl — er wird deshalb hier aus dem Roster
- * nachgeschlagen (dieselbe Identitätsregel wie im Adapter: der Verweis zählt,
- * sonst der Eintrag).
+ * nachgeschlagen — über `selectionIdentityId`, dieselbe Identitätsregel wie im
+ * Adapter, aus dem sie hier auch bezogen wird (der Reinraum kennt das
+ * Roster-Modell nicht; die ACL ist die Tür dorthin).
  *
  * Ein **Kontingent** kann seine Definition genauso verlieren wie eine Auswahl —
  * es erscheint dann mit seiner Id. Einen Klartextnamen gibt es für diesen Fall
@@ -21,11 +22,13 @@
  * mit ihr fehlt. Die Id ist hier also die ehrliche Auskunft, kein Notbehelf.
  */
 
+import { selectionIdentityId } from '../acl/rosterAdapter.js';
+
 const UNRESOLVED_DEFINITION = 'unresolvedDefinition';
 
 function collectNamesByDefId(selections, into) {
   for (const selection of selections ?? []) {
-    const defId = selection.entryLinkId || selection.selectionEntryId;
+    const defId = selectionIdentityId(selection);
     if (defId && !into.has(defId)) into.set(defId, selection.name ?? defId);
     collectNamesByDefId(selection.selections, into);
   }
