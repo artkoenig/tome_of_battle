@@ -11,6 +11,8 @@
   Schichttabelle; folgt dem 0029→0030-Muster (der alte Befund bleibt stehen, die neue Zuordnung
   wird hier festgeschrieben)
 
+> **Nachtrag (Issue 0205, 2026-08-26).** dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter.
+
 ## Kontext und Problemstellung
 
 Issue 0179 ordnet `src` in vier Verzeichnisse — `ui`, `domain`, `data`, `tests` — deckungsgleich

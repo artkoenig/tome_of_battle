@@ -4,6 +4,8 @@ Status: accepted
 
 # Der Reinraum-Evaluator löst Mehr-Katalog-Datensätze (`.gst` + Liste von `.cat`) global-by-ID auf
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ADR-0030 und ADR-0031 haben die katalogübergreifende Auflösung des Evaluators
 (`src/domain/evaluator/`) bewusst ausgeklammert: die Fassade `evaluate(catalogXml, roster)`
 nahm genau **einen** Katalog-XML-String, und der Resolver löste nur die direkt

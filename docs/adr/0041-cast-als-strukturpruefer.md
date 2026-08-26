@@ -130,9 +130,11 @@ Gezählt wurde beim Umstieg, mit `warn` (17 Einträge unter 14 Regelnamen):
 | `keine-i18n-unter-ui` | 0 |
 | `evaluator-keine-roster-abhaengigkeit` | 0 |
 | `roster-keine-evaluator-abhaengigkeit` | 0 |
-| `roster-keine-evaluation-abhaengigkeit` | 0 |
+| Regel auf `src/domain/roster/` → `src/domain/evaluation/` (Name siehe Erratum) | 0 |
 | `evaluation-keine-roster-abhaengigkeit` | 0 |
 | `evaluator-nur-ueber-fassade` | 1 |
+
+> **Erratum (Issue 0205, 2026-08-26).** Eine Zeile der Tabelle oben nannte den damaligen Namen der Regel auf der Kante `src/domain/roster/` → `src/domain/evaluation/`. Die Regel ist mit dem Kontextschnitt (Issue 0186, [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md)) entfallen — ihre Kante hält heute `roster-keine-evaluator-abhaengigkeit` —, und ein Name, der in `.cast/rules.json` nicht mehr steht, ist nicht nachschlagbar; die Messwerte des Laufs sind unverändert. Die Pfade unter `src/domain/` in diesem Abschnitt sind aus demselben Grund historisch: der Reinraum liegt heute unter `src/contexts/ruleengine/engine/`.
 
 Die eine Fundstelle war
 `scripts/lib/evaluator-measurement-cases.js:17 → src/domain/evaluator/__fixtures__/rosParser.js`.

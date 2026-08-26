@@ -7,6 +7,8 @@
   löst die Verzeichnisnamen aus [ADR 0040](0040-services-und-rules-von-daten-zu-fachlogik.md)
   ab; die Prüfung läuft weiter über [ADR 0041](0041-cast-als-strukturpruefer.md)
 
+> **Erratum (Issue 0205, 2026-08-26).** Der erste Positiv-Punkt unter „Konsequenzen“ nannte ursprünglich „23 Regeln“ und glossierte `kontext-kein-fremder-kontext` als „kein Kontext importiert einen anderen“. Beides war schon am Tag der Niederschrift ungenau: eine Zahl in Prosa veraltet mit jeder neuen Regel, und die Regel hat mit `lesemodell-die-eine-tuer` eine gesetzte Ausnahme. Der Punkt ist entsprechend korrigiert; die Entscheidung selbst ist unberührt.
+
 ## Kontext und Problemstellung
 
 `src/` war nach Technik geschnitten: `ui/`, `domain/`, `data/`. Die Richtung stimmte —
@@ -69,8 +71,13 @@ Drei Festlegungen, die aus der Simulation stammen und keine Geschmacksfragen sin
 - **Positiv:** Fachliche Fragen haben eine Adresse. Die Infrastruktur ist austauschbar,
   ohne einen Kontext anzufassen. `shared/` hat Fan-out 0, `domain/` und `data/` existieren
   nicht mehr.
-- **Positiv:** Der Schnitt ist ein Gate, kein Diagramm: `.cast/rules.json` enthält 23
-  Regeln, darunter `kontext-kein-fremder-kontext` (kein Kontext importiert einen anderen),
+- **Positiv:** Der Schnitt ist ein Gate, kein Diagramm: die verbotenen und die erlaubten
+  Kanten stehen vollständig in `.cast/rules.json` — dort, nicht hier, ist ihre Zahl
+  nachzulesen. Darunter `kontext-kein-fremder-kontext` (kein Kontext importiert einen
+  anderen; die eine gesetzte Ausnahme ist die Tür des Lesemodells —
+  `lesemodell-die-eine-tuer` erlaubt `src/contexts/armylist/application/mandatoryListRules.js`
+  den Zugriff auf die Fassade des Lesemodells, sonst niemandem außerhalb von
+  `src/ui/viewmodels/` und `src/tests/`),
   `kontext-nicht-auf-plattform` (nur die Ports), `shared-haengt-an-nichts`,
   `evaluator-nur-ueber-fassade`, `lesemodell-nur-ueber-fassade` und
   `nur-die-acl-ruft-die-engine`.

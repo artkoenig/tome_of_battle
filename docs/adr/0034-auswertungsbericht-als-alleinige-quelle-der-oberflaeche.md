@@ -9,6 +9,8 @@
   (Text-Tokens), ADR-0003 (Domänenregeln), ADR-0014/0017/0018 (Katalog-Forks).
   Wird ergänzt durch ADR-0035 (Verfügbarkeit aus Fähigkeitsdatensätzen).
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 ADR-0030 hat beschlossen, dass die Reinraum-Engine (`src/domain/evaluator/`) die alte

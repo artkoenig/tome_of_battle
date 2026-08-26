@@ -5,6 +5,8 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Ergänzt ADR 0006 (Testing und Automation); baut auf ADR 0030 (Reinraum-Evaluator) und ADR 0032 (Mehr-Katalog-Datensätze) auf.
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt. Der manifest-getriebene Runner selbst liegt heute als `src/tests/contexts/ruleengine/engine/e2e.testcatalog.test.js`.
+
 ## Kontext und Problemstellung
 
 Die End-to-End-Absicherung der Reinraum-Engine (`src/domain/evaluator/`) bestand
@@ -57,7 +59,7 @@ und die Autorenschaft strukturell von der Engine trennt.
 Konkret:
 
 - **Ein Runner als einzige Quelle der Wahrheit.**
-  [`src/domain/evaluator/e2e.testcatalog.test.js`](../../src/domain/evaluator/e2e.testcatalog.test.js)
+  `src/domain/evaluator/e2e.testcatalog.test.js`
   ist der **einzige** versionierte E2E-Einstieg der Engine. Er entdeckt zur
   Laufzeit alle Szenarien unter [`docs/testing/`](../testing/) mit einem
   `scenario.json`, wertet jedes darin deklarierte Roster gegen die öffentliche

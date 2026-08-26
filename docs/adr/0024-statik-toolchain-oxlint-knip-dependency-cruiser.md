@@ -1,9 +1,11 @@
 # Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen
 
-- **Status:** Accepted
+- **Status:** Accepted (dependency-cruiser-Säule durch [ADR-0041](0041-cast-als-strukturpruefer.md) abgelöst) — die Rollenverteilung der drei Säulen und die Gate-Strategie gelten weiter, der Strukturprüfer heißt seit ADR-0041 cast
 - **Datum:** 2026-07-21
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** ergänzt ADR-0006 (Testing and Automation), setzt ADR-0023 (Solver-Fassade) maschinell durch
+
+> **Nachtrag (Issue 0205, 2026-08-26).** dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter. Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
 
 ## Kontext und Problemstellung
 

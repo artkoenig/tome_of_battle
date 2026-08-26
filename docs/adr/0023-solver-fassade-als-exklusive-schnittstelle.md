@@ -14,6 +14,8 @@
 > sondern Bausteine anbietet. Der Text unten bleibt als Begründung der damaligen
 > Entscheidung stehen.
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Die Regel-Engine der Anwendung liegt in rund zwanzig Modulen unter `src/solver/`.

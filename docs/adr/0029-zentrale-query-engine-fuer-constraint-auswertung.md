@@ -23,6 +23,8 @@
 > aus einem `SelectionBehaviorModel`. Das Dokument beschreibt nur noch Historie —
 > lesenswert für die Problemanalyse, nicht für den geltenden Aufbau.
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Die Auswertung von BSData-Regeln — Grenzen (Constraints), Bedingungen

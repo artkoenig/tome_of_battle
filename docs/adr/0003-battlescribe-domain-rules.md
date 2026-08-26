@@ -5,6 +5,8 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Die Battlescribe-Kataloge (`.cat` / `.gst`) nutzen ein hochgradig generisches, aber auch komplexes XML-Schema, um Armeen, Einheiten, Ausrüstungsgegenstände, Punktekosten und Validierungsregeln zu definieren. Um verschiedene Spielsysteme (z. B. Warhammer Fantasy, Warhammer 40k) und Völker flexibel in *Tome of Battle* laden zu können, muss die Fachlogik der Engine (`src/domain/evaluator/`, seit Issue 0121; zuvor `src/solver/`) robust und systemunabhängig arbeiten. Hardcodierte Sonderregeln für einzelne Armeen oder sprachspezifische Strings führen schnell zu Fehlern und schränken die Erweiterbarkeit massiv ein.

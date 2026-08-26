@@ -4,6 +4,8 @@ Status: accepted
 
 # Der Reinraum-Evaluator liest die rohe BattleScribe-XSD-Syntax und teilt deren Enum-SSOT
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ADR-0030 hat die zweite Auswertungs-Engine (`src/domain/evaluator/`) bewusst mit einem
 **eigenen, erfundenen Vokabular** (`op` / `operation` / `targetKind` / `targetId`)
 gebaut und diese Abweichung von den echten BattleScribe-Attributen als „bewusst

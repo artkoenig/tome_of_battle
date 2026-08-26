@@ -15,6 +15,8 @@
   betrifft die Regeln aus ADR-0024 (Statik-Toolchain); die Schichttabelle wird durch
   [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt
 
+> **Nachtrag (Issue 0205, 2026-08-26).** dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter.
+
 ## Kontext und Problemstellung
 
 Die Anwendung hat gewachsene, aber nur teilweise durchgesetzte Schichten. Maschinell geprüft

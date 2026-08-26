@@ -31,7 +31,7 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0021 | [Preview-Badge über Laufzeit-Hostname-Vergleich](0021-preview-badge-laufzeit-hostname-erkennung.md) | Accepted | 2026-07-19 |
 | 0022 | [UI-Verfügbarkeit im Aushebe-Dialog leitet sich aus dem Validator ab](0022-ui-verfuegbarkeit-leitet-sich-aus-dem-validator-ab.md) | Superseded (0035) | 2026-07-20 |
 | 0023 | [Die Solver-Fassade ist die exklusive Schnittstelle zur Regel-Engine](0023-solver-fassade-als-exklusive-schnittstelle.md) | Superseded (0121) | 2026-07-21 |
-| 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted | 2026-07-21 |
+| 0024 | [Statik-Toolchain: oxlint, Knip und dependency-cruiser mit getrennten Rollen](0024-statik-toolchain-oxlint-knip-dependency-cruiser.md) | Accepted (dependency-cruiser-Säule durch 0041 abgelöst) | 2026-07-21 |
 | 0025 | [GitHub-Pages-Quelle auf Actions umgestellt, Jekyll-Build wird mitgeführt](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md) | Accepted | 2026-07-21 |
 | 0026 | [i18n als Eigenlösung: JSON-Sprachdateien + Intl-API, keine i18n-Library](0026-i18n-eigenloesung-json-und-intl-ohne-library.md) | Accepted | 2026-07-22 |
 | 0027 | [Validierungs-Ursachen als optionales, sprachfreies Feld am Fehlerobjekt](0027-validierungs-ursachen-am-fehlerobjekt.md) | Accepted | 2026-07-29 (rev.) |
@@ -44,7 +44,6 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0034 | [Der Auswertungsbericht ist die alleinige Quelle der Oberfläche](0034-auswertungsbericht-als-alleinige-quelle-der-oberflaeche.md) | Accepted | 2026-07-26 |
 | 0035 | [Verfügbarkeit aus Fähigkeitsdatensätzen statt Validierungs-Diff](0035-verfuegbarkeit-aus-faehigkeitsdatensaetzen-statt-validierungs-diff.md) | Accepted | 2026-07-26 |
 | 0036 | [Angebots-Anker als Blätter in einer zweiten Baumphase außerhalb der Fixpunktschleife](0036-angebots-anker-als-blaetter-in-einer-zweiten-baumphase.md) | Accepted | 2026-07-26 |
-
 | 0037 | [Schichtenarchitektur UI → Fachlogik → Daten mit maschinell geprüfter Richtung](0037-schichtenarchitektur-ui-fachlogik-daten.md) | Accepted | 2026-08-20 |
 | 0038 | [Custom Hook als ViewModel je UI-Baustein, gespeist aus dem Auswertungsbericht](0038-custom-hooks-als-viewmodel-je-ui-baustein.md) | Accepted | 2026-08-20 |
 | 0039 | [Das Schreibmodell erreicht den Auswertungsbericht nur hereingereicht](0039-schreibmodell-erreicht-den-bericht-nur-hereingereicht.md) | Accepted | 2026-08-21 |

@@ -5,6 +5,8 @@
 - **Beteiligte:** Projektinhaber, Agentenlauf zu Issue 0174
 - **Zugehörige ADRs:** Ergänzt ADR-0030 (Reinraum) und ADR-0037 (Schichten UI → Fachlogik → Daten); baut auf ADR-0034 (Bericht als alleinige Quelle) auf.
 
+> **Erratum (Issue 0205, 2026-08-26).** Die Regel auf dieser Kante trug hier ihren damaligen Namen; mit dem Kontextschnitt (Issue 0186, [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md)) ist sie entfallen, weil Auswertungs-Brücke und Engine seither im selben Kontext liegen, und der Name ist unten deshalb durch die Kante selbst ersetzt. Gehalten wird die Kante heute von `roster-keine-evaluator-abhaengigkeit` in `.cast/rules.json` (`src/contexts/armylist/**` → `src/contexts/ruleengine/**`). dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter. Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/roster/` als `src/contexts/armylist/model/`, `src/domain/evaluation/` als `src/contexts/ruleengine/acl/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 `src/domain/roster/rosterSerialization.js` importierte `evaluateAppRoster` aus
@@ -43,10 +45,10 @@ prüfbar macht, statt sie an eine Bedingung zu knüpfen ("liest nur"), die kein
 Werkzeug nachhalten kann. Der Bericht wird hereingereicht; das Schreibmodell
 bleibt rein strukturell und ruft nichts aus `src/domain/evaluation/` auf.
 
-Festgehalten wird das durch die dependency-cruiser-Regel
-`roster-keine-evaluation-abhaengigkeit` (`severity: 'error'`,
-`src/domain/roster/` → `src/domain/evaluation/`), Schwester der bestehenden
-`roster-keine-evaluator-abhaengigkeit`. Testdateien sind wie dort ausgenommen:
+Festgehalten wird das durch die Struktur-Regel auf der Kante
+`src/domain/roster/` → `src/domain/evaluation/` (`severity: 'error'`),
+Schwester der bestehenden `roster-keine-evaluator-abhaengigkeit`. Testdateien
+sind wie dort ausgenommen:
 ein Fall, der eine Kostensumme braucht, ruft `evaluateAppRoster` selbst.
 
 ### Konsequenzen (Auswirkungen)

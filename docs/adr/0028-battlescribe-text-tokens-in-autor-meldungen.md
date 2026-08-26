@@ -7,6 +7,8 @@
   Autor-Meldung, wortgetreuer Pass-through); grenzt gegen ADR-0026 (i18n nur für
   App-Vorlagen) ab.
 
+> **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Autor-Meldungen (`modifier-error/-warning/-info`) werden wortgetreu aus dem
