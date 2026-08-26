@@ -8,8 +8,8 @@ paths:
 # UI, components, styles, i18n
 
 - This directory is the **UI layer** of ADR 0037 (`UI → Fachlogik → Daten`, the arrow is the
-  allowed direction). It reaches data only through `src/domain/services/`; a direct import of `src/data/db/`
-  or `src/data/parser/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
+  allowed direction). It reaches data only through `src/contexts/*/application/`; a direct import of `src/platform/persistence/`
+  or `src/platform/battlescribe/` is caught by the cast rule `ui-nicht-auf-daten` (`.cast/rules.json`).
   Issue 0167 moved the last 14 edges onto the facade, so the rule finds nothing today; since the
   port to cast (ADR 0041) — `error` since Issue 0181, so `forge-lint` fails on a new edge.
 - Navigation in `App.jsx` therefore reloads **nothing**: switching a view only navigates. The
@@ -31,11 +31,11 @@ paths:
   - Four rules keep it. Only the oxlint `no-restricted-imports` override on
     `src/ui/components/**` (the hook ban) still fails `forge-lint`; the three module-edge rules
     in `.cast/rules.json` are `error` since Issue 0181 and block just as well: `viewmodel-keine-komponente` (`src/ui/viewmodels/` → `src/ui/components/`),
-    `komponente-kein-bericht` (`src/ui/components/` → `src/domain/evaluation/`, `src/domain/evaluator/`) and
-    `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/data/db/`, `src/data/parser/`). The last one
+    `komponente-kein-bericht` (`src/ui/components/` → `src/contexts/ruleengine/`, `src/contexts/ruleengine/engine/`) and
+    `viewmodel-keine-datenschicht` (`src/ui/viewmodels/` → `src/platform/persistence/`, `src/platform/battlescribe/`). The last one
     carries one named, closing exception: the three shell ViewModels `useRosterEditor`,
     `usePlayRoster` and `useImporter`, whose direct data edges Issue 0167 moves onto
-    `src/domain/services/`.
+    `src/contexts/*/application/`.
   - So a component never imports the report itself. It gets it through its ViewModel, which reads
     the two roster contexts.
 - The four editor leaves (`UnitSelectionCard`, `SelectionConfigurator`, `OptionGroup`, `UnitChips`)
@@ -76,7 +76,7 @@ paths:
   library, ADR 0026) with entries in both `locales/de.json` and `locales/en.json`. A missing `en`
   key does not fail a test — it fails silently for the user.
 - `describeRosterFileError` in `viewmodels/useRosterList.js` is the only place that turns a
-  `messageKey`/`messageParams`/`detail` error from `src/domain/roster/` or `src/domain/services/` into
+  `messageKey`/`messageParams`/`detail` error from `src/contexts/armylist/model/` or `src/contexts/*/application/` into
   text. A test of that path mocks those modules with `importOriginal()` spread (`vi.mock(mod, async (importOriginal) =>
   ({ ...await importOriginal(), fn: vi.fn() }))`) so `MissingSystemError`/`RosterFileError` stay
   real and carry their keys, and asserts on the German toast text — a hand-built error with a
@@ -88,21 +88,34 @@ paths:
   scripts/generate_screenshots.js` runs offline against the frozen fixture and needs no catalog
   data. For a one-off investigation build a throwaway script on `scripts/lib/e2e-harness.js` —
   it offers the browser console log, a DOM dump and a headed browser.
+- **A component consumes our vocabulary, never the catalogue's** (Issue 0191). No module under
+  `src/ui/` may name `selectionEntries`, `entryLinks`, `categoryLinks`, `sharedSelectionEntries`,
+  `infoLinks` or `targetId`, and none may import the BattleScribe schema kernel
+  `src/shared/battlescribe/` — the cast rule `ui-kein-fremdformat` holds the module edge, the
+  source-reading test `src/tests/ui/catalogVocabulary.test.js` holds the vocabulary (cast sees
+  edges, not identifiers). What the UI needs from a catalogue entry it asks the list context's
+  anti-corruption layer `src/contexts/armylist/acl/` (`forceCategoriesOf`, `offerDefIdsOf`,
+  `offerIdentifiesSlot`, `childOffersOf`, `childOfferCountOf`), whose mapping rules stand in
+  `catalogTranslation.js` — the counterpart of the evaluator's `rosterAdapter.js`. A force offers
+  **categories** `{ id, name, anchorIds }`, not `categoryLinks`: `id` is the target, `name` is
+  already resolved against `system.categoryEntries`, and `anchorIds` carries both ids the report
+  may anchor the category under. Before adding a function there, check the report first — a
+  question the slot index answers (ADR-0034) is not translated a second time.
 - A display question is answered by the report, never by a second catalogue walk (ADR-0034): the
   slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
   `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`, plus
   `isHidden`, `primaryCategoryId` and the info projection `infoElements`. Read them
-  through `report.slots`, the `SlotIndex` of `src/domain/evaluation/slotIndex.js` (`slotOfSelection`,
+  through `report.slots`, the `SlotIndex` of `src/contexts/ruleengine/readmodel/slotIndex.js` (`slotOfSelection`,
   `isIndependentSubUnitSlot`, `childSlotsOf`, `findCategoryAnchorSlot`, `hasUnitSlotsInCategory`),
   or through the derivations next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`), which
   take that index rather than a bare `capabilities` map.
   `resolveEntry`/`findEntryInSystem` stay only for detail texts and
-  for the entry the **write** path hands to `addUnit`.
-- The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
+  for the entry the **write** path hands to `raiseUnit`.
+- The **write** path asks the report too (Issue 0157): what raising an entry creates is
   `capability.raiseMembers` of its offer slot — `useRosterState` looks it up (`findChildSlot` under the
   force, `findDescendantSlot` under a unit, since an option hangs below its group anchor) and
-  hands it to the factory. Nothing in `src/domain/roster/` derives an obligation from the catalogue any
-  more, so a seam that recruits without a report creates a bare selection.
+  hands it to the factory. Nothing in `src/contexts/armylist/model/` derives an obligation from the catalogue any
+  more, so a seam that raises without a report creates a bare selection.
 - Whether a category section appears is two report answers, both on the force's slots: the
   `categoryAnchor`'s `isHidden` (hidden plus nothing selected → no section) and whether any
   `occupied`/`offerAnchor`/`mandatoryPhantom` slot names the category as its `primaryCategoryId`
@@ -121,3 +134,6 @@ paths:
   unit list). Give every slot of the fixture the fields its screen reads.
 - The repo language is mixed by intent: docs, issues and commit messages in German, code and
   identifiers in English.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

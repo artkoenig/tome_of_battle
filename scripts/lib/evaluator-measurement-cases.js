@@ -19,7 +19,7 @@ import { rosterFromRos } from '../../src/tests/test-utils/rosParser.js';
 /** Wurzel der E2E-Szenarien, relativ zum Projekt-Wurzelverzeichnis (dem cwd). */
 const TESTING_ROOT = 'docs/testing';
 
-/** Dateiname des Szenario-Manifests (Vertrag siehe `src/domain/evaluator/e2e.testcatalog.test.js`). */
+/** Dateiname des Szenario-Manifests (Vertrag siehe `src/contexts/ruleengine/engine/e2e.testcatalog.test.js`). */
 const MANIFEST_FILE = 'scenario.json';
 
 /**

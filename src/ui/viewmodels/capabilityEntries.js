@@ -9,12 +9,12 @@
  * the same two lines, including the same fallback stub for an entry the
  * catalogue no longer knows; they now share these two helpers.
  *
- * It lives here and not in `src/domain/evaluation/`: that folder may not import the
- * write model `src/domain/roster/` (`.oxlintrc.json`, blocking), and `findEntryInSystem`
+ * It lives here and not in `src/contexts/ruleengine/readmodel/`: that folder may not import the
+ * write model `src/contexts/armylist/model/` (`.oxlintrc.json`, blocking), and `findEntryInSystem`
  * is exactly that.
  */
 
-import { findEntryInSystem } from '../../domain/roster';
+import { findEntryInSystem } from '../../contexts/armylist/model';
 
 /**
  * The catalogue entry behind a slot, or `null` when the catalogue does not know

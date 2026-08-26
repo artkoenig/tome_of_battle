@@ -3,10 +3,10 @@
   "name": "unit-scope-instance-of-category",
   "description": "Eine condition type=\"instanceOf\" scope=\"unit\" mit einer KATEGORIE in childId haelt genau dann, wenn die umschliessende Einheit — der naechste Vorfahre vom Typ unit, den Traeger der Query eingeschlossen (Formatdoku 7.7, Kasten scope=unit) — Mitglied dieser Kategorie ist, und zwar nach den EFFEKTIVEN Kategorien: einschliesslich einer per modifier type=\"add\" field=\"category\" zur Laufzeit erteilten und ausschliesslich einer per type=\"remove\" wieder entzogenen (Formatdoku 8, Laufzeit-dynamische Kategoriezugehoerigkeit). Es ist eine Mitgliedschaftspruefung, keine Zaehlung: die Zaehl-Flags verengen sie nicht. Konkret im Vampire-Counts-Katalog: die Verweis-Slots \"Spell Familiar\" (4561-b83b-6268-9dde), \"Power Familiar\" (0ec8-aa23-e935-59f7) und \"Warrior Familiar\" (67c6-f3bb-803a-0ca3) der geteilten Gruppe \"Arcane Items (VC)\" (2f34-a145-911a-fa00) tragen je einen modifier type=\"set\" value=\"true\" field=\"hidden\", dessen EINZIGE Bedingung instanceOf scope=\"unit\" childId=\"4cae-a20e-8374-b6cb\" (categoryEntry \"Blood Dragon\") ist; der Nachbar-Slot \"Black Periapt\" (787e-19e8-0444-a8c3) derselben Gruppe traegt keinen solchen Modifikator und ist die Kontrolle. Kein Vampir-Eintrag fuehrt einen categoryLink auf 4cae-...; die Mitgliedschaft entsteht allein aus der BLOODLINE-modifierGroup des Vampire Count (6822-0110-a7c9-cbb0), gegatet auf die im Kontingent gewaehlte Blutlinie. Vier Roster, die sich NUR in der gewaehlten Blutlinie unterscheiden, pinnen alle Zweige ueber expect.capabilities[].isHidden; Roster 04 wiederholt dasselbe Konstrukt an einem nur eine Gruppenebene tiefen Traeger (\"Great Weapon\" 4b34-9f0f-38ec-191c, gegatet auf die Kategorie \"Strigoi\" bf30-4ff0-a4d8-3909). Sichtbarkeit ist Verfuegbarkeit, keine zaehlende Grenze — firing bleibt leer ausser in Roster 03, wo die absichtlich doppelte Blutlinienwahl die Gruppengrenze 39c7-f615-17db-7016 reisst.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

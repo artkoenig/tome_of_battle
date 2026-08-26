@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { childSelectionsOf, groupProfilesByType } from '../../../domain/roster';
+import { subSelectionsOf, groupProfilesByType } from '../../../contexts/armylist/model';
 import { useRosterCommands, useRosterReport } from '../rosterContexts';
 
 /**
@@ -77,18 +77,18 @@ export function profileCellDisplayOf(characteristic) {
  * Welches Kind eine eigene Karte bekommt, sagt der Bericht
  * (`capability.isIndependentSubUnit`, Issue 0156) — die Karte löst dafür keinen
  * Katalog-Eintrag mehr auf.
- * @param {import('../../../domain/types.js').Selection} selection Wurzel der Karte
- * @param {import('../../../domain/evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
+ * @param {import('../../../shared/rostermodel/types.js').Selection} selection Wurzel der Karte
+ * @param {import('../../../contexts/ruleengine/readmodel/index.js').SlotIndex} slots Slot-Seite des Berichts
  * @returns {Set<string>}
  */
 export function collectCardSelectionIds(selection, slots) {
   const cardSelectionIds = new Set();
   const addSubtree = (node) => {
     cardSelectionIds.add(node.id);
-    childSelectionsOf(node).forEach(addSubtree);
+    subSelectionsOf(node).forEach(addSubtree);
   };
   cardSelectionIds.add(selection.id);
-  childSelectionsOf(selection)
+  subSelectionsOf(selection)
     .filter(child => !slots.isIndependentSubUnitSlot(child))
     .forEach(addSubtree);
   return cardSelectionIds;
@@ -101,8 +101,8 @@ export function collectCardSelectionIds(selection, slots) {
  * Kontingent- oder Kategorie-Ebene, synthetische Anker) und missgebildete
  * Einträge fallen heraus.
  * @param {object[]|null|undefined} violations Verletzungen der Evaluator-Fassade
- * @param {import('../../../domain/evaluation/slotIndex.js').SlotIndex} slots Slot-Seite des Berichts
- * @param {import('../../../domain/types.js').Selection} selection Wurzel der Karte
+ * @param {import('../../../contexts/ruleengine/readmodel/index.js').SlotIndex} slots Slot-Seite des Berichts
+ * @param {import('../../../shared/rostermodel/types.js').Selection} selection Wurzel der Karte
  * @returns {object[]}
  */
 export function selectionViolationsForCard(violations, slots, selection) {
@@ -123,13 +123,13 @@ export function selectionViolationsForCard(violations, slots, selection) {
  * (`subSelectionOperations.removeInstance(trägerId, eigeneId)`). Die Karte
  * bekommt diesen Träger nicht mehr als Prop gereicht; sie findet ihn im Roster
  * des Kontexts.
- * @param {import('../../../domain/types.js').Roster|null|undefined} roster
+ * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster
  * @param {string} childId
  * @returns {string|null}
  */
 export function parentSelectionIdOf(roster, childId) {
   const walk = (node) => {
-    for (const child of childSelectionsOf(node)) {
+    for (const child of subSelectionsOf(node)) {
       if (child.id === childId) return node.id;
       const found = walk(child);
       if (found) return found;
@@ -147,7 +147,7 @@ export function parentSelectionIdOf(roster, childId) {
 }
 
 /**
- * @param {{ selection: import('../../../domain/types.js').Selection, isSubUnit?: boolean }} args
+ * @param {{ selection: import('../../../shared/rostermodel/types.js').Selection, isSubUnit?: boolean }} args
  * @returns {Object} die Anzeigewerte und Kommandos einer Einheitenkarte
  */
 export function useUnitCard({ selection, isSubUnit = false }) {

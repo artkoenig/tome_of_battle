@@ -5,7 +5,7 @@
 > Kompatibilitätsprüfung „ein referenzierter Eintrag fehlt" (unten Punkt 3) hing am
 > gelöschten `validateRoster` des Solvers und liegt heute in der Diagnose
 > `unresolvedDefinition` des Evaluator-Berichts, projiziert von
-> `src/domain/evaluation/datasetDiagnostics.js`.
+> `src/contexts/ruleengine/datasetDiagnostics.js`.
 
 ## Problem Statement / Bug Description
 

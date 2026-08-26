@@ -5,13 +5,13 @@ import fs from 'fs';
 import path from 'path';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
-import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
-import { rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
-import { SlotIndex } from '../../../../domain/evaluation/slotIndex.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { resolveEntry } from '../../../../contexts/armylist/model/catalogResolver.js';
+import { createSelectionFromDef } from '../../../../contexts/armylist/model/selectionFactory.js';
+import { rootSelectionsOf } from '../../../../contexts/armylist/model/rosterTree.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
+import { SlotIndex } from '../../../../contexts/ruleengine/readmodel/slotIndex.js';
 
 /**
  * Issue 0145, increment 2, Kriterien 3, 4 und 6 — über ALLE Einheiten der
@@ -60,12 +60,12 @@ vi.mock('lucide-react', () => ({
   BookOpen: ({ onClick, ...rest }) => <span data-testid="icon-book" onClick={onClick} {...rest} />,
 }));
 
-vi.mock('../../../../domain/rules/rulesLookup', () => ({ getRuleUrl: () => null }));
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({ getRuleUrl: () => null }));
 vi.mock('../../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));
 
-const DEFINITIVE_DIR = path.resolve('src/domain/evaluator/__fixtures__/whfb6-definitive');
+const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
 const LEGACY_DIR = path.resolve('src/tests/__fixtures__/whfb6');
 const DEFINITIVE_GST = 'Warhammer Fantasy Battles (6th definitive edition).gst';
 const LEGACY_GST = 'Warhammer Fantasy Battle 6th edition.gst';
@@ -234,7 +234,7 @@ beforeAll(() => {
 
     // Das Angebot des leeren Kontingents: es traegt je Einheit die
     // Pflicht-Mitglieder, die das Ausheben anlegt (`raiseMembers`, Issue 0157)
-    // — dieselbe Auskunft, aus der `useRoster.addUnit` seine Selektion baut.
+    // — dieselbe Auskunft, aus der `useRoster.raiseUnit` seine Selektion baut.
     const emptyForceRoster = {
       catalogueId: catalogue.id, name: 'test', costLimit: 3000, costLimitType: PTS,
       forces: [{ id: 'force-1', forceEntryId, catalogueId: catalogue.id, selections: [] }],
@@ -422,7 +422,7 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
     // exakter Treffer waere Geisel jeder kuenftigen Evaluator-Aenderung.
     // Issue 0157 bewegt diese Zahl NICHT: die Pflicht-Mitglieder kommen jetzt
     // aus dem Bericht statt aus einem zweiten Lesen der Constraints, legen aber
-    // denselben Baum an (siehe `recruitTree.frozenCorpus.test.js`).
+    // denselben Baum an (siehe `raiseTree.frozenCorpus.test.js`).
     const unmet = rows.filter(r => r.isMandatoryUnmet === true);
     expect(unmet.length, 'Zeilen mit isMandatoryUnmet').toBeGreaterThanOrEqual(50);
     expect(new Set(unmet.map(r => r.where)).size, 'Karten mit mindestens einer offenen Pflicht').toBeGreaterThan(0);

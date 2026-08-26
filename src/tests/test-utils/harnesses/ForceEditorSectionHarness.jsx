@@ -8,7 +8,7 @@ export function ForceEditorSectionHarness({
   force, forcePath = null, system, roster, activeCatalogue,
   violations, unresolvedSelections, capabilities, pathBySelectionId,
   costTypeLabel, remainingPoints = null, extraResources,
-  addUnit, removeUnit, subSelectionOperations,
+  raiseUnit, removeUnit, subSelectionOperations,
   isRuleGroupExpanded, onToggleRuleGroup,
   ...sectionProps
 }) {
@@ -27,7 +27,7 @@ export function ForceEditorSectionHarness({
     roster: { ...budget.roster, forces: [force] },
     system: systemNaming(system, costLimitType, costTypeLabel),
     activeCatalogue,
-    commands: { addUnit, removeUnit, subSelectionOperations },
+    commands: { raiseUnit, removeUnit, subSelectionOperations },
     children: (
       <ForceEditorSection
         {...sectionProps}

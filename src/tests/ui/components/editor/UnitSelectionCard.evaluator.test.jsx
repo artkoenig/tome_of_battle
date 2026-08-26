@@ -27,8 +27,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { UnitSelectionCardHarness as UnitSelectionCard } from '../../../../tests/test-utils/editorHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
   Trash2: () => <span data-testid="icon-trash" />,

@@ -77,7 +77,7 @@ describe('the roster contexts', () => {
 
     expect(screen.getByText('rename')).toBeTruthy();
     expect(screen.getByTestId('name').textContent).toContain('first');
-    expect(typeof seenValues[0].addUnit).toBe('function');
+    expect(typeof seenValues[0].raiseUnit).toBe('function');
   });
 
   it('keeps the command context value identical across a roster edit, so its consumer does not render again', () => {

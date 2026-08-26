@@ -3,10 +3,10 @@
   "name": "equal-to-ancestor-id-scope-mount-gate",
   "description": "Eine condition type=\"equalTo\" field=\"selections\", deren scope KEIN Schluesselwort, sondern die Id eines Vorfahren ist (scope=\"febe-2170-775b-0d13\" = die umschliessende Einheit 'Black Orc Bigboss'), zaehlt im Rahmen dieses benannten Vorfahren und haelt nur bei exakter Gleichheit. Einziges Vorkommen der Zelle im Definitive-Korpus: die Aufwertung 'Additional Hero choice' (e3cf-e551-eb3d-852e) unter dem Black Orc Bigboss traegt min 1 (7198-b57b-4d7b-6c52) und max 1 (8a24-9eaa-7a36-19d9), beide scope=parent; eine modifierGroup setzt BEIDE auf 0, wenn (a) die Mounts-Gruppe 8a7a-d454-ad84-6f7e im Rahmen des Bigboss GENAU 0 Selektionen zaehlt UND (b) das Kontingent eine Instanz von 'Grimgor's 'Ardboyz (SoC)' (1821-fbd1-0d96-2d88) ist. In-World (Autoren-Kommentar, SoC S.58): der Bigboss kostet nur dann einen weiteren Heldenplatz, wenn er ein Reittier hat. Sechs Roster variieren allein das Reittier, die Wahl der Aufwertung, das Kontingent und die Zahl der Bigbosses: ohne Reittier gilt effectiveMin 0 / effectiveMax 0 (und eine dennoch gewaehlte Aufwertung reisst max 0), mit einem Boar bleiben die geschriebenen 1/1 stehen. Beobachtbar ist die Regel zusaetzlich an den Kategorie-Ankern des Kontingents: die Aufwertung traegt categoryLinks auf Heroes (c16b-f319-2c62-2c12) und Characters (7a1c-d611-c2dc-def1), der Ist-Stand beider Anker steigt mit ihr von 1 auf 2.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

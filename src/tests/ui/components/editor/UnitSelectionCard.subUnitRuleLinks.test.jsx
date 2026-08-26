@@ -58,16 +58,17 @@ const DEFINITIONS = {
   },
 };
 
-vi.mock('../../../../domain/roster', async () => ({
+vi.mock('../../../../contexts/armylist/model', async () => ({
   findEntryInSystem: (_system, entryId) => (DEFINITIONS[entryId] ? entryId : null),
   findRuleByName: () => null,
   resolveEntry: (_system, entryId) => DEFINITIONS[entryId] || null,
   collectUnitProfilesAndRules: () => ({ profiles: [], rules: [] }),
   getEffectiveSelectionName: (selection) => selection?.name ?? '',
-  isIndependentSubUnit: (await vi.importActual('../../../../domain/roster/subUnit')).isIndependentSubUnit,
-  childSelectionsOf: (await vi.importActual('../../../../domain/roster/rosterTree')).childSelectionsOf,
-  groupProfilesByType: (await vi.importActual('../../../../domain/roster/profileGrouping')).groupProfilesByType,
-  ...(await vi.importActual('../../../../domain/roster/constants')),
+  isIndependentSubUnit: (await vi.importActual('../../../../contexts/armylist/model/subUnit')).isIndependentSubUnit,
+  subSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).subSelectionsOf,
+  unitsOfForce: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).unitsOfForce,
+  groupProfilesByType: (await vi.importActual('../../../../contexts/armylist/model/profileGrouping')).groupProfilesByType,
+  ...(await vi.importActual('../../../../contexts/armylist/model/constants')),
 }));
 
 const chariot = {

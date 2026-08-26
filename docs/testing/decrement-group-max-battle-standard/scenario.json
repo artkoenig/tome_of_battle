@@ -3,10 +3,10 @@
   "name": "decrement-group-max-battle-standard",
   "description": "Ein modifier type=decrement, dessen field die id eines Constraints nennt, senkt den effektiven Wert dieser Grenze — die absenkende Gegenrichtung zum increment. Traeger ist die Gruppe 'Weapons' (86431046-9343-42d5-b774-db24c99c4bb3) der Einheit 'Commander [HIGH ELVES]' (d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff, Vampire Counts, erreichbar nur ueber den Verbund 'Swain' b920-b398-dc26-7f4d im Kontingent 'Clan Lahmia (VC-AB)' 2102-34f1-c876-98c5): sie traegt max 1 (Constraint 93f2a491-7de3-4020-ad0d-5d08ac3399f8, field=selections scope=parent) und genau einen decrement-1-Modifier auf diese Constraint-Id, gegated auf 'equalTo 1' Battle-Standard-Bearer-Auswahlen (e9ad-f1ce-aebf-6d23) im Eltern-Rahmen. WICHTIG (siehe README): der Katalog bietet dem Commander an keiner Stelle seines Teilbaums einen Battle Standard Bearer an, und die Gruppe 'Weapons' hat ueberhaupt keine Mitglieder — die absenkende Haelfte (effectiveMax 0) ist aus den Katalogdaten daher NICHT baubar und bleibt eine dokumentierte Luecke. Gepinnt wird die inerte Haelfte ueber expect.capabilities: der Gruppen-Anker meldet in beiden Rostern effectiveMax 1 (Basiswert), auch wenn ein Battle Standard Bearer auf einem ANDEREN Charakter desselben Kontingents steht — scope=parent, shared=true weitet den Rahmen nicht.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

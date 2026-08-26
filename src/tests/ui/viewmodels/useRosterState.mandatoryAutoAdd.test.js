@@ -1,40 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { syncRosterSelectionsWithSystem } from '../../../domain/roster';
-import { findMissingMandatoryListRules } from '../../../domain/evaluation/mandatoryListRules';
+import { syncRosterSelectionsWithSystem } from '../../../contexts/armylist/model';
+import { findMissingMandatoryListRules } from '../../../contexts/ruleengine/readmodel/mandatoryListRules';
 
 /**
- * Issue 0138 — the auto-add effect in useRosterState.js (Plan contracts 5/6):
- * a 5th `isFreshRoster` parameter gates an effect that, per force, asks
- * `findMissingMandatoryListRules` (since Issue 0157 a **report** reader in
- * `src/domain/evaluation/`) and commits any hits via `replaceRoster` (no undo step),
- * re-evaluating on every roster change so a newly-visible mandatory rule is
- * picked up within the same session (AC3).
- *
- * Only `findMissingMandatoryListRules` is stubbed here (plus the pre-existing
- * resolveEntry/syncRosterSelectionsWithSystem stubs this file already carries)
- * — which slots qualify is the reader's own contract, covered by
- * `mandatoryListRules.test.js` and, end to end, by
- * `useRosterState.costedMandatoryAutoAdd.test.js`. This file drives the EFFECT
- * WIRING: gating on isFreshRoster, the no-undo-step commit, and same-session
- * re-evaluation.
+ * Issue 0138 — the automatic mandatory list-rule addition seen from the state
+ * node. Since Issue 0189 the rule itself is the use case
+ * `applyMandatoryListRules` and is pinned without React in
+ * `src/tests/contexts/armylist/mandatoryListRules.test.js`; what is left here is
+ * the WIRING the node contributes and nothing else: the commit without an undo
+ * step, the gate's safe default for a caller that omits it, and the
+ * re-evaluation within the same session.
  */
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   resolveEntry: vi.fn((sys, entry) => ({ id: entry.id, name: entry.name || 'Resolved Name', type: entry.type || 'model', ...entry })),
   syncRosterSelectionsWithSystem: vi.fn(roster => roster),
 }));
 
-vi.mock('../../../domain/evaluation/mandatoryListRules', () => ({
+vi.mock('../../../contexts/ruleengine/readmodel/mandatoryListRules', () => ({
   findMissingMandatoryListRules: vi.fn(() => []),
 }));
-
-// The reader answers off the report, not off the force, so the stub simply
-// reports the same hits on every pass. The effect's own guard — a rule whose
-// entry the force already carries is never added again — is what keeps this
-// from looping, and pinning that guard is part of the point.
-const missingAmong = (hits) => () => hits;
 
 describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)', () => {
   const mockSystem = { id: 'sys-1', name: 'Test System' };
@@ -49,9 +36,9 @@ describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)
 
   const mandatoryEntry = { id: 'laws-of-undeath', name: 'The Laws of Undeath', type: 'upgrade' };
   const mandatoryHit = {
-  entry: mandatoryEntry, categoryId: 'cat-rules',
-  defId: mandatoryEntry.id, resolvedId: mandatoryEntry.id, name: mandatoryEntry.name,
-};
+    entry: mandatoryEntry, categoryId: 'cat-rules',
+    defId: mandatoryEntry.id, resolvedId: mandatoryEntry.id, name: mandatoryEntry.name,
+  };
 
   beforeEach(() => {
     syncRosterSelectionsWithSystem.mockImplementation(roster => roster);
@@ -59,49 +46,18 @@ describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)
     findMissingMandatoryListRules.mockReturnValue([]);
   });
 
-  it('AC1: adds the one eligible mandatory selection to a fresh roster', () => {
-    findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
+  it('AC1: the auto-add commits via replaceRoster, not setRoster — no undo step is recorded', () => {
+    findMissingMandatoryListRules.mockReturnValue([mandatoryHit]);
 
     const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
 
     expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
-  });
-
-  it('AC1: the auto-add commits via replaceRoster, not setRoster — no undo step is recorded', () => {
-    findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
-
-    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
-
-    expect(result.current.roster.forces[0].selections).toHaveLength(1);
     expect(result.current.canUndo).toBe(false);
     expect(result.current.canRedo).toBe(false);
   });
 
-  it('AC7: adds every independently eligible entry in the force at once', () => {
-    const secondEntry = { id: 'campaign-rules', name: 'Campaign rules', type: 'upgrade' };
-    const secondHit = {
-      entry: secondEntry, categoryId: 'cat-rules',
-      defId: secondEntry.id, resolvedId: secondEntry.id, name: secondEntry.name,
-    };
-    findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit, secondHit]));
-
-    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, true));
-
-    const ids = result.current.roster.forces[0].selections.map(s => s.selectionEntryId).sort();
-    expect(ids).toEqual(['campaign-rules', 'laws-of-undeath']);
-    expect(result.current.canUndo).toBe(false);
-  });
-
-  it('AC4: never auto-adds on a roster that is not freshly created (isFreshRoster=false)', () => {
-    findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
-
-    const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn(), undefined, false));
-
-    expect(result.current.roster.forces[0].selections).toEqual([]);
-  });
-
   it('AC4: never auto-adds when the fresh-marker is omitted (safe default for existing callers)', () => {
-    findMissingMandatoryListRules.mockImplementation(missingAmong([mandatoryHit]));
+    findMissingMandatoryListRules.mockReturnValue([mandatoryHit]);
 
     const { result } = renderHook(() => useRosterState(initialRoster, mockSystem, vi.fn()));
 
@@ -124,7 +80,7 @@ describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)
 
     visibleInReport = true;
     act(() => {
-      result.current.commands.addUnit(triggerEntry, 'cat-general');
+      result.current.commands.raiseUnit(triggerEntry, 'cat-general');
     });
 
     // The trigger is now present (a manual, undoable action) AND, in the same
@@ -133,31 +89,5 @@ describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)
     const ids = result.current.roster.forces[0].selections.map(s => s.selectionEntryId);
     expect(ids).toContain('general-von-carstein');
     expect(ids).toContain('laws-of-undeath');
-  });
-
-  it('AC6 (second half): a selection that was auto-added earlier is not stripped from the roster on a later render', () => {
-    // The reader reports nothing missing (the report shows the rule as
-    // occupied) — no removal mechanism exists in this issue's scope, so the
-    // roster must retain the selection regardless of the underlying entry's
-    // current visibility.
-    findMissingMandatoryListRules.mockReturnValue([]);
-    const rosterWithSelection = {
-      ...initialRoster,
-      forces: [{
-        id: 'force-1', catalogueId: 'cat-1',
-        selections: [{ id: 'sel-1', selectionEntryId: 'laws-of-undeath', name: 'The Laws of Undeath', selections: [] }],
-      }],
-    };
-
-    const { result } = renderHook(() => useRosterState(rosterWithSelection, mockSystem, vi.fn(), undefined, true));
-
-    expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
-
-    // Trigger a further render (e.g. an unrelated user action) and confirm the
-    // selection is still untouched afterwards.
-    act(() => {
-      result.current.commands.updateRosterName('Renamed');
-    });
-    expect(result.current.roster.forces[0].selections.map(s => s.selectionEntryId)).toEqual(['laws-of-undeath']);
   });
 });

@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 
-import { resolveCostLimitLabel } from '../../../domain/roster';
-import { hasBlockingViolations, countBlockingViolations } from '../../../domain/evaluation/violationStats';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
-import { extraResourceTotalsOf } from '../../../domain/evaluation/costDisplays';
+import { resolveCostLimitLabel } from '../../../contexts/armylist/model';
+import { hasBlockingViolations, countBlockingViolations, EMPTY_SLOT_INDEX, extraResourceTotalsOf } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport } from '../rosterContexts';
 
 /**

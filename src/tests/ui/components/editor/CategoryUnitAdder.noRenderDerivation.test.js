@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 /**
  * Issue 0164, Kriterium 2 — `CategoryUnitAdder.jsx` enthält keine Ableitung
  * mehr: kein Filtern, kein Sortieren, kein Auflösen eines Katalog-Eintrags im
- * Render. Die fertige Liste kommt aus `useRecruitOffer`.
+ * Render. Die fertige Liste kommt aus `useRaiseOffer`.
  *
  * Das ist eine Aussage über die Quelle, nicht über den Bildschirm: eine wieder
  * eingebaute Render-Ableitung liefert dasselbe DOM wie das ViewModel und geht
@@ -32,14 +32,14 @@ describe('CategoryUnitAdder rechnet nicht im Render (Issue 0164)', () => {
       return `${FILE}:${line}: ${match[0]}`;
     });
 
-    expect(offenders, 'Die Kandidatenliste kommt fertig aus useRecruitOffer').toEqual([]);
+    expect(offenders, 'Die Kandidatenliste kommt fertig aus useRaiseOffer').toEqual([]);
   });
 
   it('zwischen ViewModel und JSX steht keine lokale Ableitung', () => {
     const body = componentBody();
-    const hookEnd = body.indexOf('useRecruitOffer(');
+    const hookEnd = body.indexOf('useRaiseOffer(');
     const jsxStart = body.indexOf('\n  return (');
-    expect(hookEnd, `${FILE}: Aufruf von useRecruitOffer gefunden`).toBeGreaterThanOrEqual(0);
+    expect(hookEnd, `${FILE}: Aufruf von useRaiseOffer gefunden`).toBeGreaterThanOrEqual(0);
     expect(jsxStart, `${FILE}: JSX-Return gefunden`).toBeGreaterThan(hookEnd);
 
     const between = body.slice(body.indexOf('\n', hookEnd), jsxStart);
@@ -51,7 +51,7 @@ describe('CategoryUnitAdder rechnet nicht im Render (Issue 0164)', () => {
   it('löst keinen Katalog-Eintrag auf und greift an keiner Fachlogik vorbei', () => {
     const allowed = [
       'react', 'lucide-react',
-      '../../viewmodels/editor/useRecruitOffer',
+      '../../viewmodels/editor/useRaiseOffer',
       '../../i18n/useTranslation',
       './BottomSheet',
     ];
@@ -67,7 +67,7 @@ describe('CategoryUnitAdder rechnet nicht im Render (Issue 0164)', () => {
       .filter(line => /\bentries\b/.test(line));
 
     const beyondHandover = uses.filter(line =>
-      !line.startsWith('entries') && !line.includes('useRecruitOffer('));
+      !line.startsWith('entries') && !line.includes('useRaiseOffer('));
 
     expect(beyondHandover, `${FILE} liest entries selbst: ${beyondHandover.join(' | ')}`).toEqual([]);
   });

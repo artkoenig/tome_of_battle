@@ -1,6 +1,7 @@
 ---
 paths:
-  - "src/domain/evaluator/**"
+  - "src/contexts/ruleengine/evaluator.js"
+  - "src/contexts/ruleengine/engine/**"
   - "docs/testing/**"
 ---
 
@@ -10,18 +11,18 @@ The clean-room rule engine: `evaluate(catalog, roster) → report`, a pure funct
 production engine. `docs/battlescribe-data-format.md` is the canonical source for what the data
 means; it outranks the ADRs where the two disagree.
 
-- `src/domain/evaluator/evaluator.js` is the **only** legal entry point from outside. Importing any other
+- `src/contexts/ruleengine/evaluator.js` is the **only** legal entry point from outside. Importing any other
   file from outside the folder fails `forge-lint` — oxlint `no-restricted-imports` keeps it an
   `error`. cast catches the same edge as `evaluator-nur-ueber-fassade`, `error` since Issue 0181.
-- The folder must not import `src/domain/roster/**`, and `src/domain/roster/**` must not import it. Both
-  directions are blocking rules. The bridge is `src/domain/evaluation/rosterAdapter.js`.
+- The folder must not import `src/contexts/armylist/model/**`, and `src/contexts/armylist/model/**` must not import it. Both
+  directions are blocking rules. The bridge is `src/contexts/ruleengine/readmodel/rosterAdapter.js`.
 - The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
   reaches back into the UI and never imports `src/ui/i18n/` — the report carries ids, the UI
   translates them (cast `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`, both `error` since Issue 0181). The
   Reinraum rules above are unaffected by that layering and stay stricter.
 - `catalogReader.js` is the evaluator's own XML reader, deliberately separate from
-  `src/data/parser/xmlParser.js`. Changing one never implies changing the other.
-- A change confined to this folder only needs `forge-test --run src/domain/evaluator` — that covers the
+  `src/platform/battlescribe/xmlParser.js`. Changing one never implies changing the other.
+- A change confined to this folder only needs `forge-test --run src/contexts/ruleengine/engine` — that covers the
   unit tests and the manifest-driven E2E runner (`e2e.testcatalog.test.js`, `crossCatalog.test.js`)
   over the scenarios in `docs/testing/`. The full suite is not required.
 - New E2E scenarios under `docs/testing/` are **not** written here: they are delegated to the
@@ -63,10 +64,10 @@ means; it outranks the ADRs where the two disagree.
   `defaultSelectionEntryId` (else the first member). A group without a MIN obliges nothing at all,
   a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
   `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
-  engine taste: they are the reading a recruit has always followed, and
-  `src/domain/evaluation/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
-  tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
-  (`src/domain/roster/selectionFactory.js`), so a change here changes what a recruit puts on the table —
+  engine taste: they are the reading a raise has always followed, and
+  `src/tests/contexts/ruleengine/raiseTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  tree raised before Issue 0157 moved the reading here. The write model reads exactly this
+  (`src/contexts/armylist/model/selectionFactory.js`), so a change here changes what a raise puts on the table —
   and that sweep fails first.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
@@ -106,27 +107,30 @@ means; it outranks the ADRs where the two disagree.
   reached only one of them.
 - Report messages are projected to text elsewhere (`src/ui/i18n/violationMessages.js`); a new
   violation kind is only half-done inside this folder.
-- The E2E fixture corpus `src/domain/evaluator/__fixtures__/whfb6-definitive/` is a **subset** of the 18
+- The E2E fixture corpus `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/` is a **subset** of the 18
   Definitive-Edition books. A scenario for an army whose `.cat` is missing cannot be written until
   the book is added — check the folder listing before planning one.
 - Fetch a missing book verbatim from the commit the fixture README pins, never from `main` and
   never hand-edited:
-  `curl -sSL -o "src/domain/evaluator/__fixtures__/whfb6-definitive/<Book> (6th definitive edition).cat" \
+  `curl -sSL -o "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/<Book> (6th definitive edition).cat" \
   "https://raw.githubusercontent.com/artkoenig/Warhammer-Fantasy-Battles-6th-Definitive-edition/<pinned-commit>/<Book>%20(6th%20definitive%20edition).cat"`
   The exact file name and casing come from the repo's own tree — a wrong case returns a 14-byte
   "404: Not Found" body with HTTP 200 via the raw host, which looks like a successful download.
-- Adding a book makes `src/domain/evaluator/__fixtures__/whfb6-definitive/README.md` stale: it states the
+- Adding a book makes `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/README.md` stale: it states the
   count of books present, which of them are there and why. Update it in the same commit.
 - Adding a book also breaks every **frozen corpus figure**, in four places that must move with it
   (measured: one book broke 18 assertions): `scripts/lib/evaluator-coverage-corpus.test.js`
   (file count, the seven per-kind tag totals, landmark occurrence counts, the per-file
-  "owns this cell alone" claims), `src/domain/evaluator/evaluator.corpusLinkLocalChildren.test.js`
+  "owns this cell alone" claims), `src/contexts/ruleengine/engine/evaluator.corpusLinkLocalChildren.test.js`
   (per-file table, totals, contributing-file count), and the suite docs
   `scripts/lib/CLAUDE.md` + the fixture README. Run the **full** `forge-test` for such a change —
-  `--run src/domain/evaluator` misses the `scripts/lib` half.
+  `--run src/contexts/ruleengine/engine` misses the `scripts/lib` half.
 - A "no other file carries this cell" claim is an argument about the **coverage set**, not about
   whatever happens to lie in the folder: a book added for a single scenario is excluded from the
   comparison rather than the claim being deleted.
 - `docs/testing/worklist.json` / `covered-cells.json` only move when a book brings a **new cell
   key**; more occurrences of known cells leave them untouched. Check before assuming a
   regeneration is due.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

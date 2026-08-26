@@ -50,7 +50,7 @@ describe('Die Sektionsebene reicht kein Datenmodell mehr durch (Issue 0164)', ()
     const forbidden = new Set([
       'capabilities', 'pathBySelectionId', 'violations', 'unresolvedSelections',
       'roster', 'system', 'activeCatalogue', 'costTotals', 'costTypes',
-      'addUnit', 'removeUnit', 'copyUnit', 'subSelectionOperations',
+      'raiseUnit', 'removeUnit', 'copyUnit', 'subSelectionOperations',
       'costTypeLabel', 'costLimitType', 'extraResources', 'remainingPoints', 'states',
     ]);
     const offenders = CEILINGS.flatMap(({ file }) =>

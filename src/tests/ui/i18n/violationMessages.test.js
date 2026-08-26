@@ -5,7 +5,7 @@
  * Einordnung des Evaluator-Berichts (ADR-0034) in i18n-Texte (ADR-0026/0027).
  *
  * Die Violation-Fixtures folgen dem VEROEFFENTLICHTEN Berichtsvertrag der
- * Fassade (`src/domain/evaluator/evaluator.js`, Einordnung in
+ * Fassade (`src/contexts/ruleengine/evaluator.js`, Einordnung in
  * `violationClassification`-Form); jede Form wurde per Wegwerf-Skript gegen die
  * echte Fassade an synthetischen Katalogen verifiziert (derivedLimit mit
  * kind/measure/scope/isPercent, mandatoryPhantom, rosterBudget mit

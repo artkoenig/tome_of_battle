@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf } from '../../../domain/roster';
+import { unitsOfForce } from '../../../contexts/armylist/model';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
-import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups';
+import { EMPTY_SLOT_INDEX, resolveListRuleGroupFromReport } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport, useRosterCommands } from '../rosterContexts';
 import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
@@ -31,7 +30,7 @@ import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
  */
 export function useListRuleChecklist({ forceId = null, forcePath = null, categoryId }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
-  const { addUnit, removeUnit } = useRosterCommands();
+  const { raiseUnit, removeUnit } = useRosterCommands();
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const force = useMemo(
     () => roster?.forces?.find(candidate => candidate.id === forceId) ?? null,
@@ -40,7 +39,7 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
 
   const { isListRuleGroup, states } = useMemo(() => {
     const selectionByPath = new Map();
-    for (const selection of childSelectionsOf(force)) {
+    for (const selection of unitsOfForce(force)) {
       const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }
@@ -75,13 +74,13 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
         // Regel auch gegen einen programmatischen Aufruf ein.
         if (isLocked) return;
         if (nextChecked) {
-          addUnit(state.entry, categoryId, forceId);
+          raiseUnit(state.entry, categoryId, forceId);
         } else if (state.selection) {
           removeUnit(state.selection.id);
         }
       },
     };
-  }), [states, system, activeCatalogue, addUnit, removeUnit, categoryId, forceId]);
+  }), [states, system, activeCatalogue, raiseUnit, removeUnit, categoryId, forceId]);
 
   return { rows, isListRuleGroup, system };
 }

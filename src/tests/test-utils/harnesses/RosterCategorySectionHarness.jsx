@@ -7,7 +7,7 @@ import { withProviders, systemNaming } from './sectionHarnessBase';
 export function RosterCategorySectionHarness({
   force, forcePath = null, forceCatalogueId: _forceCatalogueId,
   system, roster, activeCatalogue, violations, capabilities, pathBySelectionId,
-  costTypeLabel, addUnit, removeUnit, subSelectionOperations,
+  costTypeLabel, raiseUnit, removeUnit, subSelectionOperations,
   isRuleGroupExpanded, onToggleRuleGroup,
   ...sectionProps
 }) {
@@ -17,7 +17,7 @@ export function RosterCategorySectionHarness({
     system: systemNaming(system, roster?.costLimitType, costTypeLabel),
     activeCatalogue,
     commands: {
-      addUnit: (entry, categoryId) => addUnit?.(entry, categoryId),
+      raiseUnit: (entry, categoryId) => raiseUnit?.(entry, categoryId),
       removeUnit,
       subSelectionOperations,
     },

@@ -10,7 +10,7 @@ user-invocable: true
 
 This skill closes evaluator coverage cell by cell, data-first. The catalog corpus says which rule constructs exist, the coverage inventory says which of them no scenario pins yet, and this loop pins the next one with a black-box E2E scenario. The search starts from the data and never from a hypothesis about the engine code. That inversion is what ADR 0033 asks for: scenarios are authored from the catalog data alone, so they challenge the engine instead of mirroring it.
 
-**What a cell measures, and what it does not.** A cell classifies a rule construct — a constraint, condition, modifier or repeat — and never where in the definition tree its carrier sits, so a structural placement such as "the children an `entryLink` declares itself" can never appear in the worklist; that placement axis is covered instead by the corpus invariant `src/domain/evaluator/evaluator.corpusLinkLocalChildren.test.js` (issue 0150), recorded keyless in `docs/testing/covered-cells.json`.
+**What a cell measures, and what it does not.** A cell classifies a rule construct — a constraint, condition, modifier or repeat — and never where in the definition tree its carrier sits, so a structural placement such as "the children an `entryLink` declares itself" can never appear in the worklist; that placement axis is covered instead by the corpus invariant `src/contexts/ruleengine/engine/evaluator.corpusLinkLocalChildren.test.js` (issue 0150), recorded keyless in `docs/testing/covered-cells.json`.
 
 ## 2. Preconditions
 
@@ -37,13 +37,13 @@ Read `docs/testing/worklist.json`. Its `cells` are sorted heaviest first (`sortC
 
 Each record carries `key` (the pipe-delimited cell key), `kind` (`constraint | condition | conditionGroup | modifier | modifierGroup | repeat | repeatList`), `axes`, `occurrences`, `files` (occurrence count per corpus file), and `examples[]` with `file`, `ancestor` (`tag`, `id` and `name` of the nearest named catalog element the construct hangs on) and `raw` (the element's own attributes). `examples[]` is the whole address a scenario author needs: jsdom exposes no line numbers, so the ancestor id is the handle.
 
-Prefer an example under `src/domain/evaluator/__fixtures__/whfb6-definitive/`. A cell occurring only under `src/shared/__fixtures__/whfb6/` is authorable too — the allow-list in `.claude/agents/e2e-testcase-author.md` covers both corpora — but the scenario's `dataset` names the files of **one** set and never mixes them: the same id can carry different attributes in each.
+Prefer an example under `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`. A cell occurring only under `src/shared/__fixtures__/whfb6/` is authorable too — the allow-list in `.claude/agents/e2e-testcase-author.md` covers both corpora — but the scenario's `dataset` names the files of **one** set and never mixes them: the same id can carry different attributes in each.
 
 ## 5. Step 3 — derive the rule the cell demands, from data only
 
-Use these sources and only these: the catalog XML the example names, `docs/battlescribe-data-format.md`, `src/data/parser/schema/Catalogue.xsd`, and the BSData wiki submodule under `docs/bsdata-catalogue-development-wiki/`.
+Use these sources and only these: the catalog XML the example names, `docs/battlescribe-data-format.md`, `src/platform/battlescribe/schema/Catalogue.xsd`, and the BSData wiki submodule under `docs/bsdata-catalogue-development-wiki/`.
 
-Never open `src/domain/evaluator/*.js` in this mode. A rule read off the engine cements the engine's bugs as expectations.
+Never open `src/contexts/ruleengine/engine/*.js` in this mode. A rule read off the engine cements the engine's bugs as expectations.
 
 The output of this step is one plain-language sentence — what the catalog data demands of a correct evaluator for this construct — plus the evidence: the file, the ancestor entry id and name, and the element's attributes. Where that sentence cannot be justified from those sources, park the cell (step 8) and continue with the next one.
 
@@ -66,9 +66,9 @@ The author reports back a summary, including any gap that made it stop. A gap it
 
 ## 7. Step 5 — run the evaluator tests
 
-Run exactly `forge-test --run src/domain/evaluator`. The change touches only `docs/testing/`, which that suite consumes, so no other suite is run here.
+Run exactly `forge-test --run src/contexts/ruleengine/engine`. The change touches only `docs/testing/`, which that suite consumes, so no other suite is run here.
 
-Isolate the new scenario's cases with `forge-test --run 'src/domain/evaluator/e2e.testcatalog.test.js -t "Szenario: <slug>"'` — the runner names its dynamic cases `Szenario: <manifest.name>` and, per roster, `<label>: Bericht entspricht der deklarierten Erwartung`.
+Isolate the new scenario's cases with `forge-test --run 'src/contexts/ruleengine/engine/e2e.testcatalog.test.js -t "Szenario: <slug>"'` — the runner names its dynamic cases `Szenario: <manifest.name>` and, per roster, `<label>: Bericht entspricht der deklarierten Erwartung`.
 
 Only failures naming the new scenario decide green or red. Other evaluator failures are the campaign's already-pinned gaps: they are neither this cell's result nor this skill's to fix. `CLAUDE.md`'s "all unit tests must pass" is suspended for exactly those pinned red scenarios recorded in `docs/testing/campaign-state.json`, each of which phase B closes.
 
@@ -121,7 +121,7 @@ Append to `parkedQuestions` in `docs/testing/campaign-state.json`:
 {
   "cellKey": "<cell key>",
   "question": "<one question a human can answer without opening a file>",
-  "sourcesChecked": ["docs/battlescribe-data-format.md §…", "src/data/parser/schema/Catalogue.xsd", "docs/bsdata-catalogue-development-wiki/…"],
+  "sourcesChecked": ["docs/battlescribe-data-format.md §…", "src/platform/battlescribe/schema/Catalogue.xsd", "docs/bsdata-catalogue-development-wiki/…"],
   "parkedAt": "YYYY-MM-DD",
   "status": "open",
   "answer": null
@@ -138,7 +138,7 @@ The campaign driver may add further top-level keys of its own to `campaign-state
 
 Use this mode only for a suspected semantics bug inside a cell the worklist already counts as covered. It never finds uncovered cells: the worklist is the only source of new cells.
 
-The flow: analyse `src/domain/evaluator/` thoroughly, form a hypothesis grounded in that analysis about a case the engine gets wrong, confirm the construct really occurs in the corpus, and delegate the scenario as in step 4.
+The flow: analyse `src/contexts/ruleengine/engine/` thoroughly, form a hypothesis grounded in that analysis about a case the engine gets wrong, confirm the construct really occurs in the corpus, and delegate the scenario as in step 4.
 
 Two rules carry over from the primary mode. The delegation prompt still carries only a data-derived rule and never engine code or engine output. The resulting scenario is kept whether it is green or red — a green one because progress is monotone, a red one as a pinned gap under step 7. This is a deliberate departure from the earlier version of this skill, which deleted a passing test; do not restore that behaviour.
 
@@ -147,6 +147,6 @@ Two rules carry over from the primary mode. The delegation prompt still carries 
 - Never change a scenario's expectations to make the engine pass.
 - Never delete or weaken a committed scenario.
 - Never write scenario files in the main conversation instead of delegating.
-- Never read `src/domain/evaluator/*.js` in the primary mode, and never quote engine code or engine output into a delegation prompt in either mode.
-- Never change production code under `src/domain/evaluator/` — that is phase B's work.
+- Never read `src/contexts/ruleengine/engine/*.js` in the primary mode, and never quote engine code or engine output into a delegation prompt in either mode.
+- Never change production code under `src/contexts/ruleengine/engine/` — that is phase B's work.
 - Never propose a version bump for this work: scenarios and tooling are not user-facing.

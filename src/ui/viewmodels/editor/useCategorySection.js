@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
 
-import { childSelectionsOf } from '../../../domain/roster';
-import { resolveListRuleGroupFromReport } from '../../../domain/evaluation/listRuleGroups';
-import { isBlockingViolation } from '../../../domain/evaluation/violationStats';
+import { unitsOfForce } from '../../../contexts/armylist/model';
+import { resolveListRuleGroupFromReport, isBlockingViolation, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
-import { EMPTY_SLOT_INDEX } from '../../../domain/evaluation/slotIndex';
 import { useRosterReport } from '../rosterContexts';
 
 /**
@@ -31,28 +29,34 @@ import { useRosterReport } from '../rosterContexts';
  * Kategorie bleibt bewusst sichtbar: mobil ist ihr Hinzufüger der einzige Weg,
  * eine Einheit dieser Kategorie aufzunehmen.
  *
- * @param {{ force: Object, forcePath: string|null, categoryLink: Object }} params
+ * @param {{ force: Object, forcePath: string|null, category: Object }} params
  * @returns {{ isVisible: boolean, categoryId: string, categoryName: string,
  *   selections: Array<Object>, isListRuleGroup: boolean,
  *   badge: { count: number, min: number|null, max: number|null, hasErrors: boolean } }}
  */
-export function useCategorySection({ force, forcePath = null, categoryLink }) {
+export function useCategorySection({ force, forcePath = null, category }) {
   const { report, system, activeCatalogue } = useRosterReport();
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
-  const categoryId = categoryLink?.targetId ?? null;
+  const categoryId = category?.id ?? null;
 
   return useMemo(() => {
     // Der Kategorie-Anker dieses Kontingents (Issue 0121, Task 7): der Evaluator
     // verankert eine Kategorie an einem Slot mit `anchorKind: 'categoryAnchor'`,
-    // dessen `defId` der `categoryLink` (verlinkter Fall) oder die Kategorie
-    // selbst ist (unverlinkter Fall, `report.js`-Ankervertrag).
-    const categoryAnchor = slots.findCategoryAnchorSlot(forcePath, categoryId)
-      ?? slots.findCategoryAnchorSlot(forcePath, categoryLink?.id);
+    // dessen `defId` die Kategorie selbst oder ihr Verweis ist
+    // (`report.js`-Ankervertrag). Welche Ids das sind, sagt die Übersetzung —
+    // `anchorIds` führt beide in genau dieser Reihenfolge.
+    const anchorIds = category?.anchorIds ?? [];
+    /** @type {Object|null} */
+    let categoryAnchor = null;
+    for (const anchorId of anchorIds) {
+      categoryAnchor = slots.findCategoryAnchorSlot(forcePath, anchorId) ?? null;
+      if (categoryAnchor) break;
+    }
     const isHidden = categoryAnchor?.isHidden === true;
-    const selections = childSelectionsOf(force).filter(s => s.category === categoryId);
+    const selections = unitsOfForce(force).filter(s => s.category === categoryId);
 
     const selectionByPath = new Map();
-    for (const selection of childSelectionsOf(force)) {
+    for (const selection of unitsOfForce(force)) {
       const path = slots.pathOfSelection(selection.id);
       if (path !== undefined) selectionByPath.set(path, selection);
     }
@@ -69,14 +73,13 @@ export function useCategorySection({ force, forcePath = null, categoryLink }) {
     const isVisible = !(isHidden && selections.length === 0)
       && !(selections.length === 0 && !isPrimaryForAnyEntry);
 
-    const categoryDefinition = system?.categoryEntries?.find(ce => ce.id === categoryId);
-    const categoryName = categoryDefinition ? categoryDefinition.name : categoryLink?.name;
+    const categoryName = category?.name;
 
     // Blockierende Verletzungen dieser Kategorie hängen am selben Anker.
     const categoryViolations = (report?.violations ?? []).filter(violation =>
       isBlockingViolation(violation)
       && violation.anchor?.anchorKind === 'categoryAnchor'
-      && (violation.anchor.defId === categoryId || violation.anchor.defId === categoryLink?.id));
+      && anchorIds.includes(violation.anchor.defId));
 
     return {
       isVisible,
@@ -91,5 +94,5 @@ export function useCategorySection({ force, forcePath = null, categoryLink }) {
         hasErrors: categoryViolations.length > 0,
       },
     };
-  }, [report, slots, forcePath, categoryId, categoryLink, force, system, activeCatalogue]);
+  }, [report, slots, forcePath, categoryId, category, force, system, activeCatalogue]);
 }

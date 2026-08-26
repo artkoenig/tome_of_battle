@@ -25,7 +25,7 @@ die gegen dieselbe `.gst`/`.cat` laufen.
 > Die Ids `1077-7379-f142-f382` und `d818-c60d-b1f8-8aaa` existieren in **beiden**
 > Sätzen — mit unterschiedlichen Attributen:
 >
-> | | **upstream** (`src/tests/__fixtures__/whfb6/`, **dieses Szenario**) | Definitive Edition (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) |
+> | | **upstream** (`src/tests/__fixtures__/whfb6/`, **dieses Szenario**) | Definitive Edition (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`) |
 > |---|---|---|
 > | Fundstelle | `Warhammer Fantasy Battle 6th edition.gst:53-57` | `Warhammer Fantasy Battles (6th definitive edition).gst:721-725` |
 > | `scope` beider Grenzen | **`roster`** | **`force`** |

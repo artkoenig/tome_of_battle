@@ -6,7 +6,7 @@ import { RosterValidationPanelHarness as RosterValidationPanel } from '../../../
 // Ergänzt RosterValidationPanel.evaluator.test.jsx (Vertragstests von Issue
 // 0121, Task 5) um die Observablen, die dort nicht abgedeckt sind: mobiler
 // Spielen-Knopf, Ursachen-Block und Ressourcen-Summen. Die Fixtures folgen dem
-// Berichtsvertrag der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`).
+// Berichtsvertrag der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`).
 
 vi.mock('lucide-react', () => ({
   Play: () => <span data-testid="icon-play" />,

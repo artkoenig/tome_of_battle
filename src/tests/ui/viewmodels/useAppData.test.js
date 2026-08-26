@@ -1,21 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import useAppData from '../../../ui/viewmodels/useAppData';
-import { getAllSystems, getAllRosters } from '../../../data/db/database';
-import { runSystemMigrations } from '../../../data/db/migrations';
+import { getAllSystems, getAllRosters } from '../../../platform/persistence/database';
+import { runSystemMigrations, runGameStateMigration } from '../../../platform/persistence/migrations';
 import { VIEWS } from '../../../ui/constants/views';
-import { DATA_EVENT, emitDataChange } from '../../../domain/services/dataEvents';
+import { DATA_EVENT, emitDataChange } from '../../../shared/events/dataEvents';
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   getAllSystems: vi.fn(),
   getAllRosters: vi.fn(),
 }));
 
-vi.mock('../../../data/db/migrations', () => ({
+vi.mock('../../../platform/persistence/migrations', () => ({
   runSystemMigrations: vi.fn(),
+  // Der Startlauf hebt seit Issue 0190 den alten `gameState` in den
+  // `games`-Store, bevor er die Listen liest.
+  runGameStateMigration: vi.fn(),
 }));
 
-vi.mock('../../../data/db/catalogUpdate', () => ({
+vi.mock('../../../platform/persistence/catalogUpdate', () => ({
   fetchCatalogText: vi.fn(),
 }));
 
@@ -34,6 +37,7 @@ beforeEach(() => {
   getAllSystems.mockResolvedValue([system]);
   getAllRosters.mockResolvedValue([roster]);
   runSystemMigrations.mockResolvedValue({ systems: [system], failures: [] });
+  runGameStateMigration.mockResolvedValue({ movedGames: 0, cleanedRosters: 0 });
 });
 
 describe('useAppData — initiales Laden', () => {
@@ -125,7 +129,7 @@ describe('useAppData — Neuladen', () => {
 });
 
 // Issue 0167 / ADR-0037: `useAppData` ist die eine Stelle, an der der
-// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über `src/domain/services/`
+// Änderungs-Kanal der Datenschicht verdrahtet ist. Was über eine `application`-Schicht
 // geschrieben wurde, steht danach in der Liste — ohne Navigationswechsel und
 // ohne zweites Lesen aus der DB.
 describe('useAppData — Änderungs-Kanal der Datenschicht', () => {

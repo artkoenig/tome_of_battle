@@ -17,8 +17,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoryUnitAdderHarness as CategoryUnitAdder } from '../../../../tests/test-utils/harnesses/CategoryUnitAdderHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus" />,
@@ -77,7 +77,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',
@@ -118,7 +118,7 @@ function capabilityOf(capabilities, defId) {
   return undefined;
 }
 
-function renderAdder(addUnit, capabilities) {
+function renderAdder(raiseUnit, capabilities) {
   const roster = appRoster();
   render(
     <CategoryUnitAdder
@@ -130,7 +130,7 @@ function renderAdder(addUnit, capabilities) {
       activeCatalogue={{ id: 'cat-main' }}
       costTypeLabel="pts"
       costLimitType={COST_TYPE_ID}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       roster={roster}
       selectionCounts={{}}
       force={roster.forces[0]}

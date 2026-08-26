@@ -26,8 +26,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { UnitRulesChipsHarness as UnitRulesChips } from '../../../../tests/test-utils/editorHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
   BookOpen: (props) => <span data-testid="icon-book" {...props} />,

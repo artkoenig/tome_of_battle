@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from '../../../ui/components/RosterEditor';
@@ -34,7 +34,7 @@ vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
 }));
 
 // Mock useRosterState custom hook
-const mockAddUnit = vi.fn();
+const mockRaiseUnit = vi.fn();
 const mockRemoveUnit = vi.fn();
 const mockCopyUnit = vi.fn();
 const mockSubSelectionOperations = createSubSelectionOperationsMock();
@@ -113,7 +113,7 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
     commands: {
-      addUnit: mockAddUnit,
+      raiseUnit: mockRaiseUnit,
       removeUnit: mockRemoveUnit,
       copyUnit: mockCopyUnit,
       subSelectionOperations: mockSubSelectionOperations,
@@ -128,15 +128,15 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
 }));
 
 // Mock database saveRoster
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn()
 }));
 
 // Mock Validators
 // Only the rules engine is stubbed; the roster-tree primitives that the barrel
 // re-exports stay real, since they are pure traversal without any rules in them
-// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/domain/roster/).
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/contexts/armylist/model/).
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   computeRosterCounts: () => ({
     selectionCounts: {},
@@ -164,9 +164,9 @@ vi.mock('../../../domain/roster', async (importOriginal) => ({
 // mehr als Stuetze — die Attrappe greift ihn dort ab.
 vi.mock('../../../ui/components/editor/CategoryUnitAdder', () => ({
   default: function CategoryUnitAdderStub({ categoryId, forceId }) {
-    const { addUnit } = useRosterCommands();
+    const { raiseUnit } = useRosterCommands();
     return (
-      <button data-testid={`adder-${categoryId}`} onClick={() => addUnit('mock-added-unit', categoryId, forceId)}>
+      <button data-testid={`adder-${categoryId}`} onClick={() => raiseUnit('mock-added-unit', categoryId, forceId)}>
         Add to {categoryId}
       </button>
     );
@@ -249,13 +249,13 @@ describe('RosterEditor Component', () => {
     expect(screen.getByTestId('adder-cat-heroes')).toBeDefined();
   });
 
-  it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRosterState', () => {
+  it('verifies that triggering the CategoryUnitAdder calls the raiseUnit function from useRosterState', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     const adderButton = screen.getByTestId('adder-cat-heroes');
     fireEvent.click(adderButton);
-    expect(mockAddUnit).toHaveBeenCalledTimes(1);
+    expect(mockRaiseUnit).toHaveBeenCalledTimes(1);
     // Die Kontingent-Sektion bindet ihr eigenes Kontingent an das Ausheben.
-    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit', 'cat-heroes', 'force-1');
+    expect(mockRaiseUnit).toHaveBeenCalledWith('mock-added-unit', 'cat-heroes', 'force-1');
   });
 
   describe('Adversarial & Stress Tests', () => {

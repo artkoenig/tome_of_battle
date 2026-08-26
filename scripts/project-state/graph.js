@@ -13,11 +13,11 @@
 /**
  * Die Schichtung der App. Eine tiefere Schicht darf nicht auf eine hoehere
  * zugreifen. Seit Issue 0121 steht in der Mitte das App-Schreibmodell
- * `src/domain/roster/` (frueher `src/solver/`, abgerissen).
+ * `src/contexts/armylist/model/` (frueher `src/solver/`, abgerissen).
  */
 export const DEFAULT_LAYERS = Object.freeze([
-  { name: 'parser', prefix: 'src/data/parser/' },
-  { name: 'roster', prefix: 'src/domain/roster/' },
+  { name: 'parser', prefix: 'src/platform/battlescribe/' },
+  { name: 'roster', prefix: 'src/contexts/armylist/model/' },
   { name: 'components', prefix: 'src/ui/components/' },
 ]);
 

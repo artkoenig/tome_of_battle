@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 
@@ -13,7 +13,7 @@ import { usePlayRoster, groupedPlaySelections } from '../../../ui/viewmodels/use
  * with `system = null` so the evaluation is the frozen empty result.
  */
 
-vi.mock('../../../data/db/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../../../platform/persistence/database', () => ({ saveRoster: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => ({ whfb6LinkingEnabled: false }),
 }));

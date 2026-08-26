@@ -3,10 +3,10 @@
   "name": "orcs-and-goblins-budget",
   "description": "Budget-gesteuertes Verhalten der Reinraum-Engine an echten O&G-Daten: die im .gst per limit::-Modifikatoren skalierende Core-Mindestzahl (Basis 2; ab 2000 pts -> 3, ab 3000 pts -> 4), die roster-weite Budget-Ueberschreitung (Engine-Regel budget::ecfa-8486-4f6c-c249, kein Katalog-Constraint) und der fail-closed-Fall ohne gesetztes <costLimits> (Diagnose UNRESOLVED_BUDGET_LIMIT, Core-Grenze bleibt auf Basis 2). Punktebudget je Roster ueber den <costLimits>-Block eingestellt (Kostenart pts ecfa-8486-4f6c-c249).",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

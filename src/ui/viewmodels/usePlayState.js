@@ -3,91 +3,105 @@ import {
   PERSISTENCE_FAILURE_MESSAGE_KEY,
   createPersistenceFailureReporter,
 } from './persistenceFailure';
-import { createInitialGameState } from '../../domain/roster/rosterDefaults';
-import '../../domain/types.js';
+import {
+  loadGame,
+  saveGame,
+  createGameFor,
+  currentWoundsOf,
+  withAdjustedWound,
+  withAdjustedTracker,
+} from '../../contexts/play';
+import '../../shared/rostermodel/types.js';
 
 /**
- * Hook to manage game play state, wound trackers, CP and VP.
- * @param {import('../../domain/types.js').Roster} initialRoster
- * @param {Function} setRoster
- * @param {Function} saveRosterCallback
+ * Der Wundenzustand des Spielmodus (Issue 0190).
+ *
+ * Die Partie ist seit dem Kontextschnitt ein eigenes Aggregat: der Hook liest
+ * und schreibt sie ueber die Fassade des Kontexts `play`, nicht mehr ueber das
+ * Roster. Damit schreibt eine Wunde weder den Listendatensatz neu noch landet
+ * sie in der Undo-Historie der Liste — `setRoster` und `saveRosterCallback`
+ * sind hier deshalb ersatzlos entfallen.
+ *
+ * @param {import('../../shared/rostermodel/types.js').Roster} roster die Liste, zu der
+ *   gespielt wird. Sie liefert die `rosterId` und die Auswahlen, gegen die
+ *   verwaiste Wundeneintraege beim Schreiben wegfallen.
  * @param {(message: string) => void} [reportError] app-wide error channel; a failed
- *   game-state save reaches the user through it instead of ending in the console.
+ *   game save reaches the user through it instead of ending in the console.
  */
-export default function usePlayState(initialRoster, setRoster, saveRosterCallback, reportError) {
-  const [gameState, setGameState] = useState(() => {
-    return initialRoster.gameState || createInitialGameState();
-  });
+export default function usePlayState(roster, reportError) {
+  const rosterId = roster?.id;
+  const [game, setGame] = useState(() => createGameFor(rosterId));
 
-  const isInitialMount = useRef(true);
   const reportErrorRef = useRef(reportError);
   reportErrorRef.current = reportError;
 
-  // Save game state whenever it changes
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    const reportFailure = createPersistenceFailureReporter(
+  // Die Liste als Ref: sie geht nur in den **Schreibvorgang** ein (verwaiste
+  // Eintraege), darf ihn aber nicht ausloesen — sonst schriebe jede
+  // Neuberechnung des Rosters eine Partie.
+  const rosterRef = useRef(roster);
+  rosterRef.current = roster;
+
+  // Erst ein Zug des Spielers macht die Partie schreibenswert. Ohne diese Marke
+  // wuerde schon das Betreten des Spielmodus einen Datensatz erzeugen und der
+  // gerade geladene Stand sofort wieder zurueckgeschrieben. Sie faellt mit dem
+  // Schreiben zurueck.
+  const hasUnsavedMove = useRef(false);
+
+  // Ob ueberhaupt schon gezogen wurde. Diese Marke faellt nicht zurueck, denn
+  // sie beantwortet eine andere Frage: der Lesevorgang laeuft asynchron, und ein
+  // Zug waehrend des Lesens darf vom nachtraeglich eintreffenden Stand nicht
+  // ueberschrieben werden — auch dann nicht, wenn er zwischenzeitlich schon
+  // gespeichert wurde.
+  const hasPlayed = useRef(false);
+
+  const reportFailure = () =>
+    createPersistenceFailureReporter(
       PERSISTENCE_FAILURE_MESSAGE_KEY.gameState,
       reportErrorRef.current
     );
-    // Need to use functional update pattern for setRoster to avoid stale closures if roster changes
-    setRoster(prevRoster => {
-      const updatedRoster = { ...prevRoster, gameState };
-      if (saveRosterCallback) {
-        saveRosterCallback(updatedRoster).catch(reportFailure);
-      }
-      return updatedRoster;
-    });
-  }, [gameState, setRoster, saveRosterCallback]);
 
-  // VP, CP, and Round tracker
+  // Die laufende Partie dieser Liste, falls es eine gibt. Bis sie da ist, zeigt
+  // der Bildschirm die frische — sie ist der Zustand einer Partie, die noch
+  // nicht begonnen hat.
+  useEffect(() => {
+    if (!rosterId) return undefined;
+    // Eine andere Liste ist eine andere Partie: die Zugmarke gilt fuer die
+    // vorige und darf den Stand der neuen nicht abweisen.
+    hasPlayed.current = false;
+    let isCurrent = true;
+    loadGame(rosterId)
+      .then((loaded) => {
+        if (isCurrent && !hasPlayed.current) setGame(loaded);
+      })
+      .catch(reportFailure());
+    return () => {
+      isCurrent = false;
+    };
+  }, [rosterId]);
+
+  useEffect(() => {
+    if (!hasUnsavedMove.current) return;
+    hasUnsavedMove.current = false;
+    saveGame(game, rosterRef.current).catch(reportFailure());
+  }, [game]);
+
   const adjustTracker = (field, delta) => {
-    setGameState(prev => ({
-      ...prev,
-      [field]: Math.max(0, prev[field] + delta)
-    }));
+    hasPlayed.current = true;
+    hasUnsavedMove.current = true;
+    setGame(prev => withAdjustedTracker(prev, field, delta));
   };
 
-  const getUnitCurrentWounds = (selectionId, totalMaxWounds) => {
-    const val = gameState.wounds[selectionId];
-    if (val === undefined) {
-      return totalMaxWounds;
-    }
-    if (Array.isArray(val)) {
-      return val.reduce((sum, w) => sum + w, 0);
-    }
-    return val;
-  };
+  const getUnitCurrentWounds = (selectionId, totalMaxWounds) =>
+    currentWoundsOf(game, selectionId, totalMaxWounds);
 
   const handleAdjustWound = (selectionId, delta, totalMaxWounds) => {
-    setGameState(prev => {
-      const woundsMap = { ...prev.wounds };
-      const current = prev.wounds[selectionId];
-      let currentVal = totalMaxWounds;
-      
-      if (current !== undefined) {
-        if (Array.isArray(current)) {
-          currentVal = current.reduce((sum, w) => sum + w, 0);
-        } else {
-          currentVal = current;
-        }
-      }
-      
-      const newVal = Math.max(0, Math.min(totalMaxWounds, currentVal + delta));
-      woundsMap[selectionId] = newVal;
-
-      return {
-        ...prev,
-        wounds: woundsMap
-      };
-    });
+    hasPlayed.current = true;
+    hasUnsavedMove.current = true;
+    setGame(prev => withAdjustedWound(prev, selectionId, delta, totalMaxWounds));
   };
 
   return {
-    gameState,
+    game,
     adjustTracker,
     getUnitCurrentWounds,
     handleAdjustWound

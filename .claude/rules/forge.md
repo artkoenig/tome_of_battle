@@ -13,7 +13,7 @@
 
 - `forge-test` = `npx vitest run` — unit, component and the evaluator's manifest-driven E2E.
   `forge-test --run <pattern>` passes the pattern straight to vitest, so it filters by path or
-  filename (`forge-test --run src/domain/evaluator`); pass `-t "<name>"` as the pattern to filter by
+  filename (`forge-test --run src/contexts/ruleengine/engine`); pass `-t "<name>"` as the pattern to filter by
   test name.
 - `forge-lint` = `npm run lint && npm run cast`. oxlint's many warnings do not fail it, but
   cast's structural rules do: `npm run cast` is `cast-check`, and every rule in

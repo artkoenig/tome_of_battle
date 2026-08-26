@@ -15,8 +15,8 @@
 > Diese Datei ist die **kanonische Referenz** zum Battlescribe-Datenformat für dieses Projekt
 > (inklusive der aus vergangenen Bug-Analysen gesammelten Domänen-Erkenntnisse). Wie das Projekt
 > das Format konkret parst und auswertet, steht in [`CLAUDE.md`](../CLAUDE.md), in der
-> Reinraum-Engine unter [`src/domain/evaluator/`](../src/domain/evaluator/) (sie beurteilt ein Roster) und im
-> App-Schreibmodell unter [`src/domain/roster/`](../src/domain/roster/) (es erzeugt und editiert eines).
+> Reinraum-Engine unter [`src/contexts/ruleengine/engine/`](../src/contexts/ruleengine/engine/) (sie beurteilt ein Roster) und im
+> App-Schreibmodell unter [`src/contexts/armylist/model/`](../src/contexts/armylist/model/) (es erzeugt und editiert eines).
 
 ---
 
@@ -87,13 +87,13 @@ Alle Dateien sind **XML**. Jedes Element hat einen eigenen XML-Namespace
 > und **kein** `backups`-Ordner. Kompression und Indizierung übernimmt die Auslieferungsinfrastruktur.
 > Siehe [§11](#11-best-practices).
 
-**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/data/parser/zipExtractor.js`.
-Vor dem Parsen prüft ein **beratender** Schema-Schritt (`src/data/parser/schemaValidator.js`, angebunden über
-`src/data/parser/importSchemaGate.js`) jede Datei gegen die vendored `Catalogue.xsd` — ein Verstoß wird
+**In diesem Projekt:** Der Importer entpackt ein `.bsz`/ZIP mit `src/platform/battlescribe/zipExtractor.js`.
+Vor dem Parsen prüft ein **beratender** Schema-Schritt (`src/platform/battlescribe/schemaValidator.js`, angebunden über
+`src/platform/battlescribe/importSchemaGate.js`) jede Datei gegen die vendored `Catalogue.xsd` — ein Verstoß wird
 per `console.warn` protokolliert (mit Datei + Zeile), **blockiert den Import aber nicht** und wird
 **nicht in der UI angezeigt** (advisory, siehe ADR 0016). Anschließend parst
-`src/data/parser/xmlParser.js` die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
-gespeichert wird (`src/data/db/database.js`).
+`src/platform/battlescribe/xmlParser.js` die `.cat`/`.gst`-XML zu einem „System"-Objekt, das in IndexedDB
+gespeichert wird (`src/platform/persistence/database.js`).
 
 ---
 
@@ -130,11 +130,11 @@ per `targetId="027b-31d2-b3e2-23a4"` referenziert:
 ```
 
 Konsequenz für die Auswertung: Die Definition muss zum **Lesezeitpunkt** aus dem System aufgelöst
-werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/domain/roster/catalogResolver.js`).
+werden (in diesem Projekt: `resolveEntry`/`findEntryInSystem` in `src/contexts/armylist/model/catalogResolver.js`).
 Dabei muss der **`catalogueId`-Kontext** mitgeführt werden, weil dieselbe Ziel-ID in verschiedenen
 Katalogen/Detachments unterschiedliche Dinge bedeuten kann.
 
-> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator (`src/domain/evaluator/`) führt
+> **Bewusster Override in der Reinraum-Engine (ADR-0032):** Der Evaluator (`src/contexts/ruleengine/engine/`) führt
 > **keinen** `catalogueId`-Kontext mit. Er mischt alle Quellen (`.gst` + alle `.cat`) in eine
 > einzige flache `id→Definition`-Tabelle und löst **global-by-ID** auf — korrekt, solange die IDs
 > katalogübergreifend disjunkte GUIDs sind, was die realen Datensätze erfüllen. Verletzt ein
@@ -651,7 +651,7 @@ zu. Referenziert wird per `typeId`:
 >
 > **Zahlenbasis:** Diese Multiplikation gilt für **per-Eltern-relative** Stückzahlen — „Anzahl je
 > Eltern-Instanz", die Zahlenbasis der Katalog-Constraint-Mathematik. Die Reinraum-Engine
-> multipliziert dagegen **nicht** durch die Elternkette (`src/domain/evaluator/countIndex.js`,
+> multipliziert dagegen **nicht** durch die Elternkette (`src/contexts/ruleengine/engine/countIndex.js`,
 > `contributionOf`: jeder Knoten trägt sein `instance.count` unverrechnet bei). Sie setzt damit
 > voraus, dass das `number` einer `.ros`-Selektion eine **absolute** Gesamtstückzahl ist, kein
 > per-Eltern-Multiplikator — unter dieser Annahme fallen beide Rechnungen zusammen. Die
@@ -737,7 +737,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 > — den `<catalogue id=…>`, aus dem das umschließende Kontingent stammt.** Die Frage lautet nicht
 > „wie viele?", sondern „ist es dieses?"; der Rahmen ist deshalb kein Zählrahmen, sondern eine
 > **Identitätsprüfung** gegen die in `childId` genannte Katalog-Wurzel-Id. Drei Belege aus den
-> eingefrorenen Fixture-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`, 27 Vorkommen:
+> eingefrorenen Fixture-Katalogen (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`, 27 Vorkommen:
 > 7 in der `.gst`, 20 in `Mercenaries (…).cat`):
 > - Alle 27 stehen an einer `condition` (`instanceOf`/`notInstanceOf`, `field="selections"`), nie
 >   an einem `constraint` oder `repeat`, und **jede** `childId` ist eine Katalog-Wurzel-Id
@@ -751,7 +751,7 @@ Ein `constraint` ist eine **Grenze** (Minimum oder Maximum). Er definiert *was* 
 >   „Tomb Kings may have more than one Chariot" an einem `notInstanceOf childId="…"
 >   childName="Tomb Kings"`; auch die übrigen `childName` sind Armeebuch-Namen.
 >
-> Die Semantik der Engine (`src/domain/evaluator/query.js`) folgt daraus: Treffer ⇒ 1, anderes Armeebuch
+> Die Semantik der Engine (`src/contexts/ruleengine/engine/query.js`) folgt daraus: Treffer ⇒ 1, anderes Armeebuch
 > ⇒ 0, `childId` leer (Prozent-Nenner „alles im Rahmen") ⇒ 1, denn der Rahmen hat genau **einen**
 > Katalog. `shared="false"` verengt ihn nicht — ein Katalog wird durch eine Instanz nicht enger.
 > Eine `childId`, deren Katalog im Datensatz gar nicht geladen ist, ist ein schlichter
@@ -777,7 +777,7 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > **`scope` an einem `modifier` — in der `Catalogue.xsd` nicht definiert, in echten Daten belegt.**
 > Die vendored `Catalogue.xsd` dieses Projekts kennt kein `scope`-Attribut an `<modifier>`; sie führt
 > es nur an `constraint`, `condition` und `repeat`. Belegt ist es trotzdem: **8 Vorkommen** in den
-> 12 eingefrorenen Fixture-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`), davon 7×
+> 12 eingefrorenen Fixture-Katalogen (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`), davon 7×
 > `scope="unit"` und 1× `scope="force"`. Beispiel `<modifier type="add" field="category"
 > value="4990-1770-2328-effd" scope="unit"/>` an „Mark of Slaanesh" (`Dark Elves` 5×,
 > `Vampire Counts` 1×) — die Absicht ist erkennbar: die Kategorie „Slaanesh" soll die **Einheit**
@@ -796,11 +796,11 @@ Ein `modifier` **ändert** eine Eigenschaft des Elternelements oder den Wert ein
 > ([*Data structure overview*](bsdata-catalogue-development-wiki/Data-structure-overview.md),
 > Abschnitt *Modifier*). Hier gilt die Entscheidung dieses Dokuments: **Fehlt `join`, wird ohne
 > Trennzeichen zusammengefügt** — kein implizites Leerzeichen. Die Engine folgt dieser Semantik
-> (`src/domain/evaluator/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
-> eingefrorenen Definitive-Edition-Katalogen (`src/domain/evaluator/__fixtures__/whfb6-definitive/`,
+> (`src/contexts/ruleengine/engine/modifiers.js`: fehlendes `join` ⇒ leerer Trenner). Beleg aus den im Repo
+> eingefrorenen Definitive-Edition-Katalogen (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`,
 > 11 `.cat` + 1 `.gst`; 121 `join`-Vorkommen insgesamt, davon 15 wirkungslos an
 > `set`-Modifiern; 5 stehen an `prepend`-Modifiern, wo der Trenner wirkt
-> (`src/domain/evaluator/modifiers.js`, `prependOrder`)): 101 von 119 `append`-Modifiern setzen `join`
+> (`src/contexts/ruleengine/engine/modifiers.js`, `prependOrder`)): 101 von 119 `append`-Modifiern setzen `join`
 > explizit (Leerzeichen, NBSP oder
 > `"&#160;+&#160;"`) — dort ist der Unterschied latent. Die 18 `append` ohne `join`
 > (`Mercenaries` 1, `Skaven` 4, `The Empire` 13; Beispiel
@@ -1098,7 +1098,7 @@ Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirk
 > Wirkung der Wiederholungsfaktor vervielfacht. Es gibt keine Lesart, in der wiederholtes Setzen
 > eines *konstanten* `value` einen wachsenden Wert ergäbe; wer eine Staffel will, schreibt einen
 > `set` **und** einen wiederholenden `increment`. Die Engine folgt dem
-> (`src/domain/evaluator/modifiers.js`, `setValue` ignoriert den Faktor; gepinnt in
+> (`src/contexts/ruleengine/engine/modifiers.js`, `setValue` ignoriert den Faktor; gepinnt in
 > `modifiers.test.js`), und die Katalogdaten sind an dieser Stelle schlicht ungenau: die
 > Core-Obergrenze bleibt bei jedem Budget ≥ 5000 exakt 6.
 >
@@ -1106,7 +1106,7 @@ Punkten setze sie auf 6." Der `<repeat>` am zweiten Modifier bleibt dabei **wirk
 > Modifier „multiple times" greifen, ohne einen Fall für `set` zu nennen ([§15](#15-lücken-der-quelle)).
 
 Ein Modifier kann auch `field="hidden"` setzen, um Einträge/Kategorielinks kontextabhängig ein- oder
-auszublenden (in diesem Projekt ausgewertet allein von `src/domain/evaluator/`; die Oberflaeche liest
+auszublenden (in diesem Projekt ausgewertet allein von `src/contexts/ruleengine/engine/`; die Oberflaeche liest
 das `isHidden` des Berichts).
 
 ---
@@ -1347,7 +1347,7 @@ kann**:
   bleibt davon **unberührt** — es wird gesondert erkannt und als Mengen-Stepper gerendert.
 
 **Umsetzung:** Die statische „hebbar?"-Erkennung liefert der Bericht
-(`capability.isMaxRaisable`, `src/domain/evaluator/groupBehavior.js`); die *aktuellen*
+(`capability.isMaxRaisable`, `src/contexts/ruleengine/engine/groupBehavior.js`); die *aktuellen*
 effektiven Werte liefern `getModifiedConstraintValue` / `getEffectiveConstraintLimit`. Sämtliche
 Auswahl-, Anzeige- und Recruit-/Autofill-Entscheidungen (Radio/Checkbox/Binär/Mandatory, der angezeigte
 „Max/Min: N", die Count-Klammerungen, `isOptionRosterUnique`) leiten sich aus
@@ -1563,7 +1563,7 @@ eingefrorenen Fixture-Katalogen kommt die Kurzform an **keinem** Boolean-Attribu
 `hidden`, `shared`, `includeChildSelections`, `includeChildForces`, `percentValue`, `primary`,
 `collective`, `library`, `import`, `roundUp`, `importRootEntries`: 0 Treffer). Gültiges XML ist sie
 trotzdem, und wer sie nicht liest, hält ein `hidden="1"` still für sichtbar. Der Evaluator liest
-deshalb beide Formen an **einer** Stelle (`readBoolean`, `src/domain/evaluator/catalogReader.js`) —
+deshalb beide Formen an **einer** Stelle (`readBoolean`, `src/contexts/ruleengine/engine/catalogReader.js`) —
 und damit an jedem dieser Attribute gleich (Issue 0102, Punkt 6).
 
 ---

@@ -2,7 +2,7 @@
 paths:
   - "docs/battlescribe-data-format.md"
   - "docs/bsdata-catalogue-development-wiki/**"
-  - "src/data/parser/**"
+  - "src/platform/battlescribe/**"
   - "src/tests/__fixtures__/**"
   - "**/*.cat"
   - "**/*.gst"
@@ -25,11 +25,11 @@ Agent liest sie, bevor er formatnahen Code oder Katalogdaten anfasst — auch Su
 - Behauptungen über das Format werden an echten Dateien belegt, nicht aus dem Wiki-Wortlaut
   abgeleitet. Eine neue Formatregel braucht ein reales Vorkommen als Beleg (`grep` über die
   Kataloge), sonst ist sie eine Vermutung.
-- **Zwei unabhängige XML-Leser**, absichtlich getrennt: `src/data/parser/xmlParser.js` (Import
+- **Zwei unabhängige XML-Leser**, absichtlich getrennt: `src/platform/battlescribe/xmlParser.js` (Import
   hochgeladener Dateien, plus advisory XSD-Prüfung `schemaValidator.js`, ADR 0016) und
-  `src/domain/evaluator/catalogReader.js` (Auswertung). Eine Formatkorrektur im einen impliziert nie
+  `src/contexts/ruleengine/engine/catalogReader.js` (Auswertung). Eine Formatkorrektur im einen impliziert nie
   automatisch dieselbe im anderen — prüfen, ob beide betroffen sind.
-- Die XSD liegt vendored als Konformitätsquelle im Repo (`src/data/parser/schema/Catalogue.xsd`,
+- Die XSD liegt vendored als Konformitätsquelle im Repo (`src/platform/battlescribe/schema/Catalogue.xsd`,
   ADR 0016); der Evaluator teilt deren
   Enum-SSOT (ADR 0031). Ein Enum-Wert wird dort gepflegt, nicht per Hand dupliziert.
 - `schemaValidator.js` hat seit Issue 0169 nur noch **einen** Einstiegspunkt:

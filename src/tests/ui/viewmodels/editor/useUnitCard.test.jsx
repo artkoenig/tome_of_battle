@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 

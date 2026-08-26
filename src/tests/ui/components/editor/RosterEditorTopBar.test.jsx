@@ -11,7 +11,7 @@ vi.mock('lucide-react', () => ({
   Redo2: () => <span data-testid="icon-redo" />
 }));
 
-vi.mock('../../../../domain/roster', () => ({
+vi.mock('../../../../contexts/armylist/model', () => ({
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null
 }));
 

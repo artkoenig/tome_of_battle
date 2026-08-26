@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 const mockGetRuleUrl = vi.fn();
 const mockUseSettings = vi.fn();
 
-vi.mock('../../../domain/rules/rulesLookup', () => ({
+vi.mock('../../../contexts/rulebook/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 

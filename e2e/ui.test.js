@@ -383,6 +383,70 @@ const runUiTests = async (server) => {
     }
     console.log('Validation error panel is visible.');
 
+      // Spielmodus: eine Partie ist seit Issue 0190 ein eigener Datensatz
+      // (Object Store `games`) und keine Eigenschaft der Liste mehr. Was hier
+      // geprueft wird, ist genau das Versprechen des PRD an den Spieler: eine
+      // genommene Wunde ueberlebt den Reload.
+      console.log('Entering play mode...');
+      await page.evaluate(() => {
+        const btn = document.querySelector('header [data-testid="nav-rosters"]');
+        if (!btn) throw new Error('Navigation to Heerlager not found');
+        btn.click();
+      });
+      await page.waitForSelector('[data-testid="roster-play"]', { timeout: 5000 });
+      await page.evaluate(() => {
+        document.querySelector('[data-testid="roster-play"]').click();
+      });
+      await page.waitForSelector('.play-unit-header-controls .qty-btn', { timeout: 5000 });
+
+      const woundsBefore = await page.evaluate(
+        () => document.querySelector('.play-unit-wound-value').textContent.trim()
+      );
+      console.log(`Wounds before taking one: ${woundsBefore}`);
+
+      console.log('Taking a wound...');
+      await page.evaluate(() => {
+        document.querySelector('.play-unit-header-controls .qty-btn').click();
+      });
+      await page.waitForFunction(
+        (before) => document.querySelector('.play-unit-wound-value')?.textContent.trim() !== before,
+        { timeout: 5000 },
+        woundsBefore
+      );
+      const woundsAfter = await page.evaluate(
+        () => document.querySelector('.play-unit-wound-value').textContent.trim()
+      );
+      console.log(`Wounds after taking one: ${woundsAfter}`);
+
+      console.log('Reloading the page and returning to play mode...');
+      await page.reload({ waitUntil: 'networkidle0' });
+      await page.waitForSelector('header [data-testid="nav-rosters"]', { timeout: 10000 });
+      await page.evaluate(() => {
+        document.querySelector('header [data-testid="nav-rosters"]').click();
+      });
+      await page.waitForSelector('[data-testid="roster-play"]', { timeout: 10000 });
+      await page.evaluate(() => {
+        document.querySelector('[data-testid="roster-play"]').click();
+      });
+      await page.waitForSelector('.play-unit-wound-value', { timeout: 5000 });
+      await page.waitForFunction(
+        (expected) => document.querySelector('.play-unit-wound-value')?.textContent.trim() === expected,
+        { timeout: 5000 },
+        woundsAfter
+      ).catch(() => {});
+
+      const woundsAfterReload = await page.evaluate(
+        () => document.querySelector('.play-unit-wound-value').textContent.trim()
+      );
+      console.log(`Wounds after reload: ${woundsAfterReload}`);
+      if (woundsAfterReload !== woundsAfter) {
+        throw new Error(
+          `Die Wunde hat den Reload nicht ueberlebt. Erwartet "${woundsAfter}", gefunden "${woundsAfterReload}"`
+        );
+      }
+      console.log('Play mode persistence test: PASSED');
+
+
     console.log('ALL UI TESTS PASSED SUCCESSFULLY!');
   } catch (err) {
     // Den UI-Zustand im Moment des Fehlers als Vollseiten-Screenshot festhalten, solange

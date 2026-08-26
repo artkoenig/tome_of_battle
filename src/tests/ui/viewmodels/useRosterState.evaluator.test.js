@@ -16,7 +16,7 @@
  * aktualisieren sich `violations` und `costTotals`.
  *
  * Aufbau: synthetisches System mit `system.rawXmls` (Muster und Datensatz aus
- * `src/domain/evaluation/useEvaluation.test.js`); die erwarteten Werte wurden per
+ * `src/contexts/ruleengine/readmodel/useEvaluation.test.js`); die erwarteten Werte wurden per
  * Wegwerf-Skript gegen die echte Fassade verifiziert (Warrior ×2 gegen
  * max 1 je Kontingent → genau eine Verletzung, Kosten 20 pts; ohne die
  * Auswahl → keine Verletzung, Kosten 0 pts).
@@ -68,7 +68,7 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
     </selectionEntries>
   </catalogue>`;
 
-/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/data/db/systemImport.js`). */
+/** Das App-System-Objekt mit den rohen XMLs (Shape aus `src/platform/persistence/systemImport.js`). */
 function appSystem() {
   return {
     id: 'system-uuid',
@@ -81,7 +81,7 @@ function appSystem() {
 }
 
 /**
- * Ein App-Roster (Shape aus `src/domain/types.js`): Warrior ×2 im einen Kontingent —
+ * Ein App-Roster (Shape aus `src/shared/rostermodel/types.js`): Warrior ×2 im einen Kontingent —
  * eine echte Verletzung der max-1-Grenze, Kosten 2 × 10 = 20 pts.
  * (`costLimit` ist das Feld des Adapter-Vertrags; `costLimitValue` steht
  * daneben, weil der Alt-Pfad des Hooks es historisch las.)

@@ -3,10 +3,10 @@
   "name": "less-than-force-min-drop",
   "description": "Condition-Zelle condition|lessThan|force|selectionCount|child=id: Der set-0-Modifier an der Pflicht min 1 (10a1-ac7b-4b9c-0e12) der Neferata-Power 'Seduction, Domination, Transfix and Beguile.' (adfd-d46e-23ff-3d61) greift genau dann, wenn die Force STRIKT WENIGER als 1 'Bloodline of Clan Lahmia' (4f07-e982-6665-70b7) zaehlt. Ohne Lahmia faellt das effektive Minimum auf 0 (Grenze feuert nicht), mit Lahmia steht die Basis-Pflicht 1 (Grenze feuert bei Ist 0). Kontroll-Grenze: die unbedingte Link-Pflicht 330a-d0d9-2177-a87f am Verweis ee9f-42bf-a6b8-7fe7 feuert in beiden Zwillingen identisch - nur die gated Grenze kippt.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -61,7 +61,7 @@ function makeModel(overrides = {}) {
     ],
     moduleMetrics: [
       { module: 'src/solver', fileCount: 6, lines: 900, functionCount: 40, totalComplexity: 136, averageComplexity: 3.4, maxComplexity: 21 },
-      { module: 'src/data/parser', fileCount: 3, lines: 300, functionCount: 12, totalComplexity: 25, averageComplexity: 2.1, maxComplexity: 7 },
+      { module: 'src/platform/battlescribe', fileCount: 3, lines: 300, functionCount: 12, totalComplexity: 25, averageComplexity: 2.1, maxComplexity: 7 },
     ],
     openIssues: [makeOpenIssue()],
     unreadableIssues: [],
@@ -255,8 +255,8 @@ describe('project-state/renderReport', () => {
       expect(html).toContain('vial-tooltip');
       expect(html).toContain('src/solver');
       expect(html).toContain('136'); // total complexity badge
-      // Sortierung: src/solver (hohe Komplexitaet) vor src/data/parser
-      expect(html.indexOf('src/solver')).toBeLessThan(html.indexOf('src/data/parser'));
+      // Sortierung: src/solver (hohe Komplexitaet) vor src/platform/battlescribe
+      expect(html.indexOf('src/solver')).toBeLessThan(html.indexOf('src/platform/battlescribe'));
     });
 
     it('meldet fehlende Moduldaten ausdruecklich statt leerer Kacheln', () => {

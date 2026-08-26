@@ -3,10 +3,10 @@
   "name": "at-least-unit-upgrade-gate",
   "description": "Eine condition type=atLeast mit scope=unit und childId auf einen Eintrag zaehlt die Selektionen dieses Eintrags innerhalb der umschliessenden Einheit - des naechsten Vorfahren vom Typ unit, den Traeger eingeschlossen (Formatdoku Abschnitt 7.7, Kasten scope=unit) - und der damit gegatete Modifier wirkt genau ab dem Schwellwert. Konkret: Im Vampire-Counts-Katalog traegt die Gruppe 'Wizard Level' (43b8-dacd-f09f-37c3) des Wurzel-Units '0-1 Vampire Lord' (b77b-88d5-5e80-e178) den entryLink 'Magic Level 4' (c5d1-4b7d-c96b-2fb9, Basis hidden=true, Ziel fc28-3af2-d37a-d07e) mit einem set-false-hidden-Modifier und den entryLink 'Magic Level 2' (54fc-2ba6-00ed-76ac, Basis hidden=false, Ziel fbc2-5115-f240-7367) mit dem inversen set-true-hidden-Modifier - beide gegatet per atLeast 1 selections scope=unit childId=32d0-a151-94a3-aa54 ('Nehekhara's Noble Blood', verschachtelt unter demselben Vampire Lord waehlbar, includeChildSelections=true). Zwei bis auf die Noble-Blood-Auswahl identische Roster pinnen beide Zweige ueber expect.capabilities[].isHidden: MIT Noble Blood ist Magic Level 4 sichtbar und Magic Level 2 verborgen, OHNE Noble Blood gilt das Inverse. Die Sichtbarkeit ist Verfuegbarkeit, keine zaehlende Grenze - firing bleibt leer. (Anmerkung: Der inverse Zeuge heisst im Vampire Lord 'Magic Level 2'; ein gleich gebauter 'Magic Level 1'-Link existiert nur im Vampire Count, Gruppe 7ab1-d9dc-6124-443f.)",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

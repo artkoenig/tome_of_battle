@@ -3,10 +3,10 @@
   "name": "less-than-roster-category-count",
   "description": "Eine condition type=\"lessThan\" field=\"selections\" scope=\"roster\", deren childId eine KATEGORIE nennt (d4a7-5999-8207-4efe \"Orc\", Orcs-and-Goblins-.cat), haelt genau dann, wenn die Zahl der Selektionen mit dieser Kategorie im gesamten Roster strikt unter value liegt; ein Kategorie-Ziel wird armeeweit gezaehlt. Traeger ist die Wurzel-Einheit \"Extra Goblin Hero\" (ed97-811b-cdb5-46c3) mit der Grenze 186c-6345-5b25-5aa2 (max 0, field=selections, scope=parent). Zwei Modifikatoren bewegen sie: ein increment 1 mit repeat je 1000 Punkte des Roster-Kostenlimits, gegattert durch eine and-Gruppe aus greaterThan 999 auf limit::ecfa-8486-4f6c-c249 UND der zu pinnenden lessThan-1-Kategorie-Bedingung; sowie ein set 0, gegattert durch eine or-Gruppe aus lessThan 1000 auf dasselbe Punktelimit ODER greaterThan 0 Selektionen derselben Kategorie. Fuenf Roster spannen die Matrix (Punkteband x Orc-Kategorie-Mitglied) auf und pinnen das effektive Hoechstmass des Extra-Goblin-Hero-Slots sowie das Feuern/Nichtfeuern von 186c-6345-5b25-5aa2.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

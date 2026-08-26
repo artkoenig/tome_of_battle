@@ -3,10 +3,10 @@
   "name": "ogre-kingdoms",
   "description": "Reale Domaenen-Regeln der Ogre-Kingdoms-Armee (gst + Ogre + Mercenaries), abgeleitet aus den Katalogdaten: die armeeweiten Pflichtregeln General (min 1) und Core (min 2), der bedingte set-1-Modifikator auf der Core-Grenze (geschaltet ueber Border Patrols rules), die unbedingte Tyrant-Obergrenze (max 1), die §7.7-Regel (Kategorie-Ziel zaehlt armeeweit ueber Kontingente), die kataloguebergreifende Aufloesung ueber den catalogueLink auf Mercenaries (Gegenprobe: dasselbe Roster ohne Mercenaries meldet die fehlende Abhaengigkeit) sowie eine unaufloesbare Auswahl als Diagnose statt Absturz.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [
@@ -32,9 +32,9 @@
       "file": "rosters/01-empty-force.ros",
       "description": "Gegenprobe zur kataloguebergreifenden Aufloesung: dasselbe leere Ogre-Kontingent, aber mit einem Roster-Dataset-Override OHNE die per catalogueLink geforderte Mercenaries-Bibliothek (fc47-8392-a6c8-452a). Der Auswerter meldet die fehlende Abhaengigkeit als MISSING_CATALOGUE_DEPENDENCY.",
       "dataset": {
-        "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+        "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
         "catalogues": [
-          "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat"
+          "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat"
         ]
       },
       "expect": {

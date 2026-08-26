@@ -1,4 +1,4 @@
-import { resolveEntry } from '../../../domain/roster';
+import { resolveEntry } from '../../../contexts/armylist/model';
 import { classifyStandaloneOption } from './selectionBehavior.js';
 import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
 import { costBudgetTextsOf } from './costBudgets.js';
@@ -44,7 +44,7 @@ export function buildStandaloneSection({ frameSelection, path, capability, optio
   const isSelectDisabled = capability.isBlocked === true;
   const editTargetId = frameSelection.id;
   const rowSelectionId = isSubUnitWithOwnOptions ? null : resolveRowSelectionId(
-    frameSelection, null, option, { id: capability.defId, targetId: capability.targetDefId }
+    frameSelection, null, option, { defId: capability.defId, targetDefId: capability.targetDefId }
   );
 
   const isUnavailable = count === 0 && isSelectDisabled;

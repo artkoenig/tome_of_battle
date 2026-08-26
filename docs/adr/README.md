@@ -50,3 +50,4 @@ Der Prozess und die Struktur der ADRs sind in [ADR 0001: Record Architecture Dec
 | 0039 | [Das Schreibmodell erreicht den Auswertungsbericht nur hereingereicht](0039-schreibmodell-erreicht-den-bericht-nur-hereingereicht.md) | Accepted | 2026-08-21 |
 | 0040 | [`src/data/services/` und `src/data/rules/` wechseln von Daten zu Fachlogik](0040-services-und-rules-von-daten-zu-fachlogik.md) | Accepted | 2026-08-24 |
 | 0041 | [cast als Strukturprüfer des Projekts](0041-cast-als-strukturpruefer.md) | Accepted | 2026-08-24 |
+| 0042 | [Schnitt nach Fachlichkeit: Bounded Contexts, Shared Kernels und zwei Ports](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) | Accepted | 2026-08-25 |

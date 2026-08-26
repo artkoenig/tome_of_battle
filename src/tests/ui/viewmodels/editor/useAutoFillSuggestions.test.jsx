@@ -178,16 +178,16 @@ describe('useAutoFillSuggestions — die Kandidaten', () => {
   });
 
   it('ein Slot unter dem Kontingent wird unter seiner effektiven Primärkategorie ausgehoben', () => {
-    const addUnit = vi.fn();
+    const raiseUnit = vi.fn();
     const { result } = renderPanel({
       capabilities: new Map([['0/0', offer()]]),
       spent: 990,
-      commands: { addUnit },
+      commands: { raiseUnit },
     });
 
     expect(result.current.suggestions[0].unitName).toBeNull();
     result.current.suggestions[0].apply();
-    expect(addUnit).toHaveBeenCalledWith(
+    expect(raiseUnit).toHaveBeenCalledWith(
       { id: 'e-knight', name: 'Ritter aus dem Katalog' }, 'cat-core', 'f1');
   });
 });

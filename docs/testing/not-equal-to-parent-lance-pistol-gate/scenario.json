@@ -3,10 +3,10 @@
   "name": "not-equal-to-parent-lance-pistol-gate",
   "description": "Condition-Zelle condition|notEqualTo|parent|selectionCount|child=id: Eine Bedingung type=\"notEqualTo\" value=\"1\" field=\"selections\" scope=\"parent\" haelt bei JEDEM Zaehlstand ausser genau 1 — also bei 0 UND bei 2 oder mehr; sie ist NICHT lessThan. Traeger ist im Armeebuch The Empire der entryLink 'Lance' e082-13b2-e746-34e0 (Ziel 8649-8ac8-5a6f-fd8d) in der Gruppe 'Weapons and Armour' f1bb-0dde-c39a-d0e1 der Einheit 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f. Der Verweis traegt min 1 (f0ce-7b2e-0be1-9dd1) und max 1 (128a-6411-f218-72fc); ein erster modifierGroup setzt BEIDE auf 0, gegatet auf eine and-Gruppe aus 'atLeast 1 childId=5191-89ca-822d-60e5' (der Verweis auf die Gruppe 'Signature Weapon' 7195-9f86-b364-0a4f) UND der notEqualTo-Bedingung auf childId=44f9-f44d-d693-84f8 ('Pistol', im Katalog innerhalb ebendieser Gruppe als Verweis fdd1-053d-3b57-76ca angeboten); ein zweiter modifierGroup setzt beide zurueck auf 1, gegatet auf 'equalTo 1' desselben Pistol-Ziels. Die Roster bilden das unterscheidende Tripel ab: Pistol-Zaehlstand 1 (Bedingung falsch, Grenzen 1/1 — Roster 01 und 02), Zaehlstand 0 bei vorhandener Signature Weapon (Bedingung wahr, Grenzen 0/0 — Roster 03) und Zaehlstand 2 (Bedingung WIEDER wahr, Grenzen 0/0 — Roster 04 und 05; unter der Lesart lessThan waeren es hier 1/1 und f0ce-7b2e-0be1-9dd1 muesste feuern). Roster 06 zeigt die and-Gruppe: Zaehlstand 0 OHNE Signature Weapon laesst die geschriebenen Grenzen stehen. Roster 07 zeigt den Rahmen: ein Pistol in einer ANDEREN Einheit desselben Kontingents (Elector Count f58c-9606-507a-0542, Verweis 11b1-f83f-3b7a-63ec) darf den Zaehlstand der Ritter nicht beruehren. Die verschobenen Grenzen werden ueber expect.capabilities (effectiveMin/effectiveMax des Lance-Slots) auch dort beobachtet, wo nichts feuert.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -1,4 +1,4 @@
-import { getUnitOptions } from '../../../domain/roster';
+import { getUnitOptions } from '../../../contexts/armylist/model';
 import { subSelectionCountOf } from './optionRowDerivations.js';
 import { buildStandaloneSection } from './standaloneRow.js';
 

@@ -7,7 +7,7 @@
  * Vertragsentscheidungen dieses Tests:
  * - Prop heißt `violation` (statt bisher `error`): der Inhalt ist keine
  *   Solver-ValidationError-Form mehr, sondern eine Verletzung aus dem
- *   Bericht der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`).
+ *   Bericht der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`).
  * - Severity-Optik: das Wurzelelement der Meldung trägt die Klasse
  *   `validation-message--<severity>` (error | warning | info) — geprüft per
  *   `container.querySelector`, wie die bestehenden Editor-Komponententests

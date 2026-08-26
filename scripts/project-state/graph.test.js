@@ -112,11 +112,11 @@ describe('project-state/graph', () => {
 
   describe('findLayerViolations', () => {
     it('flags a deeper layer importing a higher one', () => {
-      const graph = { 'src/data/parser/read.js': ['src/ui/components/View.jsx'] };
+      const graph = { 'src/platform/battlescribe/read.js': ['src/ui/components/View.jsx'] };
       const violations = findLayerViolations(graph);
       expect(violations).toEqual([
         {
-          from: 'src/data/parser/read.js',
+          from: 'src/platform/battlescribe/read.js',
           to: 'src/ui/components/View.jsx',
           fromLayer: 'parser',
           toLayer: 'components',
@@ -125,7 +125,7 @@ describe('project-state/graph', () => {
     });
 
     it('accepts a higher layer importing a deeper one', () => {
-      const graph = { 'src/ui/components/View.jsx': ['src/data/parser/read.js'] };
+      const graph = { 'src/ui/components/View.jsx': ['src/platform/battlescribe/read.js'] };
       expect(findLayerViolations(graph)).toEqual([]);
     });
 

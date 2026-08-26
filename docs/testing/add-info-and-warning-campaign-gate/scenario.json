@@ -3,10 +3,10 @@
   "name": "add-info-and-warning-campaign-gate",
   "description": "modifier type=\"add\" field=\"info\" und field=\"warning\" tragen keinen Feldwert, sondern einen Klartext-Hinweis an den Spieler (Format-Doku 7.7): die Meldung erreicht den Bericht genau dann, wenn die Bedingungen des Modifikators halten, und sie ist rein informativ statt blockierend. Der geteilte Eintrag '0-1 Amazon Serpent Priestess' (9ddd-69c8-644d-abc2, Mercenaries) traegt beide, gegatet auf die KOMPLEMENTAEREN Haelften desselben Schalters - des .gst-Eintrags 'Campaign: A Dark Conspiracy - 30th anniversary' (7d87-7436-5341-bbc0): die info-Meldung an atLeast 1 (scope=force), die warning-Meldung an lessThan 1 (scope=force) UND an eine oder-Gruppe von sieben instanceOf-Bedingungen mit scope=primary-catalogue, unter deren childIds das Armeebuch Orcs and Goblins (4049-c46d-7f80-44fb) steht. Dieselbe modifierGroup, die die warning-Meldung traegt, haengt zugleich per append (ohne join) ein '*' an den Namen - der Slot-Name ist damit die zweite, unabhaengig beobachtbare Wirkung derselben Klammer, und er entscheidet zugleich, wozu das Text-Token {this} in der warning-Meldung aufgeloest wird. Der dritte Meldungs-Modifikator desselben Eintrags (field=\"error\", gegatet auf den .gst-Schalter 'Allow special characters?' 8923-5946-7b10-8957) bleibt in Roster 01/02 still, weil der Schalter dort gewaehlt ist; Roster 03 laesst ihn als Kontrolle feuern und belegt zugleich, dass derselbe Schalter die Force-Obergrenze f706-5d39-7bf7-5f7b von max 0 auf max 1 hebt.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

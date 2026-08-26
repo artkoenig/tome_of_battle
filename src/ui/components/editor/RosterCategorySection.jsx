@@ -18,7 +18,7 @@ import { useTranslation } from '../../i18n/useTranslation';
  * (`{ isExpanded, onToggle }`), den der Editor führt.
  */
 export default function RosterCategorySection({
-  categoryLink,
+  category,
   force,
   forcePath = null,
   unitCardContext,
@@ -27,7 +27,7 @@ export default function RosterCategorySection({
 }) {
   const { t } = useTranslation();
   const { isVisible, categoryId, categoryName, selections, isListRuleGroup, badge } =
-    useCategorySection({ force, forcePath, categoryLink });
+    useCategorySection({ force, forcePath, category });
 
   if (!isVisible) return null;
 

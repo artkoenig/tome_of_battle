@@ -33,7 +33,7 @@ const baseProps = {
   categoryId: 'cat-rules',
   roster: { costLimitType: 'pts' },
   force: { id: 'f1', selections: [] },
-  addUnit: vi.fn(),
+  raiseUnit: vi.fn(),
   removeUnit: vi.fn(),
   subSelectionOperations: createSubSelectionOperationsMock(),
   costTypeLabel: 'Pkt.',
@@ -88,7 +88,7 @@ describe('ListRuleChecklist', () => {
     render(<ListRuleChecklist {...baseProps} states={mockStates} />);
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Allow special characters?' }));
-    expect(baseProps.addUnit).toHaveBeenCalledWith(expect.objectContaining({ id: 'e1' }), 'cat-rules');
+    expect(baseProps.raiseUnit).toHaveBeenCalledWith(expect.objectContaining({ id: 'e1' }), 'cat-rules');
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Campaign rules' }));
     expect(baseProps.removeUnit).toHaveBeenCalledWith('sel-2');

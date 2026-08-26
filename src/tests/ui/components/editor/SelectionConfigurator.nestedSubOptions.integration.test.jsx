@@ -5,14 +5,14 @@ import fs from 'fs';
 import path from 'path';
 import { SelectionConfiguratorHarness as SelectionConfigurator } from '../../../../tests/test-utils/editorHarness';
 import { createSubSelectionOperationsMock } from '../../../../tests/test-utils/subSelectionOperationsMock';
-import { processImportedData } from '../../../../data/parser/xmlParser.js';
-import { resolveEntry } from '../../../../domain/roster/catalogResolver.js';
-import { createSelectionFromDef } from '../../../../domain/roster/selectionFactory.js';
-import { replaceSelectionById, rootSelectionsOf } from '../../../../domain/roster/rosterTree.js';
-import { withChangedOptionCount } from '../../../../domain/roster/subSelectionEditing.js';
-import { getUnitOptions } from '../../../../domain/roster/optionsCollector.js';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { processImportedData } from '../../../../platform/battlescribe/xmlParser.js';
+import { resolveEntry } from '../../../../contexts/armylist/model/catalogResolver.js';
+import { createSelectionFromDef } from '../../../../contexts/armylist/model/selectionFactory.js';
+import { replaceSelectionById, rootSelectionsOf } from '../../../../contexts/armylist/model/rosterTree.js';
+import { withChangedOptionCount } from '../../../../contexts/armylist/model/subSelectionEditing.js';
+import { getUnitOptions } from '../../../../contexts/armylist/model/optionsCollector.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 // Issue 57/05 — the visual counterpart to the 57/04 data-model fix, exercised through the
 // REAL editor against the REAL Vampire Counts catalogue. The same shape as the reported
@@ -25,7 +25,7 @@ import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.j
 // the evaluator facade (slot source), the structural grouping and the nesting logic all
 // run for real.
 
-vi.mock('../../../../domain/rules/rulesLookup', () => ({
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({
   getRuleUrl: () => null,
 }));
 

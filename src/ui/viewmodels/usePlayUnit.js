@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
+import { childOffersOf } from '../../contexts/armylist/acl';
 import {
   findEntryInSystem, resolveEntry,
-  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, childSelectionsOf
-} from '../../domain/roster';
-import { costLimitLabelOf, costLimitTypeIdOf } from '../../domain/evaluation/costDisplays';
-import { EMPTY_SLOT_INDEX } from '../../domain/evaluation/slotIndex';
+  MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, subSelectionsOf
+} from '../../contexts/armylist/model';
+import { costLimitLabelOf, costLimitTypeIdOf, EMPTY_SLOT_INDEX } from '../../contexts/ruleengine/readmodel/index.js';
 import { profileCellDisplayOf } from './editor/useUnitCard';
 
 /**
@@ -38,12 +38,13 @@ export function maxWoundsOf(system, roster, selection) {
     return null;
   };
 
+  const childOffers = childOffersOf(resolved);
   let wounds = searchProfiles(selection.profiles)
     || searchProfiles(resolved.profiles)
-    || searchProfiles(resolved.selectionEntries?.[0]?.profiles);
+    || searchProfiles(childOffers[0]?.profiles);
 
-  if (!wounds && resolved.selectionEntries) {
-    for (const child of resolved.selectionEntries) {
+  if (!wounds) {
+    for (const child of childOffers) {
       wounds = searchProfiles(child.profiles);
       if (wounds) break;
     }
@@ -66,7 +67,7 @@ export function modelCountOf(system, roster, selection) {
   let totalModels = 0;
   let hasModelChildren = false;
 
-  childSelectionsOf(selection).forEach(child => {
+  subSelectionsOf(selection).forEach(child => {
     const childEntryId = child.entryLinkId || child.selectionEntryId;
     if (childEntryId === null) return;
     const childEntry = findEntryInSystem(system, childEntryId, roster?.catalogueId);
@@ -104,12 +105,12 @@ export function profileTableHeadersOf(profiles) {
 
 /**
  * @param {{
- *   selection: import('../../domain/types.js').Selection,
+ *   selection: import('../../shared/rostermodel/types.js').Selection,
  *   system: object|null,
  *   roster: object|null,
  *   costTypes?: object[]|null,
  *   capability?: object|null,
- *   slots?: import('../../domain/evaluation/slotIndex.js').SlotIndex,
+ *   slots?: import('../../contexts/ruleengine/readmodel/index.js').SlotIndex,
  *   getUnitCurrentWounds: (selectionId: string, totalMaxWounds: number) => number,
  *   isSubUnit?: boolean,
  * }} args
@@ -131,7 +132,7 @@ export function usePlayUnit({
     // Eigenständige Untereinheiten bekommen ihre eigene Karte. Ob eine
     // Unter-Auswahl eine ist, sagt der Bericht (`capability.isIndependentSubUnit`,
     // Issue 0156) — die Spielansicht löst dafür keinen Katalog-Eintrag auf.
-    const subUnits = childSelectionsOf(selection).filter(subSelection =>
+    const subUnits = subSelectionsOf(selection).filter(subSelection =>
       slots.isIndependentSubUnitSlot(subSelection));
 
     // Der Fähigkeitsdatensatz des Slots dieser Auswahl (ADR-0034): direkt

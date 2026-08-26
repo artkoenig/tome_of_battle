@@ -5,7 +5,7 @@ import SelectionConfigurator from '../../ui/components/editor/SelectionConfigura
 import OptionGroup from '../../ui/components/editor/OptionGroup';
 import { UnitUpgradesChips, UnitRulesChips } from '../../ui/components/editor/UnitChips';
 import PlayUnitDetails from '../../ui/components/play/PlayUnitDetails';
-import { SlotIndex } from '../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../contexts/ruleengine/readmodel/index.js';
 import { RosterProviders, createEmptyRosterReport, createNoopRosterCommands } from './rosterProviders';
 
 /**

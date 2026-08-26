@@ -5,7 +5,7 @@ import {
   RosterCommandsProvider,
   RosterReportProvider,
 } from '../../ui/viewmodels/rosterContexts';
-import { SlotIndex } from '../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../contexts/ruleengine/readmodel/index.js';
 
 /**
  * Test-Wrapper für die zwei Roster-Kontexte (ADR-0038, Issue 0162).
@@ -43,7 +43,7 @@ export function createEmptyRosterReport(overrides = {}) {
 export function createNoopRosterCommands(overrides = {}) {
   const noop = () => {};
   return {
-    addUnit: noop,
+    raiseUnit: noop,
     removeUnit: noop,
     copyUnit: noop,
     subSelectionOperations: {

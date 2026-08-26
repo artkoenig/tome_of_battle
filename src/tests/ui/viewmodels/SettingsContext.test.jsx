@@ -5,7 +5,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 const mockGetWhfb6LinkingEnabled = vi.fn();
 const mockSetWhfb6LinkingEnabled = vi.fn();
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   WHFB6_LINKING_DEFAULT: true,
   getWhfb6LinkingEnabled: () => mockGetWhfb6LinkingEnabled(),
   setWhfb6LinkingEnabled: (value) => mockSetWhfb6LinkingEnabled(value),

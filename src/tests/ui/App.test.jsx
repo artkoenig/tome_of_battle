@@ -2,8 +2,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App from '../../ui/App';
-import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from '../../data/db/database';
-import { runSystemMigrations } from '../../data/db/migrations';
+import { getAllSystems, getAllRosters, saveRoster, deleteRoster } from '../../platform/persistence/database';
+import { runSystemMigrations } from '../../platform/persistence/migrations';
 
 // Mock Lucide Icons
 vi.mock('lucide-react', () => ({
@@ -23,18 +23,24 @@ vi.mock('lucide-react', () => ({
 
 
 // Mock DB and Migrations
-vi.mock('../../data/db/database', () => ({
+vi.mock('../../platform/persistence/database', () => ({
   getAllSystems: vi.fn().mockResolvedValue([]),
   getAllRosters: vi.fn().mockResolvedValue([]),
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
+  getGameForRoster: vi.fn().mockResolvedValue(undefined),
+  saveGame: vi.fn().mockResolvedValue(undefined),
+  deleteGamesOfRoster: vi.fn().mockResolvedValue(undefined),
   getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
   setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
   WHFB6_LINKING_DEFAULT: true,
 }));
 
-vi.mock('../../data/db/migrations', () => ({
+vi.mock('../../platform/persistence/migrations', () => ({
   runSystemMigrations: vi.fn((systems) => Promise.resolve({ systems: systems || [], failures: [] })),
+  // Der Startlauf hebt seit Issue 0190 zusaetzlich den alten `gameState` in den
+  // `games`-Store; hier hat er nichts zu tun.
+  runGameStateMigration: vi.fn().mockResolvedValue({ movedGames: 0, cleanedRosters: 0 }),
 }));
 
 // Mock child components. The Importer mock exposes a button that invokes the

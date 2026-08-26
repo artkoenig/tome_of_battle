@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { loadSystems } from '../../domain/services/systemLibrary';
-import { loadRosters } from '../../domain/services/rosterStore';
-import { refreshSystems } from '../../domain/services/catalogRevisions';
-import { DATA_EVENT, subscribeToDataChanges } from '../../domain/services/dataEvents';
+import { loadSystems } from '../../contexts/catalog/application/systemLibrary';
+import { loadRosters } from '../../contexts/armylist/application/rosterStore';
+import { migrateStoredGames } from '../../contexts/play';
+import { refreshSystems } from '../../contexts/catalog/application/catalogRevisions';
+import { DATA_EVENT, subscribeToDataChanges } from '../../shared/events/dataEvents';
 import { VIEWS } from '../../ui/constants/views';
 import { t } from '../i18n/i18nStore';
 
@@ -33,7 +34,7 @@ const LOAD_DATA_ERROR_KEY = 'appData.loadFailed';
  */
 const NO_SYSTEMS = [];
 
-/** @type {import('../../domain/types.js').Roster[]} */
+/** @type {import('../../shared/rostermodel/types.js').Roster[]} */
 const NO_ROSTERS = [];
 
 /**
@@ -106,6 +107,10 @@ export default function useAppData({ showToast, navigate }) {
   // gespeicherten Kataloge neu.
   const runStartupLoad = async () => {
     try {
+      // Vor dem ersten Lesen: der `gameState` alter Roster wandert in den
+      // `games`-Store (Issue 0190). Danach traegt kein gelesenes Roster ihn
+      // mehr, und eine gezaehlte Partie ist nicht verloren.
+      await migrateStoredGames();
       const dbSystems = await loadLocalData();
       await refreshCatalogInBackground(dbSystems);
     } catch (e) {
@@ -154,7 +159,7 @@ export default function useAppData({ showToast, navigate }) {
   }, []);
 
   // Die eine Verdrahtung des Änderungs-Kanals der Datenschicht (ADR-0037,
-  // Issue 0167). Wer über `src/domain/services/` schreibt, meldet den Abschluss; hier
+  // Issue 0167). Wer über eine `application`-Schicht schreibt, meldet den Abschluss; hier
   // — und nur hier — zieht die App ihre Liste nach. Vorher erfuhr die
   // Roster-Liste einen im Editor gespeicherten Stand erst durch das
   // `reloadData` eines Navigationswechsels.

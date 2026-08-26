@@ -86,7 +86,7 @@ describe('project-state/complexity', () => {
     const files = [
       { path: 'src/solver/a.js', source: 'function a(x) { return x && x; }' }, // 2
       { path: 'src/solver/b.js', source: 'function b(x) { if (x) {} return x ? 1 : 2; }' }, // 3
-      { path: 'src/data/parser/c.js', source: 'function c() { return 1; }' }, // 1
+      { path: 'src/platform/battlescribe/c.js', source: 'function c() { return 1; }' }, // 1
     ];
 
     it('aggregates total, average, MI and SIG risk profiles per module and overall', () => {
@@ -109,7 +109,7 @@ describe('project-state/complexity', () => {
 
     it('sorts modules by total complexity descending', () => {
       const names = aggregateComplexity(files).modules.map((entry) => entry.module);
-      expect(names).toEqual(['src/solver', 'src/data/parser']);
+      expect(names).toEqual(['src/solver', 'src/platform/battlescribe']);
     });
 
     it('lists the most complex functions across all files, capped', () => {

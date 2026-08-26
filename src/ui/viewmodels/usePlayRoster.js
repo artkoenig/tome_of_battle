@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { saveRoster } from '../../domain/services/rosterStore';
-import { findForceEntryById, childSelectionsOf } from '../../domain/roster';
-import { useEvaluation } from '../../domain/evaluation/useEvaluation';
-import { costLimitTypeIdOf, extraResourceTotalsOf } from '../../domain/evaluation/costDisplays';
+import { forceCategoriesOf } from '../../contexts/armylist/acl';
+import { findForceEntryById, unitsOfForce } from '../../contexts/armylist/model';
+import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
 import { useRuleUrl } from './useRuleUrl';
 import { useTranslation } from '../i18n/useTranslation';
@@ -38,24 +37,23 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
     slots.slotOfSelection(selection)?.isListRule !== true;
 
   (roster?.forces ?? []).forEach(force => {
-    const forceDef = findForceEntryById(system, force.forceEntryId);
-    const categoryLinks = forceDef?.categoryLinks || [];
+    const categories = forceCategoriesOf(system, force.forceEntryId);
 
-    categoryLinks.forEach(link => {
-      const selections = childSelectionsOf(force)
-        .filter(s => s.category === link.targetId && isBattlefieldSelection(s));
+    categories.forEach(category => {
+      const selections = unitsOfForce(force)
+        .filter(s => s.category === category.id && isBattlefieldSelection(s));
       if (selections.length === 0) return;
 
-      const categoryDef = system?.categoryEntries?.find(entry => entry.id === link.targetId);
       groups.push({
-        id: `${force.id}-${link.targetId}`,
-        name: categoryDef ? categoryDef.name : link.name || t('play.unknownCategory'),
+        id: `${force.id}-${category.id}`,
+        name: category.name || t('play.unknownCategory'),
         selections: sortedByCostDescending(selections),
       });
     });
 
-    const matchedCategoryIds = new Set(categoryLinks.map(link => link.targetId));
-    const uncategorized = childSelectionsOf(force)
+    /** @type {Set<string|null>} */
+    const matchedCategoryIds = new Set(categories.map(category => category.id));
+    const uncategorized = unitsOfForce(force)
       .filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
     if (uncategorized.length > 0) {
       groups.push({
@@ -87,15 +85,19 @@ const NO_RULE_DIALOG = null;
  */
 export function usePlayRoster({ system, initialRoster, onReportError }) {
   const { t, language } = useTranslation();
-  const [roster, setRoster] = useState(initialRoster);
+  // Die Liste steht im Spielmodus still: seit Issue 0190 schreibt keine Wunde
+  // mehr in sie, also gibt es hier auch keinen Setzer mehr. Der Zustand haelt
+  // die Identitaet fest, an der der Auswertungs-Cache haengt.
+  const [roster] = useState(initialRoster);
   const [saveSummaryOpen, setSaveSummaryOpen] = useState(false);
   const [saveSummaryData, setSaveSummaryData] = useState({ title: '', breakdown: [] });
   const [tooltipState, setTooltipState] = useState(EMPTY_TOOLTIP);
   const [activeRuleDialog, setActiveRuleDialog] = useState(NO_RULE_DIALOG);
 
   const report = useEvaluation(system, roster);
-  const { getUnitCurrentWounds, handleAdjustWound } =
-    usePlayState(initialRoster, setRoster, saveRoster, onReportError);
+  // Die Partie liegt seit Issue 0190 im Kontext `play`: der Hook schreibt sie
+  // dort, nicht in das Roster — die Liste wird hier nur gelesen.
+  const { getUnitCurrentWounds, handleAdjustWound } = usePlayState(roster, onReportError);
 
   // Zentraler Auflöser der whfb6-Verknüpfung (ADR-0015): eine URL nur, wenn die
   // Verknüpfung eingeschaltet ist und eine Zuordnung existiert.

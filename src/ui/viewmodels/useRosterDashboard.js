@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { findForceEntryById } from '../../domain/roster';
-import { evaluateAppRoster, describeSystem } from '../../domain/evaluation/evaluationCache';
-import { costLimitLabelOf } from '../../domain/evaluation/costDisplays';
+import { findForceEntryById } from '../../contexts/armylist/model';
+import { evaluateAppRoster, describeSystem, costLimitLabelOf } from '../../contexts/ruleengine/readmodel/index.js';
 import { useTranslation } from '../i18n/useTranslation';
 
 /**

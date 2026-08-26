@@ -12,12 +12,12 @@ vi.mock('lucide-react', () => ({
 const mockGroupProfilesByType = vi.fn(() => []);
 
 // Die Komponente liest ihre Struktur-Helfer seit Issue 0121 (Task 8) aus dem
-// Schreibmodell src/domain/roster/ — gemockt wird dessen Sammel-Modul.
-vi.mock('../../../../domain/roster', async () => ({
+// Schreibmodell src/contexts/armylist/model/ — gemockt wird dessen Sammel-Modul.
+vi.mock('../../../../contexts/armylist/model', async () => ({
   // Reine Ableitung aus Roster und System — die echte Implementierung durchreichen,
   // damit der Test die tatsächlich verwendete Kostenart-id sieht.
-  resolveCostLimitTypeId: (await vi.importActual('../../../../domain/roster/costTypeLabels')).resolveCostLimitTypeId,
-  resolveCostLimitLabel: (await vi.importActual('../../../../domain/roster/costTypeLabels')).resolveCostLimitLabel,
+  resolveCostLimitTypeId: (await vi.importActual('../../../../contexts/armylist/model/costTypeLabels')).resolveCostLimitTypeId,
+  resolveCostLimitLabel: (await vi.importActual('../../../../contexts/armylist/model/costTypeLabels')).resolveCostLimitLabel,
   findEntryInSystem: vi.fn(() => null),
   resolveEntry: vi.fn(() => null),
   collectUnitProfilesAndRules: vi.fn(() => ({ profiles: [], rules: [] })),
@@ -29,7 +29,8 @@ vi.mock('../../../../domain/roster', async () => ({
   MODEL_COUNT_PROFILE_TYPES: [],
   // Reines Zugriffs-Primitiv auf die direkten Kind-Selections — echte
   // Implementierung durchreichen (ihre Semantik ist in rosterTree.test.js abgedeckt).
-  childSelectionsOf: (await vi.importActual('../../../../domain/roster/rosterTree')).childSelectionsOf,
+  subSelectionsOf: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).subSelectionsOf,
+  unitsOfForce: (await vi.importActual('../../../../contexts/armylist/model/rosterTree')).unitsOfForce,
 }));
 
 vi.mock('../../../../ui/components/editor/UnitChips', () => ({

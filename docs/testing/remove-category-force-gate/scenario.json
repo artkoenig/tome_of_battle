@@ -3,10 +3,10 @@
   "name": "remove-category-force-gate",
   "description": "Force-gegatteter modifier type=remove field=category (Vampire Counts, Grave Guard 92ee-2ebf-c6c0-71ff): in einer Clan-Blood-Dragons-Force entfernt die modifierGroup die Kategorie Special (43cc-...) und fuegt Core (64bf-...) hinzu (set-primary + add). Gepinnt ueber die kategoriezaehlenden Force-Grenzen der .gst: dieselben 4 Grave-Guard-Einheiten lassen in der Standard-Force Special max 3 (16f0-...) und Core min 2 (35c2-...) feuern, in der Blood-Dragons-Force keine von beiden. Nur wenn die ENTFERNUNG greift, bleibt 16f0-... im zweiten Roster stumm; nur wenn das Hinzufuegen greift, bleibt 35c2-... stumm.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

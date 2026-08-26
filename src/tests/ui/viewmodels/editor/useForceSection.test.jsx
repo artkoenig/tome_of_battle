@@ -56,7 +56,7 @@ describe('useForceSection', () => {
   it('nennt die Kategorie-Verweise der Kontingent-Definition', () => {
     const { result } = renderForce();
 
-    expect(result.current.categoryLinks.map(link => link.targetId))
+    expect(result.current.categories.map(category => category.id))
       .toEqual(['cat-core', 'cat-heroes']);
   });
 
@@ -70,7 +70,7 @@ describe('useForceSection', () => {
       }),
     });
 
-    expect(result.current.categoryLinks).toEqual([]);
+    expect(result.current.categories).toEqual([]);
     expect(result.current.armyWideEntries).toEqual([]);
   });
 

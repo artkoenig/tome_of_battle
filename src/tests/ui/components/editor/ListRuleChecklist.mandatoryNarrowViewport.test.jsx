@@ -66,7 +66,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 const mockGetRuleUrl = vi.fn();
-vi.mock('../../../../domain/rules/rulesLookup', () => ({
+vi.mock('../../../../contexts/rulebook/rulesLookup', () => ({
   getRuleUrl: (name) => mockGetRuleUrl(name),
 }));
 
@@ -81,7 +81,7 @@ const baseProps = {
   categoryId: 'cat-rules',
   roster: { costLimitType: 'pts' },
   force: { id: 'f1', selections: [] },
-  addUnit: vi.fn(),
+  raiseUnit: vi.fn(),
   removeUnit: vi.fn(),
   subSelectionOperations: createSubSelectionOperationsMock(),
   costTypeLabel: 'Pkt.',
@@ -247,8 +247,8 @@ describe('ListRuleChecklist — mandatory rows on a narrow viewport (Issue 0138,
 
       fireEvent.click(checkbox);
 
-      expect(baseProps.addUnit).toHaveBeenCalledTimes(1);
-      expect(baseProps.addUnit).toHaveBeenCalledWith(
+      expect(baseProps.raiseUnit).toHaveBeenCalledTimes(1);
+      expect(baseProps.raiseUnit).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'e-mandatory' }),
         'cat-rules'
       );

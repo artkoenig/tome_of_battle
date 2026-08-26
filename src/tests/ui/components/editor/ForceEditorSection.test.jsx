@@ -4,11 +4,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ForceEditorSectionHarness as ForceEditorSection } from '../../../../tests/test-utils/harnesses/ForceEditorSectionHarness';
 
 
-vi.mock('../../../../domain/roster', () => ({
+vi.mock('../../../../contexts/armylist/model', () => ({
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: { 'force-1': { 'cat-core': 2 } } }),
   findForceEntryById: (system, id) => system?.forceEntries?.find(fe => fe.id === id) || null,
   findEntryInSystem: (_system, entryId) => ({ id: entryId }),
-  childSelectionsOf: (force) => force.selections || []
+  unitsOfForce: (force) => force.selections || []
 }));
 
 // Welche Pflicht keine Kategorie des Kontingents anbietet, sagt seit Issue 0156
@@ -41,13 +41,13 @@ vi.mock('../../../../ui/components/editor/AutoFillSuggestions', () => ({
   )
 }));
 vi.mock('../../../../ui/components/editor/RosterCategorySection', () => ({
-  default: ({ categoryLink, force, ruleGroup }) => (
+  default: ({ category, force, ruleGroup }) => (
     <div
-      data-testid={`category-${categoryLink.targetId}`}
+      data-testid={`category-${category.id}`}
       data-expanded={String(ruleGroup?.isExpanded)}
       data-force-id={force.id}
     >
-      <button data-testid={`toggle-${categoryLink.targetId}`} onClick={ruleGroup?.onToggle}>
+      <button data-testid={`toggle-${category.id}`} onClick={ruleGroup?.onToggle}>
         Umschalten
       </button>
     </div>
@@ -65,7 +65,8 @@ vi.mock('../../../../ui/components/editor/UnitCardList', () => ({
 const system = {
   forceEntries: [{
     id: 'fe-1',
-    categoryLinks: [{ targetId: 'cat-core', name: 'Core' }, { targetId: 'cat-heroes', name: 'Heroes' }]
+    categoryLinks: [{ id: 'cl-core', targetId: 'cat-core', name: 'Core' },
+      { id: 'cl-hero', targetId: 'cat-heroes', name: 'Heroes' }]
   }]
 };
 
@@ -87,7 +88,7 @@ const renderForce = (props = {}) => render(
     capabilities={new Map()}
     pathBySelectionId={new Map()}
     costTypeLabel="Pkt."
-    addUnit={vi.fn()}
+    raiseUnit={vi.fn()}
     removeUnit={vi.fn()}
     subSelectionOperations={{}}
     unitCardContext={{}}
@@ -105,7 +106,7 @@ describe('ForceEditorSection', () => {
     vi.clearAllMocks();
   });
 
-  it('rendert je Kategorie-Verknüpfung des Kontingents eine Sektion und den Lagerbericht', () => {
+  it('rendert je Kategorie des Kontingents eine Sektion und den Lagerbericht', () => {
     renderForce();
 
     expect(screen.getByTestId('category-cat-core')).toBeDefined();

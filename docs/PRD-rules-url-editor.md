@@ -7,7 +7,7 @@
 
 ## Problem Statement
 
-Die Dateien `src/data/rules/rules-index.json` (845 Einträge) und `src/data/rules/synonyms.js` (~12 Einträge) werden aktuell manuell editiert – entweder direkt im Code oder per Crawl-Skript (`scripts/generate-rules-index.js`). Es gibt keine GUI zum Begutachten, Suchen, Ergänzen oder Korrigieren der URL-Mappings oder Synonyme. Jeder Eingriff erfordert einen Editor, Kenntnis der Dateiformate und manuelles JSON-Hantieren.
+Die Dateien `src/contexts/rulebook/rules-index.json` (845 Einträge) und `src/contexts/rulebook/synonyms.js` (~12 Einträge) werden aktuell manuell editiert – entweder direkt im Code oder per Crawl-Skript (`scripts/generate-rules-index.js`). Es gibt keine GUI zum Begutachten, Suchen, Ergänzen oder Korrigieren der URL-Mappings oder Synonyme. Jeder Eingriff erfordert einen Editor, Kenntnis der Dateiformate und manuelles JSON-Hantieren.
 
 ## Solution
 
@@ -48,8 +48,8 @@ tools/rules-editor/
 
 - `tools/rules-editor/server.js` (neu) – Server-Tool
 - `tools/rules-editor/index.html` (neu) – Editor-UI
-- `src/data/rules/rules-index.json` (bestehend, wird vom Editor gelesen/geschrieben)
-- `src/data/rules/synonyms.js` (bestehend, wird vom Editor gelesen/geschrieben)
+- `src/contexts/rulebook/rules-index.json` (bestehend, wird vom Editor gelesen/geschrieben)
+- `src/contexts/rulebook/synonyms.js` (bestehend, wird vom Editor gelesen/geschrieben)
 - `scripts/rules-crawler.js` (neu) – Crawl-Logik als Modul mit injizierbarem Fetch
   und Event-Ausgabe; enthält keine CLI-, Server- oder Dateisystem-Belange
 - `scripts/generate-rules-index.js` (bestehend, wird vom Server aufgerufen) –
@@ -112,7 +112,7 @@ Der Server startet über `node tools/rules-editor/server.js`, öffnet automatisc
   fehlgeschlagener Lauf, sowie das Beibehalten der Einträge fehlgeschlagener
   Sections beim Schreiben.
 - **Manuelle Smoke-Tests**: Server starten, Editor im Browser öffnen, Daten lesen, Eintrag ändern, speichern, Datei prüfen, Crawl ausführen.
-- **Seam für manuelle Prüfung**: `git diff src/data/rules/rules-index.json src/data/rules/synonyms.js` vor/nach Editor-Operationen.
+- **Seam für manuelle Prüfung**: `git diff src/contexts/rulebook/rules-index.json src/contexts/rulebook/synonyms.js` vor/nach Editor-Operationen.
 
 ## Out of Scope
 

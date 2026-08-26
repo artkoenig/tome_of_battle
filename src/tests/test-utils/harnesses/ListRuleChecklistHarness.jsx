@@ -56,7 +56,7 @@ const reportFromListRuleStates = (states, categoryId, forcePath) => {
 /** `ListRuleChecklist` mit dem Prop-Satz von vor Issue 0164. */
 export function ListRuleChecklistHarness({
   system, activeCatalogue, categoryId, roster, states, forcePath = '0',
-  addUnit, removeUnit, subSelectionOperations, costTypeLabel, costLimitType,
+  raiseUnit, removeUnit, subSelectionOperations, costTypeLabel, costLimitType,
   capabilities: _capabilities, pathBySelectionId: _pathBySelectionId, force: _force,
   ...checklistProps
 }) {
@@ -83,7 +83,7 @@ export function ListRuleChecklistHarness({
     },
     activeCatalogue,
     commands: {
-      addUnit: (entry, cat) => addUnit?.(entry, cat),
+      raiseUnit: (entry, cat) => raiseUnit?.(entry, cat),
       removeUnit,
       subSelectionOperations,
     },

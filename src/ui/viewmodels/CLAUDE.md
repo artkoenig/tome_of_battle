@@ -15,7 +15,7 @@ directory: `forge-test --run src/ui/viewmodels`; a single file:
 ## Conventions
 
 - Test titles (the `describe`/`it` strings) are English in this directory
-  (unlike `src/domain/roster`/`src/domain/evaluator`, which use German) — follow the
+  (unlike `src/contexts/armylist/model`/`src/contexts/ruleengine/engine`, which use German) — follow the
   sibling test files. Code comments are English.
 - Naming: `useX.test.js` for a hook's own unit tests; `useX.<topic>.test.js`
   for a case that isolates one topic through the hook's public surface.

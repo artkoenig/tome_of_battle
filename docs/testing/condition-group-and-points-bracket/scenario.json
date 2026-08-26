@@ -3,10 +3,10 @@
   "name": "condition-group-and-points-bracket",
   "description": "conditionGroup type=and (Top-Level, ein Gruppe je Modifikator): eine and-Gruppe haelt genau dann, wenn ALLE ihre Mitglieder halten — ein einziges falsches Mitglied besiegt die Gruppe und der gebundene set-Modifikator greift nicht. Getestet an der Punktebracket-Leiter der Core-Pflicht der .gst (Kategorie Core 64bf-efb4-9978-26df, Grenze 35c2-d478-392a-aeb1, Basis min 2, scope=force): drei identisch leere Vampire-Counts-Kontingente, die sich NUR im eingestellten Roster-costLimit unterscheiden. 1000 pts: beide Bracket-Gruppen falsch (das atLeast-2000-Mitglied besiegt die 2000er-Gruppe) -> Grenze bleibt 2. 2500 pts: alle drei Mitglieder der 2000er-Gruppe wahr -> set 3. 3000 pts: das lessThan-3000-Mitglied besiegt die 2000er-Gruppe, waehrend die 3000er-Gruppe vollstaendig haelt -> set 4.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

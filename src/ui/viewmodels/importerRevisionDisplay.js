@@ -1,4 +1,4 @@
-import { deriveRevisionState, REVISION_STATE } from '../../domain/services/catalogRevisions';
+import { deriveRevisionState, REVISION_STATE } from '../../contexts/catalog/application/catalogRevisions';
 import { t as translate } from '../i18n/i18nStore';
 
 /**

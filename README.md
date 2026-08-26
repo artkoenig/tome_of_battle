@@ -26,7 +26,7 @@ like a native app.
   (`.ros` / `.rosz`) can be imported too.
 - **Build army lists** — add units, pick upgrades and options, watch point costs
   update as you go.
-- **Real-time validation** — a clean-room rules engine (`src/domain/evaluator/`) checks
+- **Real-time validation** — a clean-room rules engine (`src/contexts/ruleengine/engine/`) checks
   point limits, category limits and entry constraints on every change.
 - **Play mode** — track rounds, victory points, command points and wounds during
   a game.
@@ -75,22 +75,27 @@ screenshots of every main view to `.screenshots/`.
 
 Data flows **BattleScribe XML → IndexedDB → in-memory roster state**:
 
-- `src/data/parser/` — extracts the ZIP archive and translates the catalog XML into a
+- `src/platform/battlescribe/` — extracts the ZIP archive and translates the catalog XML into a
   structured game system.
-- `src/data/db/` — the only place that touches IndexedDB (`systems`, `rosters`,
+- `src/platform/persistence/` — the only place that touches IndexedDB (`systems`, `rosters`,
   `settings`), including migrations of older data.
-- `src/domain/roster/` — the write model: creates, resolves and rewrites selection trees,
+- `src/contexts/armylist/model/` — the write model: creates, resolves and rewrites selection trees,
   independent of React. Structural only; it does not judge a roster.
-- `src/domain/evaluator/` — the rules engine, hard-isolated from the write model and
+- `src/contexts/ruleengine/engine/` — the rules engine, hard-isolated from the write model and
   reached only through its facade `evaluate({ gameSystem, catalogues }, roster) → report`.
   Pure function with its own parser, data model and report.
-- `src/domain/evaluation/` — the bridge that feeds the report into the UI.
+- `src/contexts/ruleengine/acl/` and `readmodel/` — the bridge that feeds the report into the
+  UI, behind the single entry point `readmodel/index.js`.
+- `src/contexts/armylist/application/` and `src/contexts/catalog/application/` — the two data
+  facades the UI calls. They reach `src/platform/` only through their port
+  (`armylist/ports/storagePort.js`, `catalog/ports/catalogRepository.js`); no other module under
+  `src/contexts/` may name the platform.
 - `src/ui/components/`, `App.jsx` — the views (`rosters`, `importer`, `builder`,
   `play`), switched without a router; responsive above a 900px breakpoint.
 
 A `Roster` holds forces, which hold a recursive tree of selections. A selection
 references its catalog definition by ID instead of copying it; definitions are
-resolved at runtime. Types are documented as JSDoc in `src/domain/types.js`.
+resolved at runtime. Types are documented as JSDoc in `src/shared/rostermodel/types.js`.
 
 Further reading: [`docs/project-map.md`](docs/project-map.md) (where everything
 lives), [`docs/adr/`](docs/adr/) (architecture decisions),

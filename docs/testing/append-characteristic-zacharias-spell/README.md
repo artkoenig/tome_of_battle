@@ -4,7 +4,7 @@
 Erwartungstexte sind **ausschliesslich** aus den Katalogdaten der *6th Definitive
 Edition*, aus der Formatspezifikation
 ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md), §7.3 / §7.7)
-und aus der vendorten [`Catalogue.xsd`](../../../src/data/parser/schema/Catalogue.xsd)
+und aus der vendorten [`Catalogue.xsd`](../../../src/platform/battlescribe/schema/Catalogue.xsd)
 abgeleitet; das Roster-Format ist an den bereits verifizierten Szenarien
 (direktes `entryId`, `entryLinkId`, `entryGroupId` an Gruppen-Mitgliedern,
 verschachtelte `selections` mit `number`) nachgebildet.
@@ -124,7 +124,7 @@ Der zweite `append` (Z. 27118) lautet vollstaendig:
 |--------|--------|
 | [`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md) §7.7 | Die Attributtabelle des `modifier` kennt `type`, `field`, `value`, `join`. `position` kommt im ganzen Dokument nicht vor. |
 | BSData-Catalogue-Development-Wiki (Submodul) | Ein einziger Treffer fuer „position", und der steht im *Data-Admin-Guide* ueber die alphabetische Einsortierung eines Repository-Links — nichts zum Datenformat. |
-| Vendorte [`Catalogue.xsd`](../../../src/data/parser/schema/Catalogue.xsd) | `complexType "Modifier"` (Z. 482–495) deklariert **genau vier** Attribute: `type`, `field`, `value` (alle `use="required"`) und das laut ADR 0016 bewusst ergaenzte `join` (`use="optional"`). Es gibt **kein** `anyAttribute`. Das Element ist damit gegen die Konformitaetsquelle schema-**ungueltig**; der Schema-Schritt ist laut §2 beratend und blockiert den Import nicht. |
+| Vendorte [`Catalogue.xsd`](../../../src/platform/battlescribe/schema/Catalogue.xsd) | `complexType "Modifier"` (Z. 482–495) deklariert **genau vier** Attribute: `type`, `field`, `value` (alle `use="required"`) und das laut ADR 0016 bewusst ergaenzte `join` (`use="optional"`). Es gibt **kein** `anyAttribute`. Das Element ist damit gegen die Konformitaetsquelle schema-**ungueltig**; der Schema-Schritt ist laut §2 beratend und blockiert den Import nicht. |
 | Die Fixture-Kataloge selbst | `position` als Attribut kommt in allen fuenf Datendateien **genau einmal** vor: in dieser Zeile. Es gibt keine zweite Fundstelle, aus der sich die Bedeutung durch Vergleich erschliessen liesse. |
 
 ### Der Entscheid (2026-08-11)

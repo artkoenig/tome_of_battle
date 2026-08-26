@@ -24,8 +24,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { RosterCategorySectionHarness as RosterCategorySection } from '../../../../tests/test-utils/harnesses/RosterCategorySectionHarness';
-import { prepareDataset, evaluate } from '../../../../domain/evaluator/evaluator.js';
-import { toEvaluatorRoster } from '../../../../domain/evaluation/rosterAdapter.js';
+import { prepareDataset, evaluate } from '../../../../contexts/ruleengine/evaluator.js';
+import { toEvaluatorRoster } from '../../../../contexts/ruleengine/acl/rosterAdapter.js';
 
 vi.mock('lucide-react', () => ({
   ChevronDown: () => <span data-testid="icon-chevron-down" />,
@@ -50,7 +50,7 @@ const getCategoryDisplayLimitsSpy = vi.fn(() => ({
 }));
 const formatConstraintLimitSpy = vi.fn((value) => `POISON${value}`);
 
-vi.mock('../../../../domain/roster', async (importOriginal) => ({
+vi.mock('../../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   getCategoryDisplayLimits: (...args) => getCategoryDisplayLimitsSpy(...args),
   formatConstraintLimit: (...args) => formatConstraintLimitSpy(...args),
@@ -181,11 +181,11 @@ function categoryAnchorOf(capabilities, categoryId) {
   return undefined;
 }
 
-function renderSection(categoryLink, { capabilities, pathBySelectionId }) {
+function renderSection(category, { capabilities, pathBySelectionId }) {
   const roster = appRoster();
   return render(
     <RosterCategorySection
-      categoryLink={categoryLink}
+      category={category}
       force={roster.forces[0]}
       forcePath={FORCE_PATH}
       forceDef={null}
@@ -198,7 +198,7 @@ function renderSection(categoryLink, { capabilities, pathBySelectionId }) {
       selectionCounts={{}}
       forceCategoryCounts={{}}
       costTypeLabel="Pkt"
-      addUnit={vi.fn()}
+      raiseUnit={vi.fn()}
       removeUnit={vi.fn()}
       subSelectionOperations={{}}
       unitCardContext={{}}
@@ -209,8 +209,8 @@ function renderSection(categoryLink, { capabilities, pathBySelectionId }) {
   );
 }
 
-const SPECIAL_LINK = { id: 'cl-special', targetId: CATEGORY_SPECIAL, name: 'Special' };
-const OPEN_LINK = { id: 'cl-open', targetId: CATEGORY_OPEN, name: 'Open' };
+const SPECIAL_LINK = { id: CATEGORY_SPECIAL, name: 'Special', anchorIds: [CATEGORY_SPECIAL, 'cl-special'] };
+const OPEN_LINK = { id: CATEGORY_OPEN, name: 'Open', anchorIds: [CATEGORY_OPEN, 'cl-open'] };
 
 const badgeTextOf = (container) =>
   container.querySelector('span.badge')?.textContent.replace(/\s+/g, ' ').trim();

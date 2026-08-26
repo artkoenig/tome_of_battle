@@ -1,126 +1,270 @@
 {
-  "forbidden": [
-    {
-      "name": "schichtung-parser-kein-rueckgriff",
-      "severity": "error",
-      "from": "src/data/parser/**",
-      "to": "src/ui/components/**"
-    },
-    {
-      "name": "ableitungen-nur-in-viewmodels",
-      "severity": "error",
-      "from": "src/ui/components/**",
-      "to": "anzeige-ableitungen"
-    },
-    {
-      "name": "viewmodel-keine-komponente",
-      "severity": "error",
-      "from": "src/ui/viewmodels/**",
-      "to": "src/ui/components/**"
-    },
-    {
-      "name": "komponente-kein-bericht",
-      "severity": "error",
-      "from": "src/ui/components/**",
-      "to": "src/domain/evaluation/**"
-    },
-    {
-      "name": "komponente-kein-bericht",
-      "severity": "error",
-      "from": "src/ui/components/**",
-      "to": "src/domain/evaluator/**"
-    },
-    {
-      "name": "viewmodel-keine-datenschicht",
-      "severity": "error",
-      "from": "src/ui/viewmodels/**",
-      "to": "daten"
-    },
-    {
-      "name": "ui-nicht-auf-daten",
-      "severity": "error",
-      "from": "src/ui/**",
-      "to": "daten"
-    },
-    {
-      "name": "daten-kein-rueckgriff",
-      "severity": "error",
-      "from": "daten",
-      "to": "src/ui/**"
-    },
-    {
-      "name": "daten-kein-rueckgriff",
-      "severity": "error",
-      "from": "daten",
-      "to": "src/domain/**"
-    },
-    {
-      "name": "fachlogik-kein-rueckgriff",
-      "severity": "error",
-      "from": "src/domain/**",
-      "to": "ui"
-    },
-    {
-      "name": "keine-i18n-unter-ui",
-      "severity": "error",
-      "from": "src/domain/**",
-      "to": "i18n"
-    },
-    {
-      "name": "keine-i18n-unter-ui",
-      "severity": "error",
-      "from": "daten",
-      "to": "i18n"
-    },
-    {
-      "name": "evaluator-keine-roster-abhaengigkeit",
-      "severity": "error",
-      "from": "src/domain/evaluator/**",
-      "to": "src/domain/roster/**"
-    },
-    {
-      "name": "roster-keine-evaluator-abhaengigkeit",
-      "severity": "error",
-      "from": "src/domain/roster/**",
-      "to": "src/domain/evaluator/**"
-    },
-    {
-      "name": "roster-keine-evaluation-abhaengigkeit",
-      "severity": "error",
-      "from": "src/domain/roster/**",
-      "to": "src/domain/evaluation/**"
-    },
-    {
-      "name": "evaluation-keine-roster-abhaengigkeit",
-      "severity": "error",
-      "from": "src/domain/evaluation/**",
-      "to": "src/domain/roster/**"
-    },
-    {
-      "name": "evaluator-nur-ueber-fassade",
-      "severity": "error",
-      "from": "**",
-      "to": "evaluator-intern"
-    }
-  ],
-  "allowed": [
-    {
-      "name": "testdateien-duerfen-schichten-verdrahten",
-      "severity": "error",
-      "from": "**/*.test.js",
-      "to": "**"
-    },
-    {
-      "name": "testdateien-duerfen-schichten-verdrahten-jsx",
-      "severity": "error",
-      "from": "**/*.test.jsx",
-      "to": "**"
-    },
-    {
-      "name": "evaluator-interne-module-unter-sich",
-      "severity": "error",
-      "from": "src/domain/evaluator/**",
-      "to": "evaluator-intern"
-    }
-  ]
+ "forbidden": [
+  {
+   "name": "schichtung-parser-kein-rueckgriff",
+   "severity": "error",
+   "from": "src/platform/battlescribe/**",
+   "to": "src/ui/**"
+  },
+  {
+   "name": "ableitungen-nur-in-viewmodels",
+   "severity": "error",
+   "from": "src/ui/components/**",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "baum-helfer-nicht-in-der-ui",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/contexts/armylist/model/rosterTree.js"
+  },
+  {
+   "name": "baum-helfer-nicht-in-der-ui",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/contexts/armylist/model/subSelectionEditing.js"
+  },
+  {
+   "name": "viewmodel-keine-komponente",
+   "severity": "error",
+   "from": "src/ui/viewmodels/**",
+   "to": "src/ui/components/**"
+  },
+  {
+   "name": "komponente-kein-bericht",
+   "severity": "error",
+   "from": "src/ui/components/**",
+   "to": "src/contexts/ruleengine/**"
+  },
+  {
+   "name": "viewmodel-keine-datenschicht",
+   "severity": "error",
+   "from": "src/ui/viewmodels/**",
+   "to": "plattform"
+  },
+  {
+   "name": "ui-nicht-auf-daten",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "plattform"
+  },
+  {
+   "name": "ui-kein-fremdformat",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/shared/battlescribe/**"
+  },
+  {
+   "name": "plattform-kein-rueckgriff",
+   "severity": "error",
+   "from": "plattform",
+   "to": "src/ui/**"
+  },
+  {
+   "name": "plattform-kein-rueckgriff",
+   "severity": "error",
+   "from": "plattform",
+   "to": "kontexte"
+  },
+  {
+   "name": "fachlogik-kein-rueckgriff",
+   "severity": "error",
+   "from": "kontexte",
+   "to": "ui"
+  },
+  {
+   "name": "keine-i18n-unter-ui",
+   "severity": "error",
+   "from": "kontexte",
+   "to": "i18n"
+  },
+  {
+   "name": "keine-i18n-unter-ui",
+   "severity": "error",
+   "from": "plattform",
+   "to": "i18n"
+  },
+  {
+   "name": "evaluator-keine-roster-abhaengigkeit",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/contexts/armylist/**"
+  },
+  {
+   "name": "roster-keine-evaluator-abhaengigkeit",
+   "severity": "error",
+   "from": "src/contexts/armylist/**",
+   "to": "src/contexts/ruleengine/**"
+  },
+  {
+   "name": "evaluation-keine-roster-abhaengigkeit",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/shared/rostermodel/**"
+  },
+  {
+   "name": "shared-haengt-an-nichts",
+   "severity": "error",
+   "from": "shared",
+   "to": "src/ui/**"
+  },
+  {
+   "name": "shared-haengt-an-nichts",
+   "severity": "error",
+   "from": "shared",
+   "to": "plattform"
+  },
+  {
+   "name": "shared-haengt-an-nichts",
+   "severity": "error",
+   "from": "shared",
+   "to": "kontexte"
+  },
+  {
+   "name": "evaluator-nur-ueber-fassade",
+   "severity": "error",
+   "from": "**",
+   "to": "evaluator-intern"
+  },
+  {
+   "name": "lesemodell-nur-ueber-fassade",
+   "severity": "error",
+   "from": "**",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-nur-ueber-fassade",
+   "severity": "error",
+   "from": "**",
+   "to": "acl"
+  },
+  {
+   "name": "kontext-kein-fremder-kontext",
+   "severity": "error",
+   "from": "kontexte",
+   "to": "kontexte"
+  },
+  {
+   "name": "kontext-nicht-auf-plattform",
+   "severity": "error",
+   "from": "kontexte",
+   "to": "plattform"
+  },
+  {
+   "name": "nur-die-acl-ruft-die-engine",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/readmodel/**",
+   "to": "evaluator-fassade"
+  }
+ ],
+ "allowed": [
+  {
+   "name": "testdateien-duerfen-schichten-verdrahten",
+   "severity": "error",
+   "from": "**/*.test.js",
+   "to": "**"
+  },
+  {
+   "name": "testdateien-duerfen-schichten-verdrahten-jsx",
+   "severity": "error",
+   "from": "**/*.test.jsx",
+   "to": "**"
+  },
+  {
+   "name": "evaluator-fassade-ruft-die-engine",
+   "severity": "error",
+   "from": "evaluator-fassade",
+   "to": "evaluator-intern"
+  },
+  {
+   "name": "evaluator-interne-module-unter-sich",
+   "severity": "error",
+   "from": "evaluator-intern",
+   "to": "evaluator-intern"
+  },
+  {
+   "name": "acl-kennt-beide-vokabulare",
+   "severity": "error",
+   "from": "acl",
+   "to": "evaluator-fassade"
+  },
+  {
+   "name": "acl-kennt-beide-vokabulare",
+   "severity": "error",
+   "from": "acl",
+   "to": "src/shared/rostermodel/**"
+  },
+  {
+   "name": "acl-interne-module-unter-sich",
+   "severity": "error",
+   "from": "acl",
+   "to": "acl"
+  },
+  {
+   "name": "acl-darf-das-lesemodell-nutzen",
+   "severity": "error",
+   "from": "acl",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-die-eine-tuer",
+   "severity": "error",
+   "from": "**",
+   "to": "readmodel-fassade"
+  },
+  {
+   "name": "lesemodell-interne-module-unter-sich",
+   "severity": "error",
+   "from": "readmodel-fassade",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-interne-module-unter-sich",
+   "severity": "error",
+   "from": "readmodel-intern",
+   "to": "readmodel-intern"
+  },
+  {
+   "name": "lesemodell-darf-die-acl-nutzen",
+   "severity": "error",
+   "from": "readmodel-fassade",
+   "to": "acl"
+  },
+  {
+   "name": "lesemodell-darf-die-acl-nutzen",
+   "severity": "error",
+   "from": "readmodel-intern",
+   "to": "acl"
+  },
+  {
+   "name": "kontext-intern-armylist",
+   "severity": "error",
+   "from": "src/contexts/armylist/**",
+   "to": "src/contexts/armylist/**"
+  },
+  {
+   "name": "kontext-intern-catalog",
+   "severity": "error",
+   "from": "src/contexts/catalog/**",
+   "to": "src/contexts/catalog/**"
+  },
+  {
+   "name": "kontext-intern-rulebook",
+   "severity": "error",
+   "from": "src/contexts/rulebook/**",
+   "to": "src/contexts/rulebook/**"
+  },
+  {
+   "name": "kontext-intern-play",
+   "severity": "error",
+   "from": "src/contexts/play/**",
+   "to": "src/contexts/play/**"
+  },
+  {
+   "name": "nur-die-ports-erreichen-die-plattform",
+   "severity": "error",
+   "from": "src/contexts/*/ports/**",
+   "to": "plattform"
+  }
+ ]
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PlayMode from '../../../ui/components/PlayMode';
@@ -31,13 +31,13 @@ vi.mock('lucide-react', () => ({
   X: () => <span data-testid="icon-x" />,
 }));
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn(),
 }));
 
 vi.mock('../../../ui/viewmodels/usePlayState', () => ({
   default: () => ({
-    gameState: { wounds: {} },
+    game: { rosterId: 'r1', round: 1, vp: 0, cp: 0, wounds: {} },
     adjustTracker: vi.fn(),
     getUnitCurrentWounds: vi.fn(),
     handleAdjustWound: vi.fn(),
@@ -46,8 +46,8 @@ vi.mock('../../../ui/viewmodels/usePlayState', () => ({
 
 // Only the rules engine is stubbed; the roster-tree primitives that the barrel
 // re-exports stay real, since they are pure traversal without any rules in them
-// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/domain/roster/).
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/contexts/armylist/model/).
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   findEntryInSystem: vi.fn(() => ({ id: 'entry' })),
   resolveEntry: vi.fn(() => ({ id: 'resolved', name: 'Resolved', profiles: [] })),
@@ -66,7 +66,7 @@ const { evaluationStub } = vi.hoisted(() => ({
   evaluationStub: { current: null },
 }));
 
-vi.mock('../../../domain/evaluation/useEvaluation', () => ({
+vi.mock('../../../contexts/ruleengine/readmodel/useEvaluation', () => ({
   useEvaluation: () => evaluationStub.current ?? {
     slots: SlotIndex.fromMaps(),
     costTotals: {},

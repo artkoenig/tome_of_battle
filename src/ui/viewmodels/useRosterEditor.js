@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { saveRoster } from '../../domain/services/rosterStore';
-import { resolveCostLimitLabel } from '../../domain/roster';
+import { saveRoster } from '../../contexts/armylist/application/rosterStore';
+import { resolveCostLimitLabel } from '../../contexts/armylist/model';
 import { useRuleUrl } from './useRuleUrl';
 import { useRosterState } from './useRosterState';
 

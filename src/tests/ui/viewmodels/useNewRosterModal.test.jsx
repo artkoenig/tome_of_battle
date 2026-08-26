@@ -10,7 +10,7 @@ import { renderHook, act } from '@testing-library/react';
  * what the evaluator derives from a catalogue.
  */
 const describeSystem = vi.fn();
-vi.mock('../../../domain/evaluation/evaluationCache', () => ({
+vi.mock('../../../contexts/ruleengine/acl/evaluationCache', () => ({
   describeSystem: (...args) => describeSystem(...args),
 }));
 

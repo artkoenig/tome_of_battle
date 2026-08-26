@@ -244,7 +244,7 @@ describe('Service worker fetch handler caching behaviour', () => {
   it('keeps the existing rules-index.json exclusion (network-only)', () => {
     const sw = instantiateServiceWorker();
 
-    const event = dispatchFetch(sw.listeners, `${APP_ORIGIN}/domain/rules-index.json`);
+    const event = dispatchFetch(sw.listeners, `${APP_ORIGIN}/contexts/rulebook/rules-index.json`);
 
     expect(event.responded).toBeUndefined();
     expect(sw.cachesOpen).not.toHaveBeenCalled();

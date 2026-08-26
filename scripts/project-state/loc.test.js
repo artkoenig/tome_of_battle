@@ -24,14 +24,14 @@ describe('project-state/loc', () => {
       const files = [
         { path: 'src/solver/points.js', source: 'a\nb\nc' },
         { path: 'src/solver/facade.js', source: 'a\nb' },
-        { path: 'src/data/parser/xml.js', source: 'a' },
+        { path: 'src/platform/battlescribe/xml.js', source: 'a' },
       ];
       const { modules, totalLines } = aggregateLoc(files);
 
       expect(totalLines).toBe(6);
       expect(modules).toEqual([
         { module: 'src/solver', fileCount: 2, lines: 5 },
-        { module: 'src/data/parser', fileCount: 1, lines: 1 },
+        { module: 'src/platform/battlescribe', fileCount: 1, lines: 1 },
       ]);
     });
 

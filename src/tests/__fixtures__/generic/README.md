@@ -6,10 +6,10 @@ parser and profile/rule bridge handle BattleScribe's `infoGroups`,
 system-agnostic (not WHFB6) so the behaviour is demonstrated on a minimal,
 readable dataset rather than production data.
 
-It is schema-valid against the vendored `src/data/parser/schema/Catalogue.xsd`:
+It is schema-valid against the vendored `src/platform/battlescribe/schema/Catalogue.xsd`:
 
 ```
-xmllint --noout --schema src/data/parser/schema/Catalogue.xsd \
+xmllint --noout --schema src/platform/battlescribe/schema/Catalogue.xsd \
   src/shared/__fixtures__/generic/generic-infogroups.cat
 ```
 

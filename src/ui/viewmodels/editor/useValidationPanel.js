@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
-import { isBlockingViolation, hasBlockingViolations, countBlockingViolations } from '../../../domain/evaluation/violationStats';
-import { extraResourceTotalsOf } from '../../../domain/evaluation/costDisplays';
+import { isBlockingViolation, hasBlockingViolations, countBlockingViolations, extraResourceTotalsOf } from '../../../contexts/ruleengine/readmodel/index.js';
 import { useRosterReport } from '../rosterContexts';
 
 /**

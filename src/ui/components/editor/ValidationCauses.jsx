@@ -10,7 +10,7 @@ import { CAUSES_TITLE_KEY, formatViolationCauses } from '../../i18n/violationMes
  * bleibt wie ohne das Feld.
  *
  * @param {{ violation?: object }} props  `violation` ist eine Verletzung aus
- *   dem Bericht der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`).
+ *   dem Bericht der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`).
  */
 export default function ValidationCauses({ violation }) {
   const { t } = useTranslation();

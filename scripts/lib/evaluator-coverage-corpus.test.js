@@ -23,8 +23,8 @@ import { extractCells, coveredKeysFromManifests, diffCells, keysFromCoveredRecor
 const RULE_KINDS = ['constraint', 'condition', 'conditionGroup', 'modifier', 'modifierGroup', 'repeat', 'repeatList'];
 
 // Das einzige Buch des Korpus, das NICHT aus Abdeckungsgruenden hier liegt
-// (Issue 0153) — siehe src/domain/evaluator/__fixtures__/whfb6-definitive/README.md.
-const HIGH_ELVES_FILE = 'src/domain/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat';
+// (Issue 0153) — siehe src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/README.md.
+const HIGH_ELVES_FILE = 'src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat';
 
 let corpus;
 let inventory;
@@ -64,7 +64,7 @@ describe('extractCells over the real corpus — occurrence totals match a plain 
   // is a real extraction bug and the grep is the arbiter — re-run it before
   // touching the extraction if this fails.
   // Issue 0148, increment 2: recomputed for the seventeen-file corpus once the
-  // seven definitive books joined src/domain/evaluator/__fixtures__/whfb6-definitive/
+  // seven definitive books joined src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/
   // — every kind moves, conditionGroup and modifierGroup included.
   // Issue 0153: recomputed again for the eighteen-file corpus, once
   // `High Elves (6th definitive edition).cat` joined for the scenario
@@ -130,7 +130,7 @@ describe('docs/testing/worklist.json — drift guard against the committed file'
     // though the specific covered/uncovered cell each resolves to changes.
     // Issue 0147, unit-test-track round: the campaign's last open cell
     // (repeat|selectionCount|parent|child=any|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false)
-    // is covered by src/domain/evaluator/modifiers.repeatParentAny.test.js, so cells
+    // is covered by src/contexts/ruleengine/engine/modifiers.repeatParentAny.test.js, so cells
     // stays 105 (the corpus is frozen) and covered/uncovered move to 105/0.
     // Issue 0148, increment 1: Dogs of War.cat added one new cell to the
     // corpus, repeat|selectionCount|parent|child=upgrade|repeats=1|s=true|ics=false|icf=false|roundUp=false|pct=false,
@@ -217,7 +217,7 @@ describe('worklist — the duplicated-id landmark resolves to the dataset-correc
     expect(cell.occurrences).toBe(2);
     expect(cell.files).toEqual({
       'src/tests/__fixtures__/whfb6/Warhammer Fantasy Battle 6th edition.gst': 1,
-      'src/domain/evaluator/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat': 1,
+      'src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/High Elves (6th definitive edition).cat': 1,
     });
 
     const manifests = loadManifests(TESTING_DIR);
@@ -368,7 +368,7 @@ describe('extractCells over the real corpus — each of the seven added definiti
     delete files[HIGH_ELVES_FILE];
 
     expect(cell.occurrences - outsideCoverageSet).toBe(occurrences);
-    expect(files).toEqual({ [`src/domain/evaluator/__fixtures__/whfb6-definitive/${file}`]: occurrences });
+    expect(files).toEqual({ [`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/${file}`]: occurrences });
   });
 });
 

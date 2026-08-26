@@ -20,7 +20,7 @@
  *   nicht.
  * - Eine als `hidden` deklarierte Kostenart bleibt AUSGESCHLOSSEN — das ist
  *   die bestehende Anzeige-Observable (gepinnt in
- *   `src/data/parser/xmlParser.staticAttributes.test.js`: „a hidden cost type is
+ *   `src/platform/battlescribe/xmlParser.staticAttributes.test.js`: „a hidden cost type is
  *   excluded from the displayed extra resources"), aus den Tests gelesen,
  *   nicht aus dem Solver-Quelltext. `description.costTypes` traegt `isHidden`.
  * - Die Anzeige-Observable bleibt `{Summe} {Klartext-Name}` im Badge der
@@ -43,7 +43,7 @@ vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
   useSettings: () => mockUseSettings(),
 }));
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn(() => Promise.resolve()),
 }));
 

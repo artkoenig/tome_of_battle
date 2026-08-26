@@ -18,7 +18,7 @@ und [`../decrement-cost-bloodline-casting-dice/`](../decrement-cost-bloodline-ca
 
 > **Nur ein Fixture-Satz.** Dieses Szenario nutzt ausschliesslich den upstream-Satz
 > `src/tests/__fixtures__/whfb6/`. Der Definitive-Edition-Satz
-> (`src/domain/evaluator/__fixtures__/whfb6-definitive/`) enthält dieselben Ids teils mit
+> (`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`) enthält dieselben Ids teils mit
 > anderen Attributen; er wird hier **nirgends** referenziert.
 
 ## Der gepinnte Mechanismus

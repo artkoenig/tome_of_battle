@@ -4,8 +4,8 @@
 > Main-Issue 19 fest; die genannten `src/solver/`-Brücken existieren nicht mehr.
 > Seit Issue 0121 bezieht die Oberfläche Verletzungen, Verfügbarkeit, Grenzen,
 > Namen, Kosten und Profile aus dem Bericht der Reinraum-Engine
-> (`src/domain/evaluator/`, Brücke `src/domain/evaluation/`); rein strukturelle Helfer leben in
-> `src/domain/roster/`. Der Bericht bleibt unverändert als Beleg, was damals geprüft
+> (`src/contexts/ruleengine/engine/`, Brücke `src/contexts/ruleengine/`); rein strukturelle Helfer leben in
+> `src/contexts/armylist/model/`. Der Bericht bleibt unverändert als Beleg, was damals geprüft
 > wurde — er ist keine Beschreibung des heutigen Codes.
 
 Systematischer, **endlicher** Abgleich jedes anzeige-relevanten BattleScribe-XSD-

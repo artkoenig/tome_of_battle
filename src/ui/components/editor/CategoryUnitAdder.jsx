@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
-import { useRecruitOffer } from '../../viewmodels/editor/useRecruitOffer';
+import { useRaiseOffer } from '../../viewmodels/editor/useRaiseOffer';
 import { useTranslation } from '../../i18n/useTranslation';
 import BottomSheet from './BottomSheet';
 
@@ -19,7 +19,7 @@ const NO_ENTRIES = null;
  * Aushebe-Dialog einer Kategorie (Issue 0121, Task 6; ADR-0035/0036).
  *
  * Seit Issue 0164 rechnet die Komponente nichts mehr: die Kandidatenliste
- * kommt fertig aus {@link useRecruitOffer} — dort steht, welche Slots ein
+ * kommt fertig aus {@link useRaiseOffer} — dort steht, welche Slots ein
  * Kategorie-Angebot ausmachen, wie sie bepreist und sortiert werden und welcher
  * Katalog-Eintrag am Aushebe-Callback hängt. Hier bleibt der Knopf, das
  * Aufklappen und die Abbildung einer Zeile auf Markup.
@@ -35,7 +35,7 @@ export default function CategoryUnitAdder({
   const [isOpen, setIsOpen] = useState(false);
   /** @type {import('react').RefObject<HTMLDivElement|null>} */
   const wrapperRef = useRef(null);
-  const { candidates, costTypeLabel } = useRecruitOffer({ forceId, forcePath, categoryId, entries });
+  const { candidates, costTypeLabel } = useRaiseOffer({ forceId, forcePath, categoryId, entries });
 
   if (candidates.length === 0) return null;
 
@@ -65,7 +65,7 @@ export default function CategoryUnitAdder({
               aria-disabled={candidate.isBlocked}
               onClick={() => {
                 if (candidate.isBlocked) return;
-                candidate.recruit();
+                candidate.raise();
                 setIsOpen(false);
               }}
             >

@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlotIndex } from '../../../domain/evaluation/slotIndex';
+import { SlotIndex } from '../../../contexts/ruleengine/readmodel/slotIndex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RosterEditor from '../../../ui/components/RosterEditor';
@@ -54,7 +54,7 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
       diagnostics: [],
     },
     commands: {
-      addUnit: vi.fn(),
+      raiseUnit: vi.fn(),
       removeUnit: vi.fn(),
       copyUnit: vi.fn(),
       subSelectionOperations: createSubSelectionOperationsMock(),
@@ -66,14 +66,14 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
   }),
 }));
 
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn(),
 }));
 
 // Only the rules engine is stubbed; the roster-tree primitives that the barrel
 // re-exports stay real, since they are pure traversal without any rules in them
-// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/domain/roster/).
-vi.mock('../../../domain/roster', async (importOriginal) => ({
+// (seit Issue 0121, Task 8 liegt das Schreibmodell unter src/contexts/armylist/model/).
+vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
   ...(await importOriginal()),
   computeRosterCounts: () => ({ selectionCounts: {}, categoryCounts: {} }),
   getModifiedConstraintValue: (constraint) => (constraint.type === 'min' ? 1 : 5),

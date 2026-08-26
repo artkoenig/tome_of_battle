@@ -3,10 +3,10 @@
   "name": "unit-scope-per-model-cost",
   "description": "Prüft den Bezugsrahmen scope=\"unit\" an einem Kostenaufschlag je Modell: Das Barding der Söldnereinheit 'Heavy Cavalry' (Mercenaries) trägt einen `increment 2`-Modifikator auf die pts-Kostenart mit `<repeat field=\"selections\" scope=\"unit\" childId=\"model\"/>` — je Modell der umschließenden Einheit kostet das Barding 2 pts mehr. Bei 5 Modellen kostet die Einheit 105 pts (95 Modelle + 10 Barding). Beobachtbar über die roster-weite Budget-Regel: Limit 100 feuert mit Ist 105, Limit 110 schweigt. Eine Engine, die den unit-Rahmen nicht auflöst, rechnet den Aufschlag 0-fach (100 pts) und lässt das Budget nicht feuern.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Ogre Kingdoms (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

@@ -37,11 +37,11 @@ describe('Zeile → Roster-Selektion (vormals optionNesting)', () => {
   };
 
   it('findet die Selektion, für die eine gewählte Zeile steht', () => {
-    expect(resolveRowSelectionId(unit, null, { id: 'el-lance' }, { id: 'el-lance' })).toBe('row-1');
+    expect(resolveRowSelectionId(unit, null, { id: 'el-lance' }, { defId: 'el-lance' })).toBe('row-1');
   });
 
   it('gibt null zurück, solange die Zeile nicht gewählt ist', () => {
-    expect(resolveRowSelectionId(unit, null, { id: 'el-shield' }, { id: 'el-shield' })).toBeNull();
+    expect(resolveRowSelectionId(unit, null, { id: 'el-shield' }, { defId: 'el-shield' })).toBeNull();
   });
 
   it('zählt eine Option im ganzen Teilbaum', () => {

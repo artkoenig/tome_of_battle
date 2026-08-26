@@ -93,7 +93,7 @@ describe('useListRuleChecklist', () => {
   });
 
   it('das Anhaken hebt die Regel in das eigene Kontingent aus, das Abhaken entfernt die Auswahl', () => {
-    const addUnit = vi.fn();
+    const raiseUnit = vi.fn();
     const removeUnit = vi.fn();
     const { result } = renderChecklist({
       capabilities: new Map([
@@ -102,11 +102,11 @@ describe('useListRuleChecklist', () => {
       ]),
       selections: [{ id: 'sel-mand' }],
       pathBySelectionId: new Map([['sel-mand', '0/1']]),
-      commands: { addUnit, removeUnit },
+      commands: { raiseUnit, removeUnit },
     });
 
     result.current.rows[0].toggle(true);
-    expect(addUnit).toHaveBeenCalledWith(
+    expect(raiseUnit).toHaveBeenCalledWith(
       { id: 'e-switch', name: 'Schalter aus dem Katalog' }, CATEGORY, 'f1');
 
     result.current.rows[1].toggle(false);

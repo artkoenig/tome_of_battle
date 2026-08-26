@@ -1,16 +1,16 @@
 ---
 paths:
-  - "src/domain/roster/**"
-  - "src/domain/evaluation/**"
-  - "src/data/db/**"
+  - "src/contexts/armylist/model/**"
+  - "src/contexts/ruleengine/**"
+  - "src/platform/persistence/**"
 ---
 
 # Write model, bridge and persistence
 
-`src/domain/roster/` builds and rewrites the selection tree. `src/domain/evaluation/` translates it for the
-evaluator. `src/data/db/` persists it in IndexedDB.
+`src/contexts/armylist/model/` builds and rewrites the selection tree. `src/contexts/ruleengine/` translates it for the
+evaluator. `src/platform/persistence/` persists it in IndexedDB.
 
-- What `src/domain/roster/` still is: catalogue resolution (`catalogResolver.js`), the selection factory
+- What `src/contexts/armylist/model/` still is: catalogue resolution (`catalogResolver.js`), the selection factory
   and sub-selection editing, the tree helpers, catalogue sync, the option **structure** collector
   (`optionsCollector.js` — membership and order, no visibility), the cost-type labels
   (`costTypeLabels.js`), the `.ros` serialization (`rosterSerialization.js`) and the roster
@@ -19,14 +19,14 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   performs any: violations, availability, costs, profiles, visibility, the static entry
   classification **and the obligation a raise carries** all come from the report (ADR-0034).
   Nothing in this folder counts a roster, evaluates a modifier or resolves a query any more.
-- `src/domain/roster/` is **structural only** — it never judges a roster (ADR 0011). A rule check that
+- `src/contexts/armylist/model/` is **structural only** — it never judges a roster (ADR 0011). A rule check that
   creeps in here duplicates the evaluator and will drift from it.
 - Gone with Issue 0157, do not resurrect: `entryVisibility.js`, `profileCollector.js`,
   `armyWideSelectors.js`, `listRules.js`, `modifierEvaluator.js`, `queryEngine.js`,
   `modifierContext.js`, and with them the whole of `rosterCounter.js` (`getSelectionOwnCosts` /
   `getSelectionTotalCost` / `computeRosterCounts` / `aggregateRosterCategoryCounts`, next to the
   earlier `getOptionDisplayCost` / `calculateRosterCosts` / `getExtraResourceTotals`). What is
-  left of that file is `costTypeLabels.js` — the cost-type id and its label, nothing else. Their answers live in `src/domain/evaluation/`
+  left of that file is `costTypeLabels.js` — the cost-type id and its label, nothing else. Their answers live in `src/contexts/ruleengine/`
   (`listRuleGroups.js`, `mandatoryListRules.js`, `costDisplays.js`, `slotIndex.js`) reading the
   report. A test that needs a roster cost total uses `evaluateAppRoster(system, roster).costTotals`.
 - The report's slot side is **one** value object since Issue 0170: `SlotIndex`
@@ -43,34 +43,56 @@ evaluator. `src/data/db/` persists it in IndexedDB.
 - `evaluate` in the evaluator facade has its own identity cache (WeakMap over
   `(prepared, evalRoster)`, `{ measure: true }` bypasses it). It does **not** help the app path:
   `toEvaluatorRoster` builds a fresh `evalRoster` per call, so `evaluationCache.js` stays the seam.
-- `src/domain/evaluation/` must not import `src/domain/roster/` (oxlint, `error`). The helper that resolves a
+- `src/contexts/ruleengine/` has **one door**: `readmodel/index.js`. `acl/` (roster ⇄ evaluator
+  translation, the memoized cache) and the other `readmodel/` modules are internal — no viewmodel,
+  component or other context may name them. The cast rule `lesemodell-nur-ueber-fassade`
+  (`.cast/rules.json`, `error` since Issue 0186) blocks it, `*.test.js`/`*.test.jsx` excepted; the
+  index itself is exempted by the `allowed` entry `lesemodell-die-eine-tuer`. A name missing
+  outside gets a re-export line in `index.js`, never a direct import. The index holds re-exports
+  only, no logic; non-test helpers such as `src/tests/test-utils/*.jsx` go through it too.
+- `src/contexts/ruleengine/` must not import `src/contexts/armylist/model/` (oxlint, `error`). The helper that resolves a
   capability back to its catalogue entry for the write path therefore lives in
-  `src/ui/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here.
+  `src/ui/viewmodels/capabilityEntries.js` (`findCapabilityEntry`/`capabilityEntryOf`), not here —
+  für den Schreibweg der Pflichtregeln löst `mandatoryListRules.js` im Listen-Kontext selbst über
+  `findEntryInSystem` auf, kontextintern statt über die Oberfläche.
 - `getUnitOptions` takes no visibility context any more: it yields raw catalogue structure and the
   caller asks the report whether a slot is hidden.
-- No import of `src/domain/evaluator/**` from `src/domain/roster/**`, in either direction; the rule is blocking
-  in `forge-lint`. Anything that needs both belongs in `src/domain/evaluation/`.
-- `src/domain/roster/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
+- No import of `src/contexts/ruleengine/engine/**` from `src/contexts/armylist/model/**`, in either direction; the rule is blocking
+  in `forge-lint`. Anything that needs both belongs in `src/contexts/ruleengine/`.
+- The **write use cases** live in `src/contexts/armylist/application/` since Issue 0188:
+  `raiseUnit.js` (`raiseUnit`, `withRaisedUnits`, `findTargetForce`), `removeUnit.js`,
+  `copyUnit.js`, `renameRoster.js`, `subSelectionUseCases.js` (`addSubSelectionInstance`,
+  `removeSubSelectionInstance`, `changeOptionCount`) and `rosterSelectionFactory.js`. Each is a
+  plain function from roster to roster; `system` and the report's `slots` are **handed in**
+  (ADR-0039) and typed as `Object`, so nothing here imports the read model. Their tests are in
+  `src/tests/contexts/armylist/application/` and render nothing.
+- The tree helpers are the write model's own tool: `childSelectionsOf`, `countSelections`,
+  `mapSelectionTree`, `replaceSelectionById` and the `with*` sub-selection operations are no
+  longer on the barrel, and `baum-helfer-nicht-in-der-ui` (`.cast/rules.json`, `error`) blocks
+  `src/ui/**` from importing `rosterTree.js`/`subSelectionEditing.js` directly. What the UI gets
+  instead are named aggregate queries — `unitsOfForce`, `subSelectionsOf`, `countOptionInstances`.
+- `src/contexts/armylist/model/index.js` is a convenience barrel, not an enforced facade — do not rely on it to hide
   a module. A re-export nobody imports makes `npm run knip` red; import from the module directly
   and drop the barrel line in the same change.
 - The folder is Fachlogik and therefore **translates nothing** (`keine-i18n-unter-ui`, `error`
   since Issue 0169). An error carries `messageKey`/`messageParams` (`MissingSystemError`,
-  `RosterFileError` from `src/domain/services/rosterTransfer.js`); `describeRosterFileError` in
+  `RosterFileError` in `src/contexts/armylist/model/rosterFileError.js`, its home since Issue 0187 instead of
+  `src/contexts/armylist/application/rosterTransfer.js`, which now imports it from here); `describeRosterFileError` in
   `src/ui/viewmodels/useRosterList.js` is the one place that formulates them. A test here asserts on the
   key, never on German text.
 - `rosterSerialization.js` gets the report **handed in** — `exportRosterToXml(roster, system, report)`
   (Issue 0174, ADR-0039) — and only produces/consumes XML **text**. Nothing under
-  `src/domain/roster/` imports `src/domain/evaluation/` any more; the cast rule
+  `src/contexts/armylist/model/` imports `src/contexts/ruleengine/` any more; the cast rule
   `roster-keine-evaluation-abhaengigkeit` (`.cast/rules.json`, `error` since Issue 0181) watches it,
   test files excepted, the same way `roster-keine-evaluator-abhaengigkeit` does. Both edges fail
   `forge-lint`: cast itself exits non-zero on them. The edge to the **evaluator** is blocking
   twice over, because the `no-restricted-imports` mirror in `.oxlintrc.json` catches it as well. The caller is `useRosterList.js`, in the UI layer,
   which calls `evaluateAppRoster(system, roster)` itself. Packing and unpacking the `.rosz` archive is file I/O and lives
-  in `src/domain/services/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
+  in `src/contexts/armylist/application/rosterTransfer.js` (`readRosterText`/`buildRosterFile`); the two are composed
   in `useRosterList.js`, because the data layer may not reach back into this one.
 - A UI behaviour model does not belong here: `classifyGroupItem`/`classifyStandaloneOption` moved
   to `src/ui/viewmodels/editor/selectionBehavior.js` with Issue 0169. The catalogue-side answers to
-  the same questions live once, in the report (`src/domain/evaluator/groupBehavior.js`).
+  the same questions live once, in the report (`src/contexts/ruleengine/engine/groupBehavior.js`).
 - Gone with Issue 0169 as well, do not resurrect: `battlescribeConstants.js` (`isCostField`,
   `isEntryScope`, `isSharedQuery`, `isRosterLimitField` — scope/shared reading is the evaluator's),
   `someSelectionInSubtree`/`countSelectionsInSubtree` und `effectiveCountOf` in `rosterTree.js`,
@@ -78,28 +100,30 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   mit der Katalog-Id als Kontext, ADR 0032), and the profile
   extractors beside `groupProfilesByType`. `rulesEvaluator.js` is now `profileGrouping.js` — the
   name says what it does, and nothing in it evaluates.
-- `evaluateAppRoster` in `src/domain/evaluation/` is the single memoized seam; adding a second call path
+- `evaluateAppRoster` in `src/contexts/ruleengine/` is the single memoized seam; adding a second call path
   into the evaluator silently defeats `evaluationCache.js`.
 - `evaluationCache.js` caches on **three** levels, all WeakMaps over object identity: the prepared
   dataset per system object, the description per prepared dataset, and the whole report per
   `(system, roster)` pair. So anything that hands the app a *new* system object — a re-parse, a
   catalog update, a fresh read from IndexedDB — throws all three away. That is why the start
   migration must not re-parse a system it has no reason to re-parse.
-- A stored system carries `parserVersion` (`src/data/parser/parserVersion.js`), stamped by
+- A stored system carries `parserVersion` (`src/platform/battlescribe/parserVersion.js`), stamped by
   `processImportedData`, i.e. on every path into the DB: file import, bundle import, catalog
   update. `runSystemMigrations` re-parses only where the marker differs from `PARSER_VERSION`, and
-  passes an up-to-date system through **by identity**. Change what `src/data/parser/` makes of the same
+  passes an up-to-date system through **by identity**. Change what `src/platform/battlescribe/` makes of the same
   XML and you must raise `PARSER_VERSION` — otherwise users keep the old parse forever. A system
   from before the marker has none, differs, and is re-parsed exactly once.
-- A change to the persisted shape in `src/data/db/database.js` needs a migration — existing users carry
+- A change to the persisted shape in `src/platform/persistence/database.js` needs a migration — existing users carry
   their IndexedDB across releases (ADR 0002).
-- The only automatic, choice-free write into a roster is `useRosterState.js`'s fresh-roster effect over
-  `findMissingMandatoryListRules` (`src/domain/evaluation/`, report-driven) — gated on `isFreshRoster`,
-  ohne Undo-Schritt. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
+- The only automatic, choice-free write into a roster is `applyMandatoryListRules`
+  (`src/contexts/armylist/application/mandatoryListRules.js`, seit Issue 0189 ein Anwendungsfall
+  statt eines React-Effekts) über `findMissingMandatoryListRules` (`src/contexts/ruleengine/`,
+  report-driven) — gated on `isFreshRoster`, ohne Undo-Schritt. Jeder Schreibweg läuft durch ihn:
+  Anlegen, `.ros`-Import, die Editor-Sitzung. Alles, was dort hineingerät, erscheint für den Nutzer aus dem Nichts auf
   Kontingent-Ebene. Der Bericht hängt die **Wurzel-Pflicht-Phantome an die Wurzel, nicht ans
   Kontingent** — ein Leser, der nur `childSlotsOf(forcePath)` fragt, sieht genau die §9.9-Regeln
   nicht, um die es geht.
-- Anzeige-Felder, die `src/domain/evaluation/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
+- Anzeige-Felder, die `src/contexts/ruleengine/` aus dem Bericht ableitet, sieht keine der grossen Suiten:
   die Evaluator-E2E prueft den Bericht, nicht seine Uebersetzung. `listRuleGroups.js` (`checked`,
   `mandatory`, `isContainer`, `isBinary` fuer `ListRuleChecklist.jsx`) haengt allein an
   `listRuleGroups.test.js` mit handgebauter `capabilities`-Map. Wer hier ein Feld ergaenzt,
@@ -108,17 +132,20 @@ evaluator. `src/data/db/` persists it in IndexedDB.
   (`defId`/`targetDefId`/`count`/nested `members`) comes from the same walk as `raiseCosts`
   (`costProjection.js`), so the price and the tree it prices cannot diverge. `selectionFactory.js`
   only **resolves** those ids against the catalogue — through groups and group links, in any
-  depth (`selectionMembers.js`'s `findMemberDefById`). A recruit path without a report (a test
+  depth (`selectionMembers.js`'s `findMemberDefById`). A raise path without a report (a test
   system with no `rawXmls`) therefore creates a bare selection; that is the contract, not a bug.
-- The reading of "which children must this slot create" moved, it did not change: the recruited
+- The reading of "which children must this slot create" moved, it did not change: the raised
   tree is the same for all 208 units of the fixture corpus, pinned by
-  `src/domain/evaluation/recruitTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
+  `src/tests/contexts/ruleengine/raiseTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
   A group without a `min` still obliges nothing (even where a member declares one), a `min` a link
   inherits from its shared target obliges nothing, and a **hidden** obligation is created like any
-  other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a recruit
+  other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a raise
   (`SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx`) — closing that gap is a
   user-visible change and needs its own issue.
-- `src/data/db/database.js` reads `indexedDB` into a local **before** it builds the connection
+- `src/platform/persistence/database.js` reads `indexedDB` into a local **before** it builds the connection
   promise. In an environment without the global (a jsdom test without a fake factory) the
   ReferenceError must fly before the first promise exists, or that promise stays behind as an
   unhandled rejection and turns a green run red without failing a test.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

@@ -1,4 +1,4 @@
-import { countSelections, UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roster';
+import { countOptionInstances, UPGRADE_DETAILS_KEYWORDS } from '../../../contexts/armylist/model';
 
 /**
  * Die Ableitungen, die sich **jede** Options-Zeile des Editors teilt — der
@@ -13,14 +13,14 @@ import { countSelections, UPGRADE_DETAILS_KEYWORDS } from '../../../domain/roste
 /**
  * Tiefensuche nach einer Roster-Selektion innerhalb eines Teilbaums.
  * @param {Object|null} rootSelection Teilbaum, in dem gesucht wird
- * @param {string|null} targetId gesuchte Selektions-Id
+ * @param {string|null} selectionId gesuchte Selektions-Id
  * @returns {Object|null}
  */
-export const findSelectionById = (rootSelection, targetId) => {
-  if (!rootSelection || !targetId) return null;
-  if (rootSelection.id === targetId) return rootSelection;
+export const findSelectionById = (rootSelection, selectionId) => {
+  if (!rootSelection || !selectionId) return null;
+  if (rootSelection.id === selectionId) return rootSelection;
   for (const child of rootSelection.selections || []) {
-    const found = findSelectionById(child, targetId);
+    const found = findSelectionById(child, selectionId);
     if (found) return found;
   }
   return null;
@@ -36,17 +36,17 @@ export const findSelectionById = (rootSelection, targetId) => {
  * @param {Object} rootSelection die Selektion, die der Konfigurator bearbeitet
  * @param {string|null} ownerSelectionId Träger der Gruppe der Zeile (`null` = die Einheit selbst)
  * @param {Object} option die gesammelte Options-Definition der Zeile
- * @param {Object|null} resolvedOption `{ id, targetId }` des Slots der Zeile
+ * @param {Object|null} optionRef `{ defId, targetDefId }` des Slots der Zeile
  * @returns {string|null}
  */
-export const resolveRowSelectionId = (rootSelection, ownerSelectionId, option, resolvedOption) => {
+export const resolveRowSelectionId = (rootSelection, ownerSelectionId, option, optionRef) => {
   const owner = ownerSelectionId ? findSelectionById(rootSelection, ownerSelectionId) : rootSelection;
   if (!owner) return null;
   const optionKey = option?.id;
-  const targetKey = resolvedOption?.targetId || resolvedOption?.id;
+  const targetKey = optionRef?.targetDefId || optionRef?.defId;
   const match = (owner.selections || []).find(sel => {
     const key = sel.entryLinkId || sel.selectionEntryId;
-    return key === optionKey || key === targetKey || key === resolvedOption?.id;
+    return key === optionKey || key === targetKey || key === optionRef?.defId;
   });
   return match?.id ?? null;
 };
@@ -57,13 +57,8 @@ export const resolveRowSelectionId = (rootSelection, ownerSelectionId, option, r
  * @param {string} optionEntryId
  * @returns {number}
  */
-export const subSelectionCountOf = (unitSelection, optionEntryId) => {
-  const matchesOption = (sel) => (sel.entryLinkId || sel.selectionEntryId) === optionEntryId;
-  return countSelections(unitSelection.selections, {
-    includeChildSelections: true,
-    predicate: matchesOption,
-  });
-};
+export const subSelectionCountOf = (unitSelection, optionEntryId) =>
+  countOptionInstances(unitSelection, optionEntryId);
 
 /** Die Buchquelle eines Info-Eintrags als Anhang eines Beschreibungstextes. */
 const sourceSuffixOf = (source) => {

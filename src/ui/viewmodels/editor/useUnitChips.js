@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
+import { childOfferCountOf } from '../../../contexts/armylist/acl';
 import {
   resolveEntry,
   findEntryInSystem,
   groupProfilesByType,
   UPGRADE_DETAILS_KEYWORDS,
-} from '../../../domain/roster';
+} from '../../../contexts/armylist/model';
 import { useRosterReport } from '../rosterContexts';
 import { publicationRefOf, upgradeDetailElementsOf } from './upgradeDetailElements.js';
 
@@ -104,10 +105,7 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
 
   const isEmptyWrapper = (res, capability) => {
     if (!res || hasOwnValue(res, capability)) return false;
-    const childCount = (res.selectionEntries?.length || 0) +
-                       (res.entryLinks?.length || 0) +
-                       (res.selectionEntryGroups?.length || 0);
-    return childCount > 0;
+    return childOfferCountOf(res) > 0;
   };
 
   return getSelectedUpgrades(sel, system, activeCatalogueId, slots).filter(upgrade => {
@@ -154,7 +152,7 @@ const getUpgradeDescription = (capability) => {
 const normalizeChipName = (n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /**
- * @param {{ selection: import('../../../domain/types.js').Selection }} args
+ * @param {{ selection: import('../../../shared/rostermodel/types.js').Selection }} args
  * @returns {{ upgrades: object[], rules: object[], system: Object|null }}
  */
 export function useUnitChips({ selection }) {

@@ -7,7 +7,7 @@
  *
  * | Bündel | Inhalt | Identität |
  * |---|---|---|
- * | `commands` | `addUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `updateRosterName`, `save`, `undo`, `redo` | stabil über die gesamte Lebensdauer |
+ * | `commands` | `raiseUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `updateRosterName`, `save`, `undo`, `redo` | stabil über die gesamte Lebensdauer |
  * | `report` | die App-Auswertung plus `unresolvedSelections` | wechselt je Bearbeitung |
  * | Auswahl | `selectedRosterSelection`, `setSelectedRosterSelection` | wechselt je Klick |
  *
@@ -18,20 +18,21 @@
  * auslöst, rendert bei einer Roster-Bearbeitung nicht neu.
  *
  * Was hier steht, ist der Zustandsapparat. Die Schreib-Kommandos liegen in
- * `rosterCommands.js`, Katalog-Abgleich und Autosave in `useRosterPersistence.js`,
+ * `rosterCommandBindings.js` — dünne Bindungen an die Anwendungsfälle des
+ * Listen-Kontexts (Issue 0188) —, Katalog-Abgleich und Autosave in `useRosterPersistence.js`,
  * das automatische Setzen von Pflicht-Listenregeln in
  * `useMandatoryListRuleAutoAdd.js` (Issue 0176).
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react';
 
-import { findSelectionInRoster } from '../../domain/roster';
-import { useRosterReportModel } from '../../domain/evaluation/rosterReport';
+import { findSelectionInRoster } from '../../contexts/armylist/model';
+import { useRosterReportModel } from '../../contexts/ruleengine/readmodel/index.js';
 import { useUndoableState } from './useUndoableState';
-import { createRosterCommands } from './rosterCommands';
+import { bindRosterCommands } from './rosterCommandBindings';
 import { useRosterPersistence } from './useRosterPersistence';
 import { useMandatoryListRuleAutoAdd } from './useMandatoryListRuleAutoAdd';
-import '../../domain/types.js';
+import '../../shared/rostermodel/types.js';
 
 /** Verschiebung der Anzahl, die eine einzelne Nutzeraktion auslöst. */
 const COUNT_INCREASE = 1;
@@ -51,7 +52,7 @@ const NO_COMMANDS_YET = {};
 
 /**
  * Hält Roster, Auswahl und Kommandos eines Editors.
- * @param {import('../../domain/types.js').Roster} initialRoster
+ * @param {import('../../shared/rostermodel/types.js').Roster} initialRoster
  * @param {Object} system
  * @param {Function} saveRosterCallback
  * @param {(message: string) => void} [reportError] app-wide error channel; a failed
@@ -108,7 +109,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   // über die Ref auf, statt selbst neu zu entstehen — daher ihre Identität.
   const currentCommandsRef = useRef(NO_COMMANDS_YET);
   currentCommandsRef.current = {
-    ...createRosterCommands({
+    ...bindRosterCommands({
       roster, system, slots, setRoster, selectedSelectionId, setSelectedSelectionId, saveNow,
     }),
     undo,
@@ -123,7 +124,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   const commands = useMemo(() => {
     const call = (name) => (...args) => currentCommandsRef.current[name](...args);
     return {
-      addUnit: call('addUnit'),
+      raiseUnit: call('raiseUnit'),
       removeUnit: call('removeUnit'),
       copyUnit: call('copyUnit'),
       subSelectionOperations: {

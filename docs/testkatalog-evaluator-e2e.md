@@ -1,7 +1,7 @@
 # Testkatalog — E2E-Tests der Reinraum-Engine (Evaluator)
 
 Dieser Katalog beschreibt **jeden** End-to-End-Test der Reinraum-Engine
-(`src/domain/evaluator/`) in nicht-technischer Sprache, damit ein fachlicher Leser jeden
+(`src/contexts/ruleengine/engine/`) in nicht-technischer Sprache, damit ein fachlicher Leser jeden
 geprüften Fall nachvollziehen kann — ohne den Testcode zu lesen. Er deckt
 **ausschließlich** die E2E-Tests der neuen Engine ab: keine Unit-/Komponenten-
 tests und keine Tests der alten Solver-Engine.
@@ -10,7 +10,7 @@ tests und keine Tests der alten Solver-Engine.
 
 Die gesamte E2E-Absicherung des Evaluators läuft seit Issue 69 über **einen**
 generalisierten, manifest-getriebenen Runner:
-[`e2e.testcatalog.test.js`](../src/domain/evaluator/e2e.testcatalog.test.js). Er entdeckt
+[`e2e.testcatalog.test.js`](../src/contexts/ruleengine/engine/e2e.testcatalog.test.js). Er entdeckt
 zur Laufzeit **alle** Szenarien unter [`docs/testing/`](testing/), die ein Manifest
 (`scenario.json`) tragen, wertet jedes darin deklarierte Roster gegen die
 öffentliche Fassade `evaluate` aus und prüft den Bericht — die **Verletzungen**,
@@ -41,7 +41,7 @@ entfernt.
 
 Fast alle Szenarien werten Roster gegen die **echten** Definitive-Edition-
 Katalogdaten aus (ADR-[0032](adr/0032-evaluator-loest-mehr-katalog-datensaetze-global-by-id-auf.md)) —
-`src/domain/evaluator/__fixtures__/whfb6-definitive/`, genau die Dateien, die ein Nutzer
+`src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`, genau die Dateien, die ein Nutzer
 beim Import erlebt. Ausnahme ist `vampire-bloodlines-ergofang`, das den
 eigenständigen ergofang-VC-Katalog (`src/tests/__fixtures__/whfb6/`) nutzt. Jede
 Armee-`.cat` wird zusammen mit ihrer gemeinsamen **Mercenaries**-Abhängigkeit
@@ -61,7 +61,7 @@ Blick in den Evaluator-Quellcode — durch den dedizierten Subagenten
 `e2e-testcase-author` (siehe `.claude/agents/e2e-testcase-author.md`
 und [ADR 0033](adr/0033-evaluator-e2e-manifest-runner-und-black-box-autorenschaft.md)).
 So prüft der Test die Engine, statt ihr Verhalten zu spiegeln. Es entsteht dabei
-**kein** handgeschriebener `src/domain/evaluator/e2e.*.test.js` mehr — nur Szenario-Daten.
+**kein** handgeschriebener `src/contexts/ruleengine/engine/e2e.*.test.js` mehr — nur Szenario-Daten.
 
 Die Pflege erfolgt **von Hand** — es gibt bewusst **keinen** Generator und
 **kein** CI-Gate, das den Katalog gegen die Szenarien erzwingt. Der Katalog muss

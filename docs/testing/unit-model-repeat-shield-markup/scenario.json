@@ -3,10 +3,10 @@
   "name": "unit-model-repeat-shield-markup",
   "description": "Pinnt die LINEARE Skalierung eines <repeat field=\"selections\" scope=\"unit\" childId=\"model\" repeats=\"1\" value=\"1\"> auf einem increment-Modifikator der pts-Kostenart fest. Kern ist der Shield-entryLink a7e5-d466-038a-a9d6 der Söldnereinheit 'Manbiters' (Mercenaries): increment 1 je Modell der umschliessenden Einheit, Basis 0 pts (.gst-Shield 50e2-1873-a856-03e7). Über drei Roster wird ALLEIN die Modellzahl variiert (20/25/30) — der Aufschlag muss exakt 20/25/30 pts betragen, also 1 pt je Modell, nicht ein einmaliger Zuschlag und nicht ein Vielfaches davon. Zwei Kontroll-Roster mit derselben Modellzahl (20 bzw. 30), aber OHNE Shield, liefern den Nullpunkt der Geraden: die Differenz zum jeweiligen Shield-Roster ist genau die Modellzahl. Ein sechstes Roster wiederholt das Muster an seiner zweiten Fundstelle (Barding-entryLink 19d1-de95-644d-00a7 der 'Heavy Cavalry', increment 2) mit 8 Modellen und macht den Je-Modell-Faktor unabhängig vom repeat-eigenen value=\"1\" sichtbar. Beobachtbar gemacht wird die Summe über die roster-weite Budget-Regel budget::ecfa-8486-4f6c-c249, deren 'actual' die verplante Gesamtsumme trägt; das Punktelimit steht je Roster eine Einheit unter der korrekten Summe.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Orcs and goblins (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

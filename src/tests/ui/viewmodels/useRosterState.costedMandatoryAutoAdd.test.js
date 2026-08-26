@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRosterState } from '../../../ui/viewmodels/useRosterState';
-import { processImportedData } from '../../../data/parser/xmlParser';
-import { buildRoster } from '../../../domain/roster/createRoster';
+import { processImportedData } from '../../../platform/battlescribe/xmlParser';
+import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 import { formatViolation } from '../../../ui/i18n/violationMessages';
 
 /**
  * Issue 0140 — "Eine Pflicht-Listenregel mit Kosten wird nicht automatisch
  * gesetzt", at the seam where the user actually notices it: a freshly created
- * contingent, the real (unmocked) sweep in `src/domain/roster/listRules.js`, the real
+ * contingent, the real (unmocked) sweep in `src/contexts/armylist/model/listRules.js`, the real
  * auto-add effect in `useRosterState.js` and the real evaluator report behind
  * `useEvaluation`.
  *
@@ -317,7 +317,7 @@ describe('AC5: the costs of the auto-added entry count in the report', () => {
     );
 
     act(() => {
-      result.current.commands.addUnit(spearmen, null);
+      result.current.commands.raiseUnit(spearmen, null);
     });
 
     expect(result.current.report.costTotals).toEqual({

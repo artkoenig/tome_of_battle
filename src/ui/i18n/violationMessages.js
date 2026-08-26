@@ -6,7 +6,7 @@
 //
 // Schlüssel-Schema: `validation.evaluator.<measure>.<kind>.<scopeGroup>[.percent]`.
 // Das Einordnungs-Vokabular (ConstraintKind/LimitMeasure/ScopeKind) steht hier
-// als Literale, nicht als Import aus `src/domain/evaluator/model.js`: der Evaluator ist
+// als Literale, nicht als Import aus `model.js` der Engine: der Evaluator ist
 // von außen nur über seine Fassade erreichbar (ADR 0030, maschinell erzwungen
 // durch oxlint `no-restricted-imports`, dazu die cast-Regel
 // `evaluator-nur-ueber-fassade`), und die Fassade reicht bewusst nur den Bericht
@@ -105,7 +105,7 @@ function effectivePercent(derivation) {
  * - Ein fehlender Verstoß (null/undefined) ergibt einen leeren String.
  *
  * @param {object | null | undefined} violation  eine Verletzung aus dem Bericht
- *   der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`, `violations`).
+ *   der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`, `violations`).
  * @param {(key: string, params?: Record<string, unknown>) => string} translate
  * @returns {string}
  */

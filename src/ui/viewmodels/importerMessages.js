@@ -38,7 +38,7 @@ export function buildMissingLibraryDependencyMessage(missingDependencies, t = tr
  * unvollständig statt eine Vollständigkeit zu bestätigen, die der gespeicherte
  * Stand nicht hat.
  * @param {object} system das gespeicherte System.
- * @param {import('../../data/parser/xmlParser').CatalogueParseFailure[]} [failedCatalogues]
+ * @param {import('../../platform/battlescribe/xmlParser').CatalogueParseFailure[]} [failedCatalogues]
  */
 export function buildImportSuccessMessage(system, failedCatalogues = [], t = translate) {
   const importedCount = system.catalogues?.length ?? 0;
@@ -55,7 +55,7 @@ export function buildImportSuccessMessage(system, failedCatalogues = [], t = tra
 /**
  * Nennt jeden Katalog, der nicht geparst werden konnte, damit die
  * Unvollständigkeit im Moment ihres Entstehens sichtbar ist.
- * @param {import('../../data/parser/xmlParser').CatalogueParseFailure[]} failedCatalogues
+ * @param {import('../../platform/battlescribe/xmlParser').CatalogueParseFailure[]} failedCatalogues
  */
 export function buildFailedCatalogueMessage(failedCatalogues, t = translate) {
   const details = failedCatalogues

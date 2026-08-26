@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useRosterList from '../../../ui/viewmodels/useRosterList';
-import { saveRoster, deleteRoster } from '../../../data/db/database';
+import { saveRoster, deleteRoster } from '../../../platform/persistence/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
   MissingSystemError,
-} from '../../../domain/roster/rosterSerialization';
-import { readRosterText, buildRosterFile } from '../../../domain/services/rosterTransfer';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../domain/roster';
+} from '../../../contexts/armylist/model/rosterSerialization';
+import { readRosterText, buildRosterFile } from '../../../contexts/armylist/application/rosterTransfer';
+import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../../contexts/armylist/model';
 
 /**
  * Issue 0138, Plan contract 4 — useRosterList tracks, purely in memory, which
@@ -22,7 +22,7 @@ import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '.
  * schema (never touch IndexedDB, `.rosz` export/import, or the object handed
  * to `saveRoster`).
  */
-vi.mock('../../../data/db/database', () => ({
+vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
 }));
@@ -32,18 +32,18 @@ const { MissingSystemErrorMock } = vi.hoisted(() => {
   return { MissingSystemErrorMock };
 });
 
-vi.mock('../../../domain/roster/rosterSerialization', () => ({
+vi.mock('../../../contexts/armylist/model/rosterSerialization', () => ({
   MissingSystemError: MissingSystemErrorMock,
   exportRosterToXml: vi.fn(() => '<xml/>'),
   importRosterFromXml: vi.fn(),
 }));
 
-vi.mock('../../../domain/services/rosterTransfer', () => ({
+vi.mock('../../../contexts/armylist/application/rosterTransfer', () => ({
   readRosterText: vi.fn(() => Promise.resolve('<xml/>')),
   buildRosterFile: vi.fn(() => Promise.resolve({ blob: new Blob(), fileName: 'r.rosz' })),
 }));
 
-vi.mock('../../../domain/roster', () => ({
+vi.mock('../../../contexts/armylist/model', () => ({
   syncRosterSelectionsWithSystem: vi.fn((roster) => roster),
   reconcileImportedSelectionIds: vi.fn((roster) => roster),
 }));

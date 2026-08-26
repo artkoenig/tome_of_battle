@@ -3,10 +3,10 @@
   "name": "at-least-id-scope-inner-circle-champion",
   "description": "Pinnt den Bezugsrahmen einer <condition ... scope=\"<Eintrags-Id>\"> fest — eines scope-Werts, der KEIN Schluesselwort (parent/roster/force/self/unit) ist, sondern die Id des selectionEntry 'Knights of the Knightly Orders' 1d77-9e6e-a6ab-573f. Zwei Stellen im Armeebuch The Empire tragen denselben Modifikator 'increment 1 auf das Merkmal S (b690-4bc0-bb73-267b)' unter derselben or-Gruppe aus zwei atLeast-1-Bedingungen mit scope=\"1d77-9e6e-a6ab-573f\" und childId=\"6e1d-9e41-114f-8128\" bzw. childId=\"8229-6f9b-ba74-c239\": der Profil-infoLink 'Elite' b968-23a8-1f42-6af7 (Ziel 15ce-32a2-92e2-1279, Basis-S 3) direkt an der Einheit und der Profil-infoLink 'Elite Champion' 7310-540c-a461-d9e9 (Ziel 73cc-0129-e7fe-ea53, Basis-S 3) am Kommandogruppen-Upgrade 'First Knight' 4267-ee8f-ec8c-e0f9, also einem Enkel der Einheit. Der Rahmen ist die naechste umschliessende Auswahl, die auf diese Eintrags-Id aufloest (den Traeger eingeschlossen) — mithin die eigene Einheit, nicht das Kontingent und nicht die Roster. Vier Roster: eine Einheit mit Inner Circle (S 4 in beiden Profilen), dieselbe ohne (S 3), sowie zwei Roster mit ZWEI Ritterregimentern in EINEM Kontingent, in denen der 'First Knight' einmal in der Einheit OHNE (S 3) und einmal in der Einheit MIT Inner Circle (S 4) steht. Das Paar in einem Kontingent unterscheidet den Eintrags-Id-Rahmen von einer kontingent- oder rosterweiten Zaehlung. Beobachtet wird ausschliesslich ueber expect.capabilities[].infoElements[].characteristics; zaehlende Grenzen sind nur als absent-Aussagen dabei.",
   "dataset": {
-    "gameSystem": "src/domain/evaluator/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
     "catalogues": [
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
-      "src/domain/evaluator/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/The Empire (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
     ]
   },
   "rosters": [

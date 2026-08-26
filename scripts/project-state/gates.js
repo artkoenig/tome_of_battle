@@ -67,7 +67,7 @@ const ENVIRONMENT_ABORT_SIGNATURES = Object.freeze([
   // Beide Formen sind an eine *ganze Zeile* gebunden, und die zweite verlangt
   // zusaetzlich das Shell-Praefix (`sh:`, `/bin/sh:`, mit oder ohne Zeilennummer).
   // Ein blosses `: not found` irgendwo im Text ist naemlich der normale Befund
-  // vieler Pruefer ("src/domain/roster/index.js: not found in the report") -- ein
+  // vieler Pruefer ("src/contexts/armylist/model/index.js: not found in the report") -- ein
   // rotes Gate als "nicht geprueft" auszugeben waere der schlimmere Fehler.
   { reason: GateAbortReason.ExecutableNotFound, pattern: /^[^\n]*:\s*command not found\s*$/im },
   { reason: GateAbortReason.ExecutableNotFound, pattern: /^[^\n]*\bsh:\s*(?:\d+:\s*)?[^\n:]+:\s*not found\s*$/im },

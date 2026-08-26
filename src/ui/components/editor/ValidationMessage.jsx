@@ -12,7 +12,7 @@ import ValidationCauses from './ValidationCauses';
  * die Klasse `validation-message--<severity>`.
  *
  * @param {{ violation: object }} props  `violation` ist eine Verletzung aus
- *   dem Bericht der Evaluator-Fassade (`src/domain/evaluator/evaluator.js`).
+ *   dem Bericht der Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`).
  */
 export default function ValidationMessage({ violation }) {
   const { t } = useTranslation();

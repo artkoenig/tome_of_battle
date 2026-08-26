@@ -7,8 +7,8 @@ import {
   catalogueDirectoryFromIndex,
   catalogueDirectoryFromLinks,
   SYSTEM_IMPORT_STATUS,
-} from '../../domain/services/systemLibrary';
-import { buildRawFileUrl } from '../../domain/services/catalogRevisions';
+} from '../../contexts/catalog/application/systemLibrary';
+import { buildRawFileUrl } from '../../contexts/catalog/application/catalogRevisions';
 import { useTranslation } from '../i18n/useTranslation';
 import {
   buildMissingLibraryDependencyMessage,

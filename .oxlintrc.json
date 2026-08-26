@@ -14,8 +14,8 @@
           {
             "patterns": [
               {
-                "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
-                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+                "group": ["**/ruleengine/engine/*"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/contexts/ruleengine/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
               }
             ]
           }
@@ -41,8 +41,8 @@
             ],
             "patterns": [
               {
-                "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
-                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+                "group": ["**/ruleengine/engine/*"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/contexts/ruleengine/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
               }
             ]
           }
@@ -50,15 +50,15 @@
       }
     },
     {
-      "files": ["src/domain/evaluator/**"],
+      "files": ["src/contexts/armylist/model/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
           {
             "patterns": [
               {
-                "group": ["**/roster/**"],
-                "message": "Reinraum-Schutz (ADR-0030/0034): src/domain/evaluator/ darf das App-Schreibmodell src/domain/roster/ nie importieren -- es traegt Ableitungslogik der Alt-Engine."
+                "group": ["**/ruleengine/**"],
+                "message": "Das Schreibmodell src/contexts/armylist/model/ bleibt rein strukturell (Issue 0121, Task 8): es importiert den Evaluator nie -- auch nicht ueber dessen Fassade. Bewertung liest allein die Oberflaeche aus dem Bericht."
               }
             ]
           }
@@ -66,35 +66,38 @@
       }
     },
     {
-      "files": ["src/domain/roster/**"],
+      "files": ["src/contexts/ruleengine/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
           {
             "patterns": [
               {
-                "group": ["**/evaluator/**"],
-                "message": "Das Schreibmodell src/domain/roster/ bleibt rein strukturell (Issue 0121, Task 8): es importiert den Evaluator nie -- auch nicht ueber dessen Fassade. Bewertung liest allein die Oberflaeche aus dem Bericht."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["src/domain/evaluation/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": ["**/evaluator/*", "!**/evaluator/evaluator", "!**/evaluator/evaluator.js"],
-                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/domain/evaluator/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+                "group": ["**/ruleengine/engine/*"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/contexts/ruleengine/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
               },
               {
-                "group": ["**/roster/**"],
-                "message": "Die Auswertungs-Bruecke src/domain/evaluation/ braucht das Schreibmodell src/domain/roster/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
+                "group": ["**/armylist/**"],
+                "message": "Die Auswertungs-Bruecke src/contexts/ruleengine/ braucht das Schreibmodell src/contexts/armylist/model/ nicht (Issue 0121, Task 8): sie uebersetzt nur App-Roster -> Evaluator-Vertrag und reicht den Bericht durch."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // Muss nach dem Block fuer src/contexts/ruleengine/** stehen: der spaetere
+      // Override gewinnt, sonst verbietet die Fassaden-Regel den Engine-Modulen
+      // ihre eigenen Nachbarn.
+      "files": ["src/contexts/ruleengine/engine/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/armylist/**"],
+                "message": "Reinraum-Schutz (ADR-0030/0034): src/contexts/ruleengine/engine/ darf das App-Schreibmodell src/contexts/armylist/model/ nie importieren -- es traegt Ableitungslogik der Alt-Engine."
               }
             ]
           }
