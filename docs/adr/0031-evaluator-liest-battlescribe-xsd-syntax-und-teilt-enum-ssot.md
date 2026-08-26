@@ -36,7 +36,7 @@ Die Domänen-Semantik von `scope` und `field` — auf XSD-Ebene reine
 `xs:string`-Grammatik, siehe [BSData-Doku](../battlescribe-data-format.md) §7.6 —
 bleibt Evaluator-eigene Konvention und wird nicht aus dem Schreibmodell bezogen
 (der Import `evaluator → roster` ist per ADR-0030 verboten und wird von
-die Strukturprüfung als Fehler durchgesetzt — heute `npm run cast`, siehe
+der Strukturprüfung als Fehler durchgesetzt — heute `npm run cast`, siehe
 [ADR-0041](0041-cast-als-strukturpruefer.md)).
 
 > **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert. Die
