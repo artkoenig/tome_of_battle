@@ -205,7 +205,7 @@ Regelkonstrukte sind Queries plus eine dünne Reaktion auf `n`:
                          ┌───────────────────▼───────────────────────┐
    Query + Subjekt  ──►  │  L2  measureQuery(query, subject, ctx) → n │
                          │  ┌─────────────────────────────────────┐  │
-                         │  │ L2a scopeAnchor(scope, …)            │  │  ◄── EINZIGE
+                         │  │ L2a Scope-Anker-Auflösung            │  │  ◄── EINZIGE
                          │  │     scope-Token → Anker (Node-Set /  │  │      scope-BEWUSSTE
                          │  │     Count-Bucket). Nur HIER lebt die │  │      Stelle
                          │  │     geschlossene Scope-Liste.        │  │
