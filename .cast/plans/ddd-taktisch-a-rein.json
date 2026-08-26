@@ -1,0 +1,946 @@
+{
+  "operations": [
+    {
+      "op": "merge",
+      "modules": [
+        "src/contexts/armylist/acl/index.js",
+        "src/contexts/armylist/acl/catalogTranslation.js"
+      ],
+      "into": "src/contexts/armylist/acl/catalogTranslation.js"
+    },
+    {
+      "op": "merge",
+      "modules": [
+        "src/platform/persistence/database.js",
+        "src/platform/persistence/migrations.js"
+      ],
+      "into": "src/platform/persistence/database.js"
+    },
+    {
+      "op": "split",
+      "module": "src/platform/persistence/database.js",
+      "into": [
+        {
+          "id": "src/roster/rosterRepositoryStore.js",
+          "importedBy": [
+            "src/contexts/armylist/ports/storagePort.js"
+          ]
+        },
+        {
+          "id": "src/catalog/catalogRepositoryStore.js",
+          "importedBy": [
+            "src/contexts/catalog/ports/catalogRepository.js",
+            "src/platform/persistence/systemImport.js",
+            "src/platform/battlescribe/parserVersion.js"
+          ]
+        },
+        {
+          "id": "src/game/gameRepositoryStore.js",
+          "importedBy": [
+            "src/contexts/play/ports/storagePort.js"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/acl/catalogTranslation.js",
+      "to": "src/roster/catalogTranslation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/copyUnit.js",
+      "to": "src/roster/copyUnit.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/mandatoryListRules.js",
+      "to": "src/roster/mandatoryListRules.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/raiseUnit.js",
+      "to": "src/roster/raiseUnit.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/removeUnit.js",
+      "to": "src/roster/removeUnit.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/renameRoster.js",
+      "to": "src/roster/renameRoster.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/rosterSelectionFactory.js",
+      "to": "src/roster/rosterSelectionFactory.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/rosterStore.js",
+      "to": "src/roster/rosterStore.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/rosterTransfer.js",
+      "to": "src/roster/rosterTransfer.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/settings.js",
+      "to": "src/roster/settings.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/application/subSelectionUseCases.js",
+      "to": "src/roster/subSelectionUseCases.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/catalogResolver.js",
+      "to": "src/roster/catalogResolver.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/constants.js",
+      "to": "src/roster/constants.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/costTypeLabels.js",
+      "to": "src/roster/costTypeLabels.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/createRoster.js",
+      "to": "src/roster/createRoster.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/forceEntries.js",
+      "to": "src/roster/forceEntries.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/index.js",
+      "to": "src/roster/index.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/optionsCollector.js",
+      "to": "src/roster/optionsCollector.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/profileGrouping.js",
+      "to": "src/roster/profileGrouping.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/rosterDefaults.js",
+      "to": "src/roster/rosterDefaults.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/rosterFileError.js",
+      "to": "src/roster/rosterFileError.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/rosterSerialization.js",
+      "to": "src/roster/rosterSerialization.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/rosterSync.js",
+      "to": "src/roster/rosterSync.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/rosterTree.js",
+      "to": "src/roster/rosterTree.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/selectionFactory.js",
+      "to": "src/roster/selectionFactory.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/selectionMembers.js",
+      "to": "src/roster/selectionMembers.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/subSelectionEditing.js",
+      "to": "src/roster/subSelectionEditing.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/model/subUnit.js",
+      "to": "src/roster/subUnit.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/armylist/ports/storagePort.js",
+      "to": "src/roster/rosterRepository.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/catalog/application/catalogRevisions.js",
+      "to": "src/catalog/catalogRevisions.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/catalog/application/systemLibrary.js",
+      "to": "src/catalog/systemLibrary.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/catalog/ports/catalogRepository.js",
+      "to": "src/catalog/catalogRepository.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/play/application/gameStore.js",
+      "to": "src/game/gameStore.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/play/index.js",
+      "to": "src/game/index.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/play/model/game.js",
+      "to": "src/game/game.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/play/ports/storagePort.js",
+      "to": "src/game/gameRepository.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/rulebook/rulesLookup.js",
+      "to": "src/rulebook/rulesLookup.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/rulebook/synonyms.js",
+      "to": "src/rulebook/synonyms.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/acl/evaluationCache.js",
+      "to": "src/report/evaluationCache.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/acl/rosterAdapter.js",
+      "to": "src/report/rosterAdapter.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/authorMessages.js",
+      "to": "src/report/authorMessages.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/budget.js",
+      "to": "src/report/budget.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/catalogReader.js",
+      "to": "src/report/catalogReader.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/catalogSet.js",
+      "to": "src/report/catalogSet.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/causes.js",
+      "to": "src/report/causes.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/constraints.js",
+      "to": "src/report/constraints.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/costProjection.js",
+      "to": "src/report/costProjection.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/countIndex.js",
+      "to": "src/report/countIndex.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/datasetDescription.js",
+      "to": "src/report/datasetDescription.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/datasetPreparation.js",
+      "to": "src/report/datasetPreparation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/effectiveState.js",
+      "to": "src/report/effectiveState.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/entryClassification.js",
+      "to": "src/report/entryClassification.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/evalTree.js",
+      "to": "src/report/evalTree.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/fixpoint.js",
+      "to": "src/report/fixpoint.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/groupBehavior.js",
+      "to": "src/report/groupBehavior.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/infoProjection.js",
+      "to": "src/report/infoProjection.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/measurement.js",
+      "to": "src/report/measurement.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/model.js",
+      "to": "src/report/model.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/modifiers.js",
+      "to": "src/report/modifiers.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/offer.js",
+      "to": "src/report/offer.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/query.js",
+      "to": "src/report/query.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/report.js",
+      "to": "src/report/report.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/resolver.js",
+      "to": "src/report/resolver.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/rosterBudget.js",
+      "to": "src/report/rosterBudget.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/rounding.js",
+      "to": "src/report/rounding.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/engine/violationClassification.js",
+      "to": "src/report/violationClassification.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/evaluator.js",
+      "to": "src/report/evaluation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/armyWideSelectorSlots.js",
+      "to": "src/report/armyWideSelectorSlots.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/costDisplays.js",
+      "to": "src/report/costDisplays.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/datasetDiagnostics.js",
+      "to": "src/report/datasetDiagnostics.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/index.js",
+      "to": "src/report/index.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/listRuleGroups.js",
+      "to": "src/report/listRuleGroups.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/mandatoryListRules.js",
+      "to": "src/report/mandatoryListRules.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/rosterReport.js",
+      "to": "src/report/rosterReport.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/slotIndex.js",
+      "to": "src/report/slotIndex.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/useEvaluation.js",
+      "to": "src/report/useEvaluation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/contexts/ruleengine/readmodel/violationStats.js",
+      "to": "src/report/violationStats.js"
+    },
+    {
+      "op": "move",
+      "module": "src/main.jsx",
+      "to": "src/shell/main.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/catalogEditor.js",
+      "to": "src/catalog/catalogEditor.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/importSchemaGate.js",
+      "to": "src/catalog/importSchemaGate.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/libraryDependencies.js",
+      "to": "src/catalog/libraryDependencies.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/parserVersion.js",
+      "to": "src/catalog/parserVersion.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/schemaValidator.js",
+      "to": "src/catalog/schemaValidator.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/xmlParser.js",
+      "to": "src/catalog/systemFactory.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/battlescribe/zipExtractor.js",
+      "to": "src/catalog/systemArchive.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/persistence/catalogSourceIndex.js",
+      "to": "src/catalog/catalogSourceIndex.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/persistence/catalogUpdate.js",
+      "to": "src/catalog/catalogUpdate.js"
+    },
+    {
+      "op": "move",
+      "module": "src/platform/persistence/systemImport.js",
+      "to": "src/catalog/systemImport.js"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/battlescribe/battlescribeSchema.generated.js",
+      "to": "src/catalog/battlescribeSchema.generated.js"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/events/dataEvents.js",
+      "to": "src/roster/dataEvents.js"
+    },
+    {
+      "op": "move",
+      "module": "src/shared/rostermodel/types.js",
+      "to": "src/roster/types.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/App.jsx",
+      "to": "src/shell/App.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/AppDialogs.jsx",
+      "to": "src/roster/AppDialogs.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/GothicTooltip.jsx",
+      "to": "src/roster/GothicTooltip.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/Importer.jsx",
+      "to": "src/roster/Importer.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PlayMode.jsx",
+      "to": "src/roster/PlayMode.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/PreviewBadge.jsx",
+      "to": "src/shell/PreviewBadge.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterDashboard.jsx",
+      "to": "src/roster/RosterDashboard.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RosterEditor.jsx",
+      "to": "src/roster/RosterEditor.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/RulesIndexDialog.jsx",
+      "to": "src/roster/RulesIndexDialog.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/SettingsDialog.jsx",
+      "to": "src/roster/SettingsDialog.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/AutoFillSuggestions.jsx",
+      "to": "src/roster/AutoFillSuggestions.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/BottomSheet.jsx",
+      "to": "src/roster/BottomSheet.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryCountBadge.jsx",
+      "to": "src/roster/CategoryCountBadge.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/CategoryUnitAdder.jsx",
+      "to": "src/roster/CategoryUnitAdder.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ConfirmationDialog.jsx",
+      "to": "src/roster/ConfirmationDialog.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ForceEditorSection.jsx",
+      "to": "src/roster/ForceEditorSection.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ListRuleChecklist.jsx",
+      "to": "src/roster/ListRuleChecklist.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/NewRosterModal.jsx",
+      "to": "src/roster/NewRosterModal.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/OptionGroup.jsx",
+      "to": "src/roster/OptionGroup.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterCategorySection.jsx",
+      "to": "src/roster/RosterCategorySection.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterEditorTopBar.jsx",
+      "to": "src/roster/RosterEditorTopBar.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterSidebar.jsx",
+      "to": "src/roster/RosterSidebar.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RosterValidationPanel.jsx",
+      "to": "src/report/RosterValidationPanel.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/RuleChipIcon.jsx",
+      "to": "src/roster/RuleChipIcon.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/SelectionConfigurator.jsx",
+      "to": "src/roster/SelectionConfigurator.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitCardList.jsx",
+      "to": "src/roster/UnitCardList.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitChips.jsx",
+      "to": "src/roster/UnitChips.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/UnitSelectionCard.jsx",
+      "to": "src/roster/UnitSelectionCard.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ValidationCauses.jsx",
+      "to": "src/report/ValidationCauses.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/ValidationMessage.jsx",
+      "to": "src/report/ValidationMessage.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/editor/upgradeDetails.jsx",
+      "to": "src/roster/upgradeDetails.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/play/PlayUnitDetails.jsx",
+      "to": "src/roster/PlayUnitDetails.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/components/previewHost.js",
+      "to": "src/shell/previewHost.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/constants/views.js",
+      "to": "src/shell/views.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/constants.js",
+      "to": "src/i18n/constants.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/i18nStore.js",
+      "to": "src/i18n/i18nStore.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/languageController.js",
+      "to": "src/i18n/languageController.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/languageDetection.js",
+      "to": "src/i18n/languageDetection.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/languageStorage.js",
+      "to": "src/i18n/languageStorage.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/translate.js",
+      "to": "src/i18n/translate.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/useTranslation.js",
+      "to": "src/i18n/useTranslation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/i18n/violationMessages.js",
+      "to": "src/i18n/violationMessages.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/SettingsContext.jsx",
+      "to": "src/roster/SettingsContext.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/capabilityEntries.js",
+      "to": "src/roster/capabilityEntries.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/configuratorSections.js",
+      "to": "src/roster/configuratorSections.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/costBudgets.js",
+      "to": "src/roster/costBudgets.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/optionRowDerivations.js",
+      "to": "src/roster/optionRowDerivations.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/selectionBehavior.js",
+      "to": "src/roster/selectionBehavior.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/standaloneRow.js",
+      "to": "src/roster/standaloneRow.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/upgradeDetailElements.js",
+      "to": "src/roster/upgradeDetailElements.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useAutoFillSuggestions.js",
+      "to": "src/roster/useAutoFillSuggestions.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useCategorySection.js",
+      "to": "src/roster/useCategorySection.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useForceSection.js",
+      "to": "src/roster/useForceSection.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useListRuleChecklist.js",
+      "to": "src/roster/useListRuleChecklist.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useOptionGroup.js",
+      "to": "src/roster/useOptionGroup.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useRaiseOffer.js",
+      "to": "src/roster/useRaiseOffer.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useRosterSidebar.js",
+      "to": "src/roster/useRosterSidebar.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useSelectionConfigurator.js",
+      "to": "src/roster/useSelectionConfigurator.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useUnitCard.js",
+      "to": "src/roster/useUnitCard.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useUnitChips.js",
+      "to": "src/roster/useUnitChips.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/editor/useValidationPanel.js",
+      "to": "src/report/useValidationPanel.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerBundle.js",
+      "to": "src/catalog/importerBundle.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerMessages.js",
+      "to": "src/catalog/importerMessages.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/importerRevisionDisplay.js",
+      "to": "src/catalog/importerRevisionDisplay.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/persistenceFailure.js",
+      "to": "src/roster/persistenceFailure.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/releaseDiff.js",
+      "to": "src/shell/releaseDiff.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/rosterCommandBindings.js",
+      "to": "src/roster/rosterCommandBindings.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/rosterContexts.jsx",
+      "to": "src/roster/rosterContexts.jsx"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/systemArchiveExport.js",
+      "to": "src/catalog/systemArchiveExport.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useAppData.js",
+      "to": "src/roster/useAppData.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useAppNavigation.js",
+      "to": "src/shell/useAppNavigation.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useBottomSheet.js",
+      "to": "src/roster/useBottomSheet.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useImporter.js",
+      "to": "src/catalog/useImporter.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useMandatoryListRuleAutoAdd.js",
+      "to": "src/roster/useMandatoryListRuleAutoAdd.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useNewRosterModal.js",
+      "to": "src/roster/useNewRosterModal.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayRoster.js",
+      "to": "src/roster/usePlayRoster.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayState.js",
+      "to": "src/roster/usePlayState.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePlayUnit.js",
+      "to": "src/roster/usePlayUnit.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/usePwaLifecycle.js",
+      "to": "src/shell/usePwaLifecycle.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterDashboard.js",
+      "to": "src/roster/useRosterDashboard.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterEditor.js",
+      "to": "src/roster/useRosterEditor.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterList.js",
+      "to": "src/roster/useRosterList.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterPersistence.js",
+      "to": "src/roster/useRosterPersistence.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRosterState.js",
+      "to": "src/roster/useRosterState.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRuleUrl.js",
+      "to": "src/roster/useRuleUrl.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useRulesIndexDialog.js",
+      "to": "src/roster/useRulesIndexDialog.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useToast.js",
+      "to": "src/shell/useToast.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useUndoableState.js",
+      "to": "src/roster/useUndoableState.js"
+    },
+    {
+      "op": "move",
+      "module": "src/ui/viewmodels/useViewportHeight.js",
+      "to": "src/shell/useViewportHeight.js"
+    }
+  ]
+}
