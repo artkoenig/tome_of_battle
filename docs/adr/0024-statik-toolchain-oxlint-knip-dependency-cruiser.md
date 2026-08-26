@@ -7,6 +7,29 @@
 
 > **Nachtrag (Issue 0205, 2026-08-26).** dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter. Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Vier weitere Aussagen unten stimmen mit dem Baum nicht mehr überein.
+>
+> - **Es gibt kein `depcruise`-Script.** `package.json` kennt `lint`, `knip`, `cast`, `analyze`
+>   (= `npm run knip; npm run cast`), `typecheck`, `test`. Wo unten das damalige depcruise-Script
+>   stand, steht heute `npm run cast`.
+> - **Die Fassaden-Regel heißt anders und schützt etwas anderes.** ADR-0023 (Solver-Fassade) ist
+>   *Superseded (0121)*; die Regel in `.cast/rules.json` heißt `evaluator-nur-ueber-fassade` und
+>   schützt die Evaluator-Fassade `src/contexts/ruleengine/evaluator.js`. Der alte Regelname ist in
+>   keiner Konfigurationsdatei mehr nachschlagbar und darum unten nicht mehr genannt.
+> - **Die Gate-Strategie ist nicht mehr „warn-only zuerst".** Die Strukturprüfung ist seit
+>   [ADR-0041](0041-cast-als-strukturpruefer.md) der **blockierende** Schritt der CI
+>   (`.github/workflows/ci.yml`, Step *Strukturpruefung (cast)*, ohne `continue-on-error`); jede
+>   Regel in `.cast/rules.json` steht auf `error`. **Knip** ist das verbliebene warn-only-Gate
+>   (`continue-on-error: true`) und bewusst außerhalb der Wrapper. Der unten beschriebene Übergang
+>   hat also stattgefunden — für cast vollständig, für Knip absichtlich nicht.
+> - **`pre-push`-Hooks gibt es nicht.** Kein Checkout installiert welche: `.git/hooks/` enthält nur
+>   Git-Beispiele, `core.hooksPath` ist nicht gesetzt. Die beiden Sätze unten, die die Hooks
+>   „unberührt" lassen bzw. „(noch) nicht" in sie eingreifen, beschreiben damit keinen Mechanismus
+>   dieses Projekts.
+>
+> Die Rollenverteilung der drei Säulen — pro Datei, dateiübergreifend, Struktur des Importgraphen —
+> bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Die Refactoring-Bündel der letzten Iterationen (Issues 39, 42, 43, 47, 49, 50)
@@ -78,19 +101,19 @@ anderes:
   sehen kann. Konfiguriert über `knip.json` (Entry: `index.html`,
   `src/**/*.test.{js,jsx}`, `scripts/**`; Projekt: `src/**`, `scripts/**`;
   ignoriert `.worktrees`, `.claude`, `src/data/parser/schema`, `__fixtures__`).
-- **dependency-cruiser** (`npm run depcruise`) — **Struktur des Importgraphen**:
-  die Schichtung `parser → solver → components` als erlaubte Richtung, die
-  Solver-Fassade als Regel (`solver-nur-ueber-fassade`), Import-Zyklen
+- **dependency-cruiser** (damals ein eigenes `depcruise`-Script, siehe Nachtrag) —
+  **Struktur des Importgraphen**: die Schichtung `parser → solver → components` als erlaubte
+  Richtung, die Solver-Fassade als eigene Regel (Name siehe Nachtrag), Import-Zyklen
   (`no-circular`) und verwaiste Module (`no-orphans`, mit Ausnahmen für Konfig-,
   Setup-, Einstiegs-, Test- und Skriptdateien). Konfiguriert über
-  `.dependency-cruiser.cjs`. Ein Sammel-Script `npm run analyze` führt Knip und
-  depcruise zusammen aus.
+  `.dependency-cruiser.cjs`. Ein Sammel-Script `npm run analyze` führt beide
+  dateiübergreifenden Prüfungen zusammen aus.
 
 ### Bewusste Überlappung an der Fassade
 
 oxlint und dependency-cruiser überwachen **beide** die Solver-Fassade aus
-ADR-0023 — oxlint über `no-restricted-imports`, dependency-cruiser über die Regel
-`solver-nur-ueber-fassade`, mit denselben Ausnahmen (solver-interne Module und
+ADR-0023 — oxlint über `no-restricted-imports`, dependency-cruiser über die
+Fassaden-Regel (Name siehe Nachtrag), mit denselben Ausnahmen (solver-interne Module und
 Testdateien frei). Diese Doppelung ist **gewollt**: oxlint fängt den Verstoß
 schnell und lokal beim Schreiben ab, dependency-cruiser prüft dieselbe Grenze im
 Gesamtgraphen und deckt zusätzlich die Zyklen ab, die oxlint gar nicht sieht.

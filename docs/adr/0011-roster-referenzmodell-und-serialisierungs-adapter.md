@@ -5,6 +5,21 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** 0002 (Data Flow & IndexedDB), 0003 (Battlescribe Domain Rules)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Zwei Bezeichner, die dieser ADR als Fundort nannte, definiert kein Modul
+> unter `src/` mehr; sie sind unten durch die Sache ersetzt, die sie benannten.
+>
+> - Der Sammler, der den Zustand der Listenregeln für die Ankreuzliste erhob (§1, Ausnahme-Absatz),
+>   ist entfallen. Die Ankreuzliste wird heute vom ViewModel
+>   `src/ui/viewmodels/editor/useListRuleChecklist.js` aus dem Auswertungsbericht gespeist
+>   (ADR-0034/0038); `ListRuleChecklist` gibt es unverändert.
+> - Die Query-Engine-Datei und ihre Scope-Anker-Funktion (§5, Absatz „Folge für die Validierung")
+>   sind mit ADR-0030/0034 entfallen — ADR 0029 ist seitdem *Superseded*. Die Scope-Auflösung liegt
+>   heute im Reinraum unter `src/contexts/ruleengine/engine/` (`model.js`, `resolver.js`); die
+>   Näherung „`includeChildForces` wertet das gesamte Roster aus" gilt dort unverändert.
+>
+> Die Entscheidungen dieses ADR — Referenz-Modell, Link-ID-Identität, Split und Flachlegung —
+> bleiben davon unberührt.
+
 ## Kontext und Problemstellung
 
 Beim Export/Import im BattleScribe-`.ros`-Format traten zwei Bugs auf (Kosten
@@ -66,7 +81,7 @@ Kosten-Round-Trip-Bugklasse strukturell aus.
   `useEffect` in `useRoster` sind entfernt. Listenregeln folgen damit **wieder dem
   Referenzmodell**: das Roster hält nur die tatsächlich vom Nutzer gesetzten
   Regel-Selektionen. Die Oberfläche stellt die „Special list rules"-Gruppe als
-  **schaltbare Ankreuzliste** dar (`collectListRuleStates` + `ListRuleChecklist`),
+  **schaltbare Ankreuzliste** dar (ein eigener Zustands-Sammler, siehe Nachtrag, plus `ListRuleChecklist`),
   angehakt ⇔ Regel im Roster präsent; Anhaken fügt die Selektion hinzu, Abhaken
   entfernt sie. Schema und `.ros`-Serialisierung bleiben unverändert (eine aktive
   Regel ist schlicht eine vorhandene Selektion); der Rückbau ist nicht-destruktiv
@@ -109,8 +124,8 @@ alle Kontingente flach unter `<forces>`.
 Folge für die Validierung: Da die Nachfahren-Beziehung, die `includeChildForces`
 im Format meint ([BSData-Doku](../battlescribe-data-format.md) §7.6), im Modell
 nicht existiert, wertet der Solver das Flag als **gesamtes Roster** aus — die
-kleinste im Modell verfügbare Obermenge. Der Kommentar in `queryEngine.js`
-(`resolveScopeAnchor`, `force`-Zweig) benennt genau das — die zentrale
+kleinste im Modell verfügbare Obermenge. Der Kommentar am `force`-Zweig der damaligen
+Scope-Auflösung (Datei und Funktion siehe Nachtrag) benennt genau das — die zentrale
 scope-bewusste Stelle nach ADR 0029, an die diese Näherung seit der
 Query-Engine-Konsolidierung isoliert ist.
 

@@ -5,6 +5,14 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs (falls vorhanden):** Keine
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Die Datei `useRoster.js` gibt es nicht. Der Hook, der den Roster-Zustand
+> hält, heißt `src/ui/viewmodels/useRosterState.js` — so, wie ihn der erste Satz unten bereits
+> nennt; jede weitere Erwähnung von `useRoster.js` in diesem ADR meint dieselbe Datei unter ihrem
+> damaligen Namen. Der generische Hook `src/ui/viewmodels/useUndoableState.js` existiert
+> unverändert und wird von `useRosterState.js` genutzt; die Persistenz ist inzwischen in
+> `src/ui/viewmodels/useRosterPersistence.js` ausgelagert. Die hier festgehaltene Entscheidung
+> bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Für das Feature "Undo/Redo im Editor" (siehe [PRD-editor-undo-redo.md](../PRD-editor-undo-redo.md)) muss der `roster`-State in `src/ui/viewmodels/useRosterState.js` rückgängig machbar und wiederherstellbar werden. `useRoster.js` verwaltet aktuell den Roster-State direkt über `React.useState` und enthält bereits Domänenlogik (Kostenberechnung, Validierung, Autosave, System-Synchronisation).

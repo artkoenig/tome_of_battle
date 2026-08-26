@@ -5,6 +5,19 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Zwei Bezeichner, die dieser ADR als Ort einer Regel nannte, gibt es
+> im Baum nicht mehr; sie sind unten durch die Sache ersetzt, die sie benannten.
+>
+> - **§2** nannte die damalige Sammelfunktion für Profile und Regeln. Im Produktivcode definiert sie
+>   kein Modul unter `src/` mehr — Profile und Regeln erreichen die Oberfläche seit ADR-0034 über den
+>   Auswertungsbericht. Die Regel selbst (der `catalogueId`-Kontext gehört zu jeder Auflösung) gilt
+>   unverändert; sie steht heute im Reinraum unter `src/contexts/ruleengine/engine/`.
+> - **§6** nannte die Modal-Komponente des Debug-Features. Das Feature ist mit Issue 0121 entfallen:
+>   weder die Komponente noch die CSS-Klasse `.debug-id-badge` existieren noch. Der Absatz bleibt als
+>   Beschreibung des damaligen Zustands stehen.
+>
+> Die Richtlinien 1, 3, 4 und 5 gelten unverändert.
+
 ## Kontext und Problemstellung
 
 Die Benutzeroberfläche von *Tome of Battle* muss hochgradig interaktiv sein. Spieler fügen Einheiten hinzu, passen Ausrüstungsoptionen an und sehen sofort die aktualisierten Punkte und Validierungsfehler. Bei großen Armeelisten mit tief verschachtelten Einheiten- und Upgrade-Strukturen kann es schnell zu Performance-Problemen kommen (z. B. Eingabe-Verzögerungen, blockierter UI-Thread, unnötige Re-Renders). Ebenso können asynchrone Datenbankzugriffe zu Race Conditions führen, wenn Komponenten demontiert (unmounted) werden, während Abfragen noch laufen.
@@ -24,7 +37,7 @@ Folgende Richtlinien für Komponentenstruktur, Performance und Lifecycle-Managem
 - Dies verhindert, dass übergeordnete Komponenten (Monolithen) mit Detail-Logik überfrachtet werden und bei jeder Detail-Änderung komplett neu rendern müssen.
 
 ### 2. Context Awareness bei Datenauflösungen
-- Beim Sammeln und Auflösen von Profilen und Regeln (z. B. über `collectUnitProfilesAndRules`) muss zwingend der `catalogueId`-Kontext übergeben werden; warum das Format das verlangt, steht in der [BSData-Doku](../battlescribe-data-format.md) (§3.2).
+- Beim Sammeln und Auflösen von Profilen und Regeln (damals über eine eigene Sammelfunktion, siehe Nachtrag) muss zwingend der `catalogueId`-Kontext übergeben werden; warum das Format das verlangt, steht in der [BSData-Doku](../battlescribe-data-format.md) (§3.2).
 
 ### 3. Keine blockierende UI bei DB-Importen
 - Das Parsen und Importieren großer XML-Kataloge in die IndexedDB darf den UI-Thread nicht einfrieren.
@@ -39,7 +52,7 @@ Folgende Richtlinien für Komponentenstruktur, Performance und Lifecycle-Managem
 - Die Anwendung verzichtet auf einen externen Router (wie React Router). Die Navigation zwischen den Hauptansichten (`rosters`, `importer`, `builder`, `play`) wird als einfacher Zustand (View-Switcher) verwaltet — gekapselt im Hook `src/ui/viewmodels/useAppNavigation.js`, den `App.jsx` verdrahtet (Navigation bleibt App-Zustand, kein Router). Dies hält die PWA leichtgewichtig.
 
 ### 6. Click-to-Edit Debug-Feature
-- Zur Entwicklung und Fehlersuche gibt es ein globales Debug-System. Durch Klicken auf ein `.debug-id-badge` (das nur auf localhost/privaten IPs aktiv ist) wird das `DebugEntryEditorModal` geöffnet, um Katalog-Einträge direkt im Kontext zu analysieren.
+- Zur Entwicklung und Fehlersuche gibt es ein globales Debug-System. Durch Klicken auf ein `.debug-id-badge` (das nur auf localhost/privaten IPs aktiv ist) wurde ein Modal zum Bearbeiten von Katalog-Einträgen geöffnet, um Katalog-Einträge direkt im Kontext zu analysieren.
 
 
 

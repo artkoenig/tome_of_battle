@@ -7,11 +7,30 @@
   ADR 0037 (Schichtung), ADR 0038 (ViewModels) und ADR 0039 maschinell um;
   löst dependency-cruiser als deren Prüfer ab.
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Drei Angaben unten sind nicht mehr nachprüfbar oder nicht mehr wahr.
+>
+> - **Zwei Regelnamen sind nicht nachschlagbar.** Der Name, unter dem der Rückgriff der
+>   Daten-Schicht verboten war, heißt in `.cast/rules.json` heute `plattform-kein-rueckgriff`
+>   (die Daten-Schicht ist seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) `src/platform/`); die
+>   Schicht, unter der die Anzeige-Ableitungen aus ADR-0038 zusammengefasst waren, gibt es in
+>   `.cast/layers.json` nicht mehr — die Regel `ableitungen-nur-in-viewmodels` steht dort heute
+>   ohne eigene Schicht. Beide sind unten durch die Sache ersetzt, die sie benannten.
+> - **Ein `depcruise`-Script gibt es nicht.** `package.json` kennt `lint`, `knip`, `cast` und
+>   `analyze`; `forge-lint` ist heute `npm run lint && npm run cast`.
+> - **Die Messwerte des Abschnitts „Heute meldet `npm run cast`" waren die eines einzelnen Laufs.**
+>   Sie sind mit jedem Umbau des Baumes falsch geworden — zuletzt durch Issue 0203 — und darum
+>   durch das Kommando ersetzt, das sie erzeugt. Ein Zahlenstand in Prosa ist genau der Fehler, den
+>   [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) in seinem Erratum
+>   bereits zurückweist.
+>
+> Die Entscheidung — cast ist der Strukturprüfer, jede Regel `error`, kein Baseline-File — bleibt
+> davon unberührt.
+
 ## Kontext und Problemstellung
 
 dependency-cruiser war an zwei voneinander unabhängigen Stellen der
 Strukturprüfer des Projekts: als blockierende Hälfte des Lint-Gates
-(`forge-lint` = `npm run lint && npm run depcruise`) und als Graphquelle des
+(`forge-lint` = `npm run lint` plus das damalige depcruise-Script) und als Graphquelle des
 Zustandsberichts (`scripts/project-state/`). Mit cast — dem Modulgraph-Werkzeug,
 das als Claude-Code-Plugin bereits installiert ist und auf demselben
 Wrapper-Vertrag antwortet (Exit 0 mit einer Zeile, Exit 1 mit jedem Fundort,
@@ -85,12 +104,14 @@ Schichtname oder ein Pfad-Glob — keine Listen, keine Negation, keine `pathNot`
 Daraus folgen drei Übersetzungsmuster:
 
 - **Mehrere Ziele → mehrere Einträge gleichen Namens.** `komponente-kein-bericht`
-  und `daten-kein-rueckgriff` stehen je zweimal in der Datei; die Gruppierung der
-  Ausgabe führt sie unter ihrem Namen zusammen.
+  und die Regel gegen den Rückgriff der Daten-Schicht (Name siehe Nachtrag) stehen
+  je zweimal in der Datei; die Gruppierung der Ausgabe führt sie unter ihrem Namen
+  zusammen.
 - **Eine benannte Menge → eine Schicht.** `.cast/layers.json` zieht die
   Evaluator-Fassade (`evaluator-fassade`) von den engine-internen Modulen
-  (`evaluator-intern`) ab und fasst die drei Anzeige-Ableitungen aus ADR 0038 als
-  `anzeige-ableitungen` zusammen. So bleiben `evaluator-nur-ueber-fassade` und
+  (`evaluator-intern`) ab und fasste die drei Anzeige-Ableitungen aus ADR 0038 zu
+  einer eigenen Schicht zusammen (Name siehe Nachtrag). So bleiben
+  `evaluator-nur-ueber-fassade` und
   `ableitungen-nur-in-viewmodels` je ein einziger Eintrag — die Fassade ist
   ausgenommen, weil sie eine eigene Schicht ist, nicht weil eine Ausnahmeregel
   sie nachträglich freispricht.
@@ -125,7 +146,7 @@ Gezählt wurde beim Umstieg, mit `warn` (17 Einträge unter 14 Regelnamen):
 | `komponente-kein-bericht` | 0 |
 | `viewmodel-keine-datenschicht` | 0 |
 | `ui-nicht-auf-daten` | 0 |
-| `daten-kein-rueckgriff` | 0 |
+| Regel gegen den Rückgriff der Daten-Schicht (Name siehe Nachtrag) | 0 |
 | `fachlogik-kein-rueckgriff` | 0 |
 | `keine-i18n-unter-ui` | 0 |
 | `evaluator-keine-roster-abhaengigkeit` | 0 |
@@ -145,15 +166,13 @@ Testgerüst importiert, ist eine Meldung wert. Aufgelöst wurde sie nicht per
 `allowed`, sondern am Ort: die beiden Helfer liegen jetzt unter
 `src/tests/test-utils/`, wo Tests und Messskript sie holen.
 
-Heute meldet `npm run cast`:
-
-```
-0 violations (0 errors) in 1235 module edges against 17 rules
-```
-
-554 Module, 1235 aufgelöste Importkanten, 17 Einträge — und keine Verletzung.
-Alle Regeln zusammen kosten damit null Kanten; das ist die Zahl, auf der `error`
-steht.
+Was die Prüfung **heute** meldet, sagt `npm run cast` (Zusammenfassungszeile:
+Verstöße, Modulkanten, Regeleinträge) und `cast report` (Module, Zyklen,
+Schichtzuordnung). Die Zahlen stehen bewusst nicht hier: sie ändern sich mit
+jedem Umbau des Baumes, und ein Stand in Prosa wäre ab dem nächsten Issue falsch.
+Maßgeblich ist die Aussage, auf der `error` steht — **null Verstöße über alle
+Regeln**; das war beim Umstieg so und ist die Bedingung, die die CI seither
+durchsetzt.
 
 ### Konsequenzen (Auswirkungen)
 
@@ -167,10 +186,11 @@ steht.
   folgen), aber es ist ein Preis. `no-restricted-imports` in `.oxlintrc.json`
   bleibt daneben stehen — der zweite, editornahe Spiegel für Fassade und
   Reinraum.
-- **Neutral:** `.cast/layers.json` ordnet 549 der 554 Module einer Schicht zu;
-  die übrigen fünf (Konfigurationsdateien, `public/sw.js`,
+- **Neutral:** `.cast/layers.json` ordnet fast jedes Modul einer Schicht zu; die
+  übrigen (Konfigurationsdateien, `public/sw.js`,
   `tools/rules-editor/server.js`, `docs/assets/landing.js`) bleiben
-  `unassigned` — cast zählt und nennt sie, es fällt nichts weg.
+  `unassigned` — cast zählt und nennt sie, es fällt nichts weg. Wie viele es
+  gerade sind, sagt `cast report`.
 
 ## Vor- und Nachteile der Optionen
 

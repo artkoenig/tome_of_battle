@@ -7,15 +7,22 @@
   [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) überholt:
   `src/domain/` und `src/data/` gibt es nicht mehr, an ihrer Stelle stehen `src/contexts/`,
   `src/platform/` und `src/shared/`. Die geprüfte Richtung UI → Fachlogik → Daten gilt
-  unverändert weiter, nur unter den neuen Namen
+  unverändert weiter, nur unter den neuen Namen.
 - **Datum:** 2026-08-20
 - **Beteiligte:** Projektinhaber, Architektur-Review
 - **Zugehörige ADRs:** ergänzt ADR-0030 (Reinraum-Trennung) und ADR-0034 (Bericht als
   alleinige Quelle); wird für die Oberfläche verfeinert durch ADR-0038 (ViewModel-Muster);
   betrifft die Regeln aus ADR-0024 (Statik-Toolchain); die Schichttabelle wird durch
-  [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt
+  [ADR-0040](0040-services-und-rules-von-daten-zu-fachlogik.md) ergänzt.
 
 > **Nachtrag (Issue 0205, 2026-08-26).** dependency-cruiser ist kein Prüfer dieses Projekts mehr: [ADR-0041](0041-cast-als-strukturpruefer.md) hat ihn durch **cast** abgelöst, `.dependency-cruiser.cjs` wurde mit Commit 997d49f entfernt. Wo unten `.dependency-cruiser.cjs` oder eine dependency-cruiser-Regel steht, steht heute `.cast/rules.json` (`npm run cast`); die geprüften Kanten gelten unverändert weiter.
+
+> **Nachtrag (Issue 0207, 2026-08-26).** Ein Regelname der Tabelle unten ist nicht mehr nachschlagbar. Die Regel,
+> die den Rückgriff der Daten-Schicht auf UI und Fachlogik verbot, heißt in `.cast/rules.json` heute
+> `plattform-kein-rueckgriff` — die Daten-Schicht dieses ADR ist seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md)
+> `src/platform/`. Die drei übrigen Namen der Tabelle (`ui-nicht-auf-daten`,
+> `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`) stehen unverändert in `.cast/rules.json`. Die
+> geprüfte Richtung UI → Fachlogik → Daten gilt unverändert.
 
 ## Kontext und Problemstellung
 
@@ -110,7 +117,7 @@ Neue Regeln in `.dependency-cruiser.cjs`, Testdateien wie bisher ausgenommen:
 | Regel | Verbietet |
 |---|---|
 | `ui-nicht-auf-daten` | UI → `src/data/db/`, `src/data/parser/` (nur `src/data/services/` ist erlaubt) |
-| `daten-kein-rueckgriff` | Daten → UI, Daten → Fachlogik |
+| Regel gegen den Rückgriff der Daten-Schicht (Name siehe Nachtrag) | Daten → UI, Daten → Fachlogik |
 | `fachlogik-kein-rueckgriff` | Fachlogik → UI |
 | `keine-i18n-unter-ui` | Fachlogik/Daten → `src/ui/i18n/` |
 

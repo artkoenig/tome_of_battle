@@ -5,6 +5,18 @@
 - **Beteiligte:** Artjom König
 - **Zugehörige ADRs (falls vorhanden):** ergänzt ADR-0014 (Laufzeit-Abruf der Kataloge aus dem Fork)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** `src/platform/battlescribe/schema/PROVENANCE.md` widersprach diesem ADR:
+> es verlangte, die vendorte `Catalogue.xsd` **byte-identisch** zu upstream zu halten, und pinnte
+> eine SHA-256, die die Datei seit den Revisionen vom 2026-07-19 und 2026-07-31 nicht mehr trägt.
+> Wer der Provenance-Datei folgte, hätte upstream neu gezogen und damit die drei Modifier-Konstrukte
+> und `conditionGroup type="not"` still wieder entfernt — die Regression aus Issue 0115. Die
+> Provenance-Datei ist mit diesem Issue korrigiert: sie nennt die Hand-Ergänzungen an der Stelle,
+> an der ein Nachziehender sie trifft, und führt keine Prüfsumme mehr, die die Datei nicht halten
+> kann. Der Codegen-Guard (`npm run generate:schema` + `scripts/generate-schema-module.test.js`)
+> bleibt die Absicherung; das erzeugte Modul liegt seit Issue 0186 als
+> `src/shared/battlescribe/battlescribeSchema.generated.js`. Die hier festgehaltene Entscheidung
+> bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Parser und Evaluator unterstützen das BattleScribe-Format bislang nur so weit, wie

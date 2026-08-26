@@ -5,6 +5,23 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Zwei Aussagen unten stimmen mit dem Baum nicht mehr überein.
+>
+> - **Vier Object Stores, nicht drei.** `src/platform/persistence/database.js` legt `systems`,
+>   `rosters`, `games` und `settings` an (DB-Version 3). Der Store `games` kam mit Issue 0190 hinzu:
+>   die laufende Partie einer Liste (Wunden, Runde, SP, KP) lebt außerhalb des Roster-Datensatzes,
+>   damit eine Wunde nie eine Liste überschreibt. `onupgradeneeded` legt jeden fehlenden Store an,
+>   statt eine frische Datenbank vorauszusetzen.
+> - **Die Modulpfade unten sind historisch.** Seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder
+>   `src/data/` noch `src/domain/`: `src/data/db/database.js`, `systemImport.js`,
+>   `catalogSourceIndex.js` und `migrations.js` liegen als `src/platform/persistence/…`,
+>   `src/data/parser/xmlParser.js`, `zipExtractor.js` und `libraryDependencies.js` als
+>   `src/platform/battlescribe/…`, `src/domain/evaluation/useEvaluation.js` als
+>   `src/contexts/ruleengine/readmodel/useEvaluation.js`.
+>
+> Die hier festgehaltene Entscheidung — Repository-Kapselung, IndexedDB als Primärquelle,
+> debounced Schreiben bei synchroner Ableitung — bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 *Tome of Battle* ist eine reine Client-Side PWA ohne Backend-Infrastruktur. Alle Daten (importierte Battlescribe-Kataloge und erstellte Armeelisten/Roster) müssen persistent im Browser des Benutzers gespeichert werden. Dafür wird IndexedDB verwendet.

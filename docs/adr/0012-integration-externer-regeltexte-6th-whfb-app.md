@@ -5,6 +5,13 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** 0010 (Einheitliches Dialog- und Toast-System), 0002 (Data Flow & IndexedDB)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Die Pfade unten sind historisch. Seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es
+> `src/data/` nicht mehr: der Regel-Index, das Synonym-Mapping und die Auflösung liegen als
+> `src/contexts/rulebook/rules-index.json`, `src/contexts/rulebook/synonyms.js` und
+> `src/contexts/rulebook/rulesLookup.js` im Kontext *rulebook*. `RulesIndexDialog`, der
+> Einstellungs-Context aus ADR-0015 und der Editor unter `tools/rules-editor/` gibt es unverändert.
+> Die hier festgehaltene Entscheidung bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Die App zeigt Regeltexte (Sonderregeln, Waffen, Magic Items) nur in der knappen

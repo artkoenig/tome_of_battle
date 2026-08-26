@@ -1,9 +1,25 @@
 # 0014: Kataloge als externes Fork-Repo mit Laufzeit-Abruf
 
-- **Status:** Accepted
+- **Status:** Accepted — die **Quellenwahl** (Fork von `Ergofarg/Warhammer-Fantasy-6th-edition` als
+  einzige Katalogquelle) ist durch [ADR 0017](0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md)
+  und [ADR 0018](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md) überholt; die
+  **Mechanik** (Laufzeit-Abruf über `raw.githubusercontent.com`, `catpkg.json` als Indexformat,
+  „higher wins" auf `revision`) gilt unverändert weiter
 - **Datum:** 2026-07-15
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Ergänzt [ADR 0002](0002-data-flow-and-indexeddb-storage.md) (Data Flow & IndexedDB), berührt [ADR 0006](0006-testing-and-automation.md) (Testing), [ADR 0011](0011-roster-referenzmodell-und-serialisierungs-adapter.md) (Roster-Referenzmodell)
+
+> **Nachtrag (Issue 0207, 2026-08-26).** Der Ergofarg-Fork ist nicht mehr die Katalogquelle der App.
+> [ADR 0017](0017-lexicanum-katalog-fork-mit-eigener-revision-ci.md) hat das Fork-Ziel auf
+> *Lexicanum Imperialis* umgestellt und die Revisionsführung in eine eigene Fork-CI verlegt, weil
+> dort `revision` nie stieg; [ADR 0018](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md)
+> hat daraus den **Mehrquellenbetrieb** gemacht — beide Quellen stehen parallel, die Zuordnung läuft
+> über `gameSystemId`. Der Satz unten, der Ergofarg als Upstream und die dortige CI-Disziplin als
+> Voraussetzung führt, beschreibt damit den Stand von 2026-07-15. Was von diesem ADR trägt: der
+> Laufzeit-Abruf statt Build-Zeit-Bundling, `catpkg.json` als übernommenes Indexformat, und
+> „higher wins" auf `revision` als einziges Update-Signal. Der Service-Worker-Cache für
+> `raw.githubusercontent.com`, den dieser ADR eingeführt hat, ist durch
+> [ADR 0020](0020-katalogdaten-network-only-kein-service-worker-cache.md) wieder entfernt.
 
 ## Kontext und Problemstellung
 

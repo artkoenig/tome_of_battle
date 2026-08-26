@@ -5,6 +5,19 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Keine
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Vier Bezeichner, die dieser ADR als Ort einer Regel nannte, definiert
+> kein Modul unter `src/` mehr; sie sind unten durch die Sache ersetzt, die sie benannten. Betroffen
+> sind die Auslegung von `shared` (§3.4), die effektiven Kategorie-Verknüpfungen und der effektive
+> Name (§4). Alle vier gingen mit Issue 0121 im Reinraum auf: `shared` wertet heute die Zählung in
+> `src/contexts/ruleengine/engine/countIndex.js` aus, die effektiven Kategorien und Namen entstehen
+> im Fixpunkt über `src/contexts/ruleengine/engine/effectiveState.js` und erreichen die Oberfläche
+> nur über den Auswertungsbericht (ADR-0034). `getModifiedConstraintValue` und
+> `canGroupMaxBeRaisedAboveSingleChoice` gibt es unverändert
+> (`src/ui/viewmodels/editor/selectionBehavior.js` bzw.
+> `src/contexts/ruleengine/engine/groupBehavior.js`). Die Regeln selbst — eine einzige auslegende
+> Stelle je Format-Attribut, Dokumentreihenfolge der Modifier, keine hardcodierten Kategorienamen —
+> gelten unverändert.
+
 > **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
 
 ## Kontext und Problemstellung
@@ -50,11 +63,11 @@ Für unumgängliche Besonderheiten einzelner Spielsysteme gab es die Datei `src/
 - **Geteilte und nicht geteilte Queries (`shared`):** Die Semantik des Attributs (XSD-Vorgabewert `true`, instanzweise Zählung bei `false`) steht in der [BSData-Doku](../battlescribe-data-format.md) (§7.6, §7.7). Entscheidungen hier:
   - Der Parser setzt den XSD-Vorgabewert explizit — ein als `false` eingelesenes fehlendes Attribut würde jede aggregierende Query stillschweigend in eine instanzweise verwandeln.
   - Der `scope="parent"` bleibt von `shared` unberührt — er ist bereits an genau eine Instanz (den Eltern-Container) gebunden.
-  - Die Auslegung des Attributs liegt ausschließlich in `isSharedQuery`; keine zählende Stelle interpretiert `query.shared` selbst. Ein nur geparster, aber nicht ausgewerteter Wert wäre der schlechteste Zustand: Er sähe nach Unterstützung aus, ohne welche zu sein, und ließe jede nicht geteilte Beschränkung systematisch überzählt erscheinen — mit falschen Verstößen und dadurch nach ADR 0022 fälschlich gesperrten Einträgen im Aushebe-Dialog.
+  - Die Auslegung des Attributs liegt ausschließlich an einer einzigen Stelle (Name siehe Nachtrag); keine zählende Stelle interpretiert `query.shared` selbst. Ein nur geparster, aber nicht ausgewerteter Wert wäre der schlechteste Zustand: Er sähe nach Unterstützung aus, ohne welche zu sein, und ließe jede nicht geteilte Beschränkung systematisch überzählt erscheinen — mit falschen Verstößen und dadurch nach ADR 0022 fälschlich gesperrten Einträgen im Aushebe-Dialog.
   - **Bekannte Grenze:** Constraints, die an einer `selectionEntryGroup` hängen, werden ohnehin immer nur innerhalb der besitzenden Auswahl gezählt (nie armeeweit aggregiert), verhalten sich also unabhängig von `shared` stets instanzweise. Für die vorliegenden Daten ist das folgenlos; eine armeeweit aggregierende Gruppen-Constraint müsste erst umgesetzt werden, wenn ein Katalog sie tatsächlich verlangt.
-- **Modifier-Reihenfolge:** Modifier wirken in **Dokumentreihenfolge** — in der Reihenfolge, in der sie im Katalog stehen. Kein Modifier-Typ wird vorgezogen: `increment 2` gefolgt von `set 5` ergibt 5, die umgekehrte Reihenfolge ergibt 7. Diese Regel gilt einheitlich für alle Modifier-Verbraucher (Beschränkungswerte über `getModifiedConstraintValue`, Namen über `getEffectiveName`, Kategorien über `getEffectiveCategoryLinks`). Eine Ausnahme für einzelne Kataloge gibt es nicht; sollte je eine nötig werden, gehört sie als begründeter Sonderfall hierher und nicht in den Solver-Code.
+- **Modifier-Reihenfolge:** Modifier wirken in **Dokumentreihenfolge** — in der Reihenfolge, in der sie im Katalog stehen. Kein Modifier-Typ wird vorgezogen: `increment 2` gefolgt von `set 5` ergibt 5, die umgekehrte Reihenfolge ergibt 7. Diese Regel gilt einheitlich für alle Modifier-Verbraucher (Beschränkungswerte über `getModifiedConstraintValue`, Namen und Kategorien über die effektiven Zustände; Namen siehe Nachtrag). Eine Ausnahme für einzelne Kataloge gibt es nicht; sollte je eine nötig werden, gehört sie als begründeter Sonderfall hierher und nicht in den Solver-Code.
 - **Mutually-Exclusive Choices (Radio vs. Mehrfachauswahl):** Die Gruppen-Semantik (`max="1"` als Radio, „Max-hebbar ⇒ Mehrfachauswahl" samt Teufelskreis-Argument und XML-Beispiel) steht in der [BSData-Doku](../battlescribe-data-format.md) (§9.2, [§9.8](../battlescribe-data-format.md#98-bedingter-modifier-auf-ein-gruppen-maxmin-an-eine-andere-auswahl-oder-einen-scope-gekoppelt)). Entscheidungen hier: die statische „hebbar?"-Erkennung ist `canGroupMaxBeRaisedAboveSingleChoice`; das `increment`+`<repeat>`-Muster (mehrere Stück desselben Items, Dispel Scroll) wird gesondert als Mengen-Stepper behandelt; sämtliche Auswahl-, Anzeige- und Recruit-Entscheidungen leiten sich aus den **effektiven** (modifier-angepassten) Constraint-Werten ab, nie aus rohen.
-- **Auswahl-Kategorien in der UI:** Die Kategorie-Semantik (`primary`, effektive Kategorie nach `field="category"`-Modifiern) steht in der [BSData-Doku](../battlescribe-data-format.md) (§7.2, §8). Entscheidungen hier: die UI darf Einheiten niemals nach hardcodierten Kategorienamen gruppieren; maßgeblich ist stets die **effektive** Primärkategorie, zentral bestimmt über `getEffectiveCategoryLinks` / `getEffectiveEntryCategoryLinks` und von allen einsortierenden Stellen (Aushebe-Dialog, Sektions-Sichtbarkeit, Armee-weite Selektoren) einheitlich genutzt.
+- **Auswahl-Kategorien in der UI:** Die Kategorie-Semantik (`primary`, effektive Kategorie nach `field="category"`-Modifiern) steht in der [BSData-Doku](../battlescribe-data-format.md) (§7.2, §8). Entscheidungen hier: die UI darf Einheiten niemals nach hardcodierten Kategorienamen gruppieren; maßgeblich ist stets die **effektive** Primärkategorie, zentral bestimmt über die effektiven Kategorie-Verknüpfungen von Auswahl und Eintrag (Namen siehe Nachtrag) und von allen einsortierenden Stellen (Aushebe-Dialog, Sektions-Sichtbarkeit, Armee-weite Selektoren) einheitlich genutzt.
 
 
 ### Konsequenzen (Auswirkungen)

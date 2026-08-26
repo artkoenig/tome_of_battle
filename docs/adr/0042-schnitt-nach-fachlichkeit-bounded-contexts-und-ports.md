@@ -9,13 +9,29 @@
 
 > **Erratum (Issue 0205, 2026-08-26).** Der erste Positiv-Punkt unter „Konsequenzen“ nannte ursprünglich „23 Regeln“ und glossierte `kontext-kein-fremder-kontext` als „kein Kontext importiert einen anderen“. Beides war schon am Tag der Niederschrift ungenau: eine Zahl in Prosa veraltet mit jeder neuen Regel, und die Regel hat mit `lesemodell-die-eine-tuer` eine gesetzte Ausnahme. Der Punkt ist entsprechend korrigiert; die Entscheidung selbst ist unberührt.
 
+> **Erratum (Issue 0207, 2026-08-26).** Der Satz zur Abhängigkeit von `src/domain/services/` und der
+> Nachteil-Absatz von Option 1 nannten neben JSZip einen IndexedDB-Wrapper, den dieses Projekt nie
+> hatte: er steht in keiner `package.json` des Repositories und in keinem Modul seiner Historie —
+> die IndexedDB wird von Hand über die native API angesprochen
+> (`src/platform/persistence/database.js`). Zutreffend war und ist allein **JSZip**; beide Stellen
+> sind entsprechend berichtigt, und der falsche Name ist gestrichen, weil er nirgends nachschlagbar
+> ist.
+
+> **Nachtrag (Issue 0207, 2026-08-26).** Es sind drei Ports, nicht zwei. Neben
+> `armylist/ports/storagePort.js` und `catalog/ports/catalogRepository.js` nennt seit Issue 0190
+> auch `play/ports/storagePort.js` die Plattformschicht — derselbe ADR führt den Kontext *play*
+> vier Zeilen weiter oben bereits auf. Die Regel `kontext-nicht-auf-plattform` in
+> `.cast/rules.json` erlaubt entsprechend drei Ausnahmen; Titel und Aufzählung unten halten den
+> Stand von 2026-08-25 fest. Die Entscheidung — die Plattform wird ausschließlich über Ports
+> erreicht — bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 `src/` war nach Technik geschnitten: `ui/`, `domain/`, `data/`. Die Richtung stimmte —
 `cast report` fand 0 Zyklen und 0 Regelverstöße —, der Schnitt aber nicht.
 `src/domain/` war eine Schublade für fünf verschiedene Fachlichkeiten (Schreibmodell,
 Auswertung, Katalogbibliothek, Regeltexte, Datenfassade), und
-`src/domain/services/` importierte Dexie und JSZip direkt: die Fachlogik hing an der
+`src/domain/services/` importierte JSZip direkt: die Fachlogik hing an der
 Infrastruktur statt umgekehrt. Wer eine fachliche Frage stellte ("was gehört zur
 Armeeliste?"), fand die Antwort auf drei Verzeichnisse verteilt; wer eine technische
 stellte, fand sie an einer Stelle. Das ist die falsche Optimierung für ein Projekt, dessen
@@ -62,7 +78,8 @@ Drei Festlegungen, die aus der Simulation stammen und keine Geschmacksfragen sin
   beiden zu übersetzen.
 - `dataEvents.js` liegt in `shared/events/`. In `armylist` erzeugte es sofort die Kante
   `contexts/catalog -> contexts/armylist`.
-- Genau zwei Module unter `src/contexts/` dürfen `src/platform/` nennen:
+- Genau zwei Module unter `src/contexts/` dürfen `src/platform/` nennen (siehe Nachtrag — es sind
+  seit Issue 0190 drei):
   `armylist/ports/storagePort.js` und `catalog/ports/catalogRepository.js`. Sie enthalten
   keine Logik, nur Weiterleitungen.
 
@@ -93,7 +110,7 @@ Drei Festlegungen, die aus der Simulation stammen und keine Geschmacksfragen sin
 
 - **Gut, weil** keine Bewegung, kein Risiko, alle Pfade bleiben.
 - **Schlecht, weil** `domain/` weiter fünf Fachlichkeiten sammelt und die Fachlogik an
-  Dexie und JSZip hängt.
+  JSZip hängt.
 
 ### Option 2 (Contexts, Shared Kernels, Ports)
 

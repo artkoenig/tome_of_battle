@@ -5,6 +5,21 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md), [ADR 0019: Manuelle Versionierung und Release-Freigabe](0019-manuelle-versionierung-und-release-freigabe.md), [ADR 0025: GitHub-Pages-Quelle auf Actions](0025-pages-quelle-auf-github-actions-mit-jekyll-build.md)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Der Bestand an Workflows unten stimmt nicht mehr.
+>
+> - **Der Doku-Abgleich unter Punkt 2 wurde nie gebaut.** `.github/workflows/` enthält heute
+>   `ci.yml`, `issue_agent.yml`, `status-report.yml` und `tag-on-version-bump.yml` — keinen
+>   Doku-Abgleich, und in der Historie des Repositories gab es ihn nie. Punkt 2 beschreibt damit
+>   eine Absicht, keinen Lauf; das Nachziehen der Dokumentation ist Sache der Issues selbst.
+> - **Der CI-Job hat seit ADR-0024/0041 mehr Schritte, als Punkt 1 aufzählt:** `npm run knip`
+>   (warn-only, `continue-on-error`) und `npm run cast` (die Strukturprüfung, blockierend seit
+>   [ADR-0041](0041-cast-als-strukturpruefer.md)) laufen zwischen Lint und Typecheck.
+> - **Der Puppeteer-E2E läuft nicht mehr auf jedem PR**, sondern in einem eigenen Job auf `main`;
+>   die Zusicherung unter Punkt 1, `main` sei dadurch immer voll funktionstüchtig, gilt in dieser
+>   Form nicht.
+>
+> Die Entscheidung — fokussierte Workflows statt eines Monolithen — bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Da *Tome of Battle* eine komplexe Client-Side Webanwendung (React + Vite PWA) mit automatisierten E2E-Tests und Unit-Tests ist, muss sichergestellt werden, dass die Codequalität auf dem Haupt-Branch kontinuierlich gewahrt bleibt.
@@ -31,7 +46,7 @@ Nach der Umstellung auf eine Trunk-based Strategie bestehen folgende Workflows:
   - **Lint & Unit-Tests:** Führt `npm run lint`, `npm run typecheck` (TypeScript-Prüfung der JSDoc-Typen im Produktivcode via `tsc --noEmit` mit `checkJs`; Testdateien sind über die `tsconfig.json` ausgenommen) und `npx vitest run` aus.
   - **E2E-Tests:** Führt `e2e/ui.test.js` mit einem echten, frisch installierten Chromium-Browser via Puppeteer aus. Dies garantiert, dass `main` immer voll funktionstüchtig ist.
 
-### 2. Doku-Abgleich (`.github/workflows/doc-drift-check.yml`)
+### 2. Doku-Abgleich (geplant, nie umgesetzt — siehe Nachtrag)
 - **Trigger:** Läuft nach jedem Merge/Push auf den `main`-Branch.
 - **Ablauf:** Verwendet Claude, um den Commit-Diff mit den Markdown-Dateien zu vergleichen. Stellt der Bot fest, dass die Dokumentation veraltet ist, korrigiert er sie und öffnet einen neuen PR gegen `main`.
 

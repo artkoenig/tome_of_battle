@@ -25,6 +25,13 @@
 
 > **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Die Funktion, die den Scope-Anker auflöste, definiert kein
+> Modul unter `src/` mehr; sie ist darum durch die Sache ersetzt, die sie benannte. Die
+> Scope-Auflösung liegt heute im Reinraum unter `src/contexts/ruleengine/engine/` (`model.js` hält
+> die `ScopeKeyword`/`ScopeKind`-Aufzählungen und `scopeKey`, `resolver.js` die Auswertung). Die
+> Entscheidung — genau eine scope-bewusste Stelle für Constraint, Condition und Repeat — gilt dort
+> unverändert weiter.
+
 ## Kontext und Problemstellung
 
 Die Auswertung von BSData-Regeln — Grenzen (Constraints), Bedingungen
@@ -111,7 +118,7 @@ Ergebnis` ohne verborgenen Zustand. Ihr Aufbau:
    Eintrags-Ziel → `forceSelectionCounts[force.id]`, Kategorie-Ziel
    (`isCategoryTargetId`) → `selectionCounts`.
    Diese Vereinheitlichung — Conditions, Repeats *und* der Profil-Statwert-Pfad
-   (`profileCollector`) laufen jetzt über denselben `resolveScopeAnchor` und
+   (`profileCollector`) laufen jetzt über dieselbe Scope-Anker-Auflösung (L2a) und
    denselben Repeat-Zähler statt über eigene Inline-Auflösungen — wurde in Issue 63,
    Slices 06/07 nachgezogen.
 
@@ -198,7 +205,7 @@ Regelkonstrukte sind Queries plus eine dünne Reaktion auf `n`:
                          ┌───────────────────▼───────────────────────┐
    Query + Subjekt  ──►  │  L2  measureQuery(query, subject, ctx) → n │
                          │  ┌─────────────────────────────────────┐  │
-                         │  │ L2a resolveScopeAnchor(scope, …)     │  │  ◄── EINZIGE
+                         │  │ L2a scopeAnchor(scope, …)            │  │  ◄── EINZIGE
                          │  │     scope-Token → Anker (Node-Set /  │  │      scope-BEWUSSTE
                          │  │     Count-Bucket). Nur HIER lebt die │  │      Stelle
                          │  │     geschlossene Scope-Liste.        │  │
@@ -238,8 +245,8 @@ Regelkonstrukte sind Queries plus eine dünne Reaktion auf `n`:
   memoisiert; bündelt Count-Maps, Definitions-Resolver und Kostenart-Auflösung.
   Macht die faktische Zweiphasigkeit zu einem *benannten Vertrag* statt zu
   implizitem Wissen jeder Aufrufstelle.
-- **L2 — `measureQuery`, geteilt in scope-bewusst vs. scope-agnostisch:** `L2a
-  resolveScopeAnchor` ist die *einzige* Stelle, die die geschlossene Scope-Liste
+- **L2 — `measureQuery`, geteilt in scope-bewusst vs. scope-agnostisch:** die
+  Scope-Anker-Auflösung **L2a** ist die *einzige* Stelle, die die geschlossene Scope-Liste
   kennt und ein Scope-Token auf einen Anker abbildet; `L2b measureOver` zählt/
   summiert über den Anker als **Parameter**, ohne die Scope-Wörter zu kennen.
   Ersetzt die fünf heutigen Resolver; der `parent`-Lauf existiert danach einmal.

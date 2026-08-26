@@ -7,6 +7,16 @@
   sprachfreie Fehler) fort; respektiert ADR-0003 (keine katalogspezifische Logik)
   und ADR-0022 (App- vs. Autor-Meldung, UI leitet sich aus dem Validator ab).
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Der Weg, den dieser ADR beschreibt, führt durch einen Solver, den es
+> nicht mehr gibt. `src/solver/` ist mit Issue 0121 entfallen (ADR-0030/0034), ADR-0022 ist
+> *Superseded (0035)*, ADR-0023 *Superseded (0121)*. Die Entscheidung selbst hat den Umbau
+> überlebt, arbeitet aber anders: Die Ursachen werden heute im Reinraum hergeleitet
+> (`src/contexts/ruleengine/engine/causes.js`) und erreichen die Oberfläche **ausschließlich über
+> den Auswertungsbericht** (ADR-0034), nicht mehr als Feld an einem vom Validator geworfenen
+> Fehlerobjekt; die Übersetzung liegt in `src/ui/i18n/violationMessages.js`. Sprachfreiheit der
+> Herleitung, „Ursache = bedingter Modifier mit erfüllter Bedingung" und „Ehrlichkeit vor
+> Vollständigkeit" gelten unverändert.
+
 ## Kontext und Problemstellung
 
 Mechanische Validierungsmeldungen sagen nur *dass* ein Limit verletzt ist, nicht
@@ -101,4 +111,3 @@ dem Validator ab, keine zweite Regel-Implementierung).
 - **Gut, weil** kein neues Solver-Feld.
 - **Schlecht, weil** es die Regel-Auswertung in der UI dupliziert und ADR-0022
   bricht (zwei Wahrheiten).
-</content>

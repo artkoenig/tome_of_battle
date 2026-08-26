@@ -6,6 +6,13 @@ Status: accepted
 
 > **Nachtrag (Issue 0205, 2026-08-26).** Die Pfade unter `src/domain/` unten sind historisch: seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es weder `src/domain/` noch `src/data/`, `src/domain/evaluator/` liegt seitdem als `src/contexts/ruleengine/engine/`, `src/domain/roster/` als `src/contexts/armylist/model/`. Die hier festgehaltene Entscheidung bleibt davon unberührt.
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Der Strukturprüfer heißt seit [ADR-0041](0041-cast-als-strukturpruefer.md)
+> **cast** (`npm run cast`, Regeln in `.cast/rules.json`); ein `depcruise`-Script gibt es in
+> `package.json` nicht mehr. Der vendorte XSD-SSOT liegt seit Issue 0186 als
+> `src/shared/battlescribe/battlescribeSchema.generated.js` im gemeinsamen Kern, nicht mehr unter
+> dem Parser. Die Entscheidung — der Reinraum teilt den XSD-SSOT, statt ihn zu duplizieren — bleibt
+> davon unberührt.
+
 ADR-0030 hat die zweite Auswertungs-Engine (`src/domain/evaluator/`) bewusst mit einem
 **eigenen, erfundenen Vokabular** (`op` / `operation` / `targetKind` / `targetId`)
 gebaut und diese Abweichung von den echten BattleScribe-Attributen als „bewusst
@@ -29,7 +36,8 @@ Die Domänen-Semantik von `scope` und `field` — auf XSD-Ebene reine
 `xs:string`-Grammatik, siehe [BSData-Doku](../battlescribe-data-format.md) §7.6 —
 bleibt Evaluator-eigene Konvention und wird nicht aus dem Schreibmodell bezogen
 (der Import `evaluator → roster` ist per ADR-0030 verboten und wird von
-`npm run depcruise` als Fehler durchgesetzt).
+die Strukturprüfung als Fehler durchgesetzt — heute `npm run cast`, siehe
+[ADR-0041](0041-cast-als-strukturpruefer.md)).
 
 > **Stand nach Issue 0121 (2026-07-30).** Die Entscheidung gilt unverändert. Die
 > Gegenseite der Import-Isolation heißt seit dem Cutover `src/domain/roster/` (das

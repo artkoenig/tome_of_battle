@@ -5,6 +5,16 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md) (Tag-Push-Workflow), [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md) (Deploy-Trigger-Teil wird in einem separaten Hauptissue korrigiert), [ADR 0009: Branching and Release Strategy](0009-branching-and-release-train-strategy.md)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Den `pre-push`-Hook, auf den sich der letzte Satz des
+> Entscheidungsergebnisses beruft, installiert kein Checkout dieses Repositories: `.git/hooks/`
+> enthält ausschließlich die Beispieldateien von Git, `core.hooksPath` ist nicht gesetzt, und im
+> Baum liegt kein Hook-Verzeichnis, das ein Setup-Schritt verlinken würde. „Kein direkter Push auf
+> `main`" ist damit eine **Prozessregel** — durchgesetzt durch den PR-Zwang aus
+> [ADR 0009](0009-branching-and-release-train-strategy.md) und die Branch-Regeln von GitHub, nicht
+> durch einen lokalen Hook. Die Entscheidung selbst — `package.json` als Quelle der Version, Bump
+> auf dem Issue-Branch vor dem PR, Tag-Push automatisiert über
+> `.github/workflows/tag-on-version-bump.yml` — bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 Mit der Umstellung auf manuelles Promoten in Vercel (automatisches Deployment bei Push auf `main` wurde deaktiviert) entfällt die Notwendigkeit, die App-Version bei jedem `main`-Build automatisch aus dem höchsten vorhandenen Git-Tag vorherzuberechnen. Ein Release ist jetzt ein bewusster, manueller Akt, keine Nebenwirkung eines Pushes mehr.

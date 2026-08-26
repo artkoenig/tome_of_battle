@@ -5,6 +5,15 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** [ADR 0001: Record Architecture Decisions](0001-record-architecture-decisions.md), [ADR 0007: CI/CD Workflow](0007-ci-cd-workflow.md), [ADR 0008: Native Vercel Integration](0008-vercel-deployment.md)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** `main` ist nicht live. Seit [ADR 0019](0019-manuelle-versionierung-und-release-freigabe.md)
+> ist das automatische Production-Deployment abgeschaltet: ein Push auf `main` erzeugt ein
+> Production-Build, das erst durch **manuelles Promoten** in Vercel live geht
+> ([ADR 0008](0008-vercel-deployment.md)). Wo unten „main (Live)", „spiegelt stets die produktive
+> Live-Version wider" und „da `main` direkt live geschaltet wird" steht, gilt heute: `main` ist
+> jederzeit release-**fähig**, aber nicht automatisch release**t**. Die Branch-Struktur, der
+> Squash-Merge-Zwang und der Verzicht auf `staging` gelten unverändert; die Feature-Branches heißen
+> in Agentenläufen `claude/<thema>`.
+
 ## Kontext und Problemstellung
 
 Die frühere "Release Train"-Strategie mit einem dezidierten `staging`-Branch hat sich als zu schwerfällig erwiesen. Entwickler mussten zweistufig mergen (erst auf Staging, dann auf Main), was den Workflow verlangsamte. Eine simplere Trunk-based Strategie (GitHub Flow) mit automatisiertem Deployment über Tags ist flüssiger.

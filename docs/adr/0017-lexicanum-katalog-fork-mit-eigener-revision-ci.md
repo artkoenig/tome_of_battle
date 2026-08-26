@@ -1,9 +1,20 @@
 # 0017: Wechsel des Katalog-Forks zu Lexicanum Imperialis mit eigener Revision-CI
 
-- **Status:** Accepted
+- **Status:** Accepted — durch
+  [ADR 0018](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md) zum
+  Mehrquellenbetrieb erweitert: der Lexicanum-Fork ist nicht die *einzige*, sondern eine von zwei
+  parallel geführten Quellen
 - **Datum:** 2026-07-17
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Amendet [ADR 0014](0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md) (Kataloge als externes Fork-Repo mit Laufzeit-Abruf)
+
+> **Nachtrag (Issue 0207, 2026-08-26).** Zwei Aussagen unten sind überholt. Der Quellen**wechsel** ist seit
+> [ADR 0018](0018-katalog-mehrquellenbetrieb-ergofarg-und-lexicanum-parallel.md) ein
+> **Mehrquellenbetrieb**: Ergofarg und Lexicanum stehen parallel, die Zuordnung läuft über
+> `gameSystemId`. Und der Pfad `src/data/parser/xmlParser.js` ist historisch — seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md)
+> liegt der Parser als `src/platform/battlescribe/xmlParser.js`. Die hier festgehaltene
+> Entscheidung — eigene Revision-CI im Fork statt Vertrauen auf fremde Revisionsdisziplin — bleibt
+> davon unberührt.
 
 ## Kontext und Problemstellung
 

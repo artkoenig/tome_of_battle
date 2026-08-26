@@ -5,6 +5,12 @@
 - **Beteiligte:** Entwickler, KI-Assistenten
 - **Zugehörige ADRs:** Amendet [ADR 0014](0014-kataloge-als-externes-fork-repo-mit-laufzeit-abruf.md) (Kataloge als externes Fork-Repo mit Laufzeit-Abruf)
 
+> **Nachtrag (Issue 0207, 2026-08-26).** Die Pfade unten sind historisch. Seit [ADR-0042](0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md) gibt es
+> `src/data/` nicht mehr: `src/data/db/catalogUpdate.js` liegt als
+> `src/platform/persistence/catalogUpdate.js`, der Service Worker unverändert als `public/sw.js`.
+> Die hier festgehaltene Entscheidung — Katalogdaten network-only, kein SW-Cache für
+> `raw.githubusercontent.com` — bleibt davon unberührt.
+
 ## Kontext und Problemstellung
 
 ADR-0014 hat `raw.githubusercontent.com` bewusst der Service-Worker-Cache-Regel hinzugefügt, mit der Begründung, dass dies keine Offline-Regression sei — der erste Import brauche ohnehin schon Netzwerk. Der Service Worker (`public/sw.js`) setzt das als Stale-While-Revalidate um: eine gecachte Antwort wird sofort zurückgegeben, der echte Netzwerk-Request aktualisiert den Cache nur im Hintergrund für den *nächsten* Aufruf.
