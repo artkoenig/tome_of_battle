@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { saveRoster, deleteRoster } from '../../contexts/armylist/application/rosterStore';
-import { endGame } from '../../contexts/play';
 import { readRosterText, buildRosterFile } from '../../contexts/armylist/application/rosterTransfer';
 import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
@@ -179,10 +178,10 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     const id = rosterToDelete.id;
     setRosterToDelete(null);
     try {
+      // Die Partie der Liste endet mit ihr — das entscheidet seit Issue 0193 der
+      // Kontext `play` selbst, angemeldet am `roster-deleted`-Ereignis, das
+      // `deleteRoster` meldet. Hier steht nur noch das Loeschen der Liste.
       await deleteRoster(id);
-      // Eine Partie ohne Liste hat keinen Gegenstand (Produktentscheidung 2 des
-      // PRD): mit der Liste geht ihre laufende Partie.
-      await endGame(id);
       reloadData();
     } catch (err) {
       console.error(err);

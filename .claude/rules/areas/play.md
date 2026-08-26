@@ -37,10 +37,20 @@ Wunde schrieb den Listendatensatz neu und landete in der Undo-Historie der Liste
 - Verwaiste Wundeneinträge (Auswahl aus der Liste verschwunden) werden beim **Lesen ignoriert**
   und beim **nächsten Schreiben entfernt** — Produktentscheidung 1 des PRD. Ohne übergebene
   Liste wird nichts entfernt: lieber ein verwaister Eintrag als eine gelöschte Wunde.
-- Ein Löschen der Liste löscht ihre Partie. Weil kein Kontext den anderen ruft, verdrahtet das
-  die Oberfläche (`useRosterList.confirmRosterDeletion` ruft `endGame`). Ein Test, der
-  `platform/persistence/database` mockt und Listen löscht, braucht deshalb
-  `deleteGamesOfRoster` im Mock, sonst schlägt der Löschpfad still fehl.
+- **Ein Löschen der Liste löscht ihre Partie, und das entscheidet dieser Kontext** (Issue 0193):
+  `application/rosterDeletionPolicy.js` abonniert `roster-deleted` auf dem Änderungskanal
+  `src/shared/events/dataEvents.js` und ruft `endGame`. Kein Kontext ruft den anderen — die
+  Kopplung bleibt die `rosterId` über ein veröffentlichtes Ereignis, und `kontexte -> shared` ist
+  eine erlaubte Kante. Das Modul meldet sich beim Laden selbst an; scharf wird es über
+  `index.js`, das `useAppData` beim Start importiert. `endGame` steht deshalb **nicht** mehr in der
+  Tür `index.js` und hat keinen Aufrufer unter `src/ui/`.
+  Die Zustellung ist synchron und wartet auf niemanden: der Abonnent ist bewusst "feuern und
+  vergessen" mit eigenem `.catch` (ein zurückgegebenes Promise entkäme als unbehandelte
+  Ablehnung), die frühere Reihenfolge-Zusage entfällt. `endGame` ist idempotent, eine nie gespielte
+  Liste also ein leerer Lauf. Ein Test, der `platform/persistence/database` mockt und Listen
+  löscht, braucht weiterhin `deleteGamesOfRoster` im Mock, sonst schlägt der Löschpfad still fehl;
+  gepinnt ist die Regel rendererlos in
+  `src/tests/contexts/play/application/rosterDeletionPolicy.test.js`.
 - Die Start-Migration hängt in `useAppData.runStartupLoad` **vor** dem ersten Lesen. Jeder Test,
   der `platform/persistence/migrations` mockt, muss `runGameStateMigration` mitmocken.
 - Lauf: `forge-test --run src/tests/contexts/play`; die Migration: `forge-test --run migrations`.

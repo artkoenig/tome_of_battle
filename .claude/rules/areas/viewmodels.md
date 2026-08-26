@@ -30,10 +30,13 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   load with the save mark discards a wound taken while the read is still in flight and then
   persists the stale game. `hasPlayed` is reset at the top of the `[rosterId]` load effect, because
   another list is another game.
-- `useAppData.js` is the **only** subscriber of the facade's change channel
-  (`src/shared/events/dataEvents.js`): a write through `src/contexts/*/application/` announces itself
-  there and the one roster list follows. A screen that wants to see a foreign save subscribes
-  nowhere.
+- `useAppData.js` is the only subscriber of the facade's change channel
+  (`src/shared/events/dataEvents.js`) **in the UI layer**: a write through
+  `src/contexts/*/application/` announces itself there and the one roster list follows. A screen
+  that wants to see a foreign save subscribes nowhere. A bounded **context** may subscribe where a
+  rule of its own domain hangs off another context's write — `rosterDeletionPolicy.js` in
+  `contexts/play` ends the game of a deleted roster (Issue 0193), which is why the delete
+  confirmation in `useRosterList` only deletes the roster and no longer touches the play context.
 - `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
   `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
   catalog refresh; `reloadData` — what `useRosterList` gets — reads IndexedDB and nothing else.

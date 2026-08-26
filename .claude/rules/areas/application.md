@@ -26,10 +26,15 @@ Lauf: `forge-test --run src/tests/contexts`.
 - **Jeder schreibende Aufruf** meldet über `emitDataChange` — erst nach der Zusage der Ablage,
   nie im Fehlerfall (der Fehler wird durchgereicht). Lesende Wege und der Katalog-Abgleich
   melden nichts; `rosterTransfer` schreibt nichts und meldet deshalb auch nichts.
-- Der Emitter ist **an genau einer Stelle** abonniert: `src/ui/viewmodels/useAppData.js` zieht die
-  Roster-Liste aus der Meldung nach. Ein zweiter Abonnent in einem Bildschirm ist ein Rückfall —
-  vorher erfuhr eine Ansicht einen fremden Stand nur durch `reloadData` beim Navigationswechsel.
-  Ein Abonnent, der auf eine Meldung hin selbst aus der DB liest, ergibt einen Zugriff je Klick.
+- **Aus der Oberfläche ist der Emitter an genau einer Stelle abonniert**:
+  `src/ui/viewmodels/useAppData.js` zieht die Roster-Liste aus der Meldung nach. Ein zweiter
+  Abonnent in einem Bildschirm ist ein Rückfall — vorher erfuhr eine Ansicht einen fremden Stand
+  nur durch `reloadData` beim Navigationswechsel. Ein **Kontext** darf zuhören, wenn eine Regel
+  seiner Fachlichkeit an fremdem Schreiben hängt: `contexts/play/application/rosterDeletionPolicy.js`
+  beendet die Partie einer gelöschten Liste (Issue 0193). Solch ein Abonnent liest dabei durchaus
+  aus der DB — der Scan in `deleteGamesOfRoster` ist derselbe, den vorher die Oberfläche auslöste,
+  also kein zusätzlicher Zugriff. Neu hinzukommen darf ein DB-Lesen je Meldung trotzdem nicht: ein
+  Abonnent, der auf jede Meldung hin liest, ergibt einen Zugriff je Klick.
 - Wer hier einfügt, muss beim UI-seitigen `setRosters` prüfen: das Ereignis hat den Stand
   womöglich schon eingesetzt. Blindes Anhängen ergibt das Roster doppelt
   (`useRosterList.createRoster` hält das Muster vor).

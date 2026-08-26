@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useRosterList from '../../../ui/viewmodels/useRosterList';
-import { saveRoster, deleteRoster, deleteGamesOfRoster } from '../../../platform/persistence/database';
+import { saveRoster, deleteRoster } from '../../../platform/persistence/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
@@ -185,8 +185,9 @@ describe('useRosterList — Löschen', () => {
     });
 
     expect(deleteRoster).toHaveBeenCalledWith('roster-1');
-    // Eine Partie ohne Liste hat keinen Gegenstand (Issue 0190).
-    expect(deleteGamesOfRoster).toHaveBeenCalledWith('roster-1');
+    // Das Ende der Partie hängt seit Issue 0193 am `roster-deleted`-Ereignis und
+    // gehört dem Kontext `play`; gepinnt in
+    // `src/tests/contexts/play/application/rosterDeletionPolicy.test.js`.
     expect(deps.reloadData).toHaveBeenCalled();
     expect(result.current.rosterToDelete).toBeNull();
   });

@@ -26,7 +26,12 @@ Issue 0179 for being exactly that.
 - `battlescribe/` is the Battlescribe vocabulary, `rostermodel/` is ours. The ACL exists to
   translate between them — do not merge the two directories to save a level.
 - `events/dataEvents.js` is the one change channel. It lives here rather than in a context
-  because every writer announces into it and `src/ui/viewmodels/useAppData.js` is the single
-  subscriber; placed in a context it would make context import context.
+  because every writer announces into it and it has subscribers on both sides —
+  `src/ui/viewmodels/useAppData.js` is the only one in the UI, and a context may add one for a rule
+  of its own domain (`contexts/play/application/rosterDeletionPolicy.js`, Issue 0193). Placed in a
+  context it would make context import context; here `kontexte -> shared` is an edge the gate
+  allows. Delivery is **synchronous and unawaited**, and the `try/catch` around a listener catches
+  only a synchronous throw — an `async` listener must attach its own `.catch` and may not return
+  its promise, or a failure escapes as an unhandled rejection.
 - Test files stay under `src/tests/<old layer>/`, mirroring where the module used to live. They
   were not moved with the modules; only their import paths changed.
