@@ -28,8 +28,17 @@ drives `typescript-language-server` over stdio and offers its answers as MCP too
   although `src/shared/rostermodel/types.js` declares them, so the project's type vocabulary is
   invisible to both symbol tools -- grep stays the tool for it.
 - `LSP_CONTEXT_LINES` (default 5) sets how many source lines each hit carries.
-- `edit_file` is denied in `.claude/settings.json`: edits go through Edit, so they stay visible.
-  `rename_symbol` writes just as invisibly and is **not** denied.
+- `edit_file` is denied in `.claude/settings.json`. It addresses lines (`startLine`/`endLine`) and
+  checks nothing about what stands there, so a file that moved under it is overwritten silently --
+  where Edit fails on an `old_string` that no longer matches. It is no language-server answer
+  either, just a line writer sitting in the same process, so the ban costs nothing.
+- `rename_symbol` is **allowed** (`permissions.allow`), and deliberately so: it is the one edit the
+  language server itself computes -- scope-aware, across files, never a hit inside a string or a
+  comment. That is what [`docs/glossary.md`](../../docs/glossary.md) decisions need, and it is
+  safer than any `sed`. The price is that it writes without an Edit in the transcript, so it comes
+  with two obligations: run it only on a **clean working tree**, and read `git diff` afterwards and
+  name the sites it touched. Unreviewed, an invisible rename is exactly what the `edit_file` ban is
+  about.
 
 ## The first call decides the session
 
