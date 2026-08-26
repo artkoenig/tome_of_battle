@@ -38,9 +38,10 @@ directory: `forge-test --run src/contexts/armylist/model`; a single file: `forge
   the engine's `costProjection.raiseMembers.test.js` (Issue 0157). What
   belongs in `selectionFactory.test.js` is the other half — that a reported id
   finds its catalogue object, through groups and group links, in any depth.
-  The estimate a user sees before recruiting is the report's `raiseCosts` from
-  the same walk; that it agrees with the recruited selection's `totalCosts` is
-  pinned in `src/ui/viewmodels/useRosterState.recruitCostAgreement.test.js`.
+  The estimate a user sees before raising is the report's `raiseCosts` from
+  the same walk; that it agrees with the raised selection's `totalCosts` is
+  pinned in
+  `src/tests/ui/viewmodels/useRosterState.raiseCostAgreement.test.js`.
 - A case that needs a cost total reads `evaluateAppRoster(system, roster)` —
   `costTotals` roster-wide, `totalCosts`/`raiseCosts` per slot. There is no
   cost arithmetic left in this directory to call.
