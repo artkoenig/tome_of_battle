@@ -37,6 +37,13 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   rule of its own domain hangs off another context's write — `rosterDeletionPolicy.js` in
   `contexts/play` ends the game of a deleted roster (Issue 0193), which is why the delete
   confirmation in `useRosterList` only deletes the roster and no longer touches the play context.
+- A screen reaches a bounded context through **its barrel**, not through its inner modules:
+  `import { … } from '../../contexts/armylist'` (`src/contexts/armylist/index.js`, the counterpart
+  of `contexts/play/index.js`). A name that is missing there is added there. Consequence for the
+  report: a viewmodel does **not** fetch one to hand it into a write path — it calls a use case
+  that fetches its own (`applyMandatoryListRulesToFreshRoster`, `buildRosterExportFile`), so
+  `useRosterList` names exactly one context (Issue 0193). `useRosterDashboard` still calls
+  `evaluateAppRoster` directly; that is a **read** for display and stays.
 - `useAppData` keeps the **start run** and the **re-entry** apart, and they must stay apart:
   `runStartupLoad` (mount effect only) reads the DB, runs the start migration and the network
   catalog refresh; `reloadData` — what `useRosterList` gets — reads IndexedDB and nothing else.

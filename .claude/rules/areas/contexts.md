@@ -14,6 +14,13 @@ Katalogrevisionen), `rulebook` (Regeltext-Index) und `play` (die laufende Partie
   `.cast/rules.json`, blockierend. Was zwei Kontexte teilen, gehört nach `src/shared/**`
   (Fan-out 0) oder nirgendwohin. Die einzige Ausnahme ist die eine Tür des Lesemodells,
   `ruleengine/readmodel/index.js`, die von überall importiert werden darf.
+- **Jeder Kontext hat eine veröffentlichte Fläche**: `src/contexts/<kontext>/index.js`
+  (`play`, `armylist`). Von außen — vor allem aus `src/ui/` — wird nur diese Datei importiert,
+  nicht `application/…` oder `model/…` einzeln. Sie re-exportiert und enthält keine Logik, und sie
+  reicht **keinen fremden Kontext durch**: wer einen Bericht braucht, ruft einen Anwendungsfall,
+  der ihn über die eine Tür des Lesemodells selbst holt (Issue 0193). Ein Re-Export muss über
+  `model/index.js` laufen, nicht an ihm vorbei — sonst greift ein `vi.mock` auf den Modell-Barrel
+  nicht mehr und Tests fallen mit "spy not called" aus.
 - **`src/platform/**` erreicht ein Kontext nur über seinen Port**:
   `armylist/ports/storagePort.js`, `catalog/ports/catalogRepository.js` und
   `play/ports/storagePort.js` sind die einzigen Module unter `src/contexts/`, die die

@@ -25,7 +25,7 @@ import { unitsOfForce } from '../model/rosterTree.js';
 import { findEntryInSystem } from '../model/catalogResolver.js';
 import { catalogueIdOfForce, createSelectionFactory } from './rosterSelectionFactory.js';
 import { withRaisedUnits } from './raiseUnit.js';
-import { findMissingMandatoryListRules } from '../../ruleengine/readmodel/index.js';
+import { evaluateAppRoster, findMissingMandatoryListRules } from '../../ruleengine/readmodel/index.js';
 import '../../../shared/rostermodel/types.js';
 
 /**
@@ -86,4 +86,27 @@ export function applyMandatoryListRules(roster, { system, slots, isFreshRoster =
 function entryOfCapability(system, capability, catalogueId) {
   if (!capability?.defId) return null;
   return findEntryInSystem(system, capability.defId, catalogueId) ?? null;
+}
+
+/**
+ * Derselbe Anwendungsfall für ein **gerade entstandenes** Roster, dem noch kein
+ * Bericht zur Seite steht: Anlegen und `.ros`-Import haben das System, aber
+ * keine Slot-Seite. Sie holen sie seit Issue 0193 nicht mehr selbst — das war
+ * der einzige Grund, aus dem die Oberfläche das Lesemodell überhaupt nannte
+ * (T4-Nachbesserung: `useRosterList` kennt genau einen Kontext).
+ *
+ * Das Holen des Berichts ist hier erlaubt und in `applyMandatoryListRules`
+ * ohnehin schon vorhanden: der Anwendungsfall spricht das Lesemodell über
+ * dessen eine Tür an (`ruleengine/readmodel/index.js`). Nur das Schreib**modell**
+ * wertet nicht aus (ADR-0039).
+ *
+ * @param {import('../../../shared/rostermodel/types.js').Roster} roster
+ * @param {Object|null|undefined} system  das App-System; ohne System bleibt das
+ *   Roster unverändert.
+ * @returns {import('../../../shared/rostermodel/types.js').Roster}
+ */
+export function applyMandatoryListRulesToFreshRoster(roster, system) {
+  if (!system) return roster;
+  const { slots } = evaluateAppRoster(system, roster);
+  return applyMandatoryListRules(roster, { system, slots, isFreshRoster: true }) ?? roster;
 }

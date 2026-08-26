@@ -66,6 +66,12 @@ Lauf: `forge-test --run src/tests/contexts`.
   `.ros`-Import in `useRosterList.js`, Editor-Sitzung über `useMandatoryListRuleAutoAdd.js`). Das
   Frisch-Tor ist Verhalten (kein Gerüst) und bleibt ein ausdrückliches Argument; die Erkennung
   (`findMissingMandatoryListRules`) bleibt Projektion des Lesemodells.
+- **Der Bericht wird hier geholt, nicht hereingereicht**: `mandatoryListRules.js`
+  (`applyMandatoryListRulesToFreshRoster`) und `rosterExport.js` (`buildRosterExportFile`) rufen
+  `evaluateAppRoster` selbst. Ein Bildschirm, der auswertet, um das Ergebnis in einen Schreibweg
+  zu reichen, nennt einen zweiten Kontext nur für diesen einen Aufruf (Issue 0193). ADR-0039
+  verbietet das Auswerten dem Schreib**modell** (`armylist/model/**`, blockierend), nicht dieser
+  Schicht.
 - Ein Anwendungsfall darf das Lesemodell **nur über seine eine Tür** nennen
   (`ruleengine/readmodel/index.js`, `allowed`-Ausnahme `lesemodell-die-eine-tuer`); jeder andere
   Pfad dorthin fällt unter `roster-keine-evaluator-abhaengigkeit` und bricht `forge-lint`.

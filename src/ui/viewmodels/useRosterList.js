@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import { saveRoster, deleteRoster } from '../../contexts/armylist/application/rosterStore';
-import { readRosterText, buildRosterFile } from '../../contexts/armylist/application/rosterTransfer';
 import {
-  exportRosterToXml, importRosterFromXml, MissingSystemError,
-} from '../../contexts/armylist/model/rosterSerialization';
-import { buildRoster } from '../../contexts/armylist/model/createRoster';
-import { applyMandatoryListRules } from '../../contexts/armylist/application/mandatoryListRules.js';
-import { evaluateAppRoster } from '../../contexts/ruleengine/readmodel/index.js';
+  saveRoster, deleteRoster, readRosterText, buildRosterExportFile,
+  applyMandatoryListRulesToFreshRoster, importRosterFromXml, MissingSystemError,
+  buildRoster, syncRosterSelectionsWithSystem, reconcileImportedSelectionIds,
+} from '../../contexts/armylist';
 import { VIEWS } from '../../ui/constants/views';
-import { syncRosterSelectionsWithSystem, reconcileImportedSelectionIds } from '../../contexts/armylist/model';
 import { t } from '../i18n/i18nStore';
 
 /**
@@ -21,22 +17,6 @@ const ERROR_MESSAGE_KEY = Object.freeze({
   renameRoster: 'rosterList.renameFailed',
   deleteRoster: 'rosterList.deleteFailed',
 });
-
-/**
- * Ergänzt die eindeutigen Pflicht-Listenregeln eines gerade entstandenen
- * Rosters (§9.9). Die Regel selbst ist ein Anwendungsfall des Listen-Kontexts
- * (Issue 0189); was hier geschieht, ist allein das Holen des Berichts — das
- * Schreibmodell wertet nicht aus (ADR-0039).
- *
- * @param {import('../../shared/rostermodel/types.js').Roster} roster
- * @param {object|null|undefined} system
- * @returns {import('../../shared/rostermodel/types.js').Roster}
- */
-function withMandatoryListRules(roster, system) {
-  if (!system) return roster;
-  const { slots } = evaluateAppRoster(system, roster);
-  return applyMandatoryListRules(roster, { system, slots, isFreshRoster: true }) ?? roster;
-}
 
 /**
  * Kapselt das Listen-CRUD einer ganzen Roster-Sammlung: Anlegen, Öffnen,
@@ -111,7 +91,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     const systemDef = systems.find(s => s.id === systemId);
     // Die §9.9-Pflichtregeln gehoeren zum Anlegen, nicht zum Editor (Issue
     // 0189): ein Roster ist von seinem ersten gespeicherten Stand an vollstaendig.
-    const roster = withMandatoryListRules(
+    const roster = applyMandatoryListRulesToFreshRoster(
       buildRoster({ name, systemId, catId, forceEntryId, limit }, systemDef),
       systemDef
     );
@@ -216,7 +196,7 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         // seine eindeutigen Pflicht-Listenregeln werden hier ergaenzt, nicht
         // erst, wenn jemand den Editor oeffnet (Issue 0189). Der Bericht wird
         // wie ueberall in der UI-Schicht geholt und hineingereicht (ADR-0039).
-        newRoster = withMandatoryListRules(newRoster, system);
+        newRoster = applyMandatoryListRulesToFreshRoster(newRoster, system);
       }
 
       await saveRoster(newRoster);
@@ -242,11 +222,9 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
         return;
       }
 
-      // The write model does not evaluate (ADR-0039): the report is fetched here,
-      // in the UI layer, and handed in.
-      const report = evaluateAppRoster(system, roster);
-      const xmlText = exportRosterToXml(roster, system, report);
-      const { blob, fileName } = await buildRosterFile(roster.name, xmlText);
+      // Bericht holen, serialisieren und packen ist ein Anwendungsfall des
+      // Listen-Kontexts (`buildRosterExportFile`); hier bleibt der Download.
+      const { blob, fileName } = await buildRosterExportFile(roster, system);
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
