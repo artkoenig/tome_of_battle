@@ -113,7 +113,7 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
     commands: {
-      addUnit: mockAddUnit,
+      raiseUnit: mockAddUnit,
       removeUnit: mockRemoveUnit,
       copyUnit: mockCopyUnit,
       subSelectionOperations: mockSubSelectionOperations,
@@ -164,9 +164,9 @@ vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
 // mehr als Stuetze — die Attrappe greift ihn dort ab.
 vi.mock('../../../ui/components/editor/CategoryUnitAdder', () => ({
   default: function CategoryUnitAdderStub({ categoryId, forceId }) {
-    const { addUnit } = useRosterCommands();
+    const { raiseUnit } = useRosterCommands();
     return (
-      <button data-testid={`adder-${categoryId}`} onClick={() => addUnit('mock-added-unit', categoryId, forceId)}>
+      <button data-testid={`adder-${categoryId}`} onClick={() => raiseUnit('mock-added-unit', categoryId, forceId)}>
         Add to {categoryId}
       </button>
     );
@@ -249,7 +249,7 @@ describe('RosterEditor Component', () => {
     expect(screen.getByTestId('adder-cat-heroes')).toBeDefined();
   });
 
-  it('verifies that triggering the CategoryUnitAdder calls the addUnit function from useRosterState', () => {
+  it('verifies that triggering the CategoryUnitAdder calls the raiseUnit function from useRosterState', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     const adderButton = screen.getByTestId('adder-cat-heroes');
     fireEvent.click(adderButton);

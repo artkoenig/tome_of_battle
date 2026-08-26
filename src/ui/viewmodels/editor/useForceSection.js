@@ -18,7 +18,7 @@ import { useRosterReport } from '../rosterContexts';
  * 0156): sichtbare Slots dieses Kontingents mit wirksamem Minimum, deren
  * effektive Kategorien keine Kategorie des Kontingents treffen. Der
  * Katalog-Eintrag daneben ist Schreibmodell — der Aushebe-Dialog reicht ihn an
- * `addUnit` weiter.
+ * `raiseUnit` weiter.
  *
  * Das Armeebuch **dieses** Kontingents (ein `.ros`-Import bringt verbündete
  * Kontingente mit eigenem Katalog mit) ist `force.catalogueId`, ersatzweise das

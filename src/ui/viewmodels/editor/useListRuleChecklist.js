@@ -30,7 +30,7 @@ import { upgradeDetailElementsOf } from './upgradeDetailElements.js';
  */
 export function useListRuleChecklist({ forceId = null, forcePath = null, categoryId }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
-  const { addUnit, removeUnit } = useRosterCommands();
+  const { raiseUnit, removeUnit } = useRosterCommands();
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const force = useMemo(
     () => roster?.forces?.find(candidate => candidate.id === forceId) ?? null,
@@ -74,13 +74,13 @@ export function useListRuleChecklist({ forceId = null, forcePath = null, categor
         // Regel auch gegen einen programmatischen Aufruf ein.
         if (isLocked) return;
         if (nextChecked) {
-          addUnit(state.entry, categoryId, forceId);
+          raiseUnit(state.entry, categoryId, forceId);
         } else if (state.selection) {
           removeUnit(state.selection.id);
         }
       },
     };
-  }), [states, system, activeCatalogue, addUnit, removeUnit, categoryId, forceId]);
+  }), [states, system, activeCatalogue, raiseUnit, removeUnit, categoryId, forceId]);
 
   return { rows, isListRuleGroup, system };
 }

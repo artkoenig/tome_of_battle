@@ -7,7 +7,7 @@
  *
  * | Bündel | Inhalt | Identität |
  * |---|---|---|
- * | `commands` | `addUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `updateRosterName`, `save`, `undo`, `redo` | stabil über die gesamte Lebensdauer |
+ * | `commands` | `raiseUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `updateRosterName`, `save`, `undo`, `redo` | stabil über die gesamte Lebensdauer |
  * | `report` | die App-Auswertung plus `unresolvedSelections` | wechselt je Bearbeitung |
  * | Auswahl | `selectedRosterSelection`, `setSelectedRosterSelection` | wechselt je Klick |
  *
@@ -124,7 +124,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   const commands = useMemo(() => {
     const call = (name) => (...args) => currentCommandsRef.current[name](...args);
     return {
-      addUnit: call('addUnit'),
+      raiseUnit: call('raiseUnit'),
       removeUnit: call('removeUnit'),
       copyUnit: call('copyUnit'),
       subSelectionOperations: {

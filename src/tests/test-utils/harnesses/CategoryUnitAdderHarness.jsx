@@ -5,7 +5,7 @@ import { withProviders, systemNaming } from './sectionHarnessBase';
 
 /** `CategoryUnitAdder` mit dem Prop-Satz von vor Issue 0164. */
 export function CategoryUnitAdderHarness({
-  capabilities, system, activeCatalogue, costTypeLabel, costLimitType, addUnit,
+  capabilities, system, activeCatalogue, costTypeLabel, costLimitType, raiseUnit,
   ...adderProps
 }) {
   return withProviders({
@@ -15,7 +15,7 @@ export function CategoryUnitAdderHarness({
     activeCatalogue,
     // Der Aushebe-Callback trug vor Issue 0164 kein Kontingent — die Hülle
     // reicht die beiden Argumente durch, die ein Test erwartet.
-    commands: { addUnit: (entry, categoryId) => addUnit?.(entry, categoryId) },
+    commands: { raiseUnit: (entry, categoryId) => raiseUnit?.(entry, categoryId) },
     children: <CategoryUnitAdder {...adderProps} />,
   });
 }

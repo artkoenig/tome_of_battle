@@ -17,7 +17,7 @@ import { buildRoster } from '../../../contexts/armylist/model/createRoster';
  * sie nicht auseinanderlaufen, wenn ein Pflicht-Kind mitkommt.
  *
  * Produktionsnaht, nichts gemockt: Katalog-XML → `processImportedData` →
- * `useRosterState`s `commands.addUnit` → `useEvaluation`.
+ * `useRosterState`s `commands.raiseUnit` → `useEvaluation`.
  */
 
 const GAME_SYSTEM_ID = 'gs-cost-agreement';
@@ -32,7 +32,7 @@ const SWORD_ID = 'entry-sword';
 const CHAMPION_COST = 50;
 const SWORD_COST = 10;
 /** Was das Ausheben kostet: der Held und sein Pflicht-Schwert. */
-const RECRUITED_COST = CHAMPION_COST + SWORD_COST;
+const RAISED_COST = CHAMPION_COST + SWORD_COST;
 
 const GAME_SYSTEM_XML = `<?xml version="1.0" encoding="utf-8"?>
   <gameSystem id="${GAME_SYSTEM_ID}" name="Cost Agreement">
@@ -116,22 +116,22 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
     const offer = offerOf(result.current.report, forceId);
     expect(offer).toBeTruthy();
     // Die Schaetzung des Dialogs: der Held samt seines Pflicht-Kindes.
-    expect(offer.raiseCosts[PTS_ID]).toBe(RECRUITED_COST);
+    expect(offer.raiseCosts[PTS_ID]).toBe(RAISED_COST);
 
     const entry = system.catalogues
       .find(catalogue => catalogue.id === CATALOGUE_ID)
       .selectionEntries.find(selectionEntry => selectionEntry.id === CHAMPION_ID);
     act(() => {
-      result.current.commands.addUnit(entry, HERO_CATEGORY_ID);
+      result.current.commands.raiseUnit(entry, HERO_CATEGORY_ID);
     });
 
-    const recruited = result.current.roster.forces[0].selections[0];
-    expect(recruited.selectionEntryId).toBe(CHAMPION_ID);
-    const recruitedSlot = result.current.report.slots.capabilities
-      .get(result.current.report.slots.pathBySelectionId.get(recruited.id));
-    expect(recruitedSlot.totalCosts[PTS_ID]).toBe(RECRUITED_COST);
+    const raised = result.current.roster.forces[0].selections[0];
+    expect(raised.selectionEntryId).toBe(CHAMPION_ID);
+    const raisedSlot = result.current.report.slots.capabilities
+      .get(result.current.report.slots.pathBySelectionId.get(raised.id));
+    expect(raisedSlot.totalCosts[PTS_ID]).toBe(RAISED_COST);
     // Eine Quelle: derselbe Bericht traegt beide Zahlen.
-    expect(recruitedSlot.totalCosts[PTS_ID]).toBe(offer.raiseCosts[PTS_ID]);
+    expect(raisedSlot.totalCosts[PTS_ID]).toBe(offer.raiseCosts[PTS_ID]);
   });
 
   it('faehrt die Rostersumme des Berichts auf denselben Wert', () => {
@@ -143,9 +143,9 @@ describe('Aushebe-Schaetzung und ausgehobene Kosten stimmen ueberein (Issue 0157
       .find(catalogue => catalogue.id === CATALOGUE_ID)
       .selectionEntries.find(selectionEntry => selectionEntry.id === CHAMPION_ID);
     act(() => {
-      result.current.commands.addUnit(entry, HERO_CATEGORY_ID);
+      result.current.commands.raiseUnit(entry, HERO_CATEGORY_ID);
     });
 
-    expect(result.current.report.costTotals[PTS_ID]).toBe(RECRUITED_COST);
+    expect(result.current.report.costTotals[PTS_ID]).toBe(RAISED_COST);
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
-import { useRecruitOffer } from '../../../../ui/viewmodels/editor/useRecruitOffer';
+import { useRaiseOffer } from '../../../../ui/viewmodels/editor/useRaiseOffer';
 import { createRosterProviderWrapper, createEmptyRosterReport, createNoopRosterCommands } from '../../../../tests/test-utils/rosterProviders';
 
 /**
@@ -38,7 +38,7 @@ const slot = (over = {}) => ({
 });
 
 const renderOffer = (capabilities, { commands, params } = {}) => renderHook(
-  () => useRecruitOffer({ forceId: 'f1', forcePath: '0', categoryId: CATEGORY, ...params }),
+  () => useRaiseOffer({ forceId: 'f1', forcePath: '0', categoryId: CATEGORY, ...params }),
   {
     wrapper: createRosterProviderWrapper({
       report: createEmptyRosterReport({ capabilities }),
@@ -50,7 +50,7 @@ const renderOffer = (capabilities, { commands, params } = {}) => renderHook(
   }
 );
 
-describe('useRecruitOffer', () => {
+describe('useRaiseOffer', () => {
   it('nimmt nur Kandidaten-Ankerarten der eigenen Kategorie auf, entdoppelt nach Definition', () => {
     const capabilities = new Map([
       ['0/0', slot({ defId: 'e-a', name: 'Bogen' })],
@@ -93,13 +93,13 @@ describe('useRecruitOffer', () => {
   });
 
   it('hebt mit dem Katalog-Eintrag der Definition in das eigene Kontingent aus', () => {
-    const addUnit = vi.fn();
+    const raiseUnit = vi.fn();
     const capabilities = new Map([['0/0', slot({ defId: 'e-knight', name: 'Ritter' })]]);
 
-    const { result } = renderOffer(capabilities, { commands: { addUnit } });
-    result.current.candidates[0].recruit();
+    const { result } = renderOffer(capabilities, { commands: { raiseUnit } });
+    result.current.candidates[0].raise();
 
-    expect(addUnit).toHaveBeenCalledWith(
+    expect(raiseUnit).toHaveBeenCalledWith(
       { id: 'e-knight', name: 'Ritter aus dem Katalog' }, CATEGORY, 'f1');
   });
 
@@ -118,7 +118,7 @@ describe('useRecruitOffer', () => {
 
   it('ohne aktiven Katalog gibt es kein Angebot', () => {
     const { result } = renderHook(
-      () => useRecruitOffer({ forceId: 'f1', forcePath: '0', categoryId: CATEGORY }),
+      () => useRaiseOffer({ forceId: 'f1', forcePath: '0', categoryId: CATEGORY }),
       {
         wrapper: createRosterProviderWrapper({
           report: createEmptyRosterReport({

@@ -92,7 +92,7 @@ const renderForce = (force) => render(
     capabilities={capabilities}
     pathBySelectionId={new Map()}
     costTypeLabel="Pkt"
-    addUnit={vi.fn()}
+    raiseUnit={vi.fn()}
     removeUnit={vi.fn()}
     subSelectionOperations={{}}
     unitCardContext={{}}

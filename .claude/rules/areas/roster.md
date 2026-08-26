@@ -132,17 +132,20 @@ evaluator. `src/platform/persistence/` persists it in IndexedDB.
   (`defId`/`targetDefId`/`count`/nested `members`) comes from the same walk as `raiseCosts`
   (`costProjection.js`), so the price and the tree it prices cannot diverge. `selectionFactory.js`
   only **resolves** those ids against the catalogue — through groups and group links, in any
-  depth (`selectionMembers.js`'s `findMemberDefById`). A recruit path without a report (a test
+  depth (`selectionMembers.js`'s `findMemberDefById`). A raise path without a report (a test
   system with no `rawXmls`) therefore creates a bare selection; that is the contract, not a bug.
-- The reading of "which children must this slot create" moved, it did not change: the recruited
+- The reading of "which children must this slot create" moved, it did not change: the raised
   tree is the same for all 208 units of the fixture corpus, pinned by
-  `src/tests/contexts/ruleengine/recruitTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
+  `src/tests/contexts/ruleengine/raiseTree.frozenCorpus.test.js` against a frozen dump of the pre-0157 factory.
   A group without a `min` still obliges nothing (even where a member declares one), a `min` a link
   inherits from its shared target obliges nothing, and a **hidden** obligation is created like any
-  other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a recruit
+  other. The corpus therefore still shows ~73 unfulfilled obligations on 32 cards after a raise
   (`SelectionConfigurator.mandatoryObligation.fixtureSweep.test.jsx`) — closing that gap is a
   user-visible change and needs its own issue.
 - `src/platform/persistence/database.js` reads `indexedDB` into a local **before** it builds the connection
   promise. In an environment without the global (a jsdom test without a fake factory) the
   ReferenceError must fly before the first promise exists, or that promise stays behind as an
   unhandled rejection and turns a green run red without failing a test.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

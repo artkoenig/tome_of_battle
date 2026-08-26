@@ -14,12 +14,12 @@
  * - KEIN `validateRoster`-Baseline-Aufruf, KEIN `getEntryAddAvailability`.
  *
  * ── Prop-Vertragsentscheidung (so nah wie möglich am Bestehenden) ────────────
- * Bestehende Props behalten ihre Bedeutung (categoryId, categoryName, addUnit,
+ * Bestehende Props behalten ihre Bedeutung (categoryId, categoryName, raiseUnit,
  * costTypeLabel, costLimitType, system, activeCatalogue, roster, force). NEU:
  * - `capabilities`: die Slot-Map des Berichts (Map Slot-Pfad → SlotCapability),
  * - `forcePath`:    der Slot-Pfad des Ziel-Kontingents (Pfad-Schema der
  *                   Fassade: `forces[i]` liegt unter `"i"`, hier `"0"`).
- * `addUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; das erste
+ * `raiseUnit(kandidat, categoryId)` bleibt der Aushebe-Callback; das erste
  * Argument muss die gewählte Definition identifizieren (Objekt mit id/defId
  * oder die defId selbst — die Repräsentation bleibt offen).
  *
@@ -155,7 +155,7 @@ function evaluation() {
   return { capabilities: report.capabilities, pathBySelectionId };
 }
 
-/** True, wenn das addUnit-Argument die Definition identifiziert (Form offen). */
+/** True, wenn das raiseUnit-Argument die Definition identifiziert (Form offen). */
 function identifiesDefinition(arg, defId) {
   return arg === defId || arg?.id === defId || arg?.defId === defId;
 }
@@ -168,7 +168,7 @@ function capabilityOf(capabilities, defId) {
   return undefined;
 }
 
-function renderAdder(addUnit, capabilities) {
+function renderAdder(raiseUnit, capabilities) {
   const roster = appRoster();
   render(
     <CategoryUnitAdder
@@ -180,7 +180,7 @@ function renderAdder(addUnit, capabilities) {
       activeCatalogue={{ id: 'cat-main' }}
       costTypeLabel="Pkt"
       costLimitType={COST_TYPE_ID}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       roster={roster}
       selectionCounts={{}}
       force={roster.forces[0]}
@@ -230,8 +230,8 @@ describe('CategoryUnitAdder: Verfügbarkeit aus dem Fähigkeitsdatensatz (Issue 
     const { capabilities } = evaluation();
     expect(capabilityOf(capabilities, KNIGHT_ID)).toMatchObject({ anchorKind: 'occupied', isBlocked: true, headroom: 0 });
 
-    const addUnit = vi.fn();
-    renderAdder(addUnit, capabilities);
+    const raiseUnit = vi.fn();
+    renderAdder(raiseUnit, capabilities);
     openDialog();
 
     const knightRow = screen.getByText('Knight').closest('.popover-item');
@@ -241,7 +241,7 @@ describe('CategoryUnitAdder: Verfügbarkeit aus dem Fähigkeitsdatensatz (Issue 
     expect(screen.getByText('(Nicht verfügbar)')).toBeTruthy();
 
     fireEvent.click(knightRow);
-    expect(addUnit).not.toHaveBeenCalled();
+    expect(raiseUnit).not.toHaveBeenCalled();
   });
 
   it('isHidden-Einträge erscheinen gar nicht (Ghost), während sichtbare Kandidaten erscheinen', () => {
@@ -255,17 +255,17 @@ describe('CategoryUnitAdder: Verfügbarkeit aus dem Fähigkeitsdatensatz (Issue 
     expect(screen.queryByText('Ghost')).toBeNull();
   });
 
-  it('Klick auf einen wählbaren Kandidaten hebt ihn aus: addUnit(kandidat, categoryId) genau einmal', () => {
+  it('Klick auf einen wählbaren Kandidaten hebt ihn aus: raiseUnit(kandidat, categoryId) genau einmal', () => {
     const { capabilities } = evaluation();
-    const addUnit = vi.fn();
-    renderAdder(addUnit, capabilities);
+    const raiseUnit = vi.fn();
+    renderAdder(raiseUnit, capabilities);
     openDialog();
 
     fireEvent.click(screen.getByText('Archer').closest('.popover-item'));
 
-    expect(addUnit).toHaveBeenCalledTimes(1);
-    expect(identifiesDefinition(addUnit.mock.calls[0][0], ARCHER_ID)).toBe(true);
-    expect(addUnit.mock.calls[0][1]).toBe(CATEGORY_ID);
+    expect(raiseUnit).toHaveBeenCalledTimes(1);
+    expect(identifiesDefinition(raiseUnit.mock.calls[0][0], ARCHER_ID)).toBe(true);
+    expect(raiseUnit.mock.calls[0][1]).toBe(CATEGORY_ID);
   });
 
   // Der frühere Gift-Stub-Test steht hier nicht mehr: Der Solver ist mit

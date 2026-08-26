@@ -198,7 +198,7 @@ function renderSection(category, { capabilities, pathBySelectionId }) {
       selectionCounts={{}}
       forceCategoryCounts={{}}
       costTypeLabel="Pkt"
-      addUnit={vi.fn()}
+      raiseUnit={vi.fn()}
       removeUnit={vi.fn()}
       subSelectionOperations={{}}
       unitCardContext={{}}

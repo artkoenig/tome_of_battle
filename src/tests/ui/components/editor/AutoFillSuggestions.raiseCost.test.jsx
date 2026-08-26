@@ -137,7 +137,7 @@ function isShown(container, name) {
 
 function renderPanel(remainingPoints) {
   const { capabilities, pathBySelectionId } = evaluation();
-  const addUnit = vi.fn();
+  const raiseUnit = vi.fn();
   const subSelectionOperations = createSubSelectionOperationsMock();
   const view = render(
     <AutoFillSuggestions
@@ -149,11 +149,11 @@ function renderPanel(remainingPoints) {
       costTypeLabel="Pkt"
       system={appSystem()}
       activeCatalogue={{ id: 'cat-main' }}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       subSelectionOperations={subSelectionOperations}
     />
   );
-  return { ...view, addUnit, subSelectionOperations };
+  return { ...view, raiseUnit, subSelectionOperations };
 }
 
 describe('AutoFillSuggestions: die Restpunkt-Vorschlaege lesen den Aushebe-Preis statt des Eigenpreises (Issue 0085)', () => {

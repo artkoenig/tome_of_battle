@@ -7,7 +7,7 @@ import { withProviders, systemNaming, budgetFor } from './sectionHarnessBase';
 export function AutoFillSuggestionsHarness({
   capabilities, subSelectionOperations, costTypeLabel, forcePath = null,
   remainingPoints = null, costLimitTypeId = null, forceCatalogueId = null,
-  pathBySelectionId = null, addUnit = null, system = null, activeCatalogue = null,
+  pathBySelectionId = null, raiseUnit = null, system = null, activeCatalogue = null,
 }) {
   const forceId = 'harness-force';
   const { roster, spent } = budgetFor(
@@ -23,7 +23,7 @@ export function AutoFillSuggestionsHarness({
     roster: { ...roster, forces: [{ id: forceId, catalogueId: forceCatalogueId ?? null }] },
     system: systemNaming(system, costLimitTypeId, costTypeLabel),
     activeCatalogue,
-    commands: { addUnit: addUnit ?? undefined, subSelectionOperations },
+    commands: { raiseUnit: raiseUnit ?? undefined, subSelectionOperations },
     children: <AutoFillSuggestions forceId={forceId} forcePath={forcePath} />,
   });
 }

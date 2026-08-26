@@ -8,12 +8,12 @@ import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
  * Issue 0145, increment 1, Kriterium 1 — a mandatory member is created at any
- * group depth, through the production recruitment path (`useRosterState`s `commands.addUnit`),
+ * group depth, through the production raise path (`useRosterState`s `commands.raiseUnit`),
  * against the real fixture catalogues. Nothing is mocked: `processImportedData`
  * parses the real `.gst`/`.cat`, `buildRoster` builds the fresh contingent
  * (`isFreshRoster` left omitted so the list-rule auto-add of Issue 0138/0140
- * stays out of the way and `addUnit` is the only thing acting), and `addUnit`
- * is the very call the recruit dialog makes.
+ * stays out of the way and `raiseUnit` is the only thing acting), and `raiseUnit`
+ * is the very call the raise dialog makes.
  */
 
 const DEFINITIVE_DIR = path.resolve('src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive');
@@ -40,8 +40,8 @@ function loadCatalogue(catFile) {
   return { system, catalogue, forceEntryId };
 }
 
-/** Recruits `entryId` into a fresh roster through the real hook and returns its selection node. */
-function recruitEntry(catFile, entryId) {
+/** Raises `entryId` into a fresh roster through the real hook and returns its selection node. */
+function raiseEntry(catFile, entryId) {
   const { system, catalogue, forceEntryId } = loadCatalogue(catFile);
   expect(forceEntryId, `force entry for ${catFile}`).toBeTruthy();
   const entry = catalogue.selectionEntries.find(e => e.id === entryId);
@@ -55,7 +55,7 @@ function recruitEntry(catFile, entryId) {
   const { result } = renderHook(() => useRosterState(roster, system, vi.fn()));
 
   act(() => {
-    result.current.commands.addUnit(entry, null);
+    result.current.commands.raiseUnit(entry, null);
   });
 
   return result.current.roster.forces[0].selections[0];
@@ -68,14 +68,14 @@ const HILL_GOBLINS_ID = 'f23f-1816-93a7-3059';
 
 describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from "Wizard Level" nested inside "Magic"', () => {
   it('creates "Magic Level 4" exactly once', () => {
-    const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
+    const zacharias = raiseEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
 
     const magicLevel4 = zacharias.selections.filter(s => s.name === 'Magic Level 4');
     expect(magicLevel4).toHaveLength(1);
   });
 
   it('still creates "Zombie Dragon" and each of the six Bloodline powers exactly once', () => {
-    const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
+    const zacharias = raiseEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 
     for (const expectedName of [
@@ -92,7 +92,7 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
   });
 
   it('does not create "Lore of Necromancy" — its group ("Lores of Magic") has a max but no min', () => {
-    const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
+    const zacharias = raiseEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
 
     expect(zacharias.selections.map(s => s.name)).not.toContain('Lore of Necromancy');
   });
@@ -101,8 +101,8 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
     // Issue 0157 moved the obligation from a second reading of the constraints
     // into the report (`raiseMembers`), and left this answer untouched: a group
     // without a minimum of its own obliges nothing, whatever its members
-    // declare. What a recruit puts on the table is unchanged (AC1).
-    const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
+    // declare. What a raise puts on the table is unchanged (AC1).
+    const zacharias = raiseEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 
     for (const equipmentName of [
@@ -117,7 +117,7 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
   });
 
   it('creates no child name twice, over the whole child list — a double population anywhere fails here', () => {
-    const zacharias = recruitEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
+    const zacharias = raiseEntry(VAMPIRE_COUNTS_CAT, ZACHARIAS_ID);
     const names = zacharias.selections.map(s => s.name);
 
     const duplicated = names.filter((name, index) => names.indexOf(name) !== index);
@@ -127,7 +127,7 @@ describe('Issue 0145 AC1 — Zacharias the Everliving gains "Magic Level 4" from
 
 describe('Issue 0145 AC1 — a second, independently reached nested site', () => {
   it('"0-1 Hill Goblins" gains "Hand Weapon" exactly once, from the itemised branch of a nested group', () => {
-    const hillGoblins = recruitEntry(ORCS_AND_GOBLINS_CAT, HILL_GOBLINS_ID);
+    const hillGoblins = raiseEntry(ORCS_AND_GOBLINS_CAT, HILL_GOBLINS_ID);
 
     const handWeapons = hillGoblins.selections.filter(s => s.name === 'Hand Weapon');
     expect(handWeapons).toHaveLength(1);

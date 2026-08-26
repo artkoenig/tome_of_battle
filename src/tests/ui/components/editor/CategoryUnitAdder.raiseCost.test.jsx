@@ -118,7 +118,7 @@ function capabilityOf(capabilities, defId) {
   return undefined;
 }
 
-function renderAdder(addUnit, capabilities) {
+function renderAdder(raiseUnit, capabilities) {
   const roster = appRoster();
   render(
     <CategoryUnitAdder
@@ -130,7 +130,7 @@ function renderAdder(addUnit, capabilities) {
       activeCatalogue={{ id: 'cat-main' }}
       costTypeLabel="pts"
       costLimitType={COST_TYPE_ID}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       roster={roster}
       selectionCounts={{}}
       force={roster.forces[0]}

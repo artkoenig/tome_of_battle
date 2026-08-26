@@ -86,7 +86,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   likely to make; `useRosterState.test.js` and `rosterContexts.test.jsx` pin it.
 - The node's own suite is `useRosterState.test.js` plus `useRosterState.<topic>.test.js`
   (`commands`, `evaluator`, `mandatoryAutoAdd`, `costedMandatoryAutoAdd`, `nestedMandatoryGroups`,
-  `recruitCostAgreement`). A topic file that drives the **production seam** — real catalogue XML,
+  `raiseCostAgreement`). A topic file that drives the **production seam** — real catalogue XML,
   unmocked `resolveEntry`/`createSelectionFromDef`, the real evaluation — loads its fixture with
   `fs.readFileSync` + `processImportedData` and builds the roster with `buildRoster`; nothing about
   roster or catalogue is hand-built. `costedMandatoryAutoAdd` is synthetic-but-shape-faithful,
@@ -94,9 +94,9 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   Test titles here are English, unlike `src/contexts/*`.
 - `isFreshRoster` (the node's fifth argument) gates the automatic mandatory list-rule addition
   (Issue 0138/0140, §9.9): omit it or pass `false` to keep that effect out of a case about
-  `addUnit` or another seam, pass `true` only where the fresh-roster auto-add is the point.
-- `commands.addUnit(entry, categoryId, targetForceId?)` is the recruitment call the dialog makes.
-  A case that measures what recruiting produces calls it inside `act(...)` and reads
+  `raiseUnit` or another seam, pass `true` only where the fresh-roster auto-add is the point.
+- `commands.raiseUnit(entry, categoryId, targetForceId?)` is the raise call the dialog makes.
+  A case that measures what a raise produces calls it inside `act(...)` and reads
   `result.current.roster.forces[0].selections`, never a lower-level factory (that is
   `src/contexts/armylist/model`).
 - Proving "does not render again" needs a `memo`-wrapped consumer; without it the consumer
@@ -142,7 +142,7 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   not fail `forge-lint`.
 - `src/ui/viewmodels/editor/` holds one hook per editor leaf (`useUnitCard`, `useOptionGroup`,
   `useSelectionConfigurator`, `useUnitChips`) and one per section (`useForceSection`,
-  `useCategorySection`, `useRecruitOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
+  `useCategorySection`, `useRaiseOffer`, `useListRuleChecklist`, `useAutoFillSuggestions`,
   `useRosterSidebar`, `useValidationPanel`). A ViewModel may not import
   `components/editor/upgradeDetails.jsx` (it returns JSX).
 - The detail block of an upgrade is derived here, by `editor/upgradeDetailElements.js`
@@ -244,3 +244,6 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - A JSDoc block separated from its function by anything — a `const`, a second comment — stops
   applying, and the parameters silently fall back to `any`. Two hooks had drifted that way; keep
   the block flush against the `export function` line.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

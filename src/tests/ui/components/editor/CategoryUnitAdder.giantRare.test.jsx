@@ -111,7 +111,7 @@ function appSystem() {
 }
 
 /** Rendert den "Selten"-Aushebe-Dialog des O&G-Standard-Kontingents. */
-function renderRareAdder(addUnit = vi.fn()) {
+function renderRareAdder(raiseUnit = vi.fn()) {
   render(
     <CategoryUnitAdder
       categoryId={RARE_CATEGORY_ID}
@@ -123,10 +123,10 @@ function renderRareAdder(addUnit = vi.fn()) {
       activeCatalogue={{ id: OG_CATALOGUE_ID }}
       costTypeLabel="Pkt"
       costLimitType={POINTS_ID}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
     />,
   );
-  return addUnit;
+  return raiseUnit;
 }
 
 function openDialog() {
@@ -162,7 +162,7 @@ describe('Issue 0155: Der Riese der O&G Definitive Edition steht unter "Selten" 
   });
 
   it('ein Klick auf den Riesen hebt ihn in der Kategorie "Selten" aus', () => {
-    const addUnit = renderRareAdder();
+    const raiseUnit = renderRareAdder();
     openDialog();
 
     const row = [...document.querySelectorAll('.popover-item')]
@@ -170,8 +170,8 @@ describe('Issue 0155: Der Riese der O&G Definitive Edition steht unter "Selten" 
     expect(row).toBeTruthy();
     fireEvent.click(row);
 
-    expect(addUnit).toHaveBeenCalledTimes(1);
-    const [entry, categoryId] = addUnit.mock.calls[0];
+    expect(raiseUnit).toHaveBeenCalledTimes(1);
+    const [entry, categoryId] = raiseUnit.mock.calls[0];
     expect(categoryId).toBe(RARE_CATEGORY_ID);
     expect(entry.id === GIANT_LINK_ID || entry.targetId === GIANT_TARGET_ID
       || entry.id === GIANT_TARGET_ID).toBe(true);

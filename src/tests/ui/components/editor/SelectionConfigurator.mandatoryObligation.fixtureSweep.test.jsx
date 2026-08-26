@@ -234,7 +234,7 @@ beforeAll(() => {
 
     // Das Angebot des leeren Kontingents: es traegt je Einheit die
     // Pflicht-Mitglieder, die das Ausheben anlegt (`raiseMembers`, Issue 0157)
-    // — dieselbe Auskunft, aus der `useRoster.addUnit` seine Selektion baut.
+    // — dieselbe Auskunft, aus der `useRoster.raiseUnit` seine Selektion baut.
     const emptyForceRoster = {
       catalogueId: catalogue.id, name: 'test', costLimit: 3000, costLimitType: PTS,
       forces: [{ id: 'force-1', forceEntryId, catalogueId: catalogue.id, selections: [] }],
@@ -422,7 +422,7 @@ describe('Issue 0145, increment 2 — alle Einheiten der sechs Fixture-Kataloge'
     // exakter Treffer waere Geisel jeder kuenftigen Evaluator-Aenderung.
     // Issue 0157 bewegt diese Zahl NICHT: die Pflicht-Mitglieder kommen jetzt
     // aus dem Bericht statt aus einem zweiten Lesen der Constraints, legen aber
-    // denselben Baum an (siehe `recruitTree.frozenCorpus.test.js`).
+    // denselben Baum an (siehe `raiseTree.frozenCorpus.test.js`).
     const unmet = rows.filter(r => r.isMandatoryUnmet === true);
     expect(unmet.length, 'Zeilen mit isMandatoryUnmet').toBeGreaterThanOrEqual(50);
     expect(new Set(unmet.map(r => r.where)).size, 'Karten mit mindestens einer offenen Pflicht').toBeGreaterThan(0);

@@ -1,7 +1,7 @@
 # src/ui/components/editor — suite doc
 
 Component tests for the roster editor: the unit card (`UnitSelectionCard`), the
-recruit/adder dialogs (`CategoryUnitAdder`, `NewRosterModal`), the force/section
+raise/adder dialogs (`CategoryUnitAdder`, `NewRosterModal`), the force/section
 tree (`ForceEditorSection`, `RosterCategorySection`, `RosterSidebar`), the
 sub-selection editor (`SelectionConfigurator`, `OptionGroup`), rule/validation
 display (`ListRuleChecklist`, `ValidationCauses`, `ValidationMessage`,

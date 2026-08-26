@@ -22,7 +22,7 @@ import EXPECTED_TREES from '../../../contexts/ruleengine/readmodel/__fixtures__/
  * nachpruefbar bleibt — sie wird nie neu erzeugt, sondern gilt.
  *
  * Der Durchlauf ist der Produktionspfad des Aushebens
- * (`useRoster.addUnit`): das Angebot des leeren Kontingents auswerten, den
+ * (`useRoster.raiseUnit`): das Angebot des leeren Kontingents auswerten, den
  * Slot der Einheit darin suchen und seine `raiseMembers` der Fabrik geben.
  */
 
@@ -68,7 +68,7 @@ function textOf(shape, depth = 0) {
 }
 
 /** Der ausgehobene Baum je `<Katalog> / <Einheit>`. */
-const recruited = new Map();
+const raised = new Map();
 
 beforeAll(() => {
   for (const spec of CATALOGUES) {
@@ -95,16 +95,16 @@ beforeAll(() => {
         system, resolveEntry, catalogueId: catalogue.id, entry,
         mandatoryMembers: SlotIndex.fromMaps({ capabilities: offer }).findChildSlot(offerForcePath, entry.id)?.raiseMembers ?? [],
       });
-      recruited.set(`${spec.cat} / ${entry.name}`, unit === null ? null : shapeOf(unit));
+      raised.set(`${spec.cat} / ${entry.name}`, unit === null ? null : shapeOf(unit));
     }
   }
 }, 600000);
 
 describe('Issue 0157, Kriterium 1 — der ausgehobene Baum des eingefrorenen Korpus', () => {
   test('Positivkontrolle: der Durchlauf deckt jede Einheit der Erwartung ab', () => {
-    expect(recruited.size, 'ausgehobene Einheiten').toBe(EXPECTED_UNITS);
+    expect(raised.size, 'ausgehobene Einheiten').toBe(EXPECTED_UNITS);
     expect(Object.keys(EXPECTED_TREES).length, 'Einheiten der eingefrorenen Erwartung').toBe(EXPECTED_UNITS);
-    const missing = Object.keys(EXPECTED_TREES).filter(where => !recruited.has(where));
+    const missing = Object.keys(EXPECTED_TREES).filter(where => !raised.has(where));
     expect(missing, 'Einheiten der Erwartung ohne Durchlauf').toEqual([]);
   });
 
@@ -118,7 +118,7 @@ describe('Issue 0157, Kriterium 1 — der ausgehobene Baum des eingefrorenen Kor
   test('jede Einheit hebt denselben Baum aus wie vor der Umstellung', () => {
     const offenders = [];
     for (const [where, expected] of Object.entries(EXPECTED_TREES)) {
-      const actual = recruited.get(where) ?? null;
+      const actual = raised.get(where) ?? null;
       const expectedText = expected === null ? 'null' : textOf(expected);
       const actualText = actual === null ? 'null' : textOf(actual);
       if (expectedText !== actualText) {

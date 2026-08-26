@@ -110,12 +110,12 @@ paths:
   or through the derivations next to it (`listRuleGroups.js`, `armyWideSelectorSlots.js`), which
   take that index rather than a bare `capabilities` map.
   `resolveEntry`/`findEntryInSystem` stay only for detail texts and
-  for the entry the **write** path hands to `addUnit`.
-- The **write** path asks the report too (Issue 0157): what recruiting an entry creates is
+  for the entry the **write** path hands to `raiseUnit`.
+- The **write** path asks the report too (Issue 0157): what raising an entry creates is
   `capability.raiseMembers` of its offer slot — `useRosterState` looks it up (`findChildSlot` under the
   force, `findDescendantSlot` under a unit, since an option hangs below its group anchor) and
   hands it to the factory. Nothing in `src/contexts/armylist/model/` derives an obligation from the catalogue any
-  more, so a seam that recruits without a report creates a bare selection.
+  more, so a seam that raises without a report creates a bare selection.
 - Whether a category section appears is two report answers, both on the force's slots: the
   `categoryAnchor`'s `isHidden` (hidden plus nothing selected → no section) and whether any
   `occupied`/`offerAnchor`/`mandatoryPhantom` slot names the category as its `primaryCategoryId`
@@ -134,3 +134,6 @@ paths:
   unit list). Give every slot of the fixture the fields its screen reads.
 - The repo language is mixed by intent: docs, issues and commit messages in German, code and
   identifiers in English.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

@@ -13,8 +13,8 @@ import { buildRoster } from '../../../contexts/armylist/model/createRoster';
  * change (ADR-0038). The commands keep their identity across a roster edit;
  * roster, report and selection do not, by design.
  *
- * The recruit path runs through the real fixture catalogue (nothing mocked but
- * the save callback), because `addUnit` asks the report for the obligation a
+ * The raise path runs through the real fixture catalogue (nothing mocked but
+ * the save callback), because `raiseUnit` asks the report for the obligation a
  * raise carries (Issue 0157) and a report-less seam would create a bare
  * selection.
  */
@@ -56,18 +56,18 @@ describe('useRosterState', () => {
     expect(result.current.report.unresolvedSelections).toEqual([]);
     expect(result.current.selectedRosterSelection).toBeNull();
     expect(Object.keys(result.current.commands).sort()).toEqual([
-      'addUnit', 'copyUnit', 'redo', 'removeUnit', 'save',
+      'copyUnit', 'raiseUnit', 'redo', 'removeUnit', 'save',
       'subSelectionOperations', 'undo', 'updateRosterName',
     ]);
     expect(result.current.canUndo).toBe(false);
   });
 
-  it('recruits through addUnit and selects what it created', () => {
+  it('raises through raiseUnit and selects what it created', () => {
     const { system, roster, entry } = loadFixture();
 
     const { result } = renderHook(() => useRosterState(roster, system, vi.fn()));
     act(() => {
-      result.current.commands.addUnit(entry, null);
+      result.current.commands.raiseUnit(entry, null);
     });
 
     const created = result.current.roster.forces[0].selections[0];
@@ -84,7 +84,7 @@ describe('useRosterState', () => {
     const reportBefore = result.current.report;
 
     act(() => {
-      result.current.commands.addUnit(entry, null);
+      result.current.commands.raiseUnit(entry, null);
     });
 
     expect(result.current.commands).toBe(commandsBefore);

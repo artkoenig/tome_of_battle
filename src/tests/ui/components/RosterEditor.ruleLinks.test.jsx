@@ -54,7 +54,7 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
       diagnostics: [],
     },
     commands: {
-      addUnit: vi.fn(),
+      raiseUnit: vi.fn(),
       removeUnit: vi.fn(),
       copyUnit: vi.fn(),
       subSelectionOperations: createSubSelectionOperationsMock(),

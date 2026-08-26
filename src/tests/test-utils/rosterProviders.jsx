@@ -43,7 +43,7 @@ export function createEmptyRosterReport(overrides = {}) {
 export function createNoopRosterCommands(overrides = {}) {
   const noop = () => {};
   return {
-    addUnit: noop,
+    raiseUnit: noop,
     removeUnit: noop,
     copyUnit: noop,
     subSelectionOperations: {

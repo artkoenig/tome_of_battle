@@ -80,7 +80,7 @@ describe('useRosterState — automatic mandatory list-rule auto-add (Issue 0138)
 
     visibleInReport = true;
     act(() => {
-      result.current.commands.addUnit(triggerEntry, 'cat-general');
+      result.current.commands.raiseUnit(triggerEntry, 'cat-general');
     });
 
     // The trigger is now present (a manual, undoable action) AND, in the same

@@ -106,7 +106,7 @@ const renderSection = (props = {}) => render(
     selectionCounts={{}}
     forceCategoryCounts={{ 'cat-core': 1 }}
     costTypeLabel="Pkt."
-    addUnit={vi.fn()}
+    raiseUnit={vi.fn()}
     removeUnit={vi.fn()}
     subSelectionOperations={{}}
     unitCardContext={{}}

@@ -64,10 +64,10 @@ means; it outranks the ADRs where the two disagree.
   `defaultSelectionEntryId` (else the first member). A group without a MIN obliges nothing at all,
   a MIN inherited from a link's shared target obliges nothing either (`mandatoryMinLimitOf` reads
   `def.limits`, never `limitsOf`), and `isHidden` does not enter into it. Those three are not
-  engine taste: they are the reading a recruit has always followed, and
-  `src/tests/contexts/ruleengine/recruitTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
-  tree recruited before Issue 0157 moved the reading here. The write model reads exactly this
-  (`src/contexts/armylist/model/selectionFactory.js`), so a change here changes what a recruit puts on the table —
+  engine taste: they are the reading a raise has always followed, and
+  `src/tests/contexts/ruleengine/raiseTree.frozenCorpus.test.js` pins the whole 208-unit corpus against the
+  tree raised before Issue 0157 moved the reading here. The write model reads exactly this
+  (`src/contexts/armylist/model/selectionFactory.js`), so a change here changes what a raise puts on the table —
   and that sweep fails first.
 - Three rules pin what an unselected entry may report, and each has its own test guarding it:
   an offer anchor never produces a violation (ADR-0035/0036, `isReportableAnchorKind`), a shared
@@ -131,3 +131,6 @@ means; it outranks the ADRs where the two disagree.
 - `docs/testing/worklist.json` / `covered-cells.json` only move when a book brings a **new cell
   key**; more occurrences of known cells leave them untouched. Check before assuming a
   regeneration is due.
+- One domain term, one name: [`docs/glossary.md`](../../../docs/glossary.md) decides per term whether
+  the BattleScribe word or this app's own wins, and names the synonym it replaces (Issue 0192).
+  `raise` is the term for putting a unit on the table — `recruit` and `addUnit` are gone.

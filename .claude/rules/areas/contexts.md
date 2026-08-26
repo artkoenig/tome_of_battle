@@ -43,3 +43,6 @@ Katalogrevisionen), `rulebook` (Regeltext-Index) und `play` (die laufende Partie
 - Pfad-Zeichenketten in Kommentaren: `src/contexts/*/application/` schreibt in einem
   Blockkommentar ein `*/` und beendet ihn — im Fließtext eines `.js` immer ohne Glob
   formulieren.
+- Ein Fachbegriff hat **einen** Namen: `docs/glossary.md` entscheidet je Begriff, ob der
+  BattleScribe-Ausdruck oder der eigene gewinnt (Issue 0192). Die deutsche Prosa behält ihr Wort —
+  die Zuordnung steht dort, nicht in einer Umbenennung.

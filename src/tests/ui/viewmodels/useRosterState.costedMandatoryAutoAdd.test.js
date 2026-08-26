@@ -317,7 +317,7 @@ describe('AC5: the costs of the auto-added entry count in the report', () => {
     );
 
     act(() => {
-      result.current.commands.addUnit(spearmen, null);
+      result.current.commands.raiseUnit(spearmen, null);
     });
 
     expect(result.current.report.costTotals).toEqual({

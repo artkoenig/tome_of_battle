@@ -33,12 +33,12 @@ const CANDIDATE_ANCHOR_KINDS = new Set(['occupied', 'offerAnchor', 'mandatoryPha
  * @param {{ forceId: string|null, forcePath: string|null, categoryId: string|null,
  *   entries?: Array<Object>|null }} params
  * @returns {{ candidates: Array<{ key: string, name: string, points: number,
- *   isBlocked: boolean, recruit: () => void }>, costTypeLabel: string }}
+ *   isBlocked: boolean, raise: () => void }>, costTypeLabel: string }}
  */
 
-export function useRecruitOffer({ forceId = null, forcePath = null, categoryId = null, entries = null }) {
+export function useRaiseOffer({ forceId = null, forcePath = null, categoryId = null, entries = null }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
-  const { addUnit } = useRosterCommands();
+  const { raiseUnit } = useRosterCommands();
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const costLimitType = resolveCostLimitTypeId(roster, system);
   const costTypeLabel = resolveCostLimitLabel(roster, system);
@@ -95,8 +95,8 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
     name: offer.name,
     points: offer.points,
     isBlocked: offer.isBlocked,
-    recruit: () => addUnit(offer.entry, categoryId, forceId),
-  })), [offers, addUnit, categoryId, forceId]);
+    raise: () => raiseUnit(offer.entry, categoryId, forceId),
+  })), [offers, raiseUnit, categoryId, forceId]);
 
   return { candidates, costTypeLabel };
 }

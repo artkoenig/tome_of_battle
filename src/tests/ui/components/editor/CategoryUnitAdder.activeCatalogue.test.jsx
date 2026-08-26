@@ -194,7 +194,7 @@ function capabilityOf(capabilities, defId) {
   return undefined;
 }
 
-function renderAdder({ capabilities, entries = null, addUnit = vi.fn() }) {
+function renderAdder({ capabilities, entries = null, raiseUnit = vi.fn() }) {
   render(
     <CategoryUnitAdder
       categoryId={CATEGORY_ID}
@@ -205,7 +205,7 @@ function renderAdder({ capabilities, entries = null, addUnit = vi.fn() }) {
       activeCatalogue={{ id: OWN_CATALOGUE_ID }}
       costTypeLabel="Pkt"
       costLimitType={COST_TYPE_ID}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       entries={entries}
     />
   );

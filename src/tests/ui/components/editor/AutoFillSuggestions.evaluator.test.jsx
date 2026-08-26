@@ -35,7 +35,7 @@
  * `capabilities` (bereits auf DIESES Kontingent verengt), `forcePath`,
  * `remainingPoints` (eingestellter Punktwert minus aktuelle Summe der
  * Limit-Kostenart; `null` = keine Punktgrenze), `costLimitTypeId`,
- * `costTypeLabel`, `pathBySelectionId`, `addUnit`, `system`, `activeCatalogue`,
+ * `costTypeLabel`, `pathBySelectionId`, `raiseUnit`, `system`, `activeCatalogue`,
  * `subSelectionOperations`.
  *
  * ── Falsifizierbarkeit ──────────────────────────────────────────────────────
@@ -495,9 +495,9 @@ function operationCalls(operations) {
  * Alle Hinzufüge-Wirkungen eines Klicks, egal über welche der beiden
  * bestehenden Mechaniken sie lief.
  */
-function addEffects(addUnit, operations) {
+function addEffects(raiseUnit, operations) {
   return [
-    ...addUnit.mock.calls.map(args => ({ via: 'addUnit', args })),
+    ...raiseUnit.mock.calls.map(args => ({ via: 'raiseUnit', args })),
     ...operationCalls(operations).map(call => ({ via: call.name, args: call.args })),
   ];
 }
@@ -512,25 +512,25 @@ const MAIN_PROPS = {
 
 function renderPanel(overrides = {}) {
   const { capabilities, pathBySelectionId } = mainEvaluation();
-  const addUnit = vi.fn();
+  const raiseUnit = vi.fn();
   const subSelectionOperations = createSubSelectionOperationsMock();
   const view = render(
     <AutoFillSuggestions
       capabilities={capabilities}
       pathBySelectionId={pathBySelectionId}
       system={appSystem()}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       subSelectionOperations={subSelectionOperations}
       {...MAIN_PROPS}
       {...overrides}
     />
   );
-  return { ...view, addUnit, subSelectionOperations };
+  return { ...view, raiseUnit, subSelectionOperations };
 }
 
 function renderNinePanel(remainingPoints) {
   const { capabilities, pathBySelectionId } = nineEvaluation();
-  const addUnit = vi.fn();
+  const raiseUnit = vi.fn();
   const subSelectionOperations = createSubSelectionOperationsMock();
   const view = render(
     <AutoFillSuggestions
@@ -542,11 +542,11 @@ function renderNinePanel(remainingPoints) {
       costTypeLabel="Pkt"
       system={appSystem(NINE_CATALOGUE_XML)}
       activeCatalogue={{ id: 'cat-nine' }}
-      addUnit={addUnit}
+      raiseUnit={raiseUnit}
       subSelectionOperations={subSelectionOperations}
     />
   );
-  return { ...view, addUnit, subSelectionOperations };
+  return { ...view, raiseUnit, subSelectionOperations };
 }
 
 /**
@@ -556,7 +556,7 @@ function renderNinePanel(remainingPoints) {
  */
 function renderOriginPanel({ forceCatalogueId, activeCatalogueId = OWN_CATALOGUE_ID } = {}) {
   const { capabilities, pathBySelectionId } = originEvaluation();
-  const addUnit = vi.fn();
+  const raiseUnit = vi.fn();
   const subSelectionOperations = createSubSelectionOperationsMock();
   const props = {
     capabilities,
@@ -567,12 +567,12 @@ function renderOriginPanel({ forceCatalogueId, activeCatalogueId = OWN_CATALOGUE
     costTypeLabel: 'Pkt',
     system: originSystem(),
     activeCatalogue: { id: activeCatalogueId },
-    addUnit,
+    raiseUnit,
     subSelectionOperations,
   };
   if (forceCatalogueId !== undefined) props.forceCatalogueId = forceCatalogueId;
   const view = render(<AutoFillSuggestions {...props} />);
-  return { ...view, addUnit, subSelectionOperations };
+  return { ...view, raiseUnit, subSelectionOperations };
 }
 
 /** Alle Namen des Herkunfts-Datensatzes, teuerste zuerst. */
@@ -676,7 +676,7 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
           system={appSystem(COSTLY_CATALOGUE_XML)}
           activeCatalogue={{ id: 'cat-costly' }}
           forceCatalogueId="cat-costly"
-          addUnit={vi.fn()}
+          raiseUnit={vi.fn()}
           subSelectionOperations={createSubSelectionOperationsMock()}
         />
       );
@@ -853,22 +853,22 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
   });
 
   describe('Kriterium 8: der „+"-Knopf fügt genau den benannten Katalogeintrag hinzu', () => {
-    it('bei einer Einheit unter dem Kontingent: addUnit mit genau diesem Eintrag', () => {
-      const { container, addUnit, subSelectionOperations } = renderPanel();
+    it('bei einer Einheit unter dem Kontingent: raiseUnit mit genau diesem Eintrag', () => {
+      const { container, raiseUnit, subSelectionOperations } = renderPanel();
 
       const knightRow = rowOf(container, 'Ritter', others('Ritter'));
       const button = knightRow.querySelector('button');
       expect(button, 'kein „+"-Knopf in der Vorschlagszeile').not.toBeNull();
       fireEvent.click(button);
 
-      expect(addUnit).toHaveBeenCalledTimes(1);
-      expect(identifiesDefinition(addUnit.mock.calls[0][0], KNIGHT_ID)).toBe(true);
-      expect(addUnit.mock.calls[0][0]?.name).toBe('Ritter');
+      expect(raiseUnit).toHaveBeenCalledTimes(1);
+      expect(identifiesDefinition(raiseUnit.mock.calls[0][0], KNIGHT_ID)).toBe(true);
+      expect(raiseUnit.mock.calls[0][0]?.name).toBe('Ritter');
       expect(operationCalls(subSelectionOperations)).toEqual([]);
     });
 
     it('bei einer Option an einer bestehenden Auswahl: die Operation trifft genau diese Auswahl und diesen Eintrag', () => {
-      const { container, addUnit, subSelectionOperations } = renderPanel();
+      const { container, raiseUnit, subSelectionOperations } = renderPanel();
 
       const bladesRow = rowOf(container, 'Sichelklingen', others('Sichelklingen'));
       const button = bladesRow.querySelector('button');
@@ -879,11 +879,11 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
       expect(calls).toHaveLength(1);
       expect(calls[0].args[0]).toBe('sel-chariot');
       expect(identifiesDefinition(calls[0].args[1], BLADES_ID)).toBe(true);
-      expect(addUnit).not.toHaveBeenCalled();
+      expect(raiseUnit).not.toHaveBeenCalled();
     });
 
     it('bei einem belegten Slot mit Restspielraum: die Wirkung trifft genau diesen Slot', () => {
-      const { container, addUnit, subSelectionOperations } = renderPanel();
+      const { container, raiseUnit, subSelectionOperations } = renderPanel();
 
       const spearRow = rowOf(container, 'Speertraeger', others('Speertraeger'));
       const button = spearRow.querySelector('button');
@@ -892,23 +892,23 @@ describe('AutoFillSuggestions: Restpunkt-Vorschläge statt Pflicht-Aufzählung (
 
       // Welche der beiden bestehenden Mechaniken den Slot wachsen lässt, ist
       // offen — dass sie GENAU diesen Slot trifft, nicht.
-      const effects = addEffects(addUnit, subSelectionOperations);
+      const effects = addEffects(raiseUnit, subSelectionOperations);
       expect(effects).toHaveLength(1);
       const [effect] = effects;
       expect(effect.args.some(argument => identifiesDefinition(argument, SPEAR_ID))).toBe(true);
-      expect(effect.via === 'addUnit' || effect.args[0] === 'sel-spear').toBe(true);
+      expect(effect.via === 'raiseUnit' || effect.args[0] === 'sel-spear').toBe(true);
       for (const foreign of [KNIGHT_ID, MERC_ID, BLADES_ID, CHARIOT_ID, DUTY_KNIGHT_ID, CAT_GENERAL]) {
         expect(effect.args.some(argument => identifiesDefinition(argument, foreign))).toBe(false);
       }
     });
 
     it('kein Knopf im Panel fügt je eine Auswahl aus einer Kategorie-ID hinzu', () => {
-      const { container, addUnit, subSelectionOperations } = renderPanel();
+      const { container, raiseUnit, subSelectionOperations } = renderPanel();
 
       for (const button of container.querySelectorAll('button')) fireEvent.click(button);
 
       const added = [
-        ...addUnit.mock.calls.map(args => args[0]),
+        ...raiseUnit.mock.calls.map(args => args[0]),
         ...operationCalls(subSelectionOperations).map(call => call.args[1]),
       ];
       expect(added.length).toBeGreaterThan(0);

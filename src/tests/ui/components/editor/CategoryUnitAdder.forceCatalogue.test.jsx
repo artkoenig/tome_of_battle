@@ -225,7 +225,7 @@ function capabilityOf(capabilities, forcePath, defId) {
  * welches Buch fuer die Herkunft gilt, entscheidet der Bericht am Slot-Pfad des
  * Kontingents, nicht diese Stuetze.
  */
-function renderAdder({ capabilities, forcePath, entries = null, addUnit = vi.fn() }) {
+function renderAdder({ capabilities, forcePath, entries = null, raiseUnit = vi.fn() }) {
   const props = {
     categoryId: CATEGORY_ID,
     categoryName: 'Special',
@@ -235,7 +235,7 @@ function renderAdder({ capabilities, forcePath, entries = null, addUnit = vi.fn(
     activeCatalogue: { id: PRIMARY_CATALOGUE_ID },
     costTypeLabel: 'Pkt',
     costLimitType: COST_TYPE_ID,
-    addUnit,
+    raiseUnit,
     entries,
   };
   render(<CategoryUnitAdder {...props} />);

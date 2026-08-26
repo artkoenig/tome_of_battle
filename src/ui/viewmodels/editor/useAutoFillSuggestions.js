@@ -47,7 +47,7 @@ export const FILL_UP_WINDOW_POINTS = 50;
 
 export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
   const { report, roster, system, activeCatalogue } = useRosterReport();
-  const { addUnit, subSelectionOperations } = useRosterCommands();
+  const { raiseUnit, subSelectionOperations } = useRosterCommands();
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
   const costTotals = report?.costTotals ?? {};
 
@@ -113,7 +113,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
      * Die Anwenden-Aktion eines Vorschlags über die bestehende Mechanik — oder
      * `null`, wenn der nötige Kontext fehlt: ein Slot in einer Auswahl wächst
      * über `increaseCount` am Rahmen, ein Slot unter einem Kontingent wird über
-     * `addUnit` ausgehoben (unter seiner effektiven Primärkategorie).
+     * `raiseUnit` ausgehoben (unter seiner effektiven Primärkategorie).
      */
     const applyActionFor = (capability) => {
       const framePath = capability.frame?.path ?? null;
@@ -122,8 +122,8 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
         if (!subSelectionOperations) return null;
         return () => subSelectionOperations.increaseCount(frameSelectionId, entryFor(capability));
       }
-      if (addUnit && framePath !== null) {
-        return () => addUnit(entryFor(capability), capability.primaryCategoryId ?? null, forceId);
+      if (raiseUnit && framePath !== null) {
+        return () => raiseUnit(entryFor(capability), capability.primaryCategoryId ?? null, forceId);
       }
       return null;
     };
@@ -142,7 +142,7 @@ export function useAutoFillSuggestions({ forceId = null, forcePath = null }) {
       unitName: unitNameFor(capability),
       apply: applyActionFor(capability),
     }));
-  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, addUnit, forcePath, slots, forceId]);
+  }, [collected, system, activeCatalogue, selectionIdByPath, subSelectionOperations, raiseUnit, forcePath, slots, forceId]);
 
   // Sichtbar an der Lücke: steht die Liste auf ihren letzten Punkten, steht das
   // Panel da — auch wenn gerade nichts hineinpasst. Ohne `forcePath` führt der

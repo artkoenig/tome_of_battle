@@ -12,7 +12,7 @@
  * identity-stable (ADR-0038).
  */
 
-import { raiseUnit } from '../../contexts/armylist/application/raiseUnit.js';
+import { raiseUnit as raiseUnitIn } from '../../contexts/armylist/application/raiseUnit.js';
 import { removeUnit as removeUnitFrom } from '../../contexts/armylist/application/removeUnit.js';
 import { copyUnit as copyUnitIn } from '../../contexts/armylist/application/copyUnit.js';
 import { renameRoster } from '../../contexts/armylist/application/renameRoster.js';
@@ -44,8 +44,8 @@ export function bindRosterCommands({
    * @param {string|null} [targetForceId] Kontingent der aktiven Ansicht; ohne
    *   Angabe das erste Kontingent des Rosters
    */
-  const addUnit = (entry, categoryId, targetForceId = null) => {
-    const { roster: nextRoster, unit } = raiseUnit(roster, {
+  const raiseUnit = (entry, categoryId, targetForceId = null) => {
+    const { roster: nextRoster, unit } = raiseUnitIn(roster, {
       entry, categoryId, targetForceId, system, slots,
     });
     if (!unit) return;
@@ -82,7 +82,7 @@ export function bindRosterCommands({
   };
 
   return {
-    addUnit,
+    raiseUnit,
     removeUnit,
     copyUnit,
     addSubSelectionInstance,
