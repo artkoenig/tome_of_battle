@@ -845,7 +845,7 @@ function synthesizeParentScopePhantoms(root, nextFrameId) {
  *
  * The bound must be the definition's **own**: a link that declares no minimum
  * obliges nothing, whatever the shared entry behind it declares for its other
- * users (`limitsOf` would merge the target's in). That is the reading a recruit
+ * users (`limitsOf` would merge the target's in). That is the reading a raise
  * has always followed, and it is what keeps a shared "Hand Weapon" entry from
  * arriving under every unit that merely offers it.
  */
@@ -888,7 +888,7 @@ function defaultMemberOf(groupDef, members) {
  *   limit of its own ({@link mandatoryMinLimitOf}), and the group around it (if
  *   any) carries one too. A group without a minimum obliges nothing at all, not
  *   even a member that names its own — that is the reading the write model had
- *   before Issue 0157 moved it here, and it stays the one a recruit follows.
+ *   before Issue 0157 moved it here, and it stays the one a raise follows.
  * - **pick-one** (`kind: 'groupDefault'`) — the GROUP carries the MIN limit
  *   ("take one out of this pot"). It fills only where **no** member of that
  *   group is obliged itemised, which the caller can only tell once the bounds

@@ -13,7 +13,7 @@ Die Oberfläche hat heute **einen** Zustandsknoten und darunter Durchreichung.
 
 `useRoster` gibt 21 Felder zurück und mischt drei Verantwortungen: Durchreichung des Berichts
 (`violations`, `capabilities`, `description`, `costTotals`, `pathBySelectionId`,
-`pathByForceId`, `unresolvedSelections`), Kommandos (`addUnit`, `removeUnit`, `copyUnit`,
+`pathByForceId`, `unresolvedSelections`), Kommandos (`raiseUnit`, `removeUnit`, `copyUnit`,
 `subSelectionOperations`, `updateRosterName`, `save`, `undo`, `redo`) und Auswahl-Zustand der
 Oberfläche (`selectedRosterSelection`). Einziger Aufrufer ist `RosterEditor.jsx`.
 
@@ -79,7 +79,7 @@ dort über `src/ui/components/`: ein ViewModel darf eine Komponente nie importie
 
 | Kontext | Inhalt | Identität |
 |---|---|---|
-| `RosterCommandsContext` | `addUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `undo`, `redo` | stabil, ändert sich nie |
+| `RosterCommandsContext` | `raiseUnit`, `removeUnit`, `copyUnit`, `subSelectionOperations`, `undo`, `redo` | stabil, ändert sich nie |
 | `RosterReportContext` | `{ report, roster }` | ändert sich je Bearbeitung |
 
 Die Trennung ist der Grund, warum ein Kontext hier vertretbar ist: Verbraucher, die nur ein

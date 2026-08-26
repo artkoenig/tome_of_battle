@@ -28,7 +28,7 @@ correct and stays — the mapping is this table, not a rename of 364 comments.
 | Name | Synonym (rejected / prose) | Context | Meaning |
 |---|---|---|---|
 | `force` | `contingent`, de. *Kontingent* | armylist, ruleengine | A roster's `<force>`: the frame a unit is raised into. BattleScribe's term — see [battlescribe-data-format.md](battlescribe-data-format.md). |
-| `raise` | ~~`recruit`~~, ~~`addUnit`~~, de. *ausheben* | armylist | Putting a unit on the table: the write use case `raiseUnit`, the command `commands.raiseUnit`, the report's `raiseCosts`/`raiseMembers`. This app's term. `recruit` and `addUnit` are gone from `src/`. |
+| `raise` | ~~`recruit`~~, ~~`addUnit`~~, de. *ausheben* | armylist | Putting a unit on the table: the write use case `raiseUnit`, the command `commands.raiseUnit`, the report's `raiseCosts`/`raiseMembers`. This app's term. `recruit` and `addUnit` name nothing in `src/`; the only hits left are the third-party product *New Recruit* and the pinned fixture `recruit-trees-pre-0157.json`, named after the corpus it freezes. |
 | `slot` | de. *Slot*, *Position* | ruleengine | A position in the report's evaluated tree, addressed by its slot path. Not a BattleScribe term: the report invents it (ADR-0034/0036). |
 | `offer` | de. *Angebot* | ruleengine, ui | A slot the roster could occupy but does not yet — anchor kind `offerAnchor` (ADR-0036). An offer is a *kind of* slot, never a synonym for one. |
 | `occupied` | de. *besetzt* | ruleengine | The anchor kind of a slot an actual selection stands in. The counterpart of `offer`. |

@@ -34,7 +34,7 @@ vi.mock('../../../ui/viewmodels/SettingsContext', () => ({
 }));
 
 // Mock useRosterState custom hook
-const mockAddUnit = vi.fn();
+const mockRaiseUnit = vi.fn();
 const mockRemoveUnit = vi.fn();
 const mockCopyUnit = vi.fn();
 const mockSubSelectionOperations = createSubSelectionOperationsMock();
@@ -113,7 +113,7 @@ vi.mock('../../../ui/viewmodels/useRosterState', () => ({
     selectedRosterSelection: null,
     setSelectedRosterSelection: mockSetSelectedRosterSelection,
     commands: {
-      raiseUnit: mockAddUnit,
+      raiseUnit: mockRaiseUnit,
       removeUnit: mockRemoveUnit,
       copyUnit: mockCopyUnit,
       subSelectionOperations: mockSubSelectionOperations,
@@ -253,9 +253,9 @@ describe('RosterEditor Component', () => {
     render(<RosterEditor system={mockSystem} roster={{}} onBack={mockOnBack} onPlay={mockOnPlay} />);
     const adderButton = screen.getByTestId('adder-cat-heroes');
     fireEvent.click(adderButton);
-    expect(mockAddUnit).toHaveBeenCalledTimes(1);
+    expect(mockRaiseUnit).toHaveBeenCalledTimes(1);
     // Die Kontingent-Sektion bindet ihr eigenes Kontingent an das Ausheben.
-    expect(mockAddUnit).toHaveBeenCalledWith('mock-added-unit', 'cat-heroes', 'force-1');
+    expect(mockRaiseUnit).toHaveBeenCalledWith('mock-added-unit', 'cat-heroes', 'force-1');
   });
 
   describe('Adversarial & Stress Tests', () => {
