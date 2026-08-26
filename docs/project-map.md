@@ -41,7 +41,7 @@ arrow is the *allowed* dependency direction; a reach back is forbidden.
 |---|---|---|
 | UI | `src/ui/components/`, `src/ui/viewmodels/`, `src/ui/styles/`, `src/ui/i18n/`, `src/ui/constants/` | Presentation and interaction |
 | Contexts | `src/contexts/armylist/`, `src/contexts/ruleengine/`, `src/contexts/catalog/`, `src/contexts/rulebook/`, `src/contexts/play/` | The five bounded contexts: write model, evaluation and its read model, catalogue library, rule-text index, and the running game (issue 0190). No context imports another (`kontext-kein-fremder-kontext`) |
-| Ports | `src/contexts/armylist/ports/storagePort.js`, `src/contexts/catalog/ports/catalogRepository.js` | The **only** two modules under `src/contexts/` that may name `src/platform/` (`kontext-nicht-auf-plattform`). Pure re-export, no logic |
+| Ports | `src/contexts/armylist/ports/storagePort.js`, `src/contexts/catalog/ports/catalogRepository.js`, `src/contexts/play/ports/storagePort.js` | The **only** three modules under `src/contexts/` that may name `src/platform/` (`kontext-nicht-auf-plattform`). Pure re-export, no logic |
 | Platform | `src/platform/persistence/`, `src/platform/battlescribe/` | Infrastructure: IndexedDB, import, catalogue decomposition. Reachable from a context only through a port |
 | Shared kernel | `src/shared/rostermodel/types.js`, `src/shared/battlescribe/battlescribeSchema.generated.js`, `src/shared/events/dataEvents.js` | Vocabulary every layer shares and nothing depends back on: the list model typedefs, the vendored XSD enums and the data-change event bus (Issue 0186) |
 | Tests | `src/tests/` | Every `*.test.*`/`*.spec.*` file under `src`, mirroring the subtree it tests, plus shared test setup (`test-utils/`) and sample catalogs (`__fixtures__/`) |
