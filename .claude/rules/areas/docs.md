@@ -18,6 +18,10 @@ Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch.
   `docs/adr/README.md`** (Nummer, Titel, Status, Datum) — ohne sie ist er unauffindbar.
 - Ändert eine Entscheidung eine frühere, wird der alte ADR nicht gelöscht: sein Status wird
   fortgeschrieben und der neue verweist zurück (0029 → 0030 ist das Muster).
+- Wird eine einzelne Aussage eines ADR überholt, ohne dass ein neuer ADR entsteht, steht dort ein
+  **Nachtrag**: Blockquote mit Issue-Nummer und Datum, der Originalwortlaut bleibt als Zitat
+  darunter stehen (Muster: 0032 Kopf und B1). Der Body wird nie stillschweigend umformuliert, und
+  ohne neuen ADR ändert sich weder die Statuszeile noch die Tabelle in `docs/adr/README.md`.
 - `docs/issues/` ist der Tracker, nicht Prosa — Format und Kommandos in
   `.claude/skills/issue-backend/SKILL.md`. `docs/issues/**/design.md` ist bewusst gitignored:
   Planungsartefakt während der Umsetzung, landet nie im PR.
