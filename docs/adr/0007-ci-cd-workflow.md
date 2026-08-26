@@ -14,9 +14,10 @@
 > - **Der CI-Job hat seit ADR-0024/0041 mehr Schritte, als Punkt 1 aufzählt:** `npm run knip`
 >   (warn-only, `continue-on-error`) und `npm run cast` (die Strukturprüfung, blockierend seit
 >   [ADR-0041](0041-cast-als-strukturpruefer.md)) laufen zwischen Lint und Typecheck.
-> - **Der Puppeteer-E2E läuft nicht mehr auf jedem PR**, sondern in einem eigenen Job auf `main`;
->   die Zusicherung unter Punkt 1, `main` sei dadurch immer voll funktionstüchtig, gilt in dieser
->   Form nicht.
+> - **Der Puppeteer-E2E ist ein eigener Job** (`e2e`, überschrieben „E2E (Puppeteer, nur main)“)
+>   neben `lint-and-test`. Sein `if` lässt ihn bei PRs gegen `main` und bei Pushes auf `main`
+>   laufen — und da `ci.yml` ohnehin nur auf diese beiden Ereignisse hört, läuft er auf jedem PR
+>   dieses Repositories. Die Zusicherung unter Punkt 1 gilt unverändert; der Jobname ist irreführend.
 >
 > Die Entscheidung — fokussierte Workflows statt eines Monolithen — bleibt davon unberührt.
 
