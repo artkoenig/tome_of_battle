@@ -43,8 +43,16 @@ export default function usePlayState(roster, reportError) {
 
   // Erst ein Zug des Spielers macht die Partie schreibenswert. Ohne diese Marke
   // wuerde schon das Betreten des Spielmodus einen Datensatz erzeugen und der
-  // gerade geladene Stand sofort wieder zurueckgeschrieben.
+  // gerade geladene Stand sofort wieder zurueckgeschrieben. Sie faellt mit dem
+  // Schreiben zurueck.
   const hasUnsavedMove = useRef(false);
+
+  // Ob ueberhaupt schon gezogen wurde. Diese Marke faellt nicht zurueck, denn
+  // sie beantwortet eine andere Frage: der Lesevorgang laeuft asynchron, und ein
+  // Zug waehrend des Lesens darf vom nachtraeglich eintreffenden Stand nicht
+  // ueberschrieben werden — auch dann nicht, wenn er zwischenzeitlich schon
+  // gespeichert wurde.
+  const hasPlayed = useRef(false);
 
   const reportFailure = () =>
     createPersistenceFailureReporter(
@@ -57,10 +65,13 @@ export default function usePlayState(roster, reportError) {
   // nicht begonnen hat.
   useEffect(() => {
     if (!rosterId) return undefined;
+    // Eine andere Liste ist eine andere Partie: die Zugmarke gilt fuer die
+    // vorige und darf den Stand der neuen nicht abweisen.
+    hasPlayed.current = false;
     let isCurrent = true;
     loadGame(rosterId)
       .then((loaded) => {
-        if (isCurrent && !hasUnsavedMove.current) setGame(loaded);
+        if (isCurrent && !hasPlayed.current) setGame(loaded);
       })
       .catch(reportFailure());
     return () => {
@@ -75,6 +86,7 @@ export default function usePlayState(roster, reportError) {
   }, [game]);
 
   const adjustTracker = (field, delta) => {
+    hasPlayed.current = true;
     hasUnsavedMove.current = true;
     setGame(prev => withAdjustedTracker(prev, field, delta));
   };
@@ -83,6 +95,7 @@ export default function usePlayState(roster, reportError) {
     currentWoundsOf(game, selectionId, totalMaxWounds);
 
   const handleAdjustWound = (selectionId, delta, totalMaxWounds) => {
+    hasPlayed.current = true;
     hasUnsavedMove.current = true;
     setGame(prev => withAdjustedWound(prev, selectionId, delta, totalMaxWounds));
   };

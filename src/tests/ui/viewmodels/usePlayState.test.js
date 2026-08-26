@@ -178,4 +178,28 @@ describe('usePlayState Hook', () => {
     });
     expect(reportError).not.toHaveBeenCalled();
   });
+
+  it('keeps a move made while the game is still being read', async () => {
+    /** @type {(game: unknown) => void} */
+    let resolveLoad = () => {};
+    mockLoadGame.mockReturnValue(new Promise((resolve) => { resolveLoad = resolve; }));
+
+    const { result } = renderHook(() => usePlayState(ROSTER));
+
+    act(() => {
+      result.current.handleAdjustWound('unit-1', -2, 10);
+    });
+    expect(result.current.game.wounds).toEqual({ 'unit-1': 8 });
+
+    await act(async () => {
+      resolveLoad(storedGame());
+    });
+
+    expect(result.current.game.wounds).toEqual({ 'unit-1': 8 });
+
+    act(() => {
+      result.current.handleAdjustWound('unit-1', -1, 10);
+    });
+    expect(result.current.game.wounds).toEqual({ 'unit-1': 7 });
+  });
 });

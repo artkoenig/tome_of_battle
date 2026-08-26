@@ -24,6 +24,12 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   `(roster, reportError)`. It must not be given `setRoster` again — that is what put a wound into
   the list's undo history and rewrote the whole roster record per click. `usePlayRoster` keeps the
   roster in a setter-less `useState` for the evaluation cache's identity.
+  The read is asynchronous, so the hook holds **two** move marks and they are not interchangeable:
+  `hasUnsavedMove` drives the save effect and falls back with each write, `hasPlayed` latches for
+  the roster's whole visit and is the guard the pending `loadGame().then` must ask — guarding the
+  load with the save mark discards a wound taken while the read is still in flight and then
+  persists the stale game. `hasPlayed` is reset at the top of the `[rosterId]` load effect, because
+  another list is another game.
 - `useAppData.js` is the **only** subscriber of the facade's change channel
   (`src/shared/events/dataEvents.js`): a write through `src/contexts/*/application/` announces itself
   there and the one roster list follows. A screen that wants to see a foreign save subscribes
