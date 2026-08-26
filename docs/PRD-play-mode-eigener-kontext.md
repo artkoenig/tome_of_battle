@@ -4,9 +4,9 @@
 > umgesetzt von Issue [`0190`](issues/0190-play-mode-becomes-its-own-context.md).
 > Vorgänger: Issues 0186 (Kontextbaum) und 0188 (Anwendungsschicht).
 >
-> **Status:** Entscheidungen getroffen, dem Owner zur Freigabe vorgelegt. Erst nach der
-> Freigabe bewegt sich Code — die drei offenen Produktfragen aus dem Issue sind unten in
-> [Produktentscheidungen](#produktentscheidungen) beantwortet.
+> **Status:** Vom Owner freigegeben (2026-08-26), alle drei Entscheidungen wie unten in
+> [Produktentscheidungen](#produktentscheidungen) geschrieben. Der Code-Umzug (AC2 bis AC12
+> von Issue 0190) laeuft auf dieser Grundlage.
 
 ## Problem Statement
 
