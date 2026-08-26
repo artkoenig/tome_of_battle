@@ -49,6 +49,7 @@ Der Zielbaum:
 | `src/contexts/ruleengine/` | `evaluator.js` (Fassade), `engine/` (Reinraum), `acl/` (Übersetzung), `readmodel/` (Anzeige-Ableitungen hinter `index.js`) |
 | `src/contexts/catalog/` | `application/` (Systembibliothek, Katalogrevisionen), `ports/catalogRepository.js` |
 | `src/contexts/rulebook/` | Regeltext-Index und Synonyme |
+| `src/contexts/play/` | Fortschreibung durch Issue 0190: `model/game.js` (Aggregat `Game`), `application/gameStore.js`, `ports/storagePort.js`, Fassade `index.js`. Die laufende Partie verweist ueber `rosterId` auf die Liste und lebt in ihrem eigenen Object Store `games` (PRD `docs/PRD-play-mode-eigener-kontext.md`). |
 | `src/platform/` | `persistence/` (IndexedDB, Migrationen, Katalog-Fork), `battlescribe/` (XML, ZIP, XSD) |
 | `src/shared/` | `rostermodel/types.js`, `battlescribe/battlescribeSchema.generated.js`, `events/dataEvents.js` |
 

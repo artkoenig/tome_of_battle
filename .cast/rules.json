@@ -255,6 +255,12 @@
    "to": "src/contexts/rulebook/**"
   },
   {
+   "name": "kontext-intern-play",
+   "severity": "error",
+   "from": "src/contexts/play/**",
+   "to": "src/contexts/play/**"
+  },
+  {
    "name": "nur-die-ports-erreichen-die-plattform",
    "severity": "error",
    "from": "src/contexts/*/ports/**",

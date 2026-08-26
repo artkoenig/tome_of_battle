@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { saveRoster, deleteRoster } from '../../contexts/armylist/application/rosterStore';
+import { endGame } from '../../contexts/play';
 import { readRosterText, buildRosterFile } from '../../contexts/armylist/application/rosterTransfer';
 import {
   exportRosterToXml, importRosterFromXml, MissingSystemError,
@@ -179,6 +180,9 @@ export default function useRosterList({ systems, rosters, setRosters, reloadData
     setRosterToDelete(null);
     try {
       await deleteRoster(id);
+      // Eine Partie ohne Liste hat keinen Gegenstand (Produktentscheidung 2 des
+      // PRD): mit der Liste geht ihre laufende Partie.
+      await endGame(id);
       reloadData();
     } catch (err) {
       console.error(err);

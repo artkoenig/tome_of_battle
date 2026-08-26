@@ -1,4 +1,10 @@
-import { saveSystem } from './database';
+import {
+  saveSystem,
+  getAllRosters,
+  saveRoster,
+  getGameForRoster,
+  saveGame,
+} from './database';
 import { processImportedData } from '../battlescribe/xmlParser';
 import { PARSER_VERSION } from '../battlescribe/parserVersion';
 import {
@@ -136,4 +142,74 @@ export async function runSystemMigrations(systems, fetchText = null) {
   }
 
   return { systems: migratedSystems, failures, unrecoverable };
+}
+
+/** Runde, in der eine frisch begonnene Partie steht. */
+const FIRST_GAME_ROUND = 1;
+
+/**
+ * Ob ein alter `gameState` eine tatsaechlich gespielte Partie beschreibt.
+ *
+ * Der Anfangszustand (Runde 1, keine Punkte, keine Wunden) ist keine Partie,
+ * sondern das Fehlen einer: jedes vor Issue 0190 angelegte Roster trug ihn,
+ * ohne dass je gespielt wurde. Er erzeugt deshalb keinen `Game`-Datensatz.
+ *
+ * Die Gegenprobe im Fachmodell ist `isUnplayedGame`
+ * (`src/contexts/play/model/game.js`); die Persistenzschicht darf einen Kontext
+ * nicht importieren und fuehrt die Frage deshalb hier noch einmal.
+ *
+ * @param {{ round?: number, vp?: number, cp?: number, wounds?: Object }} gameState
+ * @returns {boolean}
+ */
+function describesPlayedGame(gameState) {
+  return (
+    (gameState.round ?? FIRST_GAME_ROUND) !== FIRST_GAME_ROUND ||
+    (gameState.vp ?? 0) !== 0 ||
+    (gameState.cp ?? 0) !== 0 ||
+    Object.keys(gameState.wounds ?? {}).length > 0
+  );
+}
+
+/**
+ * Hebt den `gameState` jedes gespeicherten Rosters in den `games`-Store
+ * (Issue 0190, PRD `docs/PRD-play-mode-eigener-kontext.md`).
+ *
+ * Eine gezaehlte Partie darf beim Update nicht verloren gehen: sie wandert
+ * unveraendert — `wounds` behaelt seine Form, Zahl oder Wert je Modell — in
+ * einen `Game`-Datensatz mit `rosterId = roster.id`. Das Feld verschwindet
+ * danach aus dem Roster-Datensatz.
+ *
+ * Idempotent in beide Richtungen: ein Roster ohne `gameState` wird nicht
+ * angefasst (und nicht neu geschrieben), und ein Roster, dessen Partie schon
+ * einen Datensatz hat, erzeugt keinen zweiten — hoechstens eine Partie je
+ * Liste.
+ *
+ * @returns {Promise<{ movedGames: number, cleanedRosters: number }>}
+ */
+export async function runGameStateMigration() {
+  const rosters = await getAllRosters();
+  let movedGames = 0;
+  let cleanedRosters = 0;
+
+  for (const roster of rosters) {
+    if (!roster || !('gameState' in roster)) continue;
+
+    const { gameState, ...rosterWithoutGameState } = roster;
+    if (gameState && describesPlayedGame(gameState) && !(await getGameForRoster(roster.id))) {
+      await saveGame({
+        id: crypto.randomUUID(),
+        rosterId: roster.id,
+        round: gameState.round ?? FIRST_GAME_ROUND,
+        vp: gameState.vp ?? 0,
+        cp: gameState.cp ?? 0,
+        wounds: gameState.wounds ?? {},
+      });
+      movedGames += 1;
+    }
+
+    await saveRoster(rosterWithoutGameState);
+    cleanedRosters += 1;
+  }
+
+  return { movedGames, cleanedRosters };
 }

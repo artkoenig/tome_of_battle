@@ -1,11 +1,17 @@
 const DB_NAME = 'TomeOfBattleDB';
-const DB_VERSION = 2;
+// 3 seit Issue 0190: der Store `games` kam hinzu. Ein Nutzer traegt seine
+// IndexedDB ueber Releases hinweg (ADR 0002), also legt `onupgradeneeded` jeden
+// fehlenden Store an, statt eine frische Datenbank vorauszusetzen.
+const DB_VERSION = 3;
 
 // Object stores of the app database. `systems` holds parsed game systems
-// (metadata, cost types, catalogues), `rosters` the user created army lists and
-// `settings` one keyed record per app setting.
+// (metadata, cost types, catalogues), `rosters` the user created army lists,
+// `games` the running game per list (Issue 0190 — wounds, round, VP, CP live
+// outside the list record so a wound never rewrites a roster) and `settings`
+// one keyed record per app setting.
 const SYSTEMS_STORE = 'systems';
 const ROSTERS_STORE = 'rosters';
+const GAMES_STORE = 'games';
 const SETTINGS_STORE = 'settings';
 
 /** @type {{ READ_ONLY: IDBTransactionMode, READ_WRITE: IDBTransactionMode }} */
@@ -33,7 +39,7 @@ function openConnection() {
     request.onupgradeneeded = () => {
       const database = request.result;
 
-      for (const storeName of [SYSTEMS_STORE, ROSTERS_STORE, SETTINGS_STORE]) {
+      for (const storeName of [SYSTEMS_STORE, ROSTERS_STORE, GAMES_STORE, SETTINGS_STORE]) {
         if (!database.objectStoreNames.contains(storeName)) {
           database.createObjectStore(storeName, { keyPath: 'id' });
         }
@@ -152,6 +158,45 @@ export async function getAllRosters() {
 
 export function deleteRoster(id) {
   return writeToStore(ROSTERS_STORE, (store) => store.delete(id));
+}
+
+/**
+ * Persists one game record.
+ * @param {{ id: string, rosterId: string, round: number, vp: number, cp: number,
+ *   wounds: Object<string, number|number[]> }} game
+ * @returns {Promise<void>}
+ */
+export function saveGame(game) {
+  return writeToStore(GAMES_STORE, (store) => store.put(game));
+}
+
+async function getAllGames() {
+  return (await readFromStore(GAMES_STORE, (store) => store.getAll())) || [];
+}
+
+/**
+ * The running game of one list, or `undefined`. There is at most one per list
+ * (Issue 0190): the store is small enough — one record per list with a game in
+ * progress — that a scan is cheaper than a secondary index.
+ * @param {string} rosterId
+ * @returns {Promise<Object|undefined>}
+ */
+export async function getGameForRoster(rosterId) {
+  const games = await getAllGames();
+  return games.find((game) => game.rosterId === rosterId);
+}
+
+/**
+ * Removes every game of one list. Deleting a list deletes its game, and ending
+ * a game discards it — both come through here.
+ * @param {string} rosterId
+ * @returns {Promise<void>}
+ */
+export async function deleteGamesOfRoster(rosterId) {
+  const games = await getAllGames();
+  for (const game of games.filter((candidate) => candidate.rosterId === rosterId)) {
+    await writeToStore(GAMES_STORE, (store) => store.delete(game.id));
+  }
 }
 
 /**

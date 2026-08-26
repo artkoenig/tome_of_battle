@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { loadSystems } from '../../contexts/catalog/application/systemLibrary';
 import { loadRosters } from '../../contexts/armylist/application/rosterStore';
+import { migrateStoredGames } from '../../contexts/play';
 import { refreshSystems } from '../../contexts/catalog/application/catalogRevisions';
 import { DATA_EVENT, subscribeToDataChanges } from '../../shared/events/dataEvents';
 import { VIEWS } from '../../ui/constants/views';
@@ -106,6 +107,10 @@ export default function useAppData({ showToast, navigate }) {
   // gespeicherten Kataloge neu.
   const runStartupLoad = async () => {
     try {
+      // Vor dem ersten Lesen: der `gameState` alter Roster wandert in den
+      // `games`-Store (Issue 0190). Danach traegt kein gelesenes Roster ihn
+      // mehr, und eine gezaehlte Partie ist nicht verloren.
+      await migrateStoredGames();
       const dbSystems = await loadLocalData();
       await refreshCatalogInBackground(dbSystems);
     } catch (e) {

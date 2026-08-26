@@ -28,6 +28,9 @@ vi.mock('../../platform/persistence/database', () => ({
   getAllRosters: vi.fn().mockResolvedValue([]),
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
+  getGameForRoster: vi.fn().mockResolvedValue(undefined),
+  saveGame: vi.fn().mockResolvedValue(undefined),
+  deleteGamesOfRoster: vi.fn().mockResolvedValue(undefined),
   getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
   setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
   WHFB6_LINKING_DEFAULT: true,
@@ -35,6 +38,9 @@ vi.mock('../../platform/persistence/database', () => ({
 
 vi.mock('../../platform/persistence/migrations', () => ({
   runSystemMigrations: vi.fn((systems) => Promise.resolve({ systems: systems || [], failures: [] })),
+  // Der Startlauf hebt seit Issue 0190 zusaetzlich den alten `gameState` in den
+  // `games`-Store; hier hat er nichts zu tun.
+  runGameStateMigration: vi.fn().mockResolvedValue({ movedGames: 0, cleanedRosters: 0 }),
 }));
 
 // Mock child components. The Importer mock exposes a button that invokes the

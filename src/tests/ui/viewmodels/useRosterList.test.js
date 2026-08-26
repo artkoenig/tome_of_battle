@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import useRosterList from '../../../ui/viewmodels/useRosterList';
-import { saveRoster, deleteRoster } from '../../../platform/persistence/database';
+import { saveRoster, deleteRoster, deleteGamesOfRoster } from '../../../platform/persistence/database';
 import {
   exportRosterToXml,
   importRosterFromXml,
@@ -15,6 +15,8 @@ import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCa
 vi.mock('../../../platform/persistence/database', () => ({
   saveRoster: vi.fn().mockResolvedValue(null),
   deleteRoster: vi.fn().mockResolvedValue(null),
+  // Mit der Liste geht ihre laufende Partie (Issue 0190).
+  deleteGamesOfRoster: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Die Fehlerklassen bleiben echt: sie tragen die `messageKey`/`messageParams`
@@ -183,6 +185,8 @@ describe('useRosterList — Löschen', () => {
     });
 
     expect(deleteRoster).toHaveBeenCalledWith('roster-1');
+    // Eine Partie ohne Liste hat keinen Gegenstand (Issue 0190).
+    expect(deleteGamesOfRoster).toHaveBeenCalledWith('roster-1');
     expect(deps.reloadData).toHaveBeenCalled();
     expect(result.current.rosterToDelete).toBeNull();
   });

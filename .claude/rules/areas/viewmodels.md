@@ -19,6 +19,11 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   `./viewmodels/`. The layer takes small mechanics as well (`useBottomSheet` is the precedent).
 - The suite doc is `CLAUDE.md` here: English test titles (unlike `src/contexts/*`), `useX.test.js` /
   `useX.<topic>.test.js` naming, and the production-seam build-up with real catalogue XML.
+- `usePlayState.js` holds the **running game**, not a roster field: since Issue 0190 it reads and
+  writes through the facade `src/contexts/play/` (`loadGame`/`saveGame`) and takes only
+  `(roster, reportError)`. It must not be given `setRoster` again — that is what put a wound into
+  the list's undo history and rewrote the whole roster record per click. `usePlayRoster` keeps the
+  roster in a setter-less `useState` for the evaluation cache's identity.
 - `useAppData.js` is the **only** subscriber of the facade's change channel
   (`src/shared/events/dataEvents.js`): a write through `src/contexts/*/application/` announces itself
   there and the one roster list follows. A screen that wants to see a foreign save subscribes

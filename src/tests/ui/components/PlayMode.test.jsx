@@ -25,8 +25,8 @@ const mockAdjustTracker = vi.fn();
 const mockGetUnitCurrentWounds = vi.fn().mockReturnValue(5);
 
 vi.mock('../../../ui/viewmodels/usePlayState', () => ({
-  default: (_initialRoster, _setRoster, _saveRoster) => ({
-    gameState: { round: 1, vp: 0, cp: 0, wounds: { 'sel-1': 5, 'sel-2': 3, 'sel-3': 1 } },
+  default: (_roster, _reportError) => ({
+    game: { rosterId: 'r1', round: 1, vp: 0, cp: 0, wounds: { 'sel-1': 5, 'sel-2': 3, 'sel-3': 1 } },
     adjustTracker: mockAdjustTracker,
     getUnitCurrentWounds: mockGetUnitCurrentWounds,
     handleAdjustWound: mockHandleAdjustWound

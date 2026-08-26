@@ -36,7 +36,6 @@
  * @property {number} costLimit
  * @property {string} costLimitType
  * @property {Force[]} forces
- * @property {Object} [gameState]
  */
 
 /**

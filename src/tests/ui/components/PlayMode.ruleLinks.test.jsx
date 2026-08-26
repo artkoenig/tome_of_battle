@@ -37,7 +37,7 @@ vi.mock('../../../platform/persistence/database', () => ({
 
 vi.mock('../../../ui/viewmodels/usePlayState', () => ({
   default: () => ({
-    gameState: { wounds: {} },
+    game: { rosterId: 'r1', round: 1, vp: 0, cp: 0, wounds: {} },
     adjustTracker: vi.fn(),
     getUnitCurrentWounds: vi.fn(),
     handleAdjustWound: vi.fn(),

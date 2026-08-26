@@ -3,7 +3,7 @@ import { findEntryInSystem, resolveEntry } from './catalogResolver.js';
 import { childSelectionsOf, mapSelectionTree } from './rosterTree.js';
 import { isIndependentSubUnit } from './subUnit.js';
 import { resolveCostLimitTypeId } from './costTypeLabels.js';
-import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults.js';
+import { DEFAULT_ROSTER_COST_LIMIT } from './rosterDefaults.js';
 
 /**
  * `.ros`-Serialisierung des Schreibmodells (ADR-0037: Fachlogik).
@@ -267,8 +267,7 @@ export function importRosterFromXml(xmlText, systems) {
     catalogueId: forces[0]?.catalogueId || system.catalogues?.[0]?.id || '',
     costLimit,
     costLimitType,
-    forces,
-    gameState: createInitialGameState()
+    forces
   };
 }
 

@@ -6,7 +6,7 @@
  * lag zuvor inline in `App.jsx` und ist ein eigener, isoliert testbarer Belang.
  */
 
-import { DEFAULT_ROSTER_COST_LIMIT, createInitialGameState } from './rosterDefaults';
+import { DEFAULT_ROSTER_COST_LIMIT } from './rosterDefaults';
 
 /**
  * Erzeugt ein neues Roster aus den Formularwerten und der Systemdefinition.
@@ -37,7 +37,6 @@ export function buildRoster({ name, systemId, catId, forceEntryId, limit }, syst
       forceEntryId: forceEntryId || systemDef?.forceEntries?.[0]?.id || null,
       catalogueId: catId,
       selections: []
-    }],
-    gameState: createInitialGameState()
+    }]
   };
 }

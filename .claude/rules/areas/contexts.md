@@ -5,18 +5,19 @@ paths:
 
 # contexts — der Schnitt nach Fachlichkeit
 
-Vier Bounded Contexts (ADR-0042): `armylist` (Schreibmodell + Datenfassade), `ruleengine`
-(Reinraum-Engine, ACL, Lesemodell), `catalog` (Systembibliothek, Katalogrevisionen),
-`rulebook` (Regeltext-Index). Jeder Kontext ist eine Schublade, aus der man nicht
-seitwärts greift.
+Fünf Bounded Contexts (ADR-0042, fortgeschrieben durch Issue 0190): `armylist` (Schreibmodell +
+Datenfassade), `ruleengine` (Reinraum-Engine, ACL, Lesemodell), `catalog` (Systembibliothek,
+Katalogrevisionen), `rulebook` (Regeltext-Index) und `play` (die laufende Partie — eigene Notiz
+`areas/play.md`). Jeder Kontext ist eine Schublade, aus der man nicht seitwärts greift.
 
 - **Kein Kontext importiert einen anderen** — `kontext-kein-fremder-kontext` in
   `.cast/rules.json`, blockierend. Was zwei Kontexte teilen, gehört nach `src/shared/**`
   (Fan-out 0) oder nirgendwohin. Die einzige Ausnahme ist die eine Tür des Lesemodells,
   `ruleengine/readmodel/index.js`, die von überall importiert werden darf.
 - **`src/platform/**` erreicht ein Kontext nur über seinen Port**:
-  `armylist/ports/storagePort.js` und `catalog/ports/catalogRepository.js` sind die
-  einzigen Module unter `src/contexts/`, die die Plattform nennen dürfen
+  `armylist/ports/storagePort.js`, `catalog/ports/catalogRepository.js` und
+  `play/ports/storagePort.js` sind die einzigen Module unter `src/contexts/`, die die
+  Plattform nennen dürfen
   (`kontext-nicht-auf-plattform`). Sie enthalten nur `export { … } from '…/platform/…'` —
   ein fehlender Name wird dort ergänzt, nie direkt importiert. Ein `vi.mock` auf ein
   Plattformmodul wirkt durch den Port hindurch, weil er nur re-exportiert.

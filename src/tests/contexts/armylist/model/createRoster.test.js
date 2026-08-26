@@ -55,8 +55,8 @@ describe('buildRoster', () => {
     expect(roster.forces[0].forceEntryId).toBeNull();
   });
 
-  test('startet mit einem frischen Spielzustand', () => {
-    expect(buildRoster(form, systemDef).gameState).toEqual({ round: 1, vp: 0, cp: 0, wounds: {} });
+  test('traegt keinen Spielzustand: eine Partie ist ein eigenes Aggregat (Issue 0190)', () => {
+    expect(buildRoster(form, systemDef)).not.toHaveProperty('gameState');
   });
 
   test('vergibt eigene Ids für Roster und Streitmacht', () => {
