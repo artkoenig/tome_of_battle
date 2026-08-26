@@ -127,6 +127,11 @@ and its line.
 - **`evaluator-architecture.md`** — the reference architecture for
   `src/contexts/ruleengine/engine/` (pipeline stages, invariants); what
   [ADR 0030](adr/0030-zweite-eigenstaendige-auswertungs-engine.md) implements.
+- **`ddd-assessment-and-refactoring-plan.md`** and
+  **`ddd-review-2026-08.md`** — the two DDD reviews of `src/`. The first proposed the
+  cut into bounded contexts ([ADR 0042](adr/0042-schnitt-nach-fachlichkeit-bounded-contexts-und-ports.md),
+  issues 0186-0192, all landed); the second measures what that left and orders the
+  remaining measures. Proposals, not accepted ADRs.
 - **`battlescribe-ui-renderer-audit.md`** — audit of how the UI renders
   BattleScribe content.
 - **`testkatalog-evaluator-e2e.md`** — the evaluator's E2E test-catalog

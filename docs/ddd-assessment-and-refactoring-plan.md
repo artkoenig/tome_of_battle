@@ -2,6 +2,8 @@
 
 - **Status:** Proposal, not an accepted ADR
 - **Date:** 2026-08-25
+- **Superseded as a status report by** [`ddd-review-2026-08.md`](ddd-review-2026-08.md) — every
+  measure below has landed (issues 0186-0192); that second pass reviews what they left.
 - **Scope:** `src/` only. Numbers come from `cast report/edges/check --root src` and
   `cast plan simulate`; every claim below names the file it rests on.
 
