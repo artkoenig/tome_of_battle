@@ -151,6 +151,36 @@
    "to": "plattform"
   },
   {
+   "name": "fachlogik-kein-rueckgriff",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/ui/**"
+  },
+  {
+   "name": "kontext-nicht-auf-plattform",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/platform/**"
+  },
+  {
+   "name": "kontext-kein-fremder-kontext",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/contexts/catalog/**"
+  },
+  {
+   "name": "kontext-kein-fremder-kontext",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/contexts/rulebook/**"
+  },
+  {
+   "name": "kontext-kein-fremder-kontext",
+   "severity": "error",
+   "from": "src/contexts/ruleengine/**",
+   "to": "src/contexts/play/**"
+  },
+  {
    "name": "nur-die-acl-ruft-die-engine",
    "severity": "error",
    "from": "src/contexts/ruleengine/readmodel/**",
@@ -209,7 +239,19 @@
   {
    "name": "lesemodell-die-eine-tuer",
    "severity": "error",
-   "from": "**",
+   "from": "src/ui/viewmodels/**",
+   "to": "readmodel-fassade"
+  },
+  {
+   "name": "lesemodell-die-eine-tuer",
+   "severity": "error",
+   "from": "src/tests/**",
+   "to": "readmodel-fassade"
+  },
+  {
+   "name": "lesemodell-die-eine-tuer",
+   "severity": "error",
+   "from": "src/contexts/armylist/application/mandatoryListRules.js",
    "to": "readmodel-fassade"
   },
   {

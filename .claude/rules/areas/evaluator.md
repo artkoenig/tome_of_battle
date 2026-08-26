@@ -18,8 +18,23 @@ means; it outranks the ADRs where the two disagree.
   directions are blocking rules. The bridge is `src/contexts/ruleengine/readmodel/rosterAdapter.js`.
 - The folder sits in the **Fachlogik layer** of ADR 0037 (`UI → Fachlogik → Daten`). It never
   reaches back into the UI and never imports `src/ui/i18n/` — the report carries ids, the UI
-  translates them (cast `fachlogik-kein-rueckgriff`, `keine-i18n-unter-ui`, both `error` since Issue 0181). The
-  Reinraum rules above are unaffected by that layering and stay stricter.
+  translates them. The Reinraum rules above are unaffected by that layering and stay stricter.
+- Those layer bans are phrased by **path**, not by layer, and that is deliberate: `.cast/layers.json`
+  gives every rule-engine module one of five own layers (`evaluator-fassade`, `evaluator-intern`,
+  `acl`, `readmodel-fassade`, `readmodel-intern`), so no module here is ever a `kontexte` module and
+  a rule with `kontexte` on its `from` side skips this whole context. Since Issue 0203
+  `.cast/rules.json` therefore carries `src/contexts/ruleengine/**` as the `from` of
+  `fachlogik-kein-rueckgriff` (`→ src/ui/**`, i18n included), `kontext-nicht-auf-plattform`
+  (`→ src/platform/**`) and `kontext-kein-fremder-kontext` (`→ catalog`, `rulebook`, `play`;
+  `armylist` was already covered by `evaluator-keine-roster-abhaengigkeit`). A future layer split
+  cannot reopen the gap. Keep any new ban here path-phrased for the same reason.
+- The read model's door (`readmodel/index.js`, cast `lesemodell-die-eine-tuer`) is an `allowed`
+  rule, and in cast an `allowed` rule beats a `forbidden` one — so its `from` is the guest list.
+  Since Issue 0203 it lists exactly `src/ui/viewmodels/**`, `src/tests/**` and the one sanctioned
+  cross-context caller `src/contexts/armylist/application/mandatoryListRules.js`; before that it was
+  `**`, which silently disabled `roster-keine-evaluator-abhaengigkeit` and
+  `komponente-kein-bericht` for the facade. A new caller of the read model needs its own line there,
+  and adding one is the moment to ask whether it should be a caller at all.
 - `catalogReader.js` is the evaluator's own XML reader, deliberately separate from
   `src/platform/battlescribe/xmlParser.js`. Changing one never implies changing the other.
 - A change confined to this folder only needs `forge-test --run src/contexts/ruleengine/engine` — that covers the
