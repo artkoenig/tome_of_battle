@@ -11,6 +11,12 @@
     "e2e/**/*.js",
     "scripts/**/*.js"
   ],
+  "ignoreDependencies": [
+    "@vitest/coverage-v8"
+  ],
+  "ignoreBinaries": [
+    "cast-check"
+  ],
   "ignore": [
     ".worktrees/**",
     "**/.claude/**",

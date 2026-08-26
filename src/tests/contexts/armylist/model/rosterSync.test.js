@@ -116,6 +116,25 @@ describe('reconcileImportedSelectionIds', () => {
     });
   });
 
+  // A BattleScribe `.ros` names BOTH ids of a linked option: the link it was set through
+  // in the exporting catalogue AND the shared entry that link targets. Only the target is
+  // stable across catalogue revisions — the link id in the file may be one this catalogue
+  // no longer has. The import path therefore reads the ENTRY id first
+  // (`importedCatalogueEntryId`), not the link id (`selectionIdentityId`, which holds only
+  // after this reconciliation). Reading them the other way round leaves such a selection
+  // on its stale link, silently unmatched by every later reader.
+  test('aligns a linked option whose file names a stale link id beside the target id', () => {
+    const roster = makeImportedRoster();
+    const general = roster.forces[0].selections[0].selections[1];
+    general.entryLinkId = 'link-general-aus-alter-katalogfassung';
+
+    const reconciled = reconcileImportedSelectionIds(roster, mockSystem);
+    const reconciledGeneral = reconciled.forces[0].selections[0].selections[1];
+
+    expect(reconciledGeneral.entryLinkId).toBe('link-general');
+    expect(reconciledGeneral.selectionEntryId).toBe(null);
+  });
+
   test('is idempotent: a second pass returns the very same roster instance', () => {
     const firstPass = reconcileImportedSelectionIds(makeImportedRoster(), mockSystem);
     const secondPass = reconcileImportedSelectionIds(firstPass, mockSystem);

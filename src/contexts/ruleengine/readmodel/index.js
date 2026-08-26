@@ -12,14 +12,12 @@
  */
 
 export { evaluateAppRoster, describeSystem } from '../acl/evaluationCache.js';
-export { toEvaluatorRoster, slotPathsOf } from '../acl/rosterAdapter.js';
 
-export { SlotIndex, EMPTY_SLOT_INDEX, resolvedDefIdOf } from './slotIndex.js';
+export { SlotIndex, EMPTY_SLOT_INDEX } from './slotIndex.js';
 export { costLimitTypeIdOf, costLimitLabelOf, extraResourceTotalsOf } from './costDisplays.js';
 export { isBlockingViolation, countBlockingViolations, hasBlockingViolations } from './violationStats.js';
 export { resolveListRuleGroupFromReport } from './listRuleGroups.js';
 export { findMissingMandatoryListRules } from './mandatoryListRules.js';
 export { armyWideSelectorSlotsOf } from './armyWideSelectorSlots.js';
-export { unresolvedSelectionsOf } from './datasetDiagnostics.js';
 export { useEvaluation } from './useEvaluation.js';
 export { useRosterReportModel } from './rosterReport.js';

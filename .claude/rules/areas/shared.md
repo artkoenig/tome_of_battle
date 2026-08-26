@@ -23,7 +23,11 @@ Issue 0179 for being exactly that.
   `reconcileImportedSelectionIds`, `importedCatalogueEntryId` (entry id first) only before it, on
   the import path. Both always resolve to *something* — `findEntryInSystem` indexes link ids and
   entry ids in one map — so the wrong one is silent. Never spell the fallback out inline again;
-  `docs/glossary.md` carries a row per name.
+  `docs/glossary.md` carries a row per name. Only a selection naming **both** ids tells the two
+  apart, so that is the shape a case must build: `src/tests/shared/rostermodel/selectionIds.test.js`
+  pins the vocabulary, and the stale-link case in
+  `src/tests/contexts/armylist/model/rosterSync.test.js` drives it through the import path — a
+  fixture with just one id set passes either order and proves nothing.
 - `src/contexts/ruleengine/**` may **not** import `rostermodel/` (`evaluation-keine-roster-abhaengigkeit`);
   `acl/**` is the one exception (`acl-kennt-beide-vokabulare` under `allowed`). A read model that
   needs list vocabulary takes it re-exported from `acl/rosterAdapter.js`, the only door inward.

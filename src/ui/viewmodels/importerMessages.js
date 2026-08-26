@@ -12,7 +12,7 @@ import { t as translate } from '../i18n/i18nStore';
 const ITEM_SEPARATOR = '; ';
 const REFERENCE_SEPARATOR = ', ';
 
-export const quoteCatalogueName = (value) => `„${value}"`;
+const quoteCatalogueName = (value) => `„${value}"`;
 
 /**
  * Nennt jeden fehlenden Bibliothekskatalog samt der Kataloge, die ihn

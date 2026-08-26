@@ -26,7 +26,7 @@
 export {
   findForceContainingSelection, findSelectionInRoster, subSelectionsOf, unitsOfForce
 } from './rosterTree.js';
-export { findEntryInSystem, findRuleByName, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
+export { findEntryInSystem, foreignCatalogueIdsOf, resolveEntry } from './catalogResolver.js';
 export {
   resolveCostLimitLabel, resolveCostLimitTypeId, resolveCostTypeLabel
 } from './costTypeLabels.js';

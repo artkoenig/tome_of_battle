@@ -58,8 +58,6 @@ function withoutLegacyCosts(selection) {
   return stripped;
 }
 
-
-
 /**
  * Die aufgelöste Katalogdefinition hinter einer Selection — oder `null`, wenn
  * die Selection auf keinen (mehr) auffindbaren Eintrag verweist.

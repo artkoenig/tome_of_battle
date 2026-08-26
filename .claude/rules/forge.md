@@ -36,7 +36,10 @@
   an object field or a parameter default falls to `never[]`, and `useState(null)`/`useRef(null)`
   falls to `null` — give the literal a named, `@type`-annotated constant next to the function
   and pass that instead.
-- `npm run knip` is warn-only and deliberately outside the wrappers.
+- `npm run knip` is warn-only and deliberately outside the wrappers. Its two `ignore*` entries
+  are not suppressions: `cast-check` is a Claude Code plugin binary and by decision not on npm,
+  and `@vitest/coverage-v8` is reached only through the `--coverage.reportOnFailure` flag the
+  test gate passes (`.claude/rules/areas/project-state.md`), so knip cannot see either.
 - The Puppeteer app E2E (`node e2e/ui.test.js`, part of `npm test`) is **not** in `forge-test`:
   it is slow and browser-bound. Run it by hand when a change touches `src/ui/components/` or
   `e2e/`.
