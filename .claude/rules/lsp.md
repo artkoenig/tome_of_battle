@@ -30,3 +30,10 @@ drives `typescript-language-server` over stdio and offers its answers as MCP too
 `.claude/hooks/session-start.sh` installs the bridge in remote containers. Locally:
 `go install github.com/isaacphi/mcp-language-server@v0.1.1`. The language server itself is
 `npm install -g typescript-language-server`.
+
+The same hook writes `lsp` into `enabledMcpjsonServers` in `~/.claude/settings.json`, because a
+server declared in `.mcp.json` waits for an approval Claude Code only reads from settings outside
+the repository -- and in a container nobody trusts the workspace by hand. That means content from
+this repository approves its own MCP server, which is a decision for this repository and not a
+pattern to copy: a contribution that touches the hook or `.mcp.json` no longer gets asked about.
+Locally the hook exits before this point, so the trust dialog still decides.
