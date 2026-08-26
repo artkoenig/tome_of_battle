@@ -3,8 +3,9 @@
 # typescript-language-server, which reads the TypeScript library from the
 # project's own node_modules (package.json pins the version).
 #
-# Run `npm ci` first -- without node_modules/typescript the language server
-# refuses to initialize and the MCP server exits.
+# node_modules/typescript has to exist -- without it the language server refuses
+# to initialize and this MCP server exits. In remote containers the session-start
+# hook installs it; locally, run `npm ci` first.
 set -euo pipefail
 
 workspace="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"

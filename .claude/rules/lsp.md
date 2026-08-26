@@ -21,13 +21,17 @@ drives `typescript-language-server` over stdio and offers its answers as MCP too
   without resolving it against the workspace, so a relative path opens
   `file://src/...` -- a URI whose host is `src`. The language server then answers about a file
   that does not exist, and `definition` reports the symbol as not found instead of failing.
-- **`npm ci` first.** `typescript-language-server` resolves the TypeScript library from
+- **`node_modules` first.** `typescript-language-server` resolves the TypeScript library from
   `node_modules/typescript`, the version `package.json` pins. Without it the server refuses to
-  initialize and the MCP server exits at startup.
+  initialize and the MCP server exits at startup -- the tools are then simply absent, with no
+  error in the session. In remote containers `.claude/hooks/session-start.sh` runs `npm ci`
+  before the session starts, so this is a local concern; a checkout that has never been
+  installed has no code intelligence.
 
 ## Installation
 
-`.claude/hooks/session-start.sh` installs the bridge in remote containers. Locally:
+`.claude/hooks/session-start.sh` installs the project's npm dependencies and the bridge in remote
+containers, each only where it is missing, so a warm container pays for neither. Locally:
 `go install github.com/isaacphi/mcp-language-server@v0.1.1`. The language server itself is
 `npm install -g typescript-language-server`.
 

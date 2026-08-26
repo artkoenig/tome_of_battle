@@ -9,6 +9,19 @@ fi
 
 git -C "$CLAUDE_PROJECT_DIR" submodule update --init --recursive
 
+# The container image carries no node_modules, and typescript-language-server
+# resolves the TypeScript library from the workspace's own -- without it the lsp
+# MCP server exits at startup (see .claude/rules/lsp.md), and every check wrapper
+# fails until someone installs by hand. Install once per container; a failure
+# here is not fatal, the missing modules report themselves loudly enough.
+# PUPPETEER_SKIP_DOWNLOAD keeps the browser out of it, as the CI workflow does:
+# the Puppeteer E2E is run by hand and fetches its Chromium then, with
+# `npx puppeteer browsers install chrome`.
+if [ ! -d "$CLAUDE_PROJECT_DIR/node_modules" ] && command -v npm >/dev/null 2>&1; then
+  PUPPETEER_SKIP_DOWNLOAD=true npm --prefix "$CLAUDE_PROJECT_DIR" ci \
+    || echo "session-start: npm ci failed, node_modules is missing" >&2
+fi
+
 # The MCP <-> LSP bridge (see .mcp.json) is a Go binary that is not part of the
 # image. Install it once per container; a failure here is not fatal, the MCP
 # server then reports the missing binary itself.
