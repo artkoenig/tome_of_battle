@@ -24,7 +24,9 @@ fi
 
 # The MCP <-> LSP bridge (see .mcp.json) is a Go binary that is not part of the
 # image. Install it once per container; a failure here is not fatal, the MCP
-# server then reports the missing binary itself.
+# server then reports the missing binary itself. Claude Code starts that server
+# in parallel with this hook, so it waits for both installs above rather than
+# giving up on the first look -- see .claude/rules/lsp.md.
 if ! command -v mcp-language-server >/dev/null 2>&1 \
   && [ ! -x "${GOBIN:-${GOPATH:-$HOME/go}/bin}/mcp-language-server" ] \
   && command -v go >/dev/null 2>&1; then

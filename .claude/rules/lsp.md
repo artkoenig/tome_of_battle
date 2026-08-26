@@ -24,9 +24,8 @@ drives `typescript-language-server` over stdio and offers its answers as MCP too
 - **`node_modules` first.** `typescript-language-server` resolves the TypeScript library from
   `node_modules/typescript`, the version `package.json` pins. Without it the server refuses to
   initialize and the MCP server exits at startup -- the tools are then simply absent, with no
-  error in the session. In remote containers `.claude/hooks/session-start.sh` runs `npm ci`
-  before the session starts, so this is a local concern; a checkout that has never been
-  installed has no code intelligence.
+  error in the session. A checkout that has never been installed therefore has no code
+  intelligence; `npm ci` is what buys it.
 
 ## Installation
 
@@ -34,6 +33,15 @@ drives `typescript-language-server` over stdio and offers its answers as MCP too
 containers, each only where it is missing, so a warm container pays for neither. Locally:
 `go install github.com/isaacphi/mcp-language-server@v0.1.1`. The language server itself is
 `npm install -g typescript-language-server`.
+
+Claude Code starts the MCP servers in parallel with that hook, not after it, so on a cold
+container the bridge is asked to start while `npm ci` and `go install` are still running. Giving
+up on the first look loses that race for the whole session, which is why
+`.claude/mcp/lsp-server.sh` waits for both prerequisites -- the binary, and a `node_modules` whose
+install has finished -- before it hands over. The wait is bounded at 25 seconds
+(`LSP_STARTUP_WAIT_SECONDS`), under Claude Code's 30-second connection timeout, so an install that
+outruns it still reports its own reason rather than a timeout. What each attempt did is in
+`~/.cache/claude-cli-nodejs/<workspace>/mcp-logs-lsp/`; the session itself stays silent.
 
 The same hook writes `lsp` into `enabledMcpjsonServers` in `~/.claude/settings.json`, because a
 server declared in `.mcp.json` waits for an approval Claude Code only reads from settings outside
