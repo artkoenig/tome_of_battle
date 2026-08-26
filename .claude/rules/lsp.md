@@ -57,6 +57,12 @@ TypeScript 6.0.2) and the numbers are what a repeat should reproduce.
 The reliable opening move is therefore one `diagnostics` (or `hover`) with an **absolute** path on
 some file in the area about to be asked about, and only then `definition`/`references`.
 
+**An empty answer from the two symbol tools is not evidence of absence.** The same race can be lost
+later in a session: `definition withRaisedUnits` came back "not found" once while a `hover` opened
+another file, and answered correctly a moment later on its own — a repeat of that pairing did not
+reproduce it, so the timing is what it is. Ask a second time before believing a "not found";
+`hover` and `diagnostics` were stable in every run.
+
 **`node_modules` first**, before any of it: `typescript-language-server` resolves the TypeScript
 library from `node_modules/typescript`, the version `package.json` pins. Without it the server
 refuses to initialize and the MCP server exits at startup -- the tools are then simply absent, with
