@@ -1,6 +1,6 @@
 ---
-status: backlog
-branch:
+status: done
+branch: claude/issues-186-192-r1f86s
 pr:
 ---
 
