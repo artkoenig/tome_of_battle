@@ -17,7 +17,7 @@ import { buildRoster } from '../../../contexts/armylist/model/createRoster';
  * sie nicht auseinanderlaufen, wenn ein Pflicht-Kind mitkommt.
  *
  * Produktionsnaht, nichts gemockt: Katalog-XML → `processImportedData` →
- * `useRosterState`s `commands.raiseUnit` → `useEvaluation`.
+ * `useRosterState`s `commands.raiseUnit` → `rosterReportOf`.
  */
 
 const GAME_SYSTEM_ID = 'gs-cost-agreement';

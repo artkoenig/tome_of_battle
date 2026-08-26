@@ -2,10 +2,10 @@
  * Die **eine** App-Auswertung (Issue 0121, Tasks 7, 17 und 18): jede Stelle der
  * Oberflaeche, die ein App-Roster gegen die Katalogdaten seines Systems
  * bewertet, geht durch {@link evaluateAppRoster} — der `.ros`-Export und das
- * Dashboard direkt, der Editor und der Spielmodus ueber den duennen Hook
- * `useEvaluation`, der nichts weiter tut, als diesen Aufruf zu memoisieren.
+ * Dashboard und der Spielmodus direkt, der Editor ueber `rosterReportOf`, das
+ * diesen Aufruf nur um die unaufloesbaren Auswahlen ergaenzt.
  *
- * Der Grund fuer diese eine Naht ist ein Befund: solange Hook und Direktaufruf
+ * Der Grund fuer diese eine Naht ist ein Befund: solange zwei Raender
  * Adapter, `evaluate` und die Pfadkorrektur je fuer sich zusammensetzten, konnte
  * eine Korrektur an einem Rand landen und am anderen fehlen (F1 der Pruefrunde 3
  * war genau das). Eine Naht, die es nur einmal gibt, kann nicht auseinander
@@ -66,9 +66,9 @@ const describedByDataset = new WeakMap();
 
 /**
  * Der Bericht je Paar (System-Objekt, Roster-Objekt) — genau **eine**
- * Auswertung je Paar, ueber alle Aufrufer und alle Hook-Instanzen hinweg
- * (Issue 0168). `useEvaluation` memoisiert nur innerhalb einer Montierung; ein
- * Ansichtswechsel wirft dieses `useMemo` weg, und ohne diese Ebene wertete die
+ * Auswertung je Paar, ueber alle Aufrufer hinweg
+ * (Issue 0168). Ein `useMemo` memoisierte nur innerhalb einer Montierung; ein
+ * Ansichtswechsel warf es weg, und ohne diese Ebene wertete die
  * naechste Ansicht dasselbe unveraenderte Roster erneut aus und lieferte einen
  * neuen Bericht — jede nachgelagerte Ableitung ueber Objektidentitaet rechnete
  * mit.
@@ -122,10 +122,11 @@ function preparedDatasetOf(system) {
 
 /**
  * Wertet ein App-Roster gegen die Katalogdaten seines Systems aus — die eine
- * App-Auswertung, als reine Funktion ohne React. `useEvaluation` ruft genau
- * diese Funktion auf und memoisiert nur ihr Ergebnis; wer ausserhalb von React
- * steht (`.ros`-Export, Dashboard), ruft sie direkt. Beide Wege sehen deshalb
- * dieselben Pfade, dieselben Verletzungen, dieselben Kosten.
+ * App-Auswertung, als reine Funktion ohne React. `rosterReportOf` ruft genau
+ * diese Funktion auf und haengt nur die unaufloesbaren Auswahlen an; alle
+ * uebrigen Aufrufer (`.ros`-Export, Dashboard, Spielmodus) rufen sie direkt.
+ * Alle Wege sehen deshalb dieselben Pfade, dieselben Verletzungen, dieselben
+ * Kosten.
  *
  * @param {object|null|undefined} system  App-System-Objekt mit `rawXmls`.
  * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster  das App-Roster.

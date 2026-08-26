@@ -11,7 +11,7 @@
  *
  * **Die Raender, verifiziert durch Lesen des Produktivcodes (2026-07-30):**
  *
- * - `useEvaluation(system, roster)` — der Rand des **Editors**:
+ * - `rosterReportOf(system, roster)` — der Rand des **Editors**:
  *   `src/ui/viewmodels/useRosterState.js:68` liest daraus `pathBySelectionId` und reicht es
  *   ueber `RosterEditor` an jede Einheitenkarte weiter; `PlayMode.jsx:29` liest
  *   denselben Hook.
@@ -42,9 +42,8 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -157,16 +156,14 @@ function appRoster(forces) {
 
 // ── Die beiden Raender, die die Oberflaeche benutzt ──────────────────────────
 
-/** Der Rand des Editors: `useRoster` → `useEvaluation` → jede Einheitenkarte. */
-const editorEdge = (system, roster) =>
-  renderHook(({ s, r }) => useEvaluation(s, r), { initialProps: { s: system, r: roster } })
-    .result.current;
+/** Der Rand des Editors: `useRosterState` → `rosterReportOf` → jede Einheitenkarte. */
+const editorEdge = (system, roster) => rosterReportOf(system, roster);
 
 /** Der Rand des `.ros`-Exports: `rosterSerialization` → `evaluateAppRoster`. */
 const exportEdge = (system, roster) => evaluateAppRoster(system, roster);
 
 const EDGES = [
-  ['useEvaluation (Editor)', editorEdge],
+  ['rosterReportOf (Editor)', editorEdge],
   ['evaluateAppRoster (.ros-Export)', exportEdge],
 ];
 

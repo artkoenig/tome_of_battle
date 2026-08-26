@@ -27,7 +27,7 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 
 import { findSelectionInRoster } from '../../contexts/armylist/model';
-import { useRosterReportModel } from '../../contexts/ruleengine/readmodel/index.js';
+import { rosterReportOf } from '../../contexts/ruleengine/readmodel/index.js';
 import { useUndoableState } from './useUndoableState';
 import { bindRosterCommands } from './rosterCommandBindings';
 import { useRosterPersistence } from './useRosterPersistence';
@@ -81,7 +81,7 @@ export function useRosterState(initialRoster, system, saveRosterCallback, report
   // abgeleitet, ohne gespiegelten State. Der frühere Solver-Kostenpfad
   // (`calculateRosterCosts` → `costs`) ist entfallen; jede Kosten-Anzeige
   // liest `costTotals` bzw. die Fähigkeitsdatensätze.
-  const report = useRosterReportModel(system, roster);
+  const report = rosterReportOf(system, roster);
   const { slots } = report;
 
   // Die ausgewählte Selection wird per ID aus dem Roster abgeleitet, statt

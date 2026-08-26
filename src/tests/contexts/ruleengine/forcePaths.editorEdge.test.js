@@ -14,7 +14,7 @@
  * `pathBySelectionId` im Ergebnis **beider** Raender, die die Oberflaeche
  * benutzt (durch Lesen verifiziert, 2026-07-30):
  *
- * - `useEvaluation(system, roster)` — Rand des Editors (`src/ui/viewmodels/useRosterState.js`
+ * - `rosterReportOf(system, roster)` — Rand des Editors (`src/ui/viewmodels/useRosterState.js`
  *   → `RosterEditor` → `ForceEditorSection`);
  * - `evaluateAppRoster(system, roster)` — Rand des `.ros`-Exports
  *   (`src/contexts/armylist/model/rosterSerialization.js`).
@@ -31,9 +31,8 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
@@ -114,14 +113,12 @@ function appRoster(forces) {
 
 // ── Die beiden Raender ──────────────────────────────────────────────────────
 
-const editorEdge = (system, roster) =>
-  renderHook(({ s, r }) => useEvaluation(s, r), { initialProps: { s: system, r: roster } })
-    .result.current;
+const editorEdge = (system, roster) => rosterReportOf(system, roster);
 
 const exportEdge = (system, roster) => evaluateAppRoster(system, roster);
 
 const EDGES = [
-  ['useEvaluation (Editor)', editorEdge],
+  ['rosterReportOf (Editor)', editorEdge],
   ['evaluateAppRoster (.ros-Export)', exportEdge],
 ];
 

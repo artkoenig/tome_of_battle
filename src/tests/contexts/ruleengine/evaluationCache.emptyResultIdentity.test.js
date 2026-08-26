@@ -20,15 +20,14 @@
  * Unterscheidung ist der Gegenstand. Damit der Vergleich einen Gegenstand hat,
  * stellt jeder Fall zuerst fest, dass es wirklich das Leer-Ergebnis ist.
  *
- * Fixture-Muster: `useEvaluation.test.js` / `evaluationCache.evaluator.test.js`
+ * Fixture-Muster: `evaluationCache.evaluator.test.js`
  * (synthetischer Datensatz aus `rawXmls`, echte Fassade); beide Dateien bleiben
  * unberuehrt.
  */
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
@@ -124,9 +123,8 @@ function expectEmptyShape(result) {
   expect(result.slots.pathByForceId.size).toBe(0);
 }
 
-const hookResult = (system, roster) =>
-  renderHook(({ s, r }) => useEvaluation(s, r), { initialProps: { s: system, r: roster } })
-    .result.current;
+/** Der zweite Rand: der Bericht der Oberflaeche, gebaut auf derselben Auswertung. */
+const reportResult = (system, roster) => rosterReportOf(system, roster);
 
 /** Die Leer-Ursachen, je als Paar (system, roster) — fuer die Oberflaeche ununterscheidbar. */
 const EMPTY_CAUSES = [
@@ -148,31 +146,32 @@ describe('Leer-Ergebnis: dieselbe Referenz an jedem Rand (Issue 0121, Befund C)'
     expect(second).toBe(first);
   });
 
-  it('zwei verschiedene Hook-Instanzen liefern dieselbe Referenz', () => {
-    const first = hookResult(null, appRoster());
-    const second = hookResult(null, appRoster());
+  it('zwei getrennte Bericht-Aufrufe liefern dieselbe Referenz', () => {
+    const first = reportResult(null, appRoster());
+    const second = reportResult(null, appRoster());
 
     expectEmptyShape(first);
     expect(second).toBe(first);
   });
 
-  it('Hook gegen Direktaufruf: dieselbe Referenz', () => {
-    const fromHook = hookResult(null, appRoster());
+  it('Bericht gegen Direktaufruf: dieselbe Auswertung darunter', () => {
+    const fromReport = reportResult(null, appRoster());
     const fromDirect = evaluateAppRoster(null, appRoster());
 
-    expectEmptyShape(fromHook);
-    expect(fromDirect).toBe(fromHook);
+    expectEmptyShape(fromReport);
+    expect(fromReport.slots).toBe(fromDirect.slots);
+    expect(fromReport.unresolvedSelections).toEqual([]);
   });
 
-  it.each(EMPTY_CAUSES)('Leer-Ursache „%s": Hook und Direktaufruf teilen EINE Referenz', (_name, inputs) => {
-    const [systemForHook, rosterForHook] = inputs();
+  it.each(EMPTY_CAUSES)('Leer-Ursache „%s": Bericht und Direktaufruf teilen EINE Auswertung', (_name, inputs) => {
+    const [systemForReport, rosterForReport] = inputs();
     const [systemForDirect, rosterForDirect] = inputs();
 
-    const fromHook = hookResult(systemForHook, rosterForHook);
+    const fromReport = reportResult(systemForReport, rosterForReport);
     const fromDirect = evaluateAppRoster(systemForDirect, rosterForDirect);
 
-    expectEmptyShape(fromHook);
-    expect(fromDirect).toBe(fromHook);
+    expectEmptyShape(fromReport);
+    expect(fromReport.slots).toBe(fromDirect.slots);
   });
 
   it('alle Leer-Ursachen untereinander: EINE einzige Referenz, egal woran es liegt', () => {
@@ -185,10 +184,10 @@ describe('Leer-Ergebnis: dieselbe Referenz an jedem Rand (Issue 0121, Befund C)'
     for (const result of results) expect(result).toBe(results[0]);
   });
 
-  it('alle Leer-Ursachen untereinander am HOOK-Rand: EINE einzige Referenz', () => {
+  it('alle Leer-Ursachen untereinander am BERICHT-Rand: EINE einzige Referenz', () => {
     const results = EMPTY_CAUSES.map(([, inputs]) => {
       const [system, roster] = inputs();
-      return hookResult(system, roster);
+      return reportResult(system, roster);
     });
 
     expectEmptyShape(results[0]);
@@ -202,9 +201,9 @@ describe('Leer-Ergebnis: dieselbe Referenz an jedem Rand (Issue 0121, Befund C)'
     expect(filled.slots.capabilities.size).toBeGreaterThan(0);
 
     const after = evaluateAppRoster(null, appRoster());
-    const afterAtHook = hookResult(appSystem(), null);
+    const afterAtReport = reportResult(appSystem(), null);
 
     expect(after).toBe(before);
-    expect(afterAtHook).toBe(before);
+    expect(afterAtReport.slots).toBe(before.slots);
   });
 });

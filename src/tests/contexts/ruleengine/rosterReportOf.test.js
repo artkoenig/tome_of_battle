@@ -1,49 +1,50 @@
 /**
- * Issue 0121, Task 3 — React-Hook `useEvaluation`
- * (`src/contexts/ruleengine/readmodel/useEvaluation.js`, existiert noch nicht; test-first).
+ * `rosterReportOf(system, roster)` — der Bericht, wie ihn die Oberflaeche sieht
+ * (`src/contexts/ruleengine/readmodel/rosterReport.js`). Bis Issue 0194 war das
+ * der React-Hook `useEvaluation` plus `useRosterReportModel`; die Vertraege
+ * dieser Datei sind unveraendert uebernommen, nur der Rand ist jetzt eine reine
+ * Funktion (der Kontext kennt React nicht mehr).
  *
- * Der Hook verdrahtet die Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`) mit
- * dem App-Modell: `useEvaluation(system, roster)` bereitet die rohen XMLs des
- * Systems (`system.rawXmls`) einmal je System-Objektidentitaet auf
- * (`prepareDataset`), uebersetzt das App-Roster (`toEvaluatorRoster`) und
- * liefert `{ violations, slots, description, costTotals }`.
+ * Der Rand verdrahtet die Evaluator-Fassade (`src/contexts/ruleengine/evaluator.js`)
+ * mit dem App-Modell: er bereitet die rohen XMLs des Systems (`system.rawXmls`)
+ * einmal je System-Objektidentitaet auf (`prepareDataset`), uebersetzt das
+ * App-Roster (`toEvaluatorRoster`) und liefert
+ * `{ violations, slots, description, costTotals, unresolvedSelections }`.
  *
- * Massgebliche Regeln aus der Intention:
- * 1. Signatur: `useEvaluation(system, roster)` →
- *    `{ violations, capabilities, description, costTotals, pathBySelectionId }`.
+ * Massgebliche Regeln:
+ * 1. Signatur: `rosterReportOf(system, roster)` → `{ violations, slots,
+ *    description, costTotals }`.
  * 2. Funktion: Ergebnis = `evaluate(prepareDataset({ gameSystem:
  *    rawXmls.gst[0].content, catalogues: rawXmls.cat.map(f => f.content) }),
  *    toEvaluatorRoster(roster).evalRoster)` + `describeDataset` desselben
  *    Griffs + `pathBySelectionId` des Adapters.
- * 3. Kriterium 8: `prepareDataset` laeuft hoechstens EINMAL je
- *    System-Objektidentitaet — ueber beliebig viele Roster-Aenderungen hinweg;
- *    erst ein neues System-Objekt loest eine neue Vorbereitung aus. Dasselbe
- *    Roster-Objekt bei rerender → kein weiterer `evaluate`-Lauf; neues
+ * 3. `prepareDataset` laeuft hoechstens EINMAL je System-Objektidentitaet —
+ *    ueber beliebig viele Roster-Aenderungen hinweg; erst ein neues
+ *    System-Objekt loest eine neue Vorbereitung aus. Dasselbe Roster-Objekt bei
+ *    einem erneuten Aufruf → kein weiterer `evaluate`-Lauf; neues
  *    Roster-Objekt → genau ein weiterer.
  * 4. Leere Eingaben (system null/undefined, rawXmls fehlt, roster null) →
- *    stabiles Leer-Ergebnis `{ violations: [], capabilities: leere Map,
- *    description: null, costTotals: {}, pathBySelectionId: leere Map }`,
- *    kein Throw.
+ *    stabiles Leer-Ergebnis, kein Throw.
  * 5. Rein ableitend: gleiche Eingaben (gleiche Objektidentitaeten) →
- *    referenzgleiches Ergebnisobjekt ueber rerender (useMemo-Stabilitaet).
+ *    referenzgleiches Ergebnisobjekt, und zwar ueber GETRENNTE Aufrufe hinweg
+ *    (WeakMap statt useMemo — die Stabilitaet ueberlebt einen Ansichtswechsel).
  *
  * Die Fassade wird per Modul-Mock DURCHGEREICHT und dabei gezaehlt
- * (`vi.fn(actual.…)`): der Aufruf-Zaehler ist hier Vertragsgegenstand
- * (Kriterium 8), das Verhalten bleibt das echte. Erwartete Zahlen des
- * synthetischen Datensatzes sind aus `docs/battlescribe-data-format.md`
- * (§7.5 Kosten, §7.6 Constraints) abgeleitet, nicht aus dem Engine-Quelltext.
+ * (`vi.fn(actual.…)`): der Aufruf-Zaehler ist hier Vertragsgegenstand, das
+ * Verhalten bleibt das echte. Erwartete Zahlen des synthetischen Datensatzes
+ * sind aus `docs/battlescribe-data-format.md` (§7.5 Kosten, §7.6 Constraints)
+ * abgeleitet, nicht aus dem Engine-Quelltext.
  *
  * Vertragsentscheidungen dieses Tests (im Namen der Tests markiert):
- * - "Leere Map" (Kriterium 4) heisst: eine echte `Map` mit `size === 0` —
- *   dieselbe Form, die der Bericht (`capabilities`) und der Adapter
- *   (`pathBySelectionId`) im gefuellten Fall liefern.
- * - Das Leer-Ergebnis ist ueber rerender mit denselben (leeren) Eingaben
- *   ebenfalls referenzstabil — Kriterium 5 gilt fuer alle Eingaben.
+ * - "Leere Map" (Regel 4) heisst: eine echte `Map` mit `size === 0` — dieselbe
+ *   Form, die der Bericht (`slots.capabilities`) und der Adapter
+ *   (`slots.pathBySelectionId`) im gefuellten Fall liefern.
+ * - Das Leer-Ergebnis ist bei erneutem Aufruf mit denselben (leeren) Eingaben
+ *   ebenfalls referenzstabil — Regel 5 gilt fuer alle Eingaben.
  */
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, aber
 // jeder Aufruf wird gezaehlt (Kriterium 8 macht den Zaehler zum Vertrag).
@@ -59,7 +60,7 @@ vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
 
 import { prepareDataset, evaluate, describeDataset } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 
 // JSDOM stellt DOMParser fuer den Testlauf bereit (Konvention der
 // Evaluator-Tests, z. B. `costProjection.test.js`, `rosterAdapter.test.js`).
@@ -145,11 +146,19 @@ function appRoster() {
   };
 }
 
-/** renderHook um `useEvaluation(system, roster)` mit props-gesteuertem rerender. */
+/**
+ * Die Form der frueheren `renderHook`-Sicht, ohne React: `result.current` ist
+ * das Ergebnis des letzten Aufrufs, `rerender` ist ein **erneuter, getrennter**
+ * Aufruf von `rosterReportOf`. Genau darin liegt die Verschaerfung gegenueber
+ * dem alten `useMemo`: die Referenzstabilitaet muss zwischen zwei Aufrufen
+ * halten, nicht nur zwischen zwei Renders derselben Montierung.
+ */
 function renderEvaluation(system, roster) {
-  return renderHook(({ system: s, roster: r }) => useEvaluation(s, r), {
-    initialProps: { system, roster },
-  });
+  const view = { result: { current: rosterReportOf(system, roster) } };
+  view.rerender = ({ system: s, roster: r }) => {
+    view.result.current = rosterReportOf(s, r);
+  };
+  return view;
 }
 
 beforeEach(() => {
@@ -160,7 +169,7 @@ beforeEach(() => {
 // Kriterium 1: Signatur
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('useEvaluation: Signatur', () => {
+describe('rosterReportOf: Signatur', () => {
   it('liefert { violations, slots, description, costTotals } in den vertraglichen Formen', () => {
     const { result } = renderEvaluation(appSystem(), appRoster());
 
@@ -177,7 +186,7 @@ describe('useEvaluation: Signatur', () => {
 // Kriterium 2: Funktion — Ergebnis entspricht Fassade + Adapter
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('useEvaluation: Auswertung des Systems und Rosters ueber die Fassade', () => {
+describe('rosterReportOf: Auswertung des Systems und Rosters ueber die Fassade', () => {
   it('eine echte Verletzung des Datensatzes erscheint in violations (max 1, gewaehlt 2)', () => {
     const { result } = renderEvaluation(appSystem(), appRoster());
 
@@ -245,7 +254,7 @@ describe('useEvaluation: Auswertung des Systems und Rosters ueber die Fassade', 
 // Auswertung je Roster-Objektidentitaet
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('useEvaluation: prepareDataset laeuft hoechstens einmal je System-Objektidentitaet', () => {
+describe('rosterReportOf: prepareDataset laeuft hoechstens einmal je System-Objektidentitaet', () => {
   it('erste Auswertung: genau ein prepareDataset-Lauf', () => {
     renderEvaluation(appSystem(), appRoster());
 
@@ -274,8 +283,8 @@ describe('useEvaluation: prepareDataset laeuft hoechstens einmal je System-Objek
   });
 });
 
-describe('useEvaluation: evaluate ist je Roster-Objektidentitaet memoisiert', () => {
-  it('rerender mit demselben Roster-Objekt: kein weiterer evaluate-Lauf', () => {
+describe('rosterReportOf: evaluate ist je Roster-Objektidentitaet memoisiert', () => {
+  it('erneuter Aufruf mit demselben Roster-Objekt: kein weiterer evaluate-Lauf', () => {
     const system = appSystem();
     const roster = appRoster();
     const { rerender } = renderEvaluation(system, roster);
@@ -288,7 +297,7 @@ describe('useEvaluation: evaluate ist je Roster-Objektidentitaet memoisiert', ()
     expect(evaluate).toHaveBeenCalledTimes(runsAfterFirstRender);
   });
 
-  it('rerender mit einem NEUEN Roster-Objekt: genau ein weiterer evaluate-Lauf', () => {
+  it('erneuter Aufruf mit einem NEUEN Roster-Objekt: genau ein weiterer evaluate-Lauf', () => {
     const system = appSystem();
     const { rerender } = renderEvaluation(system, appRoster());
     expect(evaluate).toHaveBeenCalledTimes(1);
@@ -314,7 +323,7 @@ function expectEmptyResult(result) {
   expect(result.slots.pathBySelectionId.size).toBe(0);
 }
 
-describe('useEvaluation: leere Eingaben ergeben das stabile Leer-Ergebnis, ohne Throw', () => {
+describe('rosterReportOf: leere Eingaben ergeben das stabile Leer-Ergebnis, ohne Throw', () => {
   it('system null → Leer-Ergebnis', () => {
     const { result } = renderEvaluation(null, appRoster());
 
@@ -353,8 +362,8 @@ describe('useEvaluation: leere Eingaben ergeben das stabile Leer-Ergebnis, ohne 
 // Kriterium 5: rein ableitend — referenzstabiles Ergebnis bei gleichen Eingaben
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('useEvaluation: gleiche Eingaben liefern ein referenzgleiches Ergebnisobjekt (useMemo-Stabilitaet)', () => {
-  it('rerender mit denselben system-/roster-Objekten: result.current bleibt dieselbe Referenz', () => {
+describe('rosterReportOf: gleiche Eingaben liefern ein referenzgleiches Ergebnisobjekt (WeakMap-Stabilitaet ueber getrennte Aufrufe)', () => {
+  it('erneuter Aufruf mit denselben system-/roster-Objekten: dieselbe Referenz', () => {
     const system = appSystem();
     const roster = appRoster();
     const { result, rerender } = renderEvaluation(system, roster);
@@ -365,7 +374,7 @@ describe('useEvaluation: gleiche Eingaben liefern ein referenzgleiches Ergebniso
     expect(result.current).toBe(first);
   });
 
-  it('Vertragsentscheidung: auch das Leer-Ergebnis ist ueber rerender referenzstabil', () => {
+  it('Vertragsentscheidung: auch das Leer-Ergebnis ist ueber getrennte Aufrufe referenzstabil', () => {
     const { result, rerender } = renderEvaluation(null, null);
     const first = result.current;
 

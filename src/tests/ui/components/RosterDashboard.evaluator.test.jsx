@@ -41,7 +41,7 @@ vi.mock('../../../ui/components/editor/BottomSheet', () => ({
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
 
-// ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
+// ── Synthetischer Datensatz (rawXmls-Muster wie rosterReportOf.test.js) ───────
 
 const GAME_SYSTEM_ID = 'gs-main';
 const FORCE_DEF_ID = 'force-main';

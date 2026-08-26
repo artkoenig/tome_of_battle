@@ -12,13 +12,13 @@
  * Sollverhalten: `describeDataset` laeuft **hoechstens einmal je Datensatz**,
  * geteilt ueber alle Raender hinweg — mehrere `describeSystem`-Aufrufe, mehrere
  * `evaluateAppRoster`-Aufrufe mit verschiedenen Rostern, mehrere
- * `useEvaluation`-Instanzen. Erst ein neues System-Objekt loest eine neue
+ * Aufrufwege. Erst ein neues System-Objekt loest eine neue
  * Beschreibung aus. Beobachtet wird beides: der Aufruf-Zaehler UND die
  * Referenzgleichheit der ausgelieferten Beschreibung (`toBe`) — eine Zahl
  * allein liesse offen, ob alle Raender wirklich dieselbe Beschreibung sehen.
  *
  * Der Zaehler haengt an einem Durchreich-Mock der Fassade — dasselbe Muster,
- * mit dem `evaluationCache.evaluator.test.js` und `useEvaluation.test.js` schon
+ * mit dem `evaluationCache.evaluator.test.js` schon
  * `prepareDataset` festhalten; beide Dateien bleiben unberuehrt.
  *
  * Wichtig fuer die Isolation: die Caches sind WeakMaps ueber
@@ -29,7 +29,6 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, jeder
 // Aufruf gezaehlt — der Zaehler ist hier Vertragsgegenstand.
@@ -44,13 +43,13 @@ vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
 });
 
 import { describeDataset } from '../../../contexts/ruleengine/evaluator.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-// ── Synthetischer Datensatz (Muster aus `useEvaluation.test.js`) ────────────
+// ── Synthetischer Datensatz (Muster aus `evaluationCache.evaluator.test.js`) ────────────
 
 const GAME_SYSTEM_ID = 'gs-main';
 const FORCE_DEF_ID = 'force-main';
@@ -120,9 +119,7 @@ function appRoster(count = 1) {
   };
 }
 
-const hookResult = (system, roster) =>
-  renderHook(({ s, r }) => useEvaluation(s, r), { initialProps: { s: system, r: roster } })
-    .result.current;
+const reportResult = (system, roster) => rosterReportOf(system, roster);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -153,11 +150,11 @@ describe('describeDataset laeuft hoechstens einmal je Datensatz (Issue 0121, Bef
     expect(third.description).toBe(first.description);
   });
 
-  it('zwei useEvaluation-Instanzen mit demselben System-Objekt: EIN Lauf, dieselbe Beschreibung', () => {
+  it('zwei rosterReportOf-Aufrufe mit demselben System-Objekt: EIN Lauf, dieselbe Beschreibung', () => {
     const system = appSystem();
 
-    const first = hookResult(system, appRoster(1));
-    const second = hookResult(system, appRoster(2));
+    const first = reportResult(system, appRoster(1));
+    const second = reportResult(system, appRoster(2));
 
     expect(describeDataset).toHaveBeenCalledTimes(1);
     expect(first.description).not.toBeNull();
@@ -169,8 +166,8 @@ describe('describeDataset laeuft hoechstens einmal je Datensatz (Issue 0121, Bef
 
     const fromDescribe = describeSystem(system);
     const fromDirect = evaluateAppRoster(system, appRoster(1));
-    const fromHookA = hookResult(system, appRoster(2));
-    const fromHookB = hookResult(system, appRoster(3));
+    const fromHookA = reportResult(system, appRoster(2));
+    const fromHookB = reportResult(system, appRoster(3));
 
     expect(describeDataset).toHaveBeenCalledTimes(1);
     expect(fromDescribe).not.toBeNull();

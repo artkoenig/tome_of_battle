@@ -2,7 +2,7 @@
  * Issue 0168, AC4 — der Auswertungs-Cache trifft ueber einen Ansichtswechsel
  * hinweg.
  *
- * `useEvaluation` memoisiert nur innerhalb einer Montierung. Ein Wechsel von
+ * Ein `useMemo` memoisierte nur innerhalb einer Montierung. Ein Wechsel von
  * Editor zu Spielmodus (oder zur Uebersicht und zurueck) montiert neu und wirft
  * das `useMemo` weg — ohne einen Cache auf der Ebene von `evaluateAppRoster`
  * rechnete die naechste Ansicht dasselbe unveraenderte Roster erneut aus. Der
@@ -16,7 +16,6 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
 
 vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
   const actual = await importOriginal();
@@ -24,7 +23,6 @@ vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
 });
 
 import { evaluate } from '../../../contexts/ruleengine/evaluator.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
 import { evaluateAppRoster } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
@@ -98,14 +96,9 @@ function appRoster(count = 1) {
   };
 }
 
-/** Eine Ansicht: montieren, den Bericht abholen, wieder abbauen. */
+/** Eine Ansicht: aufmachen, den Bericht abholen, wieder zumachen. */
 function viewReport(system, roster) {
-  const view = renderHook(({ s, r }) => useEvaluation(s, r), {
-    initialProps: { s: system, r: roster },
-  });
-  const report = view.result.current;
-  view.unmount();
-  return report;
+  return evaluateAppRoster(system, roster);
 }
 
 beforeEach(() => {

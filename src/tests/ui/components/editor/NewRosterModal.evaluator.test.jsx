@@ -46,7 +46,7 @@ vi.mock('lucide-react', () => ({
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
 
-// ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
+// ── Synthetischer Datensatz (rawXmls-Muster wie rosterReportOf.test.js) ───────
 
 const GAME_SYSTEM_ID = 'gs-main';
 const COST_TYPE_ID = 'cost-pts';

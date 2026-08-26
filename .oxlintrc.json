@@ -50,11 +50,46 @@
       }
     },
     {
+      // Issue 0194: React verlaesst die Kontexte. Dieser Block deckt die Ordner
+      // ab, die kein spezifischerer Override trifft. Er kann NICHT hinter die
+      // Bloecke fuer src/contexts/armylist/model/** und src/contexts/ruleengine/**
+      // wandern: oxlint ERSETZT bei gleichem Treffer die frueheren
+      // no-restricted-imports statt sie zu mischen, der spaetere Override
+      // wuerde ihre Grenzverbote also stumm abschalten. Darum steht die
+      // react-Sperre zusaetzlich in jedem dieser Bloecke.
+      "files": ["src/contexts/**/*.js", "src/contexts/**/*.jsx", "src/platform/**/*.js", "src/platform/**/*.jsx", "src/shared/**/*.js", "src/shared/**/*.jsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "message": "Issue 0194: src/contexts/, src/platform/ und src/shared/ kennen React nicht. Memoisierung leistet dort ein WeakMap-Cache ueber Objektidentitaet (evaluationCache.js, rosterReport.js) -- er ueberlebt einen Ansichtswechsel, den ein useMemo wegwirft. Hooks gehoeren nach src/ui/viewmodels/."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["**/ruleengine/engine/*"],
+                "message": "Der Evaluator (ADR-0030) wird von aussen ausschliesslich ueber die Fassade src/contexts/ruleengine/evaluator.js angesprochen. Fehlt ein Name dort, ergaenze den Re-Export statt ein internes Modul direkt zu importieren."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["src/contexts/armylist/model/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
           {
+                        "paths": [
+              {
+                "name": "react",
+                "message": "Issue 0194: src/contexts/, src/platform/ und src/shared/ kennen React nicht. Memoisierung leistet dort ein WeakMap-Cache ueber Objektidentitaet (evaluationCache.js, rosterReport.js) -- er ueberlebt einen Ansichtswechsel, den ein useMemo wegwirft. Hooks gehoeren nach src/ui/viewmodels/."
+              }
+            ],
             "patterns": [
               {
                 "group": ["**/ruleengine/**"],
@@ -71,6 +106,12 @@
         "no-restricted-imports": [
           "error",
           {
+                        "paths": [
+              {
+                "name": "react",
+                "message": "Issue 0194: src/contexts/, src/platform/ und src/shared/ kennen React nicht. Memoisierung leistet dort ein WeakMap-Cache ueber Objektidentitaet (evaluationCache.js, rosterReport.js) -- er ueberlebt einen Ansichtswechsel, den ein useMemo wegwirft. Hooks gehoeren nach src/ui/viewmodels/."
+              }
+            ],
             "patterns": [
               {
                 "group": ["**/ruleengine/engine/*"],
@@ -94,6 +135,12 @@
         "no-restricted-imports": [
           "error",
           {
+                        "paths": [
+              {
+                "name": "react",
+                "message": "Issue 0194: src/contexts/, src/platform/ und src/shared/ kennen React nicht. Memoisierung leistet dort ein WeakMap-Cache ueber Objektidentitaet (evaluationCache.js, rosterReport.js) -- er ueberlebt einen Ansichtswechsel, den ein useMemo wegwirft. Hooks gehoeren nach src/ui/viewmodels/."
+              }
+            ],
             "patterns": [
               {
                 "group": ["**/armylist/**"],

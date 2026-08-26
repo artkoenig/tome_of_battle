@@ -1,18 +1,28 @@
 /**
  * Der Bericht, wie ihn die Oberfläche sieht (Issue 0162, ADR-0038): die
- * App-Auswertung aus `useEvaluation` plus die aus ihren Diagnosen abgeleiteten
- * unauflösbaren Auswahlen — als **ein** Objekt, dessen Identität sich genau dann
- * ändert, wenn sich Roster oder System ändern.
+ * App-Auswertung aus `evaluateAppRoster` plus die aus ihren Diagnosen
+ * abgeleiteten unauflösbaren Auswahlen — als **ein** Objekt, dessen Identität
+ * sich genau dann ändert, wenn sich Roster oder System ändern.
  *
  * Die Identitätsstabilität ist der Zweck: der Bericht-Kontext aus ADR-0038 gibt
- * dieses Objekt weiter, und ein neuer Wert bei jedem Render würde jeden
- * Verbraucher bei jedem Render neu rechnen lassen. `evaluateAppRoster`
- * memoisiert bereits je `(system, roster)` (WeakMap in `evaluationCache.js`);
- * dieses Modul reicht diese Stabilität durch das Bündel hindurch.
+ * dieses Objekt weiter, und ein neuer Wert bei jedem Aufruf würde jeden
+ * Verbraucher neu rechnen lassen. `evaluateAppRoster` memoisiert bereits je
+ * `(system, roster)` (WeakMap in `evaluationCache.js`) und liefert für jeden
+ * Leerfall dieselbe eingefrorene Konstante; dieses Modul hängt seinen eigenen
+ * Cache **an die Auswertung** statt an das Paar. Damit gilt die Stabilität
+ * nicht nur innerhalb einer Montierung, sondern über alle Aufrufer hinweg —
+ * genau das, was ein `useMemo` nicht leisten kann (Issue 0194).
+ *
+ * Der geteilte Schlüssel des Leerfalls ist unbedenklich: dessen `diagnostics`
+ * sind leer, also ergibt jede Roster-Eingabe dort dieselbe leere
+ * `unresolvedSelections`.
+ *
+ * Das Modul nennt React nicht — der Kontext kommt ohne die UI-Bibliothek aus
+ * (`no-restricted-imports` in `.oxlintrc.json`,
+ * `src/tests/contexts/frameworkFreedom.test.js`).
  */
 
-import { useMemo } from 'react';
-import { useEvaluation } from './useEvaluation.js';
+import { evaluateAppRoster } from '../acl/evaluationCache.js';
 import { unresolvedSelectionsOf } from './datasetDiagnostics.js';
 
 /**
@@ -26,24 +36,34 @@ import { unresolvedSelectionsOf } from './datasetDiagnostics.js';
  */
 
 /**
+ * Bericht je Auswertungsobjekt. Die Auswertung ist je `(system, roster)`
+ * eindeutig, also ist es der Bericht auch.
+ *
+ * @type {WeakMap<Object, RosterReport>}
+ */
+const reportByEvaluation = new WeakMap();
+
+/**
  * Wertet `roster` gegen `system` aus und bündelt das Ergebnis zum Bericht der
  * Oberfläche.
  *
  * @param {Object|null|undefined} system
  * @param {import('../../../shared/rostermodel/types.js').Roster|null|undefined} roster
- * @returns {RosterReport} referenzstabil, solange `system` und `roster`
- *   dieselben Objekte bleiben
+ * @returns {RosterReport} referenzstabil — derselbe Bericht, solange `system`
+ *   und `roster` dieselben Objekte bleiben, auch über getrennte Aufrufe hinweg
  */
-export function useRosterReportModel(system, roster) {
-  const evaluation = useEvaluation(system, roster);
+export function rosterReportOf(system, roster) {
+  const evaluation = evaluateAppRoster(system, roster);
 
-  const unresolvedSelections = useMemo(
-    () => unresolvedSelectionsOf(evaluation.diagnostics, roster),
-    [evaluation.diagnostics, roster]
-  );
+  const cached = reportByEvaluation.get(evaluation);
+  if (cached) return cached;
 
-  return useMemo(
-    () => ({ ...evaluation, unresolvedSelections }),
-    [evaluation, unresolvedSelections]
+  const report = Object.freeze(
+    /** @type {RosterReport} */ ({
+      ...evaluation,
+      unresolvedSelections: unresolvedSelectionsOf(evaluation.diagnostics, roster),
+    })
   );
+  reportByEvaluation.set(evaluation, report);
+  return report;
 }

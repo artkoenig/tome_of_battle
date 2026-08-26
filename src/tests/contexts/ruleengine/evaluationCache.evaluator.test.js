@@ -4,8 +4,8 @@
  *
  * Intention:
  * - `evaluateAppRoster(system, roster)` liefert dieselbe Ergebnisform wie
- *   `useEvaluation` — `{ violations, slots, costTotals }` — und ist AUSSERHALB von React aufrufbar (reine
- *   Funktion, kein Hook). Leer-/Fehlfälle wie `useEvaluation`: system
+ *   der Bericht — `{ violations, slots, costTotals }` — und ist eine reine Funktion,
+ *   ausserhalb von React aufrufbar. Leer-/Fehlfälle: system
  *   null/undefined/ohne (vollständiges) `rawXmls` oder roster null/undefined
  *   → Leer-Ergebnis ohne Throw (violations `[]`, leerer Slot-Index,
  *   costTotals `{}`).
@@ -13,7 +13,7 @@
  *   (costTypes/catalogues/creatableForces) OHNE Roster; system null oder ohne
  *   rawXmls → `null`.
  * - Der prepareDataset-Lauf ist je System-OBJEKT global geteilt (WeakMap
- *   o. ä.): zwei useEvaluation-Hook-Instanzen mit demselben System-Objekt
+ *   o. ä.): zwei rosterReportOf-Aufrufe mit demselben System-Objekt
  *   plus ein `evaluateAppRoster`- und ein `describeSystem`-Aufruf ergeben
  *   zusammen GENAU EINEN `prepareDataset`-Aufruf. Das verschärft Kriterium 8
  *   des Issues von „je Hook-Instanz" auf „je Datensatz" — heute bereitet jede
@@ -21,7 +21,7 @@
  *   fehlschlagen müssen.
  *
  * Aufbau: Spy-Muster und synthetischer Datensatz aus
- * `src/contexts/ruleengine/readmodel/useEvaluation.test.js` (Fassade als zählender
+ * `src/tests/contexts/ruleengine/rosterReportOf.test.js` (Fassade als zählender
  * Durchreich-Mock; Erwartungen aus `docs/battlescribe-data-format.md`
  * §7.5/§7.6 abgeleitet und per Wegwerf-Skript gegen die echte Fassade
  * verifiziert: Warrior ×2 gegen max 1 → eine Verletzung, Kosten 20 pts).
@@ -29,7 +29,6 @@
 
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
 
 // Die Fassade als zaehlender Durchreich-Mock: echte Implementierung, jeder
 // Aufruf gezaehlt — der Zaehler ist hier Vertragsgegenstand.
@@ -45,13 +44,13 @@ vi.mock('../../../contexts/ruleengine/evaluator.js', async (importOriginal) => {
 
 import { prepareDataset, evaluate, describeDataset } from '../../../contexts/ruleengine/evaluator.js';
 import { toEvaluatorRoster } from '../../../contexts/ruleengine/acl/rosterAdapter.js';
-import { useEvaluation } from '../../../contexts/ruleengine/readmodel/useEvaluation.js';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport.js';
 import { evaluateAppRoster, describeSystem } from '../../../contexts/ruleengine/acl/evaluationCache.js';
 
 const dom = new JSDOM();
 globalThis.DOMParser = dom.window.DOMParser;
 
-// ── Synthetischer Datensatz (Muster aus useEvaluation.test.js) ──────────────
+// ── Synthetischer Datensatz (Muster aus rosterReportOf.test.js) ─────────────
 
 const GAME_SYSTEM_ID = 'gs-main';
 const FORCE_DEF_ID = 'force-main';
@@ -126,7 +125,7 @@ function appRoster() {
   };
 }
 
-/** Prueft das vertragliche Leer-Ergebnis (Formen wie useEvaluation). */
+/** Prueft das vertragliche Leer-Ergebnis (Formen des Berichts). */
 function expectEmptyResult(result) {
   expect(result.violations).toEqual([]);
   expect(result.slots.capabilities).toBeInstanceOf(Map);
@@ -141,10 +140,10 @@ beforeEach(() => {
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
-// evaluateAppRoster: Ergebnisform wie useEvaluation, ausserhalb von React
+// evaluateAppRoster: die Ergebnisform des Berichts, ausserhalb von React
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('evaluateAppRoster: dieselbe Ergebnisform wie useEvaluation, ohne React', () => {
+describe('evaluateAppRoster: dieselbe Ergebnisform wie der Bericht, ohne React', () => {
   it('liefert violations/slots/costTotals in den vertraglichen Formen', () => {
     const result = evaluateAppRoster(appSystem(), appRoster());
 
@@ -205,7 +204,7 @@ describe('evaluateAppRoster: dieselbe Ergebnisform wie useEvaluation, ohne React
   });
 });
 
-describe('evaluateAppRoster: Leer-/Fehlfaelle wie useEvaluation — Leer-Ergebnis, kein Throw', () => {
+describe('evaluateAppRoster: Leer-/Fehlfaelle — Leer-Ergebnis, kein Throw', () => {
   it('system null → Leer-Ergebnis', () => {
     expectEmptyResult(evaluateAppRoster(null, appRoster()));
   });
@@ -288,21 +287,21 @@ describe('describeSystem: describeDataset-Ergebnis ohne Roster', () => {
 // Der Katalog-Vorlauf ist je System-Objekt GLOBAL geteilt (WeakMap o. ä.)
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('prepareDataset laeuft genau einmal je System-Objekt — geteilt ueber Hooks und Modul-Aufrufe', () => {
-  it('zwei useEvaluation-Hook-Instanzen mit demselben System-Objekt teilen sich EINEN prepareDataset-Lauf', () => {
+describe('prepareDataset laeuft genau einmal je System-Objekt — geteilt ueber alle Aufrufwege', () => {
+  it('zwei rosterReportOf-Aufrufe mit demselben System-Objekt teilen sich EINEN prepareDataset-Lauf', () => {
     const system = appSystem();
 
-    renderHook(() => useEvaluation(system, appRoster()));
-    renderHook(() => useEvaluation(system, appRoster()));
+    rosterReportOf(system, appRoster());
+    rosterReportOf(system, appRoster());
 
     expect(prepareDataset).toHaveBeenCalledTimes(1);
   });
 
-  it('Hook-Instanzen + evaluateAppRoster + describeSystem mit demselben System-Objekt: zusammen GENAU EIN prepareDataset-Lauf', () => {
+  it('rosterReportOf + evaluateAppRoster + describeSystem mit demselben System-Objekt: zusammen GENAU EIN prepareDataset-Lauf', () => {
     const system = appSystem();
 
-    renderHook(() => useEvaluation(system, appRoster()));
-    renderHook(() => useEvaluation(system, appRoster()));
+    rosterReportOf(system, appRoster());
+    rosterReportOf(system, appRoster());
     evaluateAppRoster(system, appRoster());
     describeSystem(system);
 

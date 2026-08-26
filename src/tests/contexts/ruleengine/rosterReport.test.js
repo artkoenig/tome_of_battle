@@ -1,17 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
 
-import { useRosterReportModel } from '../../../contexts/ruleengine/readmodel/rosterReport';
+import { rosterReportOf } from '../../../contexts/ruleengine/readmodel/rosterReport';
 import { processImportedData } from '../../../platform/battlescribe/xmlParser';
 import { buildRoster } from '../../../contexts/armylist/model/createRoster';
 
 /**
- * Issue 0162, AC5 — der Bericht, den der Bericht-Kontext aus ADR-0038
- * weitergibt, ist identitätsstabil: zwei Renderdurchläufe ohne Roster-Änderung
- * liefern dasselbe Objekt. Erst ein neues Roster-Objekt erzeugt einen neuen
- * Bericht.
+ * Issue 0162, AC5, verschärft durch Issue 0194 — der Bericht, den der
+ * Bericht-Kontext aus ADR-0038 weitergibt, ist identitätsstabil: zwei
+ * **getrennte Aufrufe** ohne Roster-Änderung liefern dasselbe Objekt, nicht nur
+ * zwei Renderdurchläufe derselben Montierung. Erst ein neues Roster-Objekt
+ * erzeugt einen neuen Bericht. Der Cache ist eine WeakMap über der Auswertung
+ * (`rosterReport.js`), also gilt die Stabilität über Ansichtswechsel hinweg —
+ * genau das, was ein `useMemo` nicht leisten konnte.
  *
  * Nichts ist gemockt: die echten Fixture-Kataloge werden geparst und über
  * `evaluateAppRoster` ausgewertet — die Stabilität, die hier geprüft wird, ist
@@ -42,37 +44,49 @@ function loadFixtureRoster() {
   return { system, roster };
 }
 
-describe('useRosterReportModel', () => {
-  it('returns the same report object across two renders without a roster change', () => {
+describe('rosterReportOf', () => {
+  it('returns the same report object across two separate calls without a roster change', () => {
     const { system, roster } = loadFixtureRoster();
 
-    const { result, rerender } = renderHook(() => useRosterReportModel(system, roster));
-    const firstReport = result.current;
-    rerender();
+    const firstReport = rosterReportOf(system, roster);
 
-    expect(result.current).toBe(firstReport);
+    expect(rosterReportOf(system, roster)).toBe(firstReport);
+  });
+
+  it('shares one report across unrelated callers — the editor and play mode see one object', () => {
+    const { system, roster } = loadFixtureRoster();
+
+    // Ansicht auf, Ansicht zu, andere Ansicht auf: kein gemeinsamer Zustand,
+    // nur dieselben beiden Objekte.
+    const inEditor = rosterReportOf(system, roster);
+    const inPlayMode = rosterReportOf(system, roster);
+
+    expect(inPlayMode).toBe(inEditor);
+    expect(inPlayMode.slots).toBe(inEditor.slots);
+    expect(inPlayMode.unresolvedSelections).toBe(inEditor.unresolvedSelections);
   });
 
   it('carries the evaluation fields and the derived unresolved selections', () => {
     const { system, roster } = loadFixtureRoster();
 
-    const { result } = renderHook(() => useRosterReportModel(system, roster));
+    const report = rosterReportOf(system, roster);
 
-    expect(result.current.slots.capabilities).toBeInstanceOf(Map);
-    expect(result.current.slots.pathByForceId.size).toBeGreaterThan(0);
-    expect(result.current.unresolvedSelections).toEqual([]);
+    expect(report.slots.capabilities).toBeInstanceOf(Map);
+    expect(report.slots.pathByForceId.size).toBeGreaterThan(0);
+    expect(report.unresolvedSelections).toEqual([]);
+  });
+
+  it('is frozen — no consumer can write into the shared bundle', () => {
+    const { system, roster } = loadFixtureRoster();
+
+    expect(Object.isFrozen(rosterReportOf(system, roster))).toBe(true);
   });
 
   it('returns a new report object once the roster object changes', () => {
     const { system, roster } = loadFixtureRoster();
 
-    const { result, rerender } = renderHook(
-      ({ currentRoster }) => useRosterReportModel(system, currentRoster),
-      { initialProps: { currentRoster: roster } }
-    );
-    const firstReport = result.current;
-    rerender({ currentRoster: { ...roster, name: 'renamed' } });
+    const firstReport = rosterReportOf(system, roster);
 
-    expect(result.current).not.toBe(firstReport);
+    expect(rosterReportOf(system, { ...roster, name: 'renamed' })).not.toBe(firstReport);
   });
 });

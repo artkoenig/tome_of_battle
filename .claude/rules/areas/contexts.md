@@ -33,6 +33,16 @@ Katalogrevisionen), `rulebook` (Regeltext-Index) und `play` (die laufende Partie
   In `.oxlintrc.json` gewinnt der **spätere** Override: der Block für
   `src/contexts/ruleengine/engine/**` muss hinter dem für `src/contexts/ruleengine/**`
   stehen, sonst verbietet die Fassaden-Regel den Engine-Modulen ihre eigenen Nachbarn.
+- Ein späterer Override **ersetzt** `no-restricted-imports` für dieselbe Datei, er mischt
+  nicht. Eine neue kontextweite Sperre gehört deshalb **vor** die spezifischen Blöcke *und*
+  zusätzlich in jeden von ihnen — sonst fällt entweder die neue Regel in den spezifischen
+  Ordnern aus oder die alten Grenzverbote fallen stumm weg. Jede Sperre einzeln mit einer
+  Sondendatei je Ordner prüfen, nicht nur an einer Stelle.
+- **Kein Modul unter `src/contexts/`, `src/platform/`, `src/shared/` importiert React**
+  (Issue 0194): `no-restricted-imports` sperrt `react` in jedem dieser Blöcke, und
+  `src/tests/contexts/frameworkFreedom.test.js` liest zusätzlich den Quelltext. Memoisierung
+  leistet hier eine WeakMap über Objektidentität — sie überlebt einen Ansichtswechsel, den
+  ein `useMemo` wegwirft. Ein Hook gehört nach `src/ui/viewmodels/`.
 - `npm run cast` ist die Probe für jede dieser Grenzen und läuft in `forge-lint` mit. Die
   Ausnahmen unter `allowed` gelten **global**, nicht nur für die gleichnamige Regel: eine
   weit gefasste Ausnahme (`ruleengine/** -> ruleengine/**`) schaltet stillschweigend auch

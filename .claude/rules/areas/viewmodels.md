@@ -219,9 +219,12 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - An option row's description comes from `capability.infoElements` only. The old name-based lookup
   against `system.sharedRules` confused two same-named rules from different catalogues; do not
   reintroduce it (`editor/optionRowDerivations.test.js` pins the case).
-- The report the context carries is `useRosterReportModel` (`src/contexts/ruleengine/readmodel/rosterReport.js`),
-  referentially stable per `(system, roster)`. A new derived field belongs in that bundle,
-  memoized, or it destroys the stability every consumer depends on.
+- The report the context carries is `rosterReportOf` (`src/contexts/ruleengine/readmodel/rosterReport.js`),
+  a plain function since Issue 0194, referentially stable per `(system, roster)` — its cache is a
+  WeakMap over the evaluation object, so the identity survives an unmount, not just a rerender. A
+  new derived field belongs in that bundle, or it destroys the stability every consumer depends
+  on. Play mode calls `evaluateAppRoster` for the same reason. Neither is a hook: do not wrap
+  either in `useMemo` here, and do not expect `react/rules-of-hooks` to guard them.
 - Files here use the classic JSX runtime: a `.jsx` file (and its test) must `import React` or it
   fails at runtime with `React is not defined`, not at lint time.
 - A test that needs a real report loads a fixture catalogue with `fs.readFileSync` +

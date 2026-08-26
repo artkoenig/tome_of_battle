@@ -56,7 +56,7 @@ vi.mock('../../../../ui/components/editor/UnitChips', () => ({
 // Fassade hat damit keinen Gegenstand mehr — dass die Anzeige aus dem Bericht
 // kommt, ist jetzt strukturell garantiert.
 
-// ── Synthetischer Datensatz (rawXmls-Muster wie useEvaluation.test.js) ───────
+// ── Synthetischer Datensatz (rawXmls-Muster wie rosterReportOf.test.js) ───────
 //
 // Warrior ×2 (10 pts je Instanz → totalCosts 20) mit einem Statblock-Profil
 // (Typ „Profile": Mv 4, WS 3), einem Waffen-Profil (Typ „Weapon":

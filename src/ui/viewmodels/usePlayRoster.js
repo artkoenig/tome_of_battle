@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { forceCategoriesOf } from '../../contexts/armylist/acl';
 import { findForceEntryById, unitsOfForce } from '../../contexts/armylist/model';
-import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
+import { evaluateAppRoster, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
 import { useRuleUrl } from './useRuleUrl';
 import { useTranslation } from '../i18n/useTranslation';
@@ -94,7 +94,7 @@ export function usePlayRoster({ system, initialRoster, onReportError }) {
   const [tooltipState, setTooltipState] = useState(EMPTY_TOOLTIP);
   const [activeRuleDialog, setActiveRuleDialog] = useState(NO_RULE_DIALOG);
 
-  const report = useEvaluation(system, roster);
+  const report = evaluateAppRoster(system, roster);
   // Die Partie liegt seit Issue 0190 im Kontext `play`: der Hook schreibt sie
   // dort, nicht in das Roster — die Liste wird hier nur gelesen.
   const { getUnitCurrentWounds, handleAdjustWound } = usePlayState(roster, onReportError);

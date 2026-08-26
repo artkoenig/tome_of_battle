@@ -10,7 +10,7 @@ import { formatViolation } from '../../../ui/i18n/violationMessages';
  * gesetzt", at the seam where the user actually notices it: a freshly created
  * contingent, the real (unmocked) sweep in `src/contexts/armylist/model/listRules.js`, the real
  * auto-add effect in `useRosterState.js` and the real evaluator report behind
- * `useEvaluation`.
+ * `rosterReportOf`.
  *
  * Nothing is mocked here on purpose. The sibling file
  * `useRosterState.mandatoryAutoAdd.test.js` (Issue 0138) stubs

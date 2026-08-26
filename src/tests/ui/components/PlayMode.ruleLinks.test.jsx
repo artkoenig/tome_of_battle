@@ -59,21 +59,28 @@ vi.mock('../../../contexts/armylist/model', async (importOriginal) => ({
 }));
 
 // Die Spielansicht liest aus dem **Bericht**, welche Auswahl eine Listenregel
-// ist (`capability.isListRule`, Issue 0156). Der Auswertungs-Haken wird deshalb
-// gestellt: er liefert je Selektion ihren Slot; die Regel-Selektionen tragen
+// ist (`capability.isListRule`, Issue 0156). Die Auswertung wird deshalb
+// gestellt: sie liefert je Selektion ihren Slot; die Regel-Selektionen tragen
 // dort `isListRule: true`.
 const { evaluationStub } = vi.hoisted(() => ({
   evaluationStub: { current: null },
 }));
 
-vi.mock('../../../contexts/ruleengine/readmodel/useEvaluation', () => ({
-  useEvaluation: () => evaluationStub.current ?? {
-    slots: SlotIndex.fromMaps(),
-    costTotals: {},
-    description: null,
-    violations: [],
-  },
-}));
+// Issue 0194: der Spielmodus ruft `evaluateAppRoster` direkt (kein Hook mehr).
+// Der Mock haengt deshalb am ACL-Modul, nicht an der Tuer — und reicht den Rest
+// durch (`describeSystem`, das die Tuer ebenfalls von hier bezieht).
+vi.mock('../../../contexts/ruleengine/acl/evaluationCache.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    evaluateAppRoster: () => evaluationStub.current ?? {
+      slots: SlotIndex.fromMaps(),
+      costTotals: {},
+      description: null,
+      violations: [],
+    },
+  };
+});
 
 /** Ein Bericht, der die genannten Selektionen als Listenregeln ausweist. */
 const reportMarkingListRules = (selectionIds, listRuleIds) => ({

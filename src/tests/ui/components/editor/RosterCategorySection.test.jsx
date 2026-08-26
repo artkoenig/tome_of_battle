@@ -65,7 +65,7 @@ const foreignPrimaryCapabilities = new Map(
     [path, capability.anchorKind === 'occupied' ? { ...capability, primaryCategoryId: 'cat-other' } : capability])
 );
 
-/** Die Slot-Pfade der Auswahlen des Kontingents (`useEvaluation`). */
+/** Die Slot-Pfade der Auswahlen des Kontingents (aus dem Bericht). */
 const pathBySelectionId = new Map([['sel-1', '0/0']]);
 
 vi.mock('../../../../ui/components/editor/CategoryUnitAdder', () => ({

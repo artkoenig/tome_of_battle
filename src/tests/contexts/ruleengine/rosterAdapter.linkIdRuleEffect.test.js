@@ -13,7 +13,7 @@
  * traegt eine grosszuegige Grenze (`max 5`), der **Verweis selbst** eine engere
  * (`max 1`); das App-Roster setzt die Auswahl ueber den Verweis mit Anzahl 2.
  * Beobachtet wird am Rand, den die Oberflaeche benutzt: `evaluateAppRoster`
- * (`useRoster`/`useEvaluation` laufen durch denselben Adapter und dieselbe
+ * (Editor und Spielmodus laufen durch denselben Adapter und dieselbe
  * Fassade).
  *
  * Die **Gegenprobe** ist der Kern des Beweises: dasselbe Roster ohne

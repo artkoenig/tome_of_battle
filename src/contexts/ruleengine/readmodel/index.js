@@ -21,5 +21,4 @@ export { resolveListRuleGroupFromReport } from './listRuleGroups.js';
 export { findMissingMandatoryListRules } from './mandatoryListRules.js';
 export { armyWideSelectorSlotsOf } from './armyWideSelectorSlots.js';
 export { unresolvedSelectionsOf } from './datasetDiagnostics.js';
-export { useEvaluation } from './useEvaluation.js';
-export { useRosterReportModel } from './rosterReport.js';
+export { rosterReportOf } from './rosterReport.js';

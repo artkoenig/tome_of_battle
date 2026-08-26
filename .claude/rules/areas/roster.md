@@ -40,6 +40,12 @@ evaluator. `src/platform/persistence/` persists it in IndexedDB.
   what renders. `fromReport` (production) checks nothing; the engine fills those for every slot.
   Tests reach `fromMaps` through `createEmptyRosterReport` (`src/tests/test-utils/rosterProviders.jsx`),
   which still takes the three maps flat.
+- The read model's door publishes **no hook**. The editor's edge is `rosterReportOf(system,
+  roster)` (`readmodel/rosterReport.js`), play mode and the `.ros` export call `evaluateAppRoster`
+  directly. `rosterReportOf` caches in a `WeakMap<AppEvaluation, RosterReport>` — keyed on the
+  evaluation, not on the pair — and freezes the bundle, so one report is shared by every caller
+  and survives an unmount. Do not wrap either in `useMemo` at the call site, and do not expect
+  `react/rules-of-hooks` to guard them: the names no longer start with `use`.
 - `evaluate` in the evaluator facade has its own identity cache (WeakMap over
   `(prepared, evalRoster)`, `{ measure: true }` bypasses it). It does **not** help the app path:
   `toEvaluatorRoster` builds a fresh `evalRoster` per call, so `evaluationCache.js` stays the seam.
