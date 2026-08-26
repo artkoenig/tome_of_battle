@@ -10,6 +10,25 @@ This is the review of what that left. It measures the code as it stands, not the
 it. Everything below names its evidence as `path:line`; the numbers come from `cast report --root
 src` and from counting, and say which.
 
+## 0. Status — verified, and partly wrong
+
+Every finding below was afterwards re-checked against the code, one reviewer per finding, and each
+is now filed. **The verification disproved or corrected a claim in all nine of them**, so the text
+in §2 must not be read as confirmed until issue 0202 rewrites it in place. The corrections are the
+most useful part of this table:
+
+| Finding | Issue | What the verification changed |
+|---|---|---|
+| T4 | [0193](issues/0193-roster-deletion-becomes-a-domain-event-in-the-play-context.md) | There is **no second deletion path**, so the orphaned-record consequence is unreachable; this is placement and testability, not a bug. `emitDataChange` is synchronous and swallows no async rejection — the listener must catch its own. Four area notes state the subscriber rule, not two. |
+| T5 | [0194](issues/0194-react-leaves-the-rule-engine-read-model.md) | The read model **is** usable outside React today, and the proposed measure would have made the complaint true. `kontexte -> react` is **not expressible in cast**. Both hooks are redundant — delete one, make the other a pure WeakMap cache; nothing moves. |
+| T1, T6 | [0195](issues/0195-one-cost-type-rule-and-a-budget-value-in-the-shared-kernel.md) | The two twins **already disagree on shipped fixture data** (a `library="false"` catalogue declares its own cost type). Eleven modules, not six, and a third answer: seven read the raw field with no fallback. Three T6 citations were wrong. |
+| S1 | [0196](issues/0196-context-map.md) | `ui` is **not a bounded context** but a layer and the composition root — which makes "every relationship is realized in a viewmodel" the map's central statement. Seven table rows corrected, three missing. |
+| S2 | [0197](issues/0197-domain-vision-statement-and-the-core-domain.md) | 38.4 %, not 39 %, on a JS/JSX-only basis. The first assessment already labels **two** contexts `Core`. The workspace extraction dies on ADR-0031's shared enum module, not on general cost. |
+| T2, T3 | [0198](issues/0198-raise-plan-port-for-the-write-use-cases.md) | The port surface is five methods, three fields and a pass-through — three members, not two. The real damage is that a `SlotIndex` rename leaves the suite **green**. Narrow the door to `src/ui/viewmodels/**`, and do not create `src/composition/`. |
+| T7 | [0199](issues/0199-roster-invariants-at-the-write-seams.md) | Three of four invariants are not violable; `costLimit >= 0` would reject the legal `-1`. A `throw` in a use case **unmounts the React root** — there is no error boundary. One real defect found: `number="-2"` survives import. |
+| Observation A, B | [0202](issues/0202-documentation-corrections-from-the-ddd-review.md) | Both resolve to **no code change**. The `catalogReader.js` split already exists; the documentation describing `rosterSelectionFactory.js` is what is wrong. |
+| — (found in passing) | [0200](issues/0200-forge-lint-gates-dependency-cycles.md), [0201](issues/0201-ros-export-omits-catalogue-declared-cost-types.md) | `cast check` gates rules but **never cycles**, so a cycle lands with a green `forge-lint`. And the `.ros` `<costs>` block omits cost types a catalogue declares. |
+
 ## 1. Verdict
 
 **The structural half of DDD is done and machine-held. The strategic half was never written down,
