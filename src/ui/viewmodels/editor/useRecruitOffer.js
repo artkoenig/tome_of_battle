@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { offerDefIdsOf, offerIdentifiesSlot } from '../../../contexts/armylist/acl';
 import { resolveCostLimitTypeId, resolveCostLimitLabel } from '../../../contexts/armylist/model';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
@@ -49,7 +50,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
     // (z. B. armeeweite Selektoren ohne eigene Kategorie-Sektion).
     const allowedIds = entries === null || entries === undefined
       ? null
-      : new Set(entries.flatMap(entry => [entry?.id, entry?.targetId].filter(Boolean)));
+      : new Set(entries.flatMap(entry => offerDefIdsOf(entry)));
 
     const seenDefIds = new Set();
     const candidates = [];
@@ -75,9 +76,7 @@ export function useRecruitOffer({ forceId = null, forcePath = null, categoryId =
     // Selektions-Fabrik liest ihn); bei einer expliziten Eintragsliste ist er
     // schon da, sonst löst ihn das Schreibmodell aus dem System auf.
     const entryFor = (capability) => {
-      const fromEntries = entries?.find(entry =>
-        entry.id === capability.defId || entry.id === capability.targetDefId
-        || (entry.targetId && entry.targetId === capability.targetDefId));
+      const fromEntries = entries?.find(entry => offerIdentifiesSlot(entry, capability));
       if (fromEntries) return fromEntries;
       return capabilityEntryOf(system, capability, activeCatalogue.id);
     };

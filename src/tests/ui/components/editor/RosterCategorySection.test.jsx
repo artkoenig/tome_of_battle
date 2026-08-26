@@ -89,11 +89,12 @@ const force = {
   selections: [{ id: 'sel-1', name: 'Ritter', category: 'cat-core' }]
 };
 
-const categoryLink = { targetId: 'cat-core', name: 'Core', constraints: [{ type: 'min', value: 2 }] };
+// Schon uebersetzt (Issue 0191): die ACL hat den Namen der Definition gewaehlt.
+const category = { id: 'cat-core', name: 'Kerneinheiten', anchorIds: ['cat-core'] };
 
 const renderSection = (props = {}) => render(
   <RosterCategorySection
-    categoryLink={categoryLink}
+    category={category}
     force={force}
     forcePath="0"
     capabilities={categoryAnchorCapabilities}
@@ -150,8 +151,10 @@ describe('RosterCategorySection', () => {
     expect(container.querySelector('span.badge').textContent.replace(/\s+/g, ' ').trim()).toBe('1 / Min: 1, Max: 5');
   });
 
-  it('weicht auf den Namen der Verknüpfung aus, wenn das System die Kategorie nicht kennt', () => {
-    renderSection({ system: { ...system, categoryEntries: [] } });
+  // Welchen Namen eine Kategorie traegt, entscheidet seit Issue 0191 die
+  // Uebersetzungsschicht (`src/contexts/armylist/acl/`) — die Sektion zeigt ihn.
+  it('zeigt den Namen, den die Übersetzung mitgibt', () => {
+    renderSection({ category: { ...category, name: 'Core' } });
 
     expect(screen.getByText('Core')).toBeDefined();
   });

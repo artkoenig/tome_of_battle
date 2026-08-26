@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { saveRoster } from '../../contexts/armylist/application/rosterStore';
+import { forceCategoriesOf } from '../../contexts/armylist/acl';
 import { findForceEntryById, unitsOfForce } from '../../contexts/armylist/model';
 import { useEvaluation, costLimitTypeIdOf, extraResourceTotalsOf } from '../../contexts/ruleengine/readmodel/index.js';
 import usePlayState from './usePlayState';
@@ -37,23 +38,22 @@ export function groupedPlaySelections(system, roster, report, t = translate) {
     slots.slotOfSelection(selection)?.isListRule !== true;
 
   (roster?.forces ?? []).forEach(force => {
-    const forceDef = findForceEntryById(system, force.forceEntryId);
-    const categoryLinks = forceDef?.categoryLinks || [];
+    const categories = forceCategoriesOf(system, force.forceEntryId);
 
-    categoryLinks.forEach(link => {
+    categories.forEach(category => {
       const selections = unitsOfForce(force)
-        .filter(s => s.category === link.targetId && isBattlefieldSelection(s));
+        .filter(s => s.category === category.id && isBattlefieldSelection(s));
       if (selections.length === 0) return;
 
-      const categoryDef = system?.categoryEntries?.find(entry => entry.id === link.targetId);
       groups.push({
-        id: `${force.id}-${link.targetId}`,
-        name: categoryDef ? categoryDef.name : link.name || t('play.unknownCategory'),
+        id: `${force.id}-${category.id}`,
+        name: category.name || t('play.unknownCategory'),
         selections: sortedByCostDescending(selections),
       });
     });
 
-    const matchedCategoryIds = new Set(categoryLinks.map(link => link.targetId));
+    /** @type {Set<string|null>} */
+    const matchedCategoryIds = new Set(categories.map(category => category.id));
     const uncategorized = unitsOfForce(force)
       .filter(s => !matchedCategoryIds.has(s.category) && isBattlefieldSelection(s));
     if (uncategorized.length > 0) {

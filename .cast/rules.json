@@ -49,6 +49,12 @@
    "to": "plattform"
   },
   {
+   "name": "ui-kein-fremdformat",
+   "severity": "error",
+   "from": "src/ui/**",
+   "to": "src/shared/battlescribe/**"
+  },
+  {
    "name": "plattform-kein-rueckgriff",
    "severity": "error",
    "from": "plattform",

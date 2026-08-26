@@ -130,8 +130,8 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
         // re-emitted it from an active selection, otherwise directly under the unit.
         const editTargetId = ownerSelectionId || selection.id;
         const rowSelectionId = resolveRowSelectionId(selection, ownerSelectionId, option, {
-          id: capability.defId,
-          targetId: capability.targetDefId,
+          defId: capability.defId,
+          targetDefId: capability.targetDefId,
         });
 
         const minLimit = capability.effectiveMin ?? 0;

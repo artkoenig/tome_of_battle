@@ -88,6 +88,19 @@ paths:
   scripts/generate_screenshots.js` runs offline against the frozen fixture and needs no catalog
   data. For a one-off investigation build a throwaway script on `scripts/lib/e2e-harness.js` —
   it offers the browser console log, a DOM dump and a headed browser.
+- **A component consumes our vocabulary, never the catalogue's** (Issue 0191). No module under
+  `src/ui/` may name `selectionEntries`, `entryLinks`, `categoryLinks`, `sharedSelectionEntries`,
+  `infoLinks` or `targetId`, and none may import the BattleScribe schema kernel
+  `src/shared/battlescribe/` — the cast rule `ui-kein-fremdformat` holds the module edge, the
+  source-reading test `src/tests/ui/catalogVocabulary.test.js` holds the vocabulary (cast sees
+  edges, not identifiers). What the UI needs from a catalogue entry it asks the list context's
+  anti-corruption layer `src/contexts/armylist/acl/` (`forceCategoriesOf`, `offerDefIdsOf`,
+  `offerIdentifiesSlot`, `childOffersOf`, `childOfferCountOf`), whose mapping rules stand in
+  `catalogTranslation.js` — the counterpart of the evaluator's `rosterAdapter.js`. A force offers
+  **categories** `{ id, name, anchorIds }`, not `categoryLinks`: `id` is the target, `name` is
+  already resolved against `system.categoryEntries`, and `anchorIds` carries both ids the report
+  may anchor the category under. Before adding a function there, check the report first — a
+  question the slot index answers (ADR-0034) is not translated a second time.
 - A display question is answered by the report, never by a second catalogue walk (ADR-0034): the
   slot fields carry `isListRule`, `isMandatoryListRule`, `isIndependentSubUnit`,
   `isForeignCatalogue`, `isSingleChoice`/`isMaxRaisable`/`isRepeatableWithinGroup`, plus

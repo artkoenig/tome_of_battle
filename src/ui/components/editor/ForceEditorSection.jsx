@@ -37,21 +37,21 @@ export default function ForceEditorSection({
   const { t } = useTranslation();
   const armyWideSectionTitle = t('editor.section.armyWide');
   const uncategorizedSectionTitle = t('editor.section.uncategorized');
-  const { categoryLinks, armyWideEntries, armyWideSelections, uncategorizedSelections } =
+  const { categories, armyWideEntries, armyWideSelections, uncategorizedSelections } =
     useForceSection({ force, forcePath });
 
   return (
     <div className="force-editor-section">
-      {categoryLinks.map(categoryLink => (
+      {categories.map(category => (
         <RosterCategorySection
-          key={categoryLink.targetId}
-          categoryLink={categoryLink}
+          key={category.id}
+          category={category}
           force={force}
           forcePath={forcePath}
           unitCardContext={unitCardContext}
           ruleGroup={{
-            isExpanded: ruleGroups?.isExpanded?.(force.id, categoryLink.targetId) ?? false,
-            onToggle: () => ruleGroups?.onToggle?.(force.id, categoryLink.targetId)
+            isExpanded: ruleGroups?.isExpanded?.(force.id, category.id) ?? false,
+            onToggle: () => ruleGroups?.onToggle?.(force.id, category.id)
           }}
           onShowRule={onShowRule}
         />

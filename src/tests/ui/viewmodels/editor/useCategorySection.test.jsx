@@ -15,7 +15,9 @@ import { createRosterProviderWrapper, createEmptyRosterReport } from '../../../.
  */
 
 const CATEGORY = 'cat-core';
-const CATEGORY_LINK = { id: 'cl-core', targetId: CATEGORY, name: 'Kern (Verweis)' };
+// Die Kategorie kommt schon uebersetzt aus der ACL (Issue 0191): Id, Name und
+// die Anker-Ids, unter denen der Bericht sie fuehren kann.
+const CATEGORY_LINK = { id: CATEGORY, name: 'Kern', anchorIds: [CATEGORY, 'cl-core'] };
 const SYSTEM = { categoryEntries: [{ id: CATEGORY, name: 'Kern' }] };
 
 const anchor = (over = {}) => ({
@@ -47,7 +49,7 @@ const renderSection = ({ capabilities = new Map(), selections = [], violations =
     () => useCategorySection({
       force: { id: 'f1', selections },
       forcePath: '0',
-      categoryLink: CATEGORY_LINK,
+      category: CATEGORY_LINK,
     }),
     {
       wrapper: createRosterProviderWrapper({

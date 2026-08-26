@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { childOfferCountOf } from '../../../contexts/armylist/acl';
 import {
   resolveEntry,
   findEntryInSystem,
@@ -104,10 +105,7 @@ const getVisibleUpgrades = (sel, system, activeCatalogueId, slots) => {
 
   const isEmptyWrapper = (res, capability) => {
     if (!res || hasOwnValue(res, capability)) return false;
-    const childCount = (res.selectionEntries?.length || 0) +
-                       (res.entryLinks?.length || 0) +
-                       (res.selectionEntryGroups?.length || 0);
-    return childCount > 0;
+    return childOfferCountOf(res) > 0;
   };
 
   return getSelectedUpgrades(sel, system, activeCatalogueId, slots).filter(upgrade => {

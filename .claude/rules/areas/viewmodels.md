@@ -161,7 +161,8 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
 - A section ViewModel derives what the editor used to thread through as props (`costTypeLabel`,
   `remainingPoints`, `extraResources`, the force path from `report.slots.pathOfForce(...)` — never the
   roster's input index). What stays a prop is only what the caller knows: `force`/`forceId`,
-  `forcePath`, `categoryLink`/`categoryId` and display state;
+  `forcePath`, `category`/`categoryId` — the translated `{ id, name, anchorIds }` of
+  `src/contexts/armylist/acl/`, never a raw `categoryLink` (Issue 0191) — and display state;
   `src/ui/components/editor/sectionPropCount.test.js` pins the ceilings.
 - `useAutoFillSuggestions` filters twice, and both halves are load-bearing: the slot **path** must
   lie in the force's subtree (`path === forcePath` or `` `${forcePath}/` `` prefix) **and** its

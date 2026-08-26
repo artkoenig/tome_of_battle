@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { childOffersOf } from '../../contexts/armylist/acl';
 import {
   findEntryInSystem, resolveEntry,
   MODEL_COUNT_PROFILE_TYPES, groupProfilesByType, subSelectionsOf
@@ -37,12 +38,13 @@ export function maxWoundsOf(system, roster, selection) {
     return null;
   };
 
+  const childOffers = childOffersOf(resolved);
   let wounds = searchProfiles(selection.profiles)
     || searchProfiles(resolved.profiles)
-    || searchProfiles(resolved.selectionEntries?.[0]?.profiles);
+    || searchProfiles(childOffers[0]?.profiles);
 
-  if (!wounds && resolved.selectionEntries) {
-    for (const child of resolved.selectionEntries) {
+  if (!wounds) {
+    for (const child of childOffers) {
       wounds = searchProfiles(child.profiles);
       if (wounds) break;
     }

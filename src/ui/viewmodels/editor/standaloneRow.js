@@ -44,7 +44,7 @@ export function buildStandaloneSection({ frameSelection, path, capability, optio
   const isSelectDisabled = capability.isBlocked === true;
   const editTargetId = frameSelection.id;
   const rowSelectionId = isSubUnitWithOwnOptions ? null : resolveRowSelectionId(
-    frameSelection, null, option, { id: capability.defId, targetId: capability.targetDefId }
+    frameSelection, null, option, { defId: capability.defId, targetDefId: capability.targetDefId }
   );
 
   const isUnavailable = count === 0 && isSelectDisabled;

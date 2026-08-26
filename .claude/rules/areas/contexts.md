@@ -30,6 +30,13 @@ seitwärts greift.
   weit gefasste Ausnahme (`ruleengine/** -> ruleengine/**`) schaltet stillschweigend auch
   `nur-die-acl-ruft-die-engine` und `lesemodell-nur-ueber-fassade` ab. Ausnahmen deshalb
   auf Schicht-Paare schneiden, nicht auf Verzeichnisbäume.
+- `armylist/acl/` ist die Übersetzungsschicht der Liste (Issue 0191, Gegenstück zu
+  `ruleengine/acl/rosterAdapter.js`): das Vokabular des BattleScribe-Katalogs
+  (`categoryLinks`, `targetId`, `selectionEntries`, `entryLinks`, `infoLinks`) endet dort,
+  die Abbildungsregeln stehen in `catalogTranslation.js`. Die UI darf keines dieser Worte
+  mehr nennen (`ui-kein-fremdformat` in cast, plus `src/tests/ui/catalogVocabulary.test.js`).
+  Sie liegt in `.cast/layers.json` in der Schicht `kontexte` — die Schicht `acl` gehört
+  allein `ruleengine/acl/**`.
 - Tests liegen gespiegelt unter `src/tests/contexts/<kontext>/…`, nicht neben dem Modul.
   Lauf: `forge-test --run src/tests/contexts`.
 - Pfad-Zeichenketten in Kommentaren: `src/contexts/*/application/` schreibt in einem

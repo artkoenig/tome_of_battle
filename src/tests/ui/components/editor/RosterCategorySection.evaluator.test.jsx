@@ -181,11 +181,11 @@ function categoryAnchorOf(capabilities, categoryId) {
   return undefined;
 }
 
-function renderSection(categoryLink, { capabilities, pathBySelectionId }) {
+function renderSection(category, { capabilities, pathBySelectionId }) {
   const roster = appRoster();
   return render(
     <RosterCategorySection
-      categoryLink={categoryLink}
+      category={category}
       force={roster.forces[0]}
       forcePath={FORCE_PATH}
       forceDef={null}
@@ -209,8 +209,8 @@ function renderSection(categoryLink, { capabilities, pathBySelectionId }) {
   );
 }
 
-const SPECIAL_LINK = { id: 'cl-special', targetId: CATEGORY_SPECIAL, name: 'Special' };
-const OPEN_LINK = { id: 'cl-open', targetId: CATEGORY_OPEN, name: 'Open' };
+const SPECIAL_LINK = { id: CATEGORY_SPECIAL, name: 'Special', anchorIds: [CATEGORY_SPECIAL, 'cl-special'] };
+const OPEN_LINK = { id: CATEGORY_OPEN, name: 'Open', anchorIds: [CATEGORY_OPEN, 'cl-open'] };
 
 const badgeTextOf = (container) =>
   container.querySelector('span.badge')?.textContent.replace(/\s+/g, ' ').trim();

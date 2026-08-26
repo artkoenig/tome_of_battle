@@ -41,13 +41,13 @@ vi.mock('../../../../ui/components/editor/AutoFillSuggestions', () => ({
   )
 }));
 vi.mock('../../../../ui/components/editor/RosterCategorySection', () => ({
-  default: ({ categoryLink, force, ruleGroup }) => (
+  default: ({ category, force, ruleGroup }) => (
     <div
-      data-testid={`category-${categoryLink.targetId}`}
+      data-testid={`category-${category.id}`}
       data-expanded={String(ruleGroup?.isExpanded)}
       data-force-id={force.id}
     >
-      <button data-testid={`toggle-${categoryLink.targetId}`} onClick={ruleGroup?.onToggle}>
+      <button data-testid={`toggle-${category.id}`} onClick={ruleGroup?.onToggle}>
         Umschalten
       </button>
     </div>
@@ -65,7 +65,8 @@ vi.mock('../../../../ui/components/editor/UnitCardList', () => ({
 const system = {
   forceEntries: [{
     id: 'fe-1',
-    categoryLinks: [{ targetId: 'cat-core', name: 'Core' }, { targetId: 'cat-heroes', name: 'Heroes' }]
+    categoryLinks: [{ id: 'cl-core', targetId: 'cat-core', name: 'Core' },
+      { id: 'cl-hero', targetId: 'cat-heroes', name: 'Heroes' }]
   }]
 };
 
@@ -105,7 +106,7 @@ describe('ForceEditorSection', () => {
     vi.clearAllMocks();
   });
 
-  it('rendert je Kategorie-Verknüpfung des Kontingents eine Sektion und den Lagerbericht', () => {
+  it('rendert je Kategorie des Kontingents eine Sektion und den Lagerbericht', () => {
     renderForce();
 
     expect(screen.getByTestId('category-cat-core')).toBeDefined();

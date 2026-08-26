@@ -1,17 +1,18 @@
 import { useMemo } from 'react';
 
-import { findForceEntryById, unitsOfForce } from '../../../contexts/armylist/model';
+import { forceCategoriesOf } from '../../../contexts/armylist/acl';
+import { unitsOfForce } from '../../../contexts/armylist/model';
 import { armyWideSelectorSlotsOf, EMPTY_SLOT_INDEX } from '../../../contexts/ruleengine/readmodel/index.js';
 import { capabilityEntryOf } from '../capabilityEntries';
 import { useRosterReport } from '../rosterContexts';
 
 /**
- * Ein **Kontingent** der Liste (Issue 0164): seine Kategorie-Verweise, die
+ * Ein **Kontingent** der Liste (Issue 0164): seine Kategorien, die
  * armeeweiten Selektoren ohne eigene Kategorie und die Auffangsektion für
  * Auswahlen, die keine Kategorie des Kontingents trifft.
  *
  * Armeeweite Pflicht-Selektoren, die keine Kontingent-Kategorie anbietet (etwa
- * ein kontingent-gebundener Wurzeleintrag ohne passenden `categoryLink`),
+ * ein kontingent-gebundener Wurzeleintrag ohne passende Kategorie),
  * bekommen einen eigenen Hinzufüger; alles, was eine Kategorie bereits
  * anbietet, wird dort erledigt. Welche das sind, sagt der **Bericht** (Issue
  * 0156): sichtbare Slots dieses Kontingents mit wirksamem Minimum, deren
@@ -24,7 +25,7 @@ import { useRosterReport } from '../rosterContexts';
  * der Liste — dieselbe Regel wie `useRoster.catalogueIdOfForce`.
  *
  * @param {{ force: Object, forcePath: string|null }} params
- * @returns {{ categoryLinks: Array<Object>, armyWideEntries: Array<Object>,
+ * @returns {{ categories: Array<Object>, armyWideEntries: Array<Object>,
  *   armyWideSelections: Array<Object>, uncategorizedSelections: Array<Object> }}
  */
 export function useForceSection({ force, forcePath = null }) {
@@ -32,12 +33,11 @@ export function useForceSection({ force, forcePath = null }) {
   const slots = report?.slots ?? EMPTY_SLOT_INDEX;
 
   return useMemo(() => {
-    const forceDefinition = findForceEntryById(system, force?.forceEntryId);
-    const categoryLinks = forceDefinition?.categoryLinks || [];
+    const categories = forceCategoriesOf(system, force?.forceEntryId);
     const forceCatalogueId = force?.catalogueId || roster?.catalogueId || null;
 
     const armyWideSelectorSlots = armyWideSelectorSlotsOf(
-      slots, forcePath, categoryLinks.map(link => link.targetId));
+      slots, forcePath, categories.map(category => category.id));
     const armyWideEntries = armyWideSelectorSlots.map(capability =>
       capabilityEntryOf(system, capability, forceCatalogueId));
     const armyWideSelectorIds = new Set(armyWideSelectorSlots.flatMap(capability =>
@@ -45,10 +45,11 @@ export function useForceSection({ force, forcePath = null }) {
     const belongsToArmyWideSelector = s => armyWideSelectorIds.has(s.selectionEntryId || s.entryLinkId);
     const armyWideSelections = unitsOfForce(force).filter(belongsToArmyWideSelector);
 
-    const matchedCategoryIds = new Set(categoryLinks.map(l => l.targetId));
+    /** @type {Set<string|null>} */
+    const matchedCategoryIds = new Set(categories.map(category => category.id));
     const uncategorizedSelections = unitsOfForce(force).filter(s =>
       !matchedCategoryIds.has(s.category) && !belongsToArmyWideSelector(s));
 
-    return { categoryLinks, armyWideEntries, armyWideSelections, uncategorizedSelections };
+    return { categories, armyWideEntries, armyWideSelections, uncategorizedSelections };
   }, [system, roster, slots, force, forcePath]);
 }
