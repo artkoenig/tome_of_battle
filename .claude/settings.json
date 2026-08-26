@@ -36,7 +36,8 @@
       "Artifact",
       "ReportFindings",
       "ScheduleWakeup",
-      "ShowOnboardingRolePicker"
+      "ShowOnboardingRolePicker",
+      "mcp__lsp__edit_file"
     ]
   }
 }
