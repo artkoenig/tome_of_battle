@@ -2,33 +2,30 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { findForceEntryById } from '../../contexts/armylist/model';
 import { evaluateAppRoster, describeSystem, costLimitLabelOf } from '../../contexts/ruleengine/readmodel/index.js';
 import { useTranslation } from '../i18n/useTranslation';
+import { EMPTY_ROSTER_FILTER, matchesRosterFilter } from './rosterFilter';
 
 /**
  * ViewModel der Bibliotheks-Hülle (ADR-0038).
  *
- * Die Gruppierung nach Spielsystem und Armeebuch, die Kartenwerte und der
- * Umbenenn-/Aktions-Zustand entstehen hier. Entscheidend ist die Stelle der
- * Auswertung: `evaluateAppRoster` lief zuvor **innerhalb** der Map-Schleife des
- * Renders und damit bei jedem Tastendruck im Umbenennen-Feld erneut für jede
- * Liste. Hier läuft sie genau einmal je Roster-/System-Stand — ein Render ohne
- * Datenänderung wertet nichts erneut aus.
+ * Die Gruppierung nach Fraktion, die Kartenwerte und der Umbenenn-/Aktions-
+ * Zustand entstehen hier. Entscheidend ist die Stelle der Auswertung:
+ * `evaluateAppRoster` lief zuvor **innerhalb** der Map-Schleife des Renders und
+ * damit bei jedem Tastendruck im Umbenennen-Feld erneut für jede Liste. Hier
+ * läuft sie genau einmal je Roster-/System-Stand — ein Render ohne
+ * Datenänderung wertet nichts erneut aus, ein Filterwechsel ebenso wenig: die
+ * Karten entstehen in einem eigenen Memo **vor** dem Filtern (Issue 0203).
  */
 
 /**
- * Die Karten der Bibliothek, gruppiert nach Spielsystem und Armeebuch, je
- * Ebene alphabetisch — die Sammelgruppen „unbekannt“ und „ohne Armeebuch“
- * stehen ans Ende.
+ * Eine Karte je Liste, mit dem Namen der Fraktion, unter der sie steht.
+ * Die Gruppierung nach Spielsystem ist mit Issue 0203 entfallen.
  */
-function groupCards(rosters, systems, t) {
-  const unknownSystemLabel = t('dashboard.unknownSystem');
+function cardsOf(rosters, systems, t) {
   const noFactionLabel = t('dashboard.noFaction');
 
-  const bySystemAndFaction = new Map();
-  rosters.forEach(roster => {
+  return rosters.map(roster => {
     const system = systems.find(s => s.id === roster.systemId);
-    const systemName = system ? system.name : unknownSystemLabel;
     const catalogue = system?.catalogues?.find(c => c.id === roster.catalogueId);
-    const factionName = catalogue ? catalogue.name : noFactionLabel;
 
     // Kartenkosten aus dem Evaluator-Bericht, das Limit-Label aus der
     // Datensatz-Beschreibung (Issue 0121, Task 7); der Katalog-Vorlauf ist je
@@ -36,33 +33,38 @@ function groupCards(rosters, systems, t) {
     const { costTotals } = evaluateAppRoster(system, roster);
     const forceDef = system ? findForceEntryById(system, roster.forces?.[0]?.forceEntryId) : null;
 
-    const card = {
+    return {
       roster,
+      factionName: catalogue ? catalogue.name : noFactionLabel,
       currentPoints: costTotals[roster.costLimitType] || 0,
       costLimit: roster.costLimit,
       costTypeLabel: costLimitLabelOf(roster, describeSystem(system)?.costTypes),
       forceName: forceDef ? forceDef.name : null,
     };
-
-    if (!bySystemAndFaction.has(systemName)) bySystemAndFaction.set(systemName, new Map());
-    const factions = bySystemAndFaction.get(systemName);
-    if (!factions.has(factionName)) factions.set(factionName, []);
-    factions.get(factionName).push(card);
   });
+}
 
-  const sortedNames = (names, lastName) => [...names].sort((a, b) => {
-    if (a === lastName) return 1;
-    if (b === lastName) return -1;
-    return a.localeCompare(b);
+/**
+ * Die passenden Karten, nach Fraktion gruppiert und alphabetisch — die
+ * Sammelgruppe „ohne Armeebuch“ steht ans Ende. Eine Fraktion, von der der
+ * Filter keine Karte übrig lässt, kommt gar nicht vor.
+ */
+function groupByFaction(cards, filter, noFactionLabel) {
+  /** @type {Array<{factionName: string, cards: object[]}>} */
+  const groups = [];
+  cards
+    .filter(card => matchesRosterFilter(card.roster, filter))
+    .forEach(card => {
+      const group = groups.find(candidate => candidate.factionName === card.factionName);
+      if (group) group.cards.push(card);
+      else groups.push({ factionName: card.factionName, cards: [card] });
+    });
+
+  return groups.sort((a, b) => {
+    if (a.factionName === noFactionLabel) return 1;
+    if (b.factionName === noFactionLabel) return -1;
+    return a.factionName.localeCompare(b.factionName);
   });
-
-  return sortedNames(bySystemAndFaction.keys(), unknownSystemLabel).map(systemName => ({
-    systemName,
-    factions: sortedNames(bySystemAndFaction.get(systemName).keys(), noFactionLabel).map(factionName => ({
-      factionName,
-      cards: bySystemAndFaction.get(systemName).get(factionName),
-    })),
-  }));
 }
 
 /**
@@ -80,6 +82,7 @@ const NO_ROSTER_ACTIONS = null;
  *   onImportRoster?: (file: File) => void,
  *   onExportRoster?: (roster: object) => void,
  *   onDeleteRoster?: (rosterId: string, event: object) => void,
+ *   filter?: { systemIds: string[], factionIds: string[] },
  * }} args
  */
 export function useRosterDashboard({
@@ -89,6 +92,7 @@ export function useRosterDashboard({
   onImportRoster,
   onExportRoster,
   onDeleteRoster,
+  filter = EMPTY_ROSTER_FILTER,
 } = {}) {
   const { t, language } = useTranslation();
   /** @type {import('react').RefObject<HTMLInputElement|null>} */
@@ -97,12 +101,18 @@ export function useRosterDashboard({
   const [editName, setEditName] = useState('');
   const [isActionsSheetOpen, setIsActionsSheetOpen] = useState(false);
   const [rosterActionsRosterId, setRosterActionsRosterId] = useState(NO_ROSTER_ACTIONS);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
   // Ein Bericht je Liste, gerechnet wenn sich Listen oder Systeme ändern —
-  // nicht bei jedem Render der Hülle.
-  const systemGroups = useMemo(
-    () => groupCards(rosters, systems, t),
+  // nicht bei jedem Render der Hülle und nicht bei einem Filterwechsel.
+  const cards = useMemo(
+    () => cardsOf(rosters, systems, t),
     [rosters, systems, t, language]
+  );
+
+  const factionGroups = useMemo(
+    () => groupByFaction(cards, filter, t('dashboard.noFaction')),
+    [cards, filter, t, language]
   );
 
   const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
@@ -143,8 +153,15 @@ export function useRosterDashboard({
   }, [rosterActionsRosterId, onDeleteRoster]);
 
   return {
-    systemGroups,
+    factionGroups,
+    // Keine einzige Liste — der Erststart-Zustand. Ein Filter, der nichts
+    // trifft, ist etwas anderes und bekommt seine eigene Meldung (AC6).
     isEmpty: rosters.length === 0,
+    hasNoMatches: rosters.length > 0 && factionGroups.length === 0,
+    isFilterPanelOpen,
+    openFilterPanel: useCallback(() => setIsFilterPanelOpen(true), []),
+    closeFilterPanel: useCallback(() => setIsFilterPanelOpen(false), []),
+    toggleFilterPanel: useCallback(() => setIsFilterPanelOpen(open => !open), []),
     fileInputRef,
     openFilePicker,
     pickImportFile,

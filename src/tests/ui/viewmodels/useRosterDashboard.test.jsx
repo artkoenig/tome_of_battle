@@ -26,7 +26,7 @@ const { useRosterDashboard } = await import('../../../ui/viewmodels/useRosterDas
 const SYSTEM = {
   id: 'sys1',
   name: 'Warhammer',
-  catalogues: [{ id: 'cat1', name: 'Bretonnia' }],
+  catalogues: [{ id: 'cat1', name: 'Bretonnia' }, { id: 'cat2', name: 'Zwerge' }],
   forceEntries: [],
 };
 
@@ -40,32 +40,32 @@ beforeEach(() => {
 });
 
 describe('useRosterDashboard', () => {
-  it('groups the rosters by game system and army book and carries the card values', () => {
+  it('groups the rosters by faction alone and carries the card values', () => {
     const { result } = renderHook(() => useRosterDashboard({
       rosters: [roster('r1', 'Erste'), roster('r2', 'Zweite', 'unknown-cat')],
       systems: [SYSTEM],
     }));
 
-    expect(result.current.systemGroups).toHaveLength(1);
-    const [group] = result.current.systemGroups;
-    expect(group.systemName).toBe('Warhammer');
-    expect(group.factions.map(f => f.factionName)).toEqual(['Bretonnia', expect.any(String)]);
+    // Issue 0203, AC3: there is no game system level any more — a faction
+    // appears once, at the top.
+    expect(result.current.factionGroups.map(g => g.factionName))
+      .toEqual(['Bretonnia', expect.any(String)]);
 
-    const card = group.factions[0].cards[0];
+    const card = result.current.factionGroups[0].cards[0];
     expect(card.roster.id).toBe('r1');
     expect(card.currentPoints).toBe(120);
     expect(card.costLimit).toBe(2000);
   });
 
-  it('sorts the roster without an army book to the end of its system', () => {
+  it('sorts the roster without an army book to the end', () => {
     const { result } = renderHook(() => useRosterDashboard({
       rosters: [roster('r1', 'Ohne Buch', 'unknown-cat'), roster('r2', 'Mit Buch')],
       systems: [SYSTEM],
     }));
 
-    const factions = result.current.systemGroups[0].factions;
-    expect(factions[0].factionName).toBe('Bretonnia');
-    expect(factions[1].cards[0].roster.id).toBe('r1');
+    const groups = result.current.factionGroups;
+    expect(groups[0].factionName).toBe('Bretonnia');
+    expect(groups[1].cards[0].roster.id).toBe('r1');
   });
 
   it('evaluates once per roster, not once per render pass', () => {
@@ -88,6 +88,58 @@ describe('useRosterDashboard', () => {
     expect(evaluateAppRoster).toHaveBeenCalledTimes(2);
 
     act(() => result.current.setEditName('Erste umbenannt'));
+    expect(evaluateAppRoster).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows only the matching lists and drops a faction left without a card', () => {
+    // Issue 0203, AC4: values of one category as OR, the two categories as AND.
+    const rosters = [
+      roster('r1', 'Erste'),
+      roster('r2', 'Zweite', 'cat2'),
+      { ...roster('r3', 'Dritte'), systemId: 'sys2' },
+    ];
+    const systems = [SYSTEM, { id: 'sys2', name: 'Mordheim', catalogues: [{ id: 'cat1', name: 'Bretonnia' }], forceEntries: [] }];
+
+    const { result, rerender } = renderHook(
+      ({ filter }) => useRosterDashboard({ rosters, systems, filter }),
+      { initialProps: { filter: { systemIds: ['sys1'], factionIds: ['cat1', 'cat2'] } } }
+    );
+
+    expect(result.current.factionGroups.flatMap(g => g.cards.map(c => c.roster.id)))
+      .toEqual(['r1', 'r2']);
+
+    rerender({ filter: { systemIds: [], factionIds: ['cat2'] } });
+    expect(result.current.factionGroups.map(g => g.factionName)).toEqual(['Zwerge']);
+    expect(result.current.hasNoMatches).toBe(false);
+  });
+
+  it('answers a selection without a match with its own state, not the empty one', () => {
+    const rosters = [roster('r1', 'Erste')];
+    const { result } = renderHook(() => useRosterDashboard({
+      rosters, systems: [SYSTEM], filter: { systemIds: [], factionIds: ['cat2'] },
+    }));
+
+    expect(result.current.factionGroups).toEqual([]);
+    expect(result.current.hasNoMatches).toBe(true);
+    expect(result.current.isEmpty).toBe(false);
+  });
+
+  it('does not evaluate again when the filter changes', () => {
+    // Issue 0203, AC9: the report is memoized before the filtering, so a
+    // filter change only regroups what is already computed.
+    const rosters = [roster('r1', 'Erste'), roster('r2', 'Zweite')];
+    const systems = [SYSTEM];
+    const { rerender } = renderHook(
+      ({ filter }) => useRosterDashboard({ rosters, systems, filter }),
+      { initialProps: { filter: { systemIds: [], factionIds: [] } } }
+    );
+
+    expect(evaluateAppRoster).toHaveBeenCalledTimes(2);
+
+    rerender({ filter: { systemIds: ['sys1'], factionIds: [] } });
+    expect(evaluateAppRoster).toHaveBeenCalledTimes(2);
+
+    rerender({ filter: { systemIds: [], factionIds: ['cat1'] } });
     expect(evaluateAppRoster).toHaveBeenCalledTimes(2);
   });
 

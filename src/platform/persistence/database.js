@@ -29,6 +29,52 @@ const WHFB6_LINKING_SETTING_KEY = 'whfb6LinkingEnabled';
 // which mirrors the app's behaviour before the setting existed.
 export const WHFB6_LINKING_DEFAULT = true;
 
+// Key of the single record that persists the army list overview's filter
+// (Issue 0203). Like the whfb6 flag it is one keyed record in the settings
+// store, so no store and no persisted shape changes: an absent record is the
+// empty filter and needs no migration.
+const DASHBOARD_FILTER_SETTING_KEY = 'dashboardFilter';
+
+/**
+ * Nothing filtered — the state of a fresh install and the fallback for a record
+ * that was written by an older or a broken build.
+ *
+ * @type {{ systemIds: string[], factionIds: string[] }}
+ */
+export const DASHBOARD_FILTER_DEFAULT = { systemIds: [], factionIds: [] };
+
+/**
+ * Reads the persisted overview filter. A record whose halves are not both
+ * arrays is read as "nothing filtered" rather than trusted — a filter is what
+ * hides a user's army lists, so a broken record must not hide anything.
+ * @returns {Promise<{ systemIds: string[], factionIds: string[] }>}
+ */
+export async function getDashboardFilter() {
+  const record = await readFromStore(SETTINGS_STORE, (store) =>
+    store.get(DASHBOARD_FILTER_SETTING_KEY)
+  );
+  const value = record ? record.value : null;
+  if (!value) return DASHBOARD_FILTER_DEFAULT;
+  return {
+    systemIds: Array.isArray(value.systemIds) ? value.systemIds : [],
+    factionIds: Array.isArray(value.factionIds) ? value.factionIds : [],
+  };
+}
+
+/**
+ * Persists the overview filter as a single keyed record.
+ * @param {{ systemIds: string[], factionIds: string[] }} filter
+ * @returns {Promise<void>}
+ */
+export function setDashboardFilter(filter) {
+  return writeToStore(SETTINGS_STORE, (store) =>
+    store.put({
+      id: DASHBOARD_FILTER_SETTING_KEY,
+      value: { systemIds: [...filter.systemIds], factionIds: [...filter.factionIds] },
+    })
+  );
+}
+
 function openConnection() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);

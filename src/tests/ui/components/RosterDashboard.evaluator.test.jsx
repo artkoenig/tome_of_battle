@@ -31,6 +31,8 @@ vi.mock('lucide-react', () => ({
   Download: () => <span data-testid="icon-download" />,
   Upload: () => <span data-testid="icon-upload" />,
   MoreVertical: () => <span data-testid="icon-more" />,
+  Filter: () => <span data-testid="icon-filter" />,
+  X: () => <span data-testid="icon-x" />,
 }));
 
 vi.mock('../../../ui/components/editor/BottomSheet', () => ({

@@ -3,15 +3,29 @@ import {
   WHFB6_LINKING_DEFAULT,
   loadWhfb6LinkingEnabled,
   saveWhfb6LinkingEnabled as persistWhfb6LinkingEnabled,
+  DASHBOARD_FILTER_DEFAULT,
+  loadDashboardFilter,
+  saveDashboardFilter as persistDashboardFilter,
 } from '../../contexts/armylist/application/settings';
 
-// App-wide settings, deliberately scoped to the single whfb6 linking flag (see
-// ADR-0015). The context is null until a SettingsProvider mounts, which
+/**
+ * @typedef {{ systemIds: string[], factionIds: string[] }} DashboardFilter
+ * @typedef {{
+ *   whfb6LinkingEnabled: boolean,
+ *   setWhfb6LinkingEnabled: (value: boolean) => void,
+ *   dashboardFilter: DashboardFilter,
+ *   setDashboardFilter: (value: DashboardFilter) => void,
+ * }} SettingsValue
+ */
+
+// App-wide settings: the whfb6 linking flag (ADR-0015) and, since Issue 0203,
+// the army list overview's filter — both persisted, both hydrated once on
+// mount. The context is null until a SettingsProvider mounts, which
 // useSettings() treats as a programming error.
 // Ohne Provider ist der Wert `null`; der Typ muss trotzdem den Vertrag nennen,
 // den `useSettings` erwartet — deshalb hier die Behauptung am Literal.
 const SettingsContext = createContext(
-  /** @type {{ whfb6LinkingEnabled: boolean, setWhfb6LinkingEnabled: (value: boolean) => void }|null} */ (null)
+  /** @type {SettingsValue|null} */ (null)
 );
 
 /**
@@ -21,6 +35,32 @@ const SettingsContext = createContext(
  */
 export function SettingsProvider({ children }) {
   const [whfb6LinkingEnabled, setWhfb6LinkingEnabledState] = useState(WHFB6_LINKING_DEFAULT);
+  const [dashboardFilter, setDashboardFilterState] = useState(DASHBOARD_FILTER_DEFAULT);
+
+  useEffect(() => {
+    let isMounted = true;
+    loadDashboardFilter()
+      .then((storedFilter) => {
+        if (isMounted) setDashboardFilterState(storedFilter);
+      })
+      .catch((error) => {
+        // Console-only by design: an unread filter falls back to "nothing
+        // filtered", so the user sees every army list rather than none.
+        console.error('Failed to load the dashboard filter:', error);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const setDashboardFilter = (value) => {
+    setDashboardFilterState(value);
+    persistDashboardFilter(value).catch((error) => {
+      // Console-only by design: the filter applies immediately and only its
+      // survival across a restart is lost.
+      console.error('Failed to persist the dashboard filter:', error);
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -49,7 +89,9 @@ export function SettingsProvider({ children }) {
   };
 
   return (
-    <SettingsContext.Provider value={{ whfb6LinkingEnabled, setWhfb6LinkingEnabled }}>
+    <SettingsContext.Provider
+      value={{ whfb6LinkingEnabled, setWhfb6LinkingEnabled, dashboardFilter, setDashboardFilter }}
+    >
       {children}
     </SettingsContext.Provider>
   );
@@ -58,7 +100,7 @@ export function SettingsProvider({ children }) {
 /**
  * Accesses the settings context. Throws when used outside a SettingsProvider so
  * a missing provider fails loudly instead of silently reading stale defaults.
- * @returns {{ whfb6LinkingEnabled: boolean, setWhfb6LinkingEnabled: (value: boolean) => void }}
+ * @returns {SettingsValue}
  */
 export function useSettings() {
   const context = useContext(SettingsContext);
