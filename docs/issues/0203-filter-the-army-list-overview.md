@@ -1,7 +1,7 @@
 ---
-status: backlog
+status: done
 branch: claude/list-view-filter-1haa1f
-pr:
+pr: 275
 ---
 
 # Filter the army list overview by game system and faction
