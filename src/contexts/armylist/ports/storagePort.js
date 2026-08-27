@@ -15,4 +15,7 @@ export {
   WHFB6_LINKING_DEFAULT,
   getWhfb6LinkingEnabled,
   setWhfb6LinkingEnabled,
+  DASHBOARD_FILTER_DEFAULT,
+  getDashboardFilter,
+  setDashboardFilter,
 } from '../../../platform/persistence/database';

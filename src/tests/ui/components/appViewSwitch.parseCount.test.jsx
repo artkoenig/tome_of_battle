@@ -30,6 +30,9 @@ vi.mock('../../../platform/persistence/database', () => ({
   getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
   setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
   WHFB6_LINKING_DEFAULT: true,
+  getDashboardFilter: vi.fn().mockResolvedValue({ systemIds: [], factionIds: [] }),
+  setDashboardFilter: vi.fn().mockResolvedValue(undefined),
+  DASHBOARD_FILTER_DEFAULT: { systemIds: [], factionIds: [] },
 }));
 
 // Der echte Parser, aber zaehlbar — der Zaehler ist hier Vertragsgegenstand.

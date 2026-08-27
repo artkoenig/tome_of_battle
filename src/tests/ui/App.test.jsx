@@ -19,6 +19,7 @@ vi.mock('lucide-react', () => ({
   Download: () => <span data-testid="icon-download" />,
   Settings: () => <span data-testid="icon-settings" />,
   X: () => <span data-testid="icon-x" />,
+  Filter: () => <span data-testid="icon-filter" />,
 }));
 
 
@@ -34,6 +35,9 @@ vi.mock('../../platform/persistence/database', () => ({
   getWhfb6LinkingEnabled: vi.fn().mockResolvedValue(true),
   setWhfb6LinkingEnabled: vi.fn().mockResolvedValue(undefined),
   WHFB6_LINKING_DEFAULT: true,
+  getDashboardFilter: vi.fn().mockResolvedValue({ systemIds: [], factionIds: [] }),
+  setDashboardFilter: vi.fn().mockResolvedValue(undefined),
+  DASHBOARD_FILTER_DEFAULT: { systemIds: [], factionIds: [] },
 }));
 
 vi.mock('../../platform/persistence/migrations', () => ({
@@ -360,5 +364,35 @@ describe('App: die eine Systemliste', () => {
     await waitFor(() => {
       expect(dashboardProps.current.systems.map(s => s.id)).toEqual(['sys-1', 'sys-2']);
     });
+  });
+});
+
+// Issue 0203, AC7 — below the mobile breakpoint the overview has no toolbar,
+// so the filter sits in the app header next to the settings control and opens
+// in the app's bottom sheet. The dashboard is mocked here; what is pinned is
+// the header control, the sheet, and that the shell hands the same filter
+// bundle down to the overview.
+describe('App: der Filter der Übersicht', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getAllRosters.mockResolvedValue([]);
+    getAllSystems.mockResolvedValue([{ id: 'sys-1', name: 'Stored System', catalogues: [] }]);
+    runSystemMigrations.mockImplementation((systems) => Promise.resolve({ systems, failures: [] }));
+    dashboardProps.current = null;
+  });
+
+  it('opens the filter from the header in the bottom sheet and gives the overview the same filter', async () => {
+    render(<App />);
+
+    await waitFor(() => expect(dashboardProps.current).not.toBeNull());
+    expect(dashboardProps.current.filter.selection).toEqual({ systemIds: [], factionIds: [] });
+
+    const headerFilter = screen.getByTestId('header-filter');
+    expect(headerFilter.closest('.app-header')).not.toBeNull();
+    expect(headerFilter.nextElementSibling?.className).toContain('header-settings-btn');
+
+    expect(screen.queryByTestId('roster-filter-panel')).toBeNull();
+    await act(async () => { fireEvent.click(headerFilter); });
+    expect(screen.getByTestId('roster-filter-panel')).toBeDefined();
   });
 });

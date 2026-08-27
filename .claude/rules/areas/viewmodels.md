@@ -125,7 +125,22 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   `t = translate` default parameter and pass the hook's `t` from the hook.
 - `useRosterDashboard` memoises one `evaluateAppRoster` report per card over `[rosters, systems]`.
   The memo only holds if the caller keeps those array identities — `useAppData` does; a test that
-  writes `systems: [SYSTEM]` inline re-evaluates on every render and proves nothing.
+  writes `systems: [SYSTEM]` inline re-evaluates on every render and proves nothing. Its return is
+  `factionGroups` (the game-system grouping level is gone, Issue 0203) and the **filtering happens
+  in a second memo over the finished cards** — putting the filter into the card memo re-evaluates
+  every list on every checkbox.
+- The overview's filter lives in three pieces: `rosterFilter.js` (pure — options, the OR/AND
+  predicate, toggle/remove, chips), `useRosterFilter.js` (the binding, plus the mobile sheet's open
+  state) and the persisted selection `{ systemIds, factionIds }` in `SettingsContext`. It belongs
+  above both consumers because the control sits in the overview's toolbar on the desktop and in
+  the **app header** on mobile, so `App.jsx` renders `SettingsProvider` around an inner `AppShell`
+  and hands the whole bundle to `RosterDashboard` as one `filter` prop — the dashboard itself needs
+  no provider, and its tests render without one.
+- `SettingsContext` is no longer the single whfb6 flag: a **test that mocks
+  `platform/persistence/database` wholesale must list every settings pair** (`getWhfb6LinkingEnabled`/
+  `setWhfb6LinkingEnabled`/`WHFB6_LINKING_DEFAULT` **and** `getDashboardFilter`/`setDashboardFilter`/
+  `DASHBOARD_FILTER_DEFAULT`), or the provider's hydration effect fails inside an unrelated screen
+  test. A setting that hides user data reads a broken record as "nothing hidden".
 - Resetting a form when a modal opens is done by comparing against a `wasOpen` state **in the
   render**, not in an effect (`useNewRosterModal`): an effect with `systems` in its dependency
   list discards the user's typing whenever the list gets a new identity.

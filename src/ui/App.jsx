@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { BookOpen, FolderOpen, WifiOff, Download, Settings } from 'lucide-react';
+import { BookOpen, FolderOpen, WifiOff, Download, Settings, Filter } from 'lucide-react';
 
 import Importer from './components/Importer';
 import RosterEditor from './components/RosterEditor';
 import PlayMode from './components/PlayMode';
 import RosterDashboard from './components/RosterDashboard';
+import RosterFilterPanel from './components/RosterFilterPanel';
 import AppDialogs from './components/AppDialogs';
 import PreviewBadge from './components/PreviewBadge';
+import BottomSheet from './components/editor/BottomSheet';
 import { SettingsProvider } from './viewmodels/SettingsContext';
+import { useRosterFilter } from './viewmodels/useRosterFilter';
 
 import useViewportHeight from './viewmodels/useViewportHeight';
 import usePwaLifecycle from './viewmodels/usePwaLifecycle';
@@ -20,7 +23,20 @@ import { VIEWS, isImmersiveView } from '../ui/constants/views';
 import { useTranslation } from './i18n/useTranslation';
 import { Analytics } from '@vercel/analytics/react';
 
+/**
+ * Der Einstiegspunkt. Der Einstellungs-Anbieter steht **über** der App-Hülle,
+ * weil die Hülle selbst ihn liest: der Übersichts-Filter (Issue 0203) lebt in
+ * den gespeicherten Einstellungen und wird mobil aus der Kopfzeile bedient.
+ */
 export default function App() {
+  return (
+    <SettingsProvider>
+      <AppShell />
+    </SettingsProvider>
+  );
+}
+
+function AppShell() {
   const { t } = useTranslation();
   // Keep --app-vh in sync with the real visible viewport height so mobile
   // layout (#root, .empty-state-wrapper) sizes against the area actually
@@ -82,10 +98,12 @@ export default function App() {
     showToast,
   });
 
+  const rosterFilter = useRosterFilter({ rosters, systems });
+
   const diffChanges = getDiffChanges(import.meta.env.VITE_APP_VERSION, updateRelease);
 
   return (
-    <SettingsProvider>
+    <>
     <div id="root" className={isImmersiveView(view) ? 'in-builder-mode' : ''}>
       {/* Premium Header */}
       <header className="app-header">
@@ -140,6 +158,24 @@ export default function App() {
             </div>
           )}
 
+          {/* Unterhalb der mobilen Schwelle gibt es keine Werkzeugleiste der
+              Übersicht — der Filter steht deshalb hier, neben den
+              Einstellungen, und öffnet das Bodenblatt der App (Issue 0203). */}
+          {view === VIEWS.ROSTERS && systems.length > 0 && (
+            <button
+              data-testid="header-filter"
+              className="header-filter-btn mobile-only"
+              onClick={rosterFilter.openSheet}
+              title={t('dashboard.filter.label')}
+              aria-label={t('dashboard.filter.label')}
+            >
+              <Filter size={18} />
+              {rosterFilter.selectedCount > 0 && (
+                <span className="filter-count-badge">{rosterFilter.selectedCount}</span>
+              )}
+            </button>
+          )}
+
           <button
             className="header-settings-btn"
             onClick={() => setIsSettingsOpen(true)}
@@ -177,6 +213,7 @@ export default function App() {
                 isOffline={isOffline}
                 onImportRoster={importRoster}
                 onExportRoster={exportRoster}
+                filter={rosterFilter}
               />
             )}
 
@@ -220,6 +257,20 @@ export default function App() {
         onCancelRosterDeletion={cancelRosterDeletion}
         onConfirmRosterDeletion={confirmRosterDeletion}
       />
+
+      <BottomSheet
+        isOpen={rosterFilter.isSheetOpen}
+        onClose={rosterFilter.closeSheet}
+        title={t('dashboard.filter.title')}
+      >
+        <RosterFilterPanel
+          options={rosterFilter.options}
+          selection={rosterFilter.selection}
+          selectedCount={rosterFilter.selectedCount}
+          onToggle={rosterFilter.toggleValue}
+          onClear={rosterFilter.clearAll}
+        />
+      </BottomSheet>
 
       {/* Mobile Bottom Navigation */}
       {systems.length > 0 && (
@@ -268,6 +319,6 @@ export default function App() {
       )}
     </div>
     <Analytics />
-    </SettingsProvider>
+    </>
   );
 }

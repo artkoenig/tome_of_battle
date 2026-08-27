@@ -107,7 +107,8 @@
   cursor: pointer;
 }
 
-.header-settings-btn {
+.header-settings-btn,
+.header-filter-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,7 +119,8 @@
   cursor: pointer;
 }
 
-.header-settings-btn:hover {
+.header-settings-btn:hover,
+.header-filter-btn:hover {
   border-color: var(--border-gold);
   color: var(--text-gold);
 }

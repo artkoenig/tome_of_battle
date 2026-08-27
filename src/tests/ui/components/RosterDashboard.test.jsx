@@ -13,6 +13,8 @@ vi.mock('lucide-react', () => ({
   Upload: () => <span data-testid="icon-upload" />,
   WifiOff: () => <span data-testid="icon-wifioff" />,
   MoreVertical: () => <span data-testid="icon-more-vertical" />,
+  Filter: () => <span data-testid="icon-filter" />,
+  X: () => <span data-testid="icon-x" />,
 }));
 
 // Mock BottomSheet
@@ -84,7 +86,7 @@ describe('RosterDashboard Component', () => {
     expect(mockNewRoster).toHaveBeenCalledTimes(1);
   });
 
-  it('renders grouped rosters when they exist', () => {
+  it('groups the rosters by faction only, without a game system heading', () => {
     render(
       <RosterDashboard
         rosters={mockRosters}
@@ -95,11 +97,31 @@ describe('RosterDashboard Component', () => {
       />
     );
 
-    expect(screen.getByText('Warhammer Fantasy')).toBeDefined();
+    // Issue 0203, AC3: the game system level is gone.
+    expect(screen.queryByText('Warhammer Fantasy')).toBeNull();
     expect(screen.getByText('Empire')).toBeDefined();
     expect(screen.getByText('Empire Army')).toBeDefined();
     expect(screen.getByText('2000')).toBeDefined();
     expect(screen.getByText('Punkte')).toBeDefined();
+  });
+
+  it('shows no heading and no subtitle in the desktop toolbar', () => {
+    render(
+      <RosterDashboard
+        rosters={mockRosters}
+        systems={mockSystems}
+        onOpenRoster={mockOpenRoster}
+        onDeleteRoster={mockDeleteRoster}
+        onNewRoster={mockNewRoster}
+      />
+    );
+
+    // Issue 0203, AC1: the filter took the room of the heading and its subtitle.
+    expect(screen.queryByText('Armeelisten')).toBeNull();
+    expect(screen.queryByText(/Verwalte deine Armeelisten/)).toBeNull();
+    expect(screen.getByTestId('dashboard-filter')).toBeDefined();
+    expect(screen.getByText('Importieren')).toBeDefined();
+    expect(screen.getByText('Neue Armeeliste')).toBeDefined();
   });
 
   it('calls correct actions on button clicks', () => {

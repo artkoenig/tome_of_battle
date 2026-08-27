@@ -25,25 +25,103 @@
   align-items: center;
 }
 
-.dashboard-header-subtitle {
-  margin: 0;
-}
-
 .dashboard-header-actions {
   display: flex;
   gap: 8px;
 }
 
-.system-groups-container {
+/* Der Filter steht links, wo Überschrift und Untertitel standen (Issue 0203);
+   der Aufklapper hängt an ihm. */
+.dashboard-header-filter {
+  position: relative;
+}
+
+.roster-filter-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 240px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 12px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* Im Bodenblatt ist die Fläche kein Aufklapper mehr, sondern der Inhalt. */
+.gothic-bottomsheet .roster-filter-panel {
+  position: static;
+  max-height: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.roster-filter-section {
+  margin-bottom: 12px;
+}
+
+.roster-filter-section-title {
+  margin: 0 0 6px;
+}
+
+.roster-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.roster-filter-clear {
+  width: 100%;
+  justify-content: center;
+}
+
+.filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background-color: var(--border-gold);
+  color: var(--bg-deep, #000);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.dashboard-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-gold-dim);
+  border-radius: 12px;
+  background: transparent;
+}
+
+.filter-chip-clear {
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+}
+
+.faction-groups-container {
   margin-top: 24px;
-}
-
-.system-group {
-  margin-bottom: 40px;
-}
-
-.system-factions {
-  padding-left: 16px;
 }
 
 .faction-group {
@@ -57,14 +135,8 @@
   margin-top: 12px;
 }
 
-.system-group-title {
-  border-bottom: 2px solid var(--border-gold);
-  padding-bottom: 6px;
-  margin-bottom: 20px;
-}
-
 .faction-group-title {
-  border-bottom: 1px solid var(--border-gold-dim);
+  border-bottom: 2px solid var(--border-gold);
   padding-bottom: 4px;
   margin-bottom: 14px;
   text-transform: uppercase;
