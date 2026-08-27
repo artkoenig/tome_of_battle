@@ -1,0 +1,51 @@
+{
+  "pkg": "army_builder",
+  "globalName": "TomeOfBattle",
+  "shape": "package",
+  "srcDir": "src",
+  "tsconfig": ".design-sync/tsconfig.sync.json",
+  "tokensGlob": "src/ui/styles/01-tokens.css",
+  "componentSrcMap": {
+    "GothicTooltip": "src/ui/components/GothicTooltip.jsx",
+    "PreviewBadge": null,
+    "AutoFillSuggestions": "src/ui/components/editor/AutoFillSuggestions.jsx",
+    "BottomSheet": "src/ui/components/editor/BottomSheet.jsx",
+    "CategoryCountBadge": "src/ui/components/editor/CategoryCountBadge.jsx",
+    "ConfirmationDialog": "src/ui/components/editor/ConfirmationDialog.jsx",
+    "ListRuleChecklist": "src/ui/components/editor/ListRuleChecklist.jsx",
+    "NewRosterModal": "src/ui/components/editor/NewRosterModal.jsx",
+    "OptionGroup": "src/ui/components/editor/OptionGroup.jsx",
+    "RuleChipIcon": "src/ui/components/editor/RuleChipIcon.jsx",
+    "UnitCardList": "src/ui/components/editor/UnitCardList.jsx",
+    "UnitSelectionCard": "src/ui/components/editor/UnitSelectionCard.jsx",
+    "ValidationCauses": "src/ui/components/editor/ValidationCauses.jsx",
+    "ValidationMessage": "src/ui/components/editor/ValidationMessage.jsx",
+    "UnitUpgradesChips": "src/ui/components/editor/UnitChips.jsx",
+    "UnitRulesChips": "src/ui/components/editor/UnitChips.jsx"
+  },
+  "extraFonts": [
+    ".design-sync/fonts.css"
+  ],
+  "provider": {
+    "component": "DesignSurface"
+  },
+  "overrides": {
+    "ConfirmationDialog": {
+      "cardMode": "single",
+      "primaryStory": "Destructive"
+    },
+    "NewRosterModal": {
+      "cardMode": "single",
+      "viewport": "900x820"
+    },
+    "BottomSheet": {
+      "cardMode": "single",
+      "primaryStory": "Modal"
+    },
+    "GothicTooltip": {
+      "cardMode": "single",
+      "primaryStory": "RuleText"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
