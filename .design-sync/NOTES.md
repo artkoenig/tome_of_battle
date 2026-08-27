@@ -120,8 +120,19 @@ for free, since it only maps over it).
   (it only appends a stylesheet to `document.head`), but it does show up in
   `window.TomeOfBattle`.
 - **Never verified against claude.ai/design itself.** This run had no
-  design-system authorization, so nothing was uploaded; the whole bundle was
-  verified locally against headless chromium only.
+  design-system authorization — not even for reading — so it uploaded nothing
+  and could not inspect the project afterwards. The whole bundle was verified
+  locally against headless chromium only.
+- **`projectId` was supplied by hand, not by a sync.** The bundle was imported
+  into `30019274-…` manually and the id was reported in conversation; no run has
+  ever confirmed it exists, is a `PROJECT_TYPE_DESIGN_SYSTEM`, or holds what
+  this build produced. The first sync with real authorization should
+  `get_project` it before trusting the pin, and treat that project as
+  **non-empty** — i.e. the atomic upload path, whose `deletes` cannot be derived
+  from an anchor it did not write. Its `_ds_sync.json` came from this build, so
+  it will *look* like a valid anchor; if the manual import was partial, that
+  anchor vouches for files the project does not have and the diff will never
+  repair them. When in doubt, re-sync with `--force`.
 
 ## Environment
 

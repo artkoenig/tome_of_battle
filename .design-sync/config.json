@@ -1,6 +1,7 @@
 {
   "pkg": "army_builder",
   "globalName": "TomeOfBattle",
+  "projectId": "30019274-9ca1-415b-b415-67d2c97a5de7",
   "shape": "package",
   "srcDir": "src",
   "tsconfig": ".design-sync/tsconfig.sync.json",
