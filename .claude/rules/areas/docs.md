@@ -8,7 +8,13 @@ paths:
 
 # Dokumentation
 
-Doku, Issues und Commit-Nachrichten sind deutsch, Code und Bezeichner englisch.
+**Sprache.** Die Prosa in `docs/` ist deutsch: ADRs, PRDs, das Glossar, `project-map.md`, die
+Landing-Page. Englisch ist alles, was mitwandert oder gelesen wird, wo kein Deutsch vorausgesetzt
+werden kann: Code und Bezeichner, Issues unter `docs/issues/` samt ihren Dateinamen,
+Commit-Nachrichten und Pull Requests. So hält es die forge-Regel, und so ist der Baum seit den
+Issues 0192 ff. auch tatsächlich — ältere deutsche Commit-Betreffs sind Altbestand, kein Vorbild.
+`.agents/AGENTS.md` ist die Ausnahme in der Ausnahme: eine Agentenanweisung, also englisch.
+
 `CLAUDE.md` ist ein Symlink auf `.agents/AGENTS.md` — die echte Datei dort bearbeiten.
 
 - **Rangfolge bei Widerspruch:** `docs/battlescribe-data-format.md` → ADR → `docs/project-map.md`.
