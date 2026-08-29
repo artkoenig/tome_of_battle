@@ -18,12 +18,12 @@ Gruppen-Mitglieder).
 ## Der gepinnte Mechanismus
 
 Ein `modifier` mit einer `<repeats>`-Liste wird **einmal je gezähltem Treffer**
-angewendet ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat),
-Muster in [§9.7](../../battlescribe-data-format.md#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc)).
+angewendet ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat),
+Muster in [§9.7](../../battlescribe/patterns/common-patterns.md#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc)).
 Der hier gepinnte `repeat` zählt mit `field="selections"`, `scope="parent"`,
 `value="1"`, `repeats="1"` und **`includeChildSelections="false"`** — er zählt
 also nur, was der Eltern-Rahmen **unmittelbar** hält, nicht was tiefer darunter
-hängt ([§7.6](../../battlescribe-data-format.md#76-constraint): `false` zählt
+hängt ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint): `false` zählt
 *„just `scope`'s `field`"*). Träger ist die geteilte Gruppe **„Arcane Items"**
 der Ogre Kingdoms, die der **Butcher** über seine Gruppe „Magic Items and Big
 Names" und die Sammelgruppe „Arcane Items (OK-AB + Common)" hält:
@@ -71,7 +71,7 @@ das effektive Maximum **1 + N**. Anwendungszahl des `repeat`:
 | **PRIC-R2** | Je gewähltem **Dispel Scroll** steigt diese Grenze um **+1**: der `increment`-Modifier trägt genau einen `<repeat>` mit `value=1`/`repeats=1`, der die Kopien von `b76c-6bad-4650-dbb0` zählt. Mit 1 Scroll ist das effektive Maximum `1+1=2`, mit 2 Scrolls greift die Wiederholung **zweimal**: `1+2=3`. | Ebd. → `modifier type="increment" value="1" field="188e-3808-4b37-c8d9"` mit `<repeat field="selections" scope="parent" value="1" repeats="1" roundUp="false" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="b76c-6bad-4650-dbb0"/>`. |
 | **PRIC-R3** | Ohne Dispel Scroll zählt der `repeat` **0 Treffer** **und** die zusätzliche `condition` `greaterThan 0` auf dieselbe `childId` hält nicht — der Modifier wird **nicht** angewendet, die Grenze behält ihren **Basiswert 1**. | Ebd. → `<condition type="greaterThan" value="0" field="selections" scope="parent" childId="b76c-6bad-4650-dbb0" includeChildSelections="false"/>`; Anwendungszahl `floor(0/1)×1 = 0`. |
 | **PRIC-R4** | Die **angehobene** Grenze ist auch die Grenze, die im Verletzungsbericht erscheint: wird die Zahl der Gruppen-Mitglieder größer als `1+N`, feuert `188e-3808-4b37-c8d9` mit dem **effektiven** `bound` (1 ohne Scroll, 3 mit zwei Scrolls) — nicht mit dem geschriebenen Wert. | Kombination aus PRIC-R1/R2/R3; keine weitere Katalogstelle im ganzen Fixture-Satz adressiert `188e-3808-4b37-c8d9` (verifiziert: genau 3 Treffer der Id — die Constraint und die beiden increments an `4c3e-…`). |
-| **PRIC-R5** | Der `repeat` zählt mit `includeChildSelections="false"` nur, was der Eltern-Rahmen **unmittelbar** hält. In diesen Rostern ist das kein Unterschied, weil die Mitglieder der Gruppe stets **direkte** Kinder des Trägers sind (eine `selectionEntryGroup` erzeugt keine Roster-Ebene) — die Zelle ist also die des `false`-Zählers, aber sie ist mit einem minimalen, katalogkonformen Roster **nicht** gegen die `true`-Variante abgrenzbar (siehe „bewusst nicht Gegenstand"). | [§7.6](../../battlescribe-data-format.md#76-constraint) (`false` = *„just `scope`'s `field`"*); Roster-Aufbau der Fixtures unter [`rosters/`](rosters/). |
+| **PRIC-R5** | Der `repeat` zählt mit `includeChildSelections="false"` nur, was der Eltern-Rahmen **unmittelbar** hält. In diesen Rostern ist das kein Unterschied, weil die Mitglieder der Gruppe stets **direkte** Kinder des Trägers sind (eine `selectionEntryGroup` erzeugt keine Roster-Ebene) — die Zelle ist also die des `false`-Zählers, aber sie ist mit einem minimalen, katalogkonformen Roster **nicht** gegen die `true`-Variante abgrenzbar (siehe „bewusst nicht Gegenstand"). | [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint) (`false` = *„just `scope`'s `field`"*); Roster-Aufbau der Fixtures unter [`rosters/`](rosters/). |
 | **PRIC-R6** | Der zweite, baugleiche increment (+1 je **Power Stone**, `repeat`-`childId=696a-648d-c842-4c6a` mit `includeChildSelections="true"`) ist in **allen** Rostern inert, weil kein Power Stone gewählt ist. Er ist eine **andere** Zelle und wird hier nicht gepinnt. | Ebd. → zweiter `modifier type="increment" value="1" field="188e-3808-4b37-c8d9"`; die Roster enthalten keine Auswahl mit `entryId=696a-648d-c842-4c6a` bzw. Link `c492-f625-09c8-3702`. |
 | **PRIC-R7** | Der Dispel Scroll selbst limitiert sich auf **max 4 je Träger** — mit 1 bzw. 2 Kopien still. Skullmantle und Bangstick tragen je **max 1 je Träger** und **max 1 je Roster** — mit je einer Kopie still. | `.gst`, `selectionEntry` `b76c-6bad-4650-dbb0` (25 pts) → **`809a-eb2a-6def-15f6`** (`max 4 scope=parent`); OK-`.cat`, `5ccf-df71-8c78-ee5e` (20 pts) → **`153e-42d6-004c-e352`** (`max 1 scope=parent`) / **`6482-f23b-9933-2363`** (`max 1 scope=roster`); `c5d0-f7e9-6534-f6f4` (25 pts) → **`ffca-6d1b-26f9-9be5`** / **`0fad-e34d-5f8d-b1f3`**. |
 | **PRIC-R8** | Die Pflicht-Untergrenze des Trägers ist in allen Rostern erfüllt: **Hand Weapon min 1** (gewählt), sowohl am Link des Butchers als auch am geteilten `.gst`-Eintrag; die zugehörigen max-1-Grenzen sind mit einer Kopie eingehalten. | OK-`.cat`, `8933-af8e-e780-6f48` → `entryLink 8b61-79ab-f251-234b` mit min **`4dd7-db61-d846-4252`** / max **`90b7-8f2e-6da9-6516`**; `.gst`, `abdb-bbd0-41b2-5dff` → min **`bdef-ba9b-d6ce-5b14`** / max **`e28e-dbb4-b8ad-d4ab`**. |
@@ -86,7 +86,7 @@ assertiert):
   `f969-0b28-b1cf-bb02` = Power Stone) und `includeChildSelections="true"`
   tragen. Ob eine Auswahl mit `entryId=b76c-…` unter dem **OK**-Link
   `1954-…` für eine `childId` zählt, die die **Common**-Link-Id nennt, ist eine
-  eigene Frage der Link/Ziel-Auflösung ([§9.7, Fallstrick 1](../../battlescribe-data-format.md#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc))
+  eigene Frage der Link/Ziel-Auflösung ([§9.7, Fallstrick 1](../../battlescribe/patterns/common-patterns.md#97-mehrfach-erlaubte-gegenstände-in-einer-max1-gruppe-dispel-scroll-etc))
   — deshalb steht `7855-e50e-e607-015e` **weder** in `firing` **noch** in
   `absent`. Dasselbe gilt für die `max 1`-Grenze `7ed8-2807-ba7d-fe27` der
   `.gst`-Gruppe „Arcane Items (Common)" (`0d3f-389c-02b2-bb34`).

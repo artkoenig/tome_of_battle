@@ -42,7 +42,7 @@ abgeleitet; das Roster-Format ist an den bereits verifizierten Szenarien
 
 ## Was eine `atLeast`-Bedingung mit `scope="roster"` laut Format tut
 
-Aus [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+Aus [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 der Formatreferenz, wörtlich abgeleitet:
 
 - `type="atLeast"` vergleicht den im Bezugsrahmen gezählten Wert mit `value`:

@@ -82,15 +82,15 @@ sondern die gemeinte Kodierung.
 ## Was die Formatspezifikation über die Zelle sagt
 
 - **Der `scope` darf eine Eintrags-Id sein.** Die Aufzählung in
-  [§7.6](../../battlescribe-data-format.md#76-constraint) ist keine abschließende
+  [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint) ist keine abschließende
   Liste von Literalen: die Quelle zählt neben `parent|roster|force|primary
   category` ausdrücklich **Vorfahren-Ids** mit, und die XSD typt `scope` als
   nackten String (`Catalogue.xsd:426`, `QueryBase` — dieselbe Basis für
   `constraint`, `condition` und `repeat`). Zitiert im
-  [§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue).
+  [§7.6-Kasten](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen).
 - **Der Rahmen sagt nur, *wo* summiert wird.** Gezählt werden „`field`'s values
   of descendant selections"
-  ([§7.6-Regelkasten](../../battlescribe-data-format.md#76-constraint)) — hier
+  ([§7.6-Regelkasten](../../battlescribe/building-blocks/constraint.md#76-constraint)) — hier
   also die Auswahlen **unterhalb** der benannten Einheit, die auf die `childId`
   passen.
 - **`includeChildSelections="true"` reicht beliebig tief.** Die Spezifikation ist

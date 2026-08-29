@@ -33,7 +33,7 @@ one layer over — `SlotIndex.fromMaps` validates every capability it is handed 
   `copyUnit.js:14`); a `.ros` import discards the file's ids. `git log -S'crypto.randomUUID'` shows
   no era in which a copy reused ids.
 - *`costLimit >= 0`* — **wrong direction.** `-1` is BattleScribe's *unlimited* sentinel
-  (`docs/battlescribe-data-format.md:721-725`, `:1611`) and the ACL passes it through by decision
+  (`docs/battlescribe/building-blocks/constraint.md` §7.6, `docs/battlescribe/reference/source-gaps.md` §15) and the ACL passes it through by decision
   (`src/tests/contexts/ruleengine/rosterAdapter.test.js:17,220`). The correct rule is
   `costLimit >= 0 || costLimit === -1`.
 - *`number >= 1`* — **keep, and it is a live defect.** `rosterSerialization.js:361` is
@@ -119,5 +119,5 @@ due before the PR. Propose it; do not decide it.
 4. The eager binding shape means two writes dispatched in one event handler would both read the same
    `roster`. No such pair exists today, but a future "raise and configure in one click" would break
    silently.
-5. `docs/battlescribe-data-format.md:1611` says `-1` is unlimited only as a *written* value, not as
+5. `docs/battlescribe/reference/source-gaps.md` (§15) says `-1` is unlimited only as a *written* value, not as
    a computed one. The measure treats a stored `costLimit` as written; worth one confirming read.

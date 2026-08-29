@@ -3,7 +3,7 @@
 **Rolle:** Black-Box-Test (kein Blick in den App-Quellcode). Regeln ausschließlich
 aus den Katalogdaten der *6th Definitive Edition* und der Formatspezifikation
 ([`docs/battlescribe-data-format.md`](../../battlescribe-data-format.md), §7.7
-Kasten [`scope="unit"`/`scope="ancestor"`](../../battlescribe-data-format.md#scope-unit-ancestor),
+Kasten [`scope="unit"`/`scope="ancestor"`](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette),
 §7.7 Tabelle *condition* und §8) abgeleitet; das Roster-Format ist an den bereits
 verifizierten Szenarien nachgebildet (direktes `entryId`, `entryLinkId=""`,
 verschachtelte `selections` mit `number`, `entryGroupId` an Gruppen-Mitgliedern).

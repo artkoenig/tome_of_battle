@@ -108,10 +108,16 @@ and its line.
 - **`PRD-*.md`** — product requirement docs for specific larger features
   (undo/redo, catalog updates & roster compatibility, roster serialization
   adapter, the rules-URL editor).
-- **`battlescribe-data-format.md`** — the canonical BattleScribe file-format
-  reference for this project, required reading before any work
-  ([`AGENTS.md`](../CLAUDE.md)). Curated from real catalog files plus the
-  wiki below.
+- **`battlescribe-data-format.md`** — the index of the canonical BattleScribe
+  file-format reference for this project, required reading before any work
+  ([`AGENTS.md`](../CLAUDE.md)). Under 50 lines: one line per chapter, with the
+  paragraph numbers (§7.6, §9.4 …) every other document cites.
+- **`battlescribe/`** — those chapters, curated from real catalog files plus the
+  wiki below: `overview.md` (§1–4), `files/` (§5–6, `.gst` and `.cat`),
+  `building-blocks/` (§7–8, one file per element — `constraint.md`,
+  `modifier.md`, `links.md` …), `patterns/` (§9–12) and `reference/` (§13–15).
+  Headings and numbering are unchanged from the single file it was split out of,
+  so a `§`-reference or an anchor from before the split still resolves.
 - **`bsdata-catalogue-development-wiki/`** — git submodule of the upstream
   [BSData catalogue-development wiki](https://github.com/BSData/catalogue-development/wiki)
   (`git submodule update --init --recursive` to populate it if empty,

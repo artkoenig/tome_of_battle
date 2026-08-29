@@ -26,13 +26,13 @@ Verweis-Form `entryId = entryLinkId = d82e-…`).
 ## Der gepinnte Mechanismus
 
 Ein `modifier` mit einer `<repeats>`-Liste wird **einmal je gezähltem Treffer**
-angewendet ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)).
+angewendet ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)).
 Die hier gepinnte Zelle zählt mit `field="selections"`, **`scope="roster"`** und
 einem **Kategorie-Ziel** in `childId` — und die Besonderheit gegenüber
 [`roster-repeat-category-count`](../roster-repeat-category-count/README.md) ist:
 **diese Kategorie hat im gesamten Fixture-Satz keinen einzigen `categoryLink`.**
 Ihr einziger Träger erhält sie zur Laufzeit über einen
-`modifier type="add" field="category"` ([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)).
+`modifier type="add" field="category"` ([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)).
 Die Frage, die dieses Szenario stellt: **zählt der `repeat` eine solche
 Mitgliedschaft mit?**
 
@@ -74,15 +74,15 @@ Mercenaries-Bibliothek trägt selbst nur die `categoryLink`s „Rare" (`:3445`) 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
 | **RRAC-R1** | Die Einheit „Gnoblars" trägt als **geschriebene** Grenze **max 0** Auswahlen ihrer selbst, gezählt im Rahmen ihres Elternteils (= des Kontingents, denn sie ist ein Wurzel-Eintrag). Ohne Modifier ist sie damit gar nicht wählbar. | `Ogre Kingdoms (…).cat:41` — `constraint field="selections" scope="parent" value="0" type="max" id="a177-82fc-0b76-5b73" shared="true" includeChildSelections="false" includeChildForces="false"` am `selectionEntry` `1e26-0d1a-bb3c-f47a` (`:16`). |
-| **RRAC-R2** | **Die Kernaussage:** Je armeeweit gezählter Auswahl der Kategorie **„Bully Bully"** steigt diese Grenze um **+1**. Der `increment`-Modifier trägt genau einen `<repeat>` mit `value="1"`/`repeats="1"`/`roundUp="false"`; mit 1 Treffer ist das effektive Maximum `0+1=1`, mit 2 Treffern greift die Wiederholung **zweimal**: `0+2=2`. | `:18-22` — `modifier type="increment" value="1" field="a177-82fc-0b76-5b73"` mit `<repeat field="selections" scope="roster" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="735e-2da1-6356-2fdb" repeats="1" roundUp="false"/>` (`:20`). Anwendungszahl je [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat). |
+| **RRAC-R2** | **Die Kernaussage:** Je armeeweit gezählter Auswahl der Kategorie **„Bully Bully"** steigt diese Grenze um **+1**. Der `increment`-Modifier trägt genau einen `<repeat>` mit `value="1"`/`repeats="1"`/`roundUp="false"`; mit 1 Treffer ist das effektive Maximum `0+1=1`, mit 2 Treffern greift die Wiederholung **zweimal**: `0+2=2`. | `:18-22` — `modifier type="increment" value="1" field="a177-82fc-0b76-5b73"` mit `<repeat field="selections" scope="roster" value="1" percentValue="false" shared="true" includeChildSelections="false" includeChildForces="false" childId="735e-2da1-6356-2fdb" repeats="1" roundUp="false"/>` (`:20`). Anwendungszahl je [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat). |
 | **RRAC-R3** | **Die zweite Kernaussage:** Die gezählte Kategorie wird **nur zur Laufzeit per Modifikator** vergeben. `735e-2da1-6356-2fdb` („Bully Bully") ist ein `categoryEntry` ohne jeden `categoryLink` im gesamten Fixture-Satz; sie kommt dort **genau fünfmal** vor: die Definition (`:9`), die beiden `<repeat childId=…>` (`:20`, `:125`), eine `condition childId=…` (`:25`) und der **eine** `modifier type="add" value="735e-2da1-6356-2fdb" field="category"` am `entryLink` „Ogre Bulls" (`:3165`). Wer nur `categoryLink`s auswertet, zählt hier **immer 0** und lässt die Grenze auf ihrem Basiswert stehen. | `:9` (`categoryEntry id="735e-2da1-6356-2fdb" name="Bully Bully" hidden="false"`), `:3164-3166` (der `<modifiers>`-Block des Verweises `d82e-111e-89b9-2be1`, `:3133`). |
 | **RRAC-R4** | Der `add category`-Modifikator ist **unbedingt**: er trägt weder `conditions` noch `conditionGroups` und steht **außerhalb** der beiden `modifierGroup`s des Verweises, die die übrigen Kategorie-Änderungen auf „Standard" bzw. „Ironskin Tribe" gaten. Er wirkt daher in jedem Kontingent — insbesondere im hier benutzten „Standard (OK-AB)". | `:3134-3160` (die beiden gegateten `modifierGroup`s) gegen `:3164-3166` (der ungegatete `<modifiers>`-Block). |
 | **RRAC-R5** | Ohne jede Ogre-Bulls-Einheit zählt der `repeat` **0 Treffer**; der Modifier wird **nicht** angewendet (er trägt keine weitere `condition`), die Grenze behält ihren **Basiswert 0**. | `:18-22` — der Modifier hat **keine** `<conditions>`/`<conditionGroups>`, allein der `<repeat>` steuert die Anwendungszahl (`floor(0/1)×1 = 0`). |
 | **RRAC-R6** | Die **angehobene** Grenze ist auch die Grenze, die im Verletzungsbericht erscheint: übersteigt die Stückzahl der Gnoblars `0+N`, feuert `a177-82fc-0b76-5b73` mit dem **effektiven** `bound` (0 ohne Ogre Bulls, 1 mit einem, 2 mit zweien) — nicht mit dem geschriebenen Wert. | Im ganzen Fixture-Satz adressieren **genau zwei** Stellen die Id `a177-82fc-0b76-5b73`: die Constraint (`:41`) und das increment (`:18`). Kein weiterer `set`/`decrement` verschiebt sie. |
 | **RRAC-R7** | **Zweiter Zeuge, anderer Basiswert:** Dieselbe `repeat`-Zelle sitzt ein zweites Mal an „Gnoblar Trappers" (`041b-7d95-6ff9-754a`) und hebt dort die Grenze `28cd-8b7f-3d0f-1546`, deren geschriebener Basiswert **max 1** (nicht 0) ist. Mit einem Ogre Bulls steht sie auf 2. Auch diese Id wird im ganzen Satz nur von der Constraint (`:141`) und dem increment (`:123`) adressiert. | `:121-127` (`modifier increment +1` mit identischem `<repeat …childId="735e-2da1-6356-2fdb"…/>` in `:125`), `:141` (`constraint … value="1" … type="max"`). |
-| **RRAC-R8** | Gezählt wird die **Stückzahl** (`number`) der Auswahlen. Eine Gnoblar-Auswahl mit `number="2"` ist damit „zwei Einheiten" im Sinne der Grenze; zwei Ogre-Bulls-Auswahlen mit je `number="1"` sind zwei gezählte Treffer. | [§7.5, Kasten „Zahlenbasis"](../../battlescribe-data-format.md#75-cost--cost-type): jeder Knoten trägt sein `count` unverrechnet bei, das `number` einer `.ros`-Auswahl ist die **absolute Gesamtstückzahl**. Gleiche Ableitung wie RRCC-R5 in [`roster-repeat-category-count`](../roster-repeat-category-count/README.md). |
+| **RRAC-R8** | Gezählt wird die **Stückzahl** (`number`) der Auswahlen. Eine Gnoblar-Auswahl mit `number="2"` ist damit „zwei Einheiten" im Sinne der Grenze; zwei Ogre-Bulls-Auswahlen mit je `number="1"` sind zwei gezählte Treffer. | [§7.5, Kasten „Zahlenbasis"](../../battlescribe/building-blocks/cost.md#75-cost--cost-type): jeder Knoten trägt sein `count` unverrechnet bei, das `number` einer `.ros`-Auswahl ist die **absolute Gesamtstückzahl**. Gleiche Ableitung wie RRCC-R5 in [`roster-repeat-category-count`](../roster-repeat-category-count/README.md). |
 | **RRAC-R9** | Im Kontingent „Standard (OK-AB)" ist **mindestens eine** Ogre-Bulls-Einheit Pflicht: der Verweis trägt `constraint min 0 … scope="force"` (`32ed-26da-3f27-5c04`), den ein `set 1` in der `modifierGroup` „Standard" anhebt, sobald die Force **keine** Instanz von „Ironskin Tribe" `8711-ed16-2a44-7251` ist. Genau darum feuert diese Pflicht in den Rostern 01 und 06 (Ist 0, Grenze 1) und schweigt überall sonst. | `:3162` (Constraint), `:3140` (`modifier type="set" value="1" field="32ed-26da-3f27-5c04"`) innerhalb der `modifierGroup` mit `condition type="notInstanceOf" … childId="8711-ed16-2a44-7251"` (`:3144`). Bereits gepinnt in [`not-instance-of-force-gate`](../not-instance-of-force-gate/README.md). |
-| **RRAC-R10** | Weder „Gnoblars" noch „Gnoblar Trappers" noch der Ogre-Bulls-Verweis sind im Kontingent „Standard (OK-AB)" ausgeblendet: alle drei tragen `hidden="false"` und **keinen** `field="hidden"`-Modifikator. Die Grenzen sind also validierbar (kein Verbot aus [§5.6](../../battlescribe-data-format.md#56-force-entries-detachments)). | `:16`, `:121`, `:3133` — die einzigen `modifierGroup`s dieser drei Elemente gaten auf „Ironskin Tribe" `8711-ed16-2a44-7251` und ändern ausschließlich **Kategorien** (`:107-119`, `:208-220`, `:3134-3160`). |
+| **RRAC-R10** | Weder „Gnoblars" noch „Gnoblar Trappers" noch der Ogre-Bulls-Verweis sind im Kontingent „Standard (OK-AB)" ausgeblendet: alle drei tragen `hidden="false"` und **keinen** `field="hidden"`-Modifikator. Die Grenzen sind also validierbar (kein Verbot aus [§5.6](../../battlescribe/files/game-system.md#56-force-entries-detachments)). | `:16`, `:121`, `:3133` — die einzigen `modifierGroup`s dieser drei Elemente gaten auf „Ironskin Tribe" `8711-ed16-2a44-7251` und ändern ausschließlich **Kategorien** (`:107-119`, `:208-220`, `:3134-3160`). |
 | **RRAC-R11** | Die Pflicht-Kinder der Einheiten sind in den Rostern ausgefüllt: **Gnoblars** 20 Modelle (`min 20`, `scope="parent"`), **Hand Weapon** (`min 1`) und **Sharp Stuff** (`min 1`); **Gnoblar Trappers** 8 Modelle, Hand Weapon, Sharp Stuff; **Ogre Bulls** 3 „Bulls"-Modelle (`min 3`) und **Ogre Club** (`min 1`). | Gnoblars: `:53-55` (`bf71-422e-240b-826a`, min `7d69-1827-de87-9e81`), `:89-93` (Verweis `248f-6615-7784-6ee2` → `abdb-bbd0-41b2-5dff`, min `4900-c70c-5758-7677`, max `3f7e-2494-405b-9cc8`), `:95-99` (Verweis `c417-d17b-7230-57bb` → `5545-fcf3-a765-9474`, min `3721-5eca-db0b-f875`, max `10a7-ec54-8963-c662`). Trappers: `:154-156` (`a6fc-a76c-6d8d-31a0`, min `5139-da17-6c0c-5419`), `:190-194`, `:196-200`. Ogre Bulls: `Mercenaries:3449-3451` (`411b-6f5f-06f1-be37`, min `92d9-b5d1-9411-e954`), `Mercenaries:3560-3563` (Verweis `415f-94c9-571c-19c6` → `8768-377c-88da-c3e8`, min `fff8-7da0-1bdc-5bdf`, max `431b-bb5a-8710-7c0c`). |
 
 **Bewusst nicht Gegenstand dieses Szenarios** (in allen Rostern inert bzw. nicht
@@ -100,7 +100,7 @@ assertiert):
   `includeChildForces="false"`** des `repeat` (`:20`). Alle Roster benutzen **ein**
   Kontingent, und die gezählten Ogre Bulls stehen dort als **Wurzel**-Auswahlen —
   in dieser Lage schränkt keines der beiden Flags die Zählung ein
-  ([§7.6](../../battlescribe-data-format.md#76-constraint): `false` zählt „just
+  ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint): `false` zählt „just
   `scope`'s `field`" bzw. „only from parent force selections"). Der Kontrast zu
   `true`/`true` ist in
   [`roster-repeat-category-count`](../roster-repeat-category-count/README.md)
@@ -110,7 +110,7 @@ assertiert):
   (nötig, damit der Capability-Selektor genau **einen** Slot trifft). Ob eine
   `scope="parent"`-Grenze eines Kindes dann gegen `child.number` oder gegen
   `child.number × parent.number` misst, ist die in
-  [§7.5](../../battlescribe-data-format.md#75-cost--cost-type) offen benannte
+  [§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) offen benannte
   Frage („Zahlenbasis"). Diese Kinder-Grenzen stehen deshalb **weder** in
   `firing` **noch** in `absent`; nur in den Rostern 01/02 (`number="1"`) sind sie
   eindeutig und werden dort als `absent` gefordert.
@@ -121,7 +121,7 @@ assertiert):
   [`author-message-tokens`](../author-message-tokens/README.md), Roster 02). Wie
   ein so benannter Slot die Kinder seines **Ziels** beherbergt, ist eine
   dokumentierte Lücke der Quelle
-  ([§15](../../battlescribe-data-format.md#15-lücken-der-quelle): „welche Id die
+  ([§15](../../battlescribe/reference/source-gaps.md#15-lücken-der-quelle): „welche Id die
   Identität einer Auswahl trägt", „Grenze am Verweis oder am Ziel"). Die
   Pflichtkinder stehen in den Rostern (damit die Einheit fachlich vollständig
   ist), werden aber **nicht** assertiert.
