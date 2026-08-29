@@ -84,12 +84,12 @@ Bedingungen:
 ## Was die Formatspezifikation über die Zelle sagt
 
 - **Der `scope` darf eine Vorfahren-Id sein.** Die Aufzählung in
-  [§7.6](../../battlescribe-data-format.md#76-constraint)
+  [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)
   (`parent | roster | force | category | self | unit | primary-catalogue`) ist
   keine abschließende Liste von Literalen: die Quelle zählt neben
   `parent|roster|force|primary category` ausdrücklich **Vorfahren-Ids** mit, und
   die XSD typt `scope` als nackten String (`Catalogue.xsd:426`, zitiert im
-  [§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue)). Die
+  [§7.6-Kasten](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen)). Die
   Constraint-Ausprägung dieses Mechanismus — mit einer **Kategorie**-Id — pinnt
   das Nachbarszenario
   [`category-scope-ancestor-frame`](../category-scope-ancestor-frame/README.md)
@@ -100,7 +100,7 @@ Bedingungen:
   dieser Id, und das ist die tragende Einheit selbst.
 - **Der Rahmen sagt nur, *wo* summiert wird.** Gezählt werden „`field`'s values
   of descendant selections" — hier also die Auswahlen unterhalb des Rahmens, die
-  auf die `childId` passen ([§7.6-Regelkasten](../../battlescribe-data-format.md#76-constraint)).
+  auf die `childId` passen ([§7.6-Regelkasten](../../battlescribe/building-blocks/constraint.md#76-constraint)).
   `childId="8a7a-d454-ad84-6f7e"` benennt die `selectionEntryGroup` „Mounts",
   `includeChildSelections="true"` nimmt auch verschachtelte Auswahlen mit.
 - **`equalTo` ist exakte Gleichheit, nicht „mindestens".** Die Vergleichsarten
@@ -229,7 +229,7 @@ Der Ist-Stand der **Kategorie-Anker** folgt aus **EAISM-R9** und den
 | **Der Slot der Aufwertung in Roster 06** | Dort steht **dieselbe** Definition zweimal unter **demselben** `frameDefId` (zwei Bigbosses). Eine `capabilities`-Auswahl über `defId` + `frameDefId` träfe zwei Slots; der `path` eines Slots ist aus den Katalogdaten nicht ableitbar. Roster 06 behauptet deshalb nur `firing`/`absent` und die Kategorie-Anker. |
 | **General- und Core-Pflichten des Kontingents** (`.gst`: General `min 1`/`max 1` `1077-7379-f142-f382` / `d818-c60d-b1f8-8aaa`; Core `min 2` `35c2-d478-392a-aeb1`) | Sie feuern in **allen** Rostern, weil bewusst weder ein General noch eine Core-Einheit gewählt ist — jede zusätzliche Auswahl würde den Fall verwässern. Die Erwartung ist selektiv; diese Ids stehen deshalb weder in `firing` noch in `absent`. |
 | **Der Zwilling „Black Orc Warboss"** aus demselben Regeltext | Der Katalog modelliert die Regel **nur** am Bigboss: die Suche nach `equalTo` mit Id-`scope` liefert im ganzen Korpus **genau ein** Vorkommen (Z. 1249). Ein zweiter Träger existiert schlicht nicht. |
-| **Eine Diagnose für den Id-`scope`** (etwa `UNRESOLVED_SCOPE`) | Aus den erlaubten Quellen nicht entscheidbar: die Formatspezifikation regelt fail-closed-Verhalten samt Diagnose ausdrücklich nur für `primary-catalogue` ([§7.6-Kasten](../../battlescribe-data-format.md#scope-primary-catalogue)) und für `unit` ohne umschließende Einheit ([§7.7-Kasten](../../battlescribe-data-format.md#scope-unit-ancestor)). Hier ist der Rahmen ohnehin in jedem Roster auflösbar (die Aufwertung steht immer unter ihrem Bigboss). Das Szenario fordert **weder** Anwesenheit **noch** Abwesenheit einer solchen Diagnose. |
+| **Eine Diagnose für den Id-`scope`** (etwa `UNRESOLVED_SCOPE`) | Aus den erlaubten Quellen nicht entscheidbar: die Formatspezifikation regelt fail-closed-Verhalten samt Diagnose ausdrücklich nur für `primary-catalogue` ([§7.6-Kasten](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen)) und für `unit` ohne umschließende Einheit ([§7.7-Kasten](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette)). Hier ist der Rahmen ohnehin in jedem Roster auflösbar (die Aufwertung steht immer unter ihrem Bigboss). Das Szenario fordert **weder** Anwesenheit **noch** Abwesenheit einer solchen Diagnose. |
 
 ---
 

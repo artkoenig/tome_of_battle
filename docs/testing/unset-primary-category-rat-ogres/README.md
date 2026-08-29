@@ -58,7 +58,7 @@ Skryre (SK-AB) `38dc-9bed-455f-f309` genau das tut:
 Dass der Autor an der einen Stelle `remove` schreibt und an der anderen bewusst
 nicht, ist der Beleg im Datensatz selbst: `unset-primary` ist **nicht** das
 Entfernen einer Mitgliedschaft. Dieselbe Aussage macht die Formatreferenz
-([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)):
+([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)):
 „`unset-primary` löscht dagegen nur das Flag; die Mitgliedschaft bleibt, denn
 zählrelevant ist allein sie."
 
@@ -75,14 +75,14 @@ zählrelevant ist allein sie."
 | **UPC-R5** | Die **Core-Pflicht** ist ein `min`-Constraint an der Kategorie-Definition, ebenfalls force-skopiert und in jedem Kontingent gleich. | `.gst` → `categoryEntry 64bf-efb4-9978-26df` („Core") → constraint **`35c2-d478-392a-aeb1`** `type=min value=2 field=selections scope=force shared=true includeChildSelections=true`. Die Core-`categoryLink`s der Skaven-`forceEntries` (`a4bc-8548-b212-ed89`, `8434-fd93-2271-5b80`, `002f-e1be-7700-b89f`) tragen keine eigenen Constraints. |
 | **UPC-R6** | Die **Rare-Obergrenze** dient als Gegenprobe für die zweite Klammer. | `.gst` → `categoryEntry e94b-6a54-8779-cd60` („Rare") → constraint **`0a44-2d3f-adfe-f3a1`** `type=max value=1 field=selections scope=force shared=true includeChildSelections=true`. |
 | **UPC-R7** | Bei einem Punktelimit von **1000** gelten die **Basiswerte** aller drei Grenzen: Special `max 3`, Core `min 2`, Rare `max 1`. | Alle Modifier auf `16f0…`, `35c2…` und `0a44…` sind an `limit::ecfa-8486-4f6c-c249`-Fenster (`<200`, `200–499`, `2000–2999`, `3000–3999`, `4000–4999`, `5000–5999`) oder an eine „Border Patrols rules"-Selektion (`4e15-0353-165f-5528`, `scope="roster"`) gebunden. 1000 liegt in keinem Fenster, und keine Roster dieses Szenarios enthält die Border-Patrols-Selektion → kein Modifier greift. |
-| **UPC-R8** | Rat Ogres sind in Hell Pit, Standard (SK-AB) und Clan Pestilens (SK-AB) **sichtbar**. | `232c…` → `modifier type="set" field="hidden" value="true"` mit `conditionGroup type="or"` über **nur** `bec8-e291-0c4a-903f` (Clan Eshin (SoC)) und `2ac5-0165-8a9e-8942` (Bubonic Court of Nurglitch (LUS)). Wichtig, weil Min-Grenzen einer effektiv versteckten Entität nicht validiert werden ([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). |
+| **UPC-R8** | Rat Ogres sind in Hell Pit, Standard (SK-AB) und Clan Pestilens (SK-AB) **sichtbar**. | `232c…` → `modifier type="set" field="hidden" value="true"` mit `conditionGroup type="or"` über **nur** `bec8-e291-0c4a-903f` (Clan Eshin (SoC)) und `2ac5-0165-8a9e-8942` (Bubonic Court of Nurglitch (LUS)). Wichtig, weil Min-Grenzen einer effektiv versteckten Entität nicht validiert werden ([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)). |
 | **UPC-R9** | In Clan Pestilens (SK-AB) wird Special per **`remove`** wirklich entfernt und Rare hinzugefügt — der Special-Zähler fällt dort auf 0. | `232c…` → `modifierGroups/modifierGroup[2]`, `conditionGroup type="or"` über `1191-bf6e-974a-b6e7`, `adc6-cd5d-19cc-1bf3`, `38dc-9bed-455f-f309`; Modifier `add`/`set-primary` auf `e94b-6a54-8779-cd60` **und** `remove` auf `43cc-fc3f-35a7-8d03`. |
 
 ### Warum die Ist-Werte so und nicht anders lauten
 
 Beide Grenzen zählen `field="selections"` mit `scope="force"` gegen ein
 **Kategorie**-Ziel; nach der Ziel-Typ-Regel
-([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat),
+([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat),
 ADR 0029) aggregieren sie armeeweit. Alle Roster dieses Szenarios haben genau
 **ein** Kontingent, damit fallen „pro Detachment" und „armeeweit" zusammen und
 der Ist-Wert ist schlicht die Zahl der Selektionen der jeweiligen Kategorie.

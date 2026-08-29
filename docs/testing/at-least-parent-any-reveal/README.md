@@ -19,11 +19,11 @@ verlinkte Auswahl als `entryId=<targetId>` + `entryLinkId=<linkId>` +
 `condition type="atLeast" value="1" field="selections" scope="parent"
 childId="any"` zählt im **Eltern-Rahmen** ihres Trägers die Selektionen von
 **irgendetwas** (`any` ist der unbeschränkte Zähler,
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat))
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat))
 und hält, sobald diese Zahl **1 erreicht**. Gezählt werden die Auswahlen
 **unterhalb** der Eltern-Auswahl des Trägers — der Rahmen ist also, was der
 Elternteil hält, nicht der Träger für sich
-([§7.6](../../battlescribe-data-format.md#76-constraint)).
+([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)).
 
 ## Die Struktur im Katalog (der eigentliche Kern)
 
@@ -67,12 +67,12 @@ selectionEntry "Vampire Thrall" (e37b-c827-99ac-b706, type=unit)   ← der Elter
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
 | **ALP-R1** | Die Bedingung `type="atLeast" value="1" field="selections" scope="parent" childId="any" shared="true"` hält genau dann, wenn der **Eltern-Rahmen** des Trägers **mindestens 1** Selektion hält — gleich **welche**. `atLeast` ist „≥", nicht „genau": jede Zahl ≥ 1 verhält sich identisch, 0 ist der einzige Nicht-Treffer. | VC-`.cat`, `selectionEntry 66bc-8fc1-81a2-9cd4`: `<condition type="atLeast" value="1" field="selections" scope="parent" childId="any" shared="true"/>`. |
-| **ALP-R2** | **Gezählt werden nur die direkten Kinder des Rahmens.** Die Bedingung schreibt `includeChildSelections` **nicht** hin; der Vorgabewert der `QueryBase` ist `false` — „just `scope`'s `field`". | `src/platform/battlescribe/schema/Catalogue.xsd:430` `<xs:attribute name="includeChildSelections" type="xs:boolean" default="false"/>`; Deutung in [§7.6](../../battlescribe-data-format.md#76-constraint). (Praktisch latent, siehe „Bewusst nicht gepinnte Facetten".) |
-| **ALP-R3** | **Basiszustand des Trägers:** „Wolf Lord" ist per geschriebenem Katalogwert **verborgen** und trägt **genau einen** Modifier — `set value="false" field="hidden"` — gegatet durch **die eine** Bedingung aus ALP-R1. Kein `<repeats>`, kein `<modifierGroups>`, kein zweiter Modifier. Sichtbarkeit des Slots ⇔ Bedingung hält. | VC-`.cat`, `<selectionEntry type="upgrade" import="true" name="Wolf Lord" hidden="true" id="66bc-8fc1-81a2-9cd4">` mit genau einem `<modifiers>`-Kind; der Verweis `b8be-a71f-569c-5cdc` trägt `hidden="false"` und **keine** Modifier. Komposition Verweis ⊕ Ziel per **ODER** ([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). |
+| **ALP-R2** | **Gezählt werden nur die direkten Kinder des Rahmens.** Die Bedingung schreibt `includeChildSelections` **nicht** hin; der Vorgabewert der `QueryBase` ist `false` — „just `scope`'s `field`". | `src/platform/battlescribe/schema/Catalogue.xsd:430` `<xs:attribute name="includeChildSelections" type="xs:boolean" default="false"/>`; Deutung in [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint). (Praktisch latent, siehe „Bewusst nicht gepinnte Facetten".) |
+| **ALP-R3** | **Basiszustand des Trägers:** „Wolf Lord" ist per geschriebenem Katalogwert **verborgen** und trägt **genau einen** Modifier — `set value="false" field="hidden"` — gegatet durch **die eine** Bedingung aus ALP-R1. Kein `<repeats>`, kein `<modifierGroups>`, kein zweiter Modifier. Sichtbarkeit des Slots ⇔ Bedingung hält. | VC-`.cat`, `<selectionEntry type="upgrade" import="true" name="Wolf Lord" hidden="true" id="66bc-8fc1-81a2-9cd4">` mit genau einem `<modifiers>`-Kind; der Verweis `b8be-a71f-569c-5cdc` trägt `hidden="false"` und **keine** Modifier. Komposition Verweis ⊕ Ziel per **ODER** ([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)). |
 | **ALP-R4** | **Der Eltern-Rahmen ist die umschließende Auswahl (der Vampir), nicht die Gruppe.** „Wolf Lord" ist ausschließlich über vier geschachtelte Gruppen erreichbar; Gruppen sind in der `.ros` keine `selection`, ihre Mitglieder sind direkte Kinder der Einheiten-Auswahl. Folge: schon **eine beliebige andere** Auswahl am Thrall — etwa die Pflicht-Handweapon — lässt die Bedingung halten. | Verweis-Kette `2e0c-7fa1-642c-54b7` → `53e8-0ce2-eaf6-0163`; `85fb-0691-1ee6-37f8` → `0719-24b8-19d4-c832`; `614f-c7bb-2050-c603` → `84fd-049b-21b4-9075`; `b8be-a71f-569c-5cdc` → `66bc-…`. Rahmen-Lesart wie in [`less-than-parent-parry-save`](../less-than-parent-parry-save/README.md) (LTP-R6) und [`less-than-force-min-drop`](../less-than-force-min-drop/README.md) (Rahmen = Neferata, obwohl der Träger in der Gruppe „Bloodline Powers" hängt). |
 | **ALP-R5** | **Der Träger zählt in seinem eigenen Rahmen mit.** Ist „Wolf Lord" selbst gewählt, ist er ein direktes Kind desselben Rahmens und liefert die geforderte 1 — die Aufdeckung ist damit auch **selbsttragend**. Zusammen mit ALP-R4 heißt das: der Slot ist genau dann verborgen, wenn die Vampir-Auswahl **komplett leer** ist. | Roster-Struktur (Wolf Lord als Kind der Thrall-Auswahl, `entryGroupId="84fd-…"`) + ALP-R1. Rosterbau 04/05. |
 | **ALP-R6** | **Eigene Obergrenze:** Pro Eltern-Rahmen ist höchstens **ein** „Wolf Lord" zulässig. `bound` ist der geschriebene Wert **1**; sie zählt `field="selections"` im `scope="parent"` ohne verschachtelte Auswahlen. | VC-`.cat`, `<constraint type="max" value="1" field="selections" scope="parent" shared="true" id="06c5-d960-2b4d-399a" includeChildSelections="false"/>`. |
-| **ALP-R7** | **Max-Grenzen gelten unabhängig von der Sichtbarkeit**, Min-Grenzen einer effektiv versteckten Entität dagegen nicht. „Wolf Lord" trägt **keine** Min-Grenze — die Unterscheidung kann hier also nichts verwischen; `06c5-…` ist in jedem Roster prüfbar. | [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit) / [§5.6](../../battlescribe-data-format.md#56-force-entries-detachments) (Issue 0088); `66bc-…` hat genau einen `constraint`. |
+| **ALP-R7** | **Max-Grenzen gelten unabhängig von der Sichtbarkeit**, Min-Grenzen einer effektiv versteckten Entität dagegen nicht. „Wolf Lord" trägt **keine** Min-Grenze — die Unterscheidung kann hier also nichts verwischen; `06c5-…` ist in jedem Roster prüfbar. | [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit) / [§5.6](../../battlescribe/files/game-system.md#56-force-entries-detachments) (Issue 0088); `66bc-…` hat genau einen `constraint`. |
 | **ALP-R8** | **Sichtbarkeit ist Verfügbarkeit, keine zählende Schranke** — sie erscheint **nicht** im Verletzungsbericht. Die Aussage läuft über `expect.capabilities[].isHidden`; als feuernde Grenze wird sie ausdrücklich **nicht** erwartet. | Dieselbe Feststellung wie in [`vampire-bloodlines`](../vampire-bloodlines/README.md) (VBL-R4/R5) und [`greater-than-parent-upgrade-gate`](../greater-than-parent-upgrade-gate/README.md). |
 | **ALP-R9** | **Das zweite Vorkommen der Zelle ist nicht erreichbar.** „From Death Awakened" (`c791-87b9-b00a-ddb4`, `hidden="true"`, max 1 parent `97fc-c78e-6d95-d6d0`) trägt die **wortgleiche** Bedingung, wird aber im gesamten Fixture-Korpus von **keinem** `entryLink` als `targetId` benannt und ist auch kein Inline-Kind einer Gruppe. Es gibt kein Roster, das den Eintrag legal in einen Eltern-Rahmen bringt — die Zelle wird deshalb allein über „Wolf Lord" gepinnt. | Volltextsuche über `whfb6-definitive/*` nach `c791-87b9-b00a-ddb4`: **genau ein** Treffer, die Definition selbst. Zum Vergleich `66bc-8fc1-81a2-9cd4`: zwei Treffer (Definition + Verweis `b8be-a71f-569c-5cdc`). |
 
@@ -82,7 +82,7 @@ selectionEntry "Vampire Thrall" (e37b-c827-99ac-b706, type=unit)   ← der Elter
 Gruppen-Verweis „Vampiric Powers" `614f-c7bb-2050-c603` trägt Basis
 `hidden="true"` und wird nur durch `atLeast 1 / childId="f557-…" /
 scope="force"` aufgedeckt — und eine versteckte Gruppe versteckt, was sie hält
-([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). Weil die
+([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)). Weil die
 Blutlinie in **allen** Rostern identisch vorhanden ist, ist die Gruppe überall
 sichtbar und die **einzige** noch variable Ursache für die Sichtbarkeit des
 Slots ist das eigene `hidden`-Flag des Trägers. Die Blutlinie hängt am
@@ -188,7 +188,7 @@ Obergrenze.
 - **Ein versteckter *Elternteil* und dessen Projektion auf den Kind-Slot.** Die
   Formatreferenz klärt für `selectionEntryGroup`s ausdrücklich, dass eine
   versteckte Gruppe ihre Mitglieder mitversteckt
-  ([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)) — offen
+  ([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)) — offen
   bleibt, was ein versteckter **Eintrag** für die Projektion seiner Kind-Slots
   bedeutet. Die Roster umgehen die Frage: der einzige versteckte Vorfahre
   (`614f-…`) ist in **allen** fünf Rostern aufgedeckt, und der Thrall selbst ist

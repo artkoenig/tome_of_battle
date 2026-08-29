@@ -21,7 +21,7 @@ Gruppen die **innerste** Gruppen-Id, wie in
 Ein `modifier type="decrement"`, dessen `field` die **`id` eines Constraints**
 nennt, zieht seinen `value` vom effektiven Wert dieser Grenze ab — die
 absenkende Gegenrichtung zum vertrauten `increment`
-([Formatdoku §7.6/§7.7](../../battlescribe-data-format.md#76-constraint):
+([Formatdoku §7.6/§7.7](../../battlescribe/building-blocks/constraint.md#76-constraint):
 „Modifier adressieren einen Constraint über dessen `id`, um dessen `value`
 dynamisch zu ändern"). Träger ist die Gruppe **„Weapons"** der Einheit
 **Commander [HIGH ELVES]**:
@@ -107,7 +107,7 @@ Waffenträger, nicht beides.
 | **DGM-R1** | Die Gruppe „Weapons" des Commander [HIGH ELVES] trägt als **geschriebene** Grenze **max 1** Auswahl unter ihren Mitgliedern. | `Vampire Counts (6th definitive edition).cat` Z. 8856: `selectionEntry` `d8e205ee-ee8d-4c18-afc8-cce2dde3f4ff` → `selectionEntryGroup` `86431046-9343-42d5-b774-db24c99c4bb3` → constraint **`93f2a491-7de3-4020-ad0d-5d08ac3399f8`** (`type=max value=1 field=selections scope=parent shared=true includeChildSelections=false includeChildForces=false`). |
 | **DGM-R2** | Genau **ein** Modifier adressiert diese Grenze, und zwar **absenkend**: `type="decrement" value="1" field="93f2a491-…"`. Er trägt **keinen** `<repeat>` — greift also, wenn seine Bedingung hält, genau **einmal**: effektives Hoechstmaß `1 − 1 = 0`. Kein weiteres Element im Datensatz nennt diese Constraint-Id (verifiziert: 2 Treffer insgesamt — die Grenze selbst und dieser Modifier). | Ebd. Z. 8849. |
 | **DGM-R3** | Die Bedingung ist eine **Gleichheits**-Prüfung, kein `atLeast`: `type="equalTo" value="1" field="selections" scope="parent" childId="e9ad-f1ce-aebf-6d23" shared="true" includeChildSelections="false" includeChildForces="false"`. Sie hält **nur** bei exakt einer Battle-Standard-Bearer-Auswahl im Eltern-Rahmen; bei **0** (und rechnerisch auch bei ≥ 2) hält sie **nicht**. | Ebd. Z. 8851; Ziel `e9ad-f1ce-aebf-6d23` = geteilter `.gst`-Eintrag „Battle Standard Bearer" (`.gst` Z. 799). |
-| **DGM-R4** | Der **Rahmen** der Bedingung ist der einzelne Träger (der Commander), nicht das Kontingent und nicht das Roster: `scope="parent"`, und `shared="true"` weitet ihn nicht — es unterscheidet nur, ob über alle **Verweis-Instanzen** des Ziels hinweg gezählt wird. | [Formatdoku §7.6/§7.7](../../battlescribe-data-format.md#76-constraint) sowie das Nachbarszenario [`parent-max-enchanted-items-per-bearer`](../parent-max-enchanted-items-per-bearer/README.md) (Roster 03/04: `scope="parent" shared="true"` zählt je Träger, nicht roster-weit). |
+| **DGM-R4** | Der **Rahmen** der Bedingung ist der einzelne Träger (der Commander), nicht das Kontingent und nicht das Roster: `scope="parent"`, und `shared="true"` weitet ihn nicht — es unterscheidet nur, ob über alle **Verweis-Instanzen** des Ziels hinweg gezählt wird. | [Formatdoku §7.6/§7.7](../../battlescribe/building-blocks/constraint.md#76-constraint) sowie das Nachbarszenario [`parent-max-enchanted-items-per-bearer`](../parent-max-enchanted-items-per-bearer/README.md) (Roster 03/04: `scope="parent" shared="true"` zählt je Träger, nicht roster-weit). |
 | **DGM-R5** | **Hält die Bedingung nicht, bleibt der geschriebene Basiswert:** effektives Hoechstmaß **1**. Ein `decrement` ist keine unbedingte Absenkung. | DGM-R1 + DGM-R2 (Basiswert Z. 8856, Modifier bedingt Z. 8849–8853). |
 | **DGM-R6** | **Erreichbarkeit:** Der Commander ist ausschließlich als Mitglied der Gruppe „High Elves" `6bb3-dd06-5788-b4f7` unterhalb des Verbunds „Swain" `b920-b398-dc26-7f4d` angeboten (kein `entryLink` im Datensatz zeigt auf `d8e205ee-…`). „Swain" trägt `hidden="true"` und wird per `modifier set hidden="false"` eingeblendet, sobald das Kontingent eine Instanz der Force **„Clan Lahmia (VC-AB)"** `2102-34f1-c876-98c5` ist. Beide Roster nutzen darum genau dieses Kontingent; die Kette darunter ist durchgängig `hidden="false"`. | Ebd. Z. 5210 (Swain), Z. 10057–10062 (`set hidden=false`, `condition instanceOf … childId="2102-34f1-c876-98c5" scope="force"`), Z. 5216 (Gruppe `09bf-…`), Z. 8776 (Gruppe `6bb3-…`), Z. 8778 (Commander); `forceEntry` „Clan Lahmia (VC-AB)" Z. 29403. |
 | **DGM-R7** | **Die Gruppe hat keine Mitglieder** — der Zählwert von `93f2a491-…` ist in jedem zulässigen Roster 0, die Grenze feuert nie. Siehe Lücken-Kasten oben. | Ebd. Z. 8847–8858 (Gruppenrumpf: nur `<modifiers>` + `<constraints>`); `targetId="86431046-…"` kommt im gesamten Fixture-Satz nicht vor. |
@@ -125,7 +125,7 @@ assertiert):
   Eltern-**Einheit** auf den Slot einer verschachtelten Gruppe fortpflanzt, ist
   eine andere Zelle; die Erwartung macht dazu keine Aussage. Auf die
   **Max**-Grenze wirkt Sichtbarkeit ohnehin nicht
-  ([Formatdoku §8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)).
+  ([Formatdoku §8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)).
 - **Die Punkte-/Kostengrenzen:** die pts-Eigengrenze von „Swain"
   (`33ca-8daa-88e1-47f6`, Basis `max -1` = unbegrenzt, per Border-Patrols-
   Modifier auf 125 setzbar) und die 50-pts-Grenze `7eaade17-…` der Gruppe

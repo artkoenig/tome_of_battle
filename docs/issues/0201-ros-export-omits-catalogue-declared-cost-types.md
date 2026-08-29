@@ -68,7 +68,7 @@ not decide it.
 
 - The duplicated cost-type rule and the `budgetOf` value — issue 0195. This issue fixes one export
   site; it does not unify the vocabulary.
-- `docs/battlescribe-data-format.md:170`, which claims cost types are `.gst`/library only. It is
+- `docs/battlescribe/overview.md` (§4, Objektmodell-Baum), which claims cost types are `.gst`/library only. It is
   wrong for the same reason and is corrected in 0195 (AC14).
 - The `<costLimits>` sentinel question (`-1` = unlimited) — issue 0199.
 - Anything about how `costTotals` is computed. The engine is right; the export is not.

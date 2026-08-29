@@ -51,7 +51,7 @@ in einem Atemzug mit den Literalen:
 
 Die XSD trägt `scope` an der gemeinsamen `QueryBase` und typt es als nackten
 String; sie unterscheidet `scope` **nicht** nach Query-Art
-([§7.7-Kasten „Ziel-Typ-Regel"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat):
+([§7.7-Kasten „Ziel-Typ-Regel"](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat):
 *„das Datenformat (XSD `QueryBase`) unterscheidet `scope` nicht nach Query-Art"*).
 Was für den `constraint` gilt, gilt also wortgleich für die `condition` — und
 genau diese Übertragung nagelt dieses Szenario fest. Die
@@ -66,7 +66,7 @@ Drei Folgerungen:
    sie nicht **Vorfahre** der tragenden Auswahl ist.
 2. Ein **Nachfahre** löst den Rahmen erst recht nicht auf. Die Vorfahrenrelation
    ist eine Kette **nach oben**
-   ([§7.7-Kasten](../../battlescribe-data-format.md#scope-unit-ancestor):
+   ([§7.7-Kasten](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette):
    *„die gesamte strikte Kette, Kontingente eingeschlossen"*); „unter mir hängt
    etwas mit dieser Kategorie" ist keine Vorfahren-Aussage.
 3. Löst der Rahmen nicht auf, **hält die Bedingung nicht** — der gegattete
@@ -74,8 +74,8 @@ Drei Folgerungen:
    deshalb bei `value="0"` doch": ohne Rahmen gibt es nichts zu prüfen. Das ist
    die fail-closed-Richtung, die die Formatspezifikation an den beiden Stellen
    vorgibt, wo sie einen unauflösbaren Rahmen überhaupt regelt
-   ([`primary-catalogue`](../../battlescribe-data-format.md#scope-primary-catalogue),
-   [`unit` ohne umschliessende Einheit](../../battlescribe-data-format.md#scope-unit-ancestor)).
+   ([`primary-catalogue`](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen),
+   [`unit` ohne umschliessende Einheit](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette)).
 
 ---
 
@@ -206,11 +206,11 @@ Einheit.
 ### Warum die Lesart unter **beiden** denkbaren `instanceOf`-Deutungen dieselbe ist
 
 `childId="model"` ist ein **Typ-Keyword**, keine Id
-([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat):
+([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat):
 *„`childId`: … eine Ziel-ID, ein Typ-Keyword (`model`, `unit`, `upgrade`) oder
 `any`"*). Für `scope="<Id>" + instanceOf` beschreibt die Formatspezifikation die
 Bauform als **selbst-gegatet**
-([§7.7-Kasten „zwei Kodierungen"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)):
+([§7.7-Kasten „zwei Kodierungen"](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)):
 die Id steht im `scope`, `childId` ist leer oder ein Platzhalter. Damit bleiben
 zwei Lesarten offen:
 
@@ -232,14 +232,14 @@ Zahlvergleich „0 Auswahlen ⇒ trifft zu" ist damit ausgeschlossen.
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **CISI-R1** | Der `scope` einer `condition` darf eine **Kategorie-Id** nennen; der Rahmen ist dann der **nächste Vorfahre der tragenden Auswahl — sie eingeschlossen —, der diese Kategorie trägt**. Dieselbe Regel wie beim `constraint`. | `Vampire Counts.cat:1312/1317/1324` — `condition … scope="4cae-a20e-8374-b6cb"` / `"fc4b-a86d-5897-9e4c"` / `"bf30-4ff0-a4d8-3909"`, alle drei `categoryEntry` desselben Katalogs (`:11-13`). Wiki-Zitat oben (*„or any type of ancestor identifier"*); XSD-`QueryBase` unterscheidet `scope` nicht nach Query-Art ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)). Präzedenz für die Constraint-Ausprägung: CSAF-R1 in [`category-scope-ancestor-frame`](../category-scope-ancestor-frame/README.md). |
-| **CISI-R2** | Eine Kategorie, die nur ein **Nachfahre** trägt, löst den Rahmen **nicht** auf. Die Blutlinie hängt *unter* dem Vampire Lord, nicht *über* ihm. | Gruppe „Bloodline" `01b8-338b-6b92-e37f` (`:1372`) ist Kind des `selectionEntry` `b77b-88d5-5e80-e178` (`:1301`); die Clan-`categoryLink`s hängen an ihren Mitgliedern (`:1520`, `:1604`, `:1765`, `:1785`). Vorfahrenrelation = Kette nach oben ([§7.7-Kasten](../../battlescribe-data-format.md#scope-unit-ancestor)). Präzedenz für „Geschwister/Nicht-Vorfahre zählt nicht": CSAF-R3. |
+| **CISI-R1** | Der `scope` einer `condition` darf eine **Kategorie-Id** nennen; der Rahmen ist dann der **nächste Vorfahre der tragenden Auswahl — sie eingeschlossen —, der diese Kategorie trägt**. Dieselbe Regel wie beim `constraint`. | `Vampire Counts.cat:1312/1317/1324` — `condition … scope="4cae-a20e-8374-b6cb"` / `"fc4b-a86d-5897-9e4c"` / `"bf30-4ff0-a4d8-3909"`, alle drei `categoryEntry` desselben Katalogs (`:11-13`). Wiki-Zitat oben (*„or any type of ancestor identifier"*); XSD-`QueryBase` unterscheidet `scope` nicht nach Query-Art ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)). Präzedenz für die Constraint-Ausprägung: CSAF-R1 in [`category-scope-ancestor-frame`](../category-scope-ancestor-frame/README.md). |
+| **CISI-R2** | Eine Kategorie, die nur ein **Nachfahre** trägt, löst den Rahmen **nicht** auf. Die Blutlinie hängt *unter* dem Vampire Lord, nicht *über* ihm. | Gruppe „Bloodline" `01b8-338b-6b92-e37f` (`:1372`) ist Kind des `selectionEntry` `b77b-88d5-5e80-e178` (`:1301`); die Clan-`categoryLink`s hängen an ihren Mitgliedern (`:1520`, `:1604`, `:1765`, `:1785`). Vorfahrenrelation = Kette nach oben ([§7.7-Kasten](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette)). Präzedenz für „Geschwister/Nicht-Vorfahre zählt nicht": CSAF-R3. |
 | **CISI-R3** | **Kein** Vorfahre der Bedingung trägt jemals eine der drei Clan-Kategorien — der Rahmen löst in keinem baubaren Roster auf. | Vampire Lord `categoryLink`s nur `d024-d25b-a9b4-73b6` (×2) und `7a1c-d611-c2dc-def1` (`:1335-1339`); **kein** `modifier field="category"` im ganzen Katalog (13 Treffer im Satz, alle in `Ogre Kingdoms.cat`/`Orcs and Goblins.cat`); Kontingent `7d9d-6c8d-4ea0-b7ad` (`.gst:61-252`) und `.gst` insgesamt ohne jede Erwähnung von `4cae…`/`fc4b…`/`bf30…`. |
-| **CISI-R4** | Ein **nicht auflösbarer** Rahmen lässt die Bedingung **nicht halten** — der gegattete Modifikator wirkt nicht. Die geschriebenen Merkmalswerte stehen. | Fail-closed-Richtung der Formatspezifikation an ihren geregelten Stellen: [`primary-catalogue`](../../battlescribe-data-format.md#scope-primary-catalogue) (*„wertet fail-closed, statt still ein Armeebuch anzunehmen"*) und [`unit` ohne umschliessende Einheit](../../battlescribe-data-format.md#scope-unit-ancestor). Analog CSAF-R2: *„der Rahmen löst nicht auf, die Grenze feuert nie"*. |
+| **CISI-R4** | Ein **nicht auflösbarer** Rahmen lässt die Bedingung **nicht halten** — der gegattete Modifikator wirkt nicht. Die geschriebenen Merkmalswerte stehen. | Fail-closed-Richtung der Formatspezifikation an ihren geregelten Stellen: [`primary-catalogue`](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen) (*„wertet fail-closed, statt still ein Armeebuch anzunehmen"*) und [`unit` ohne umschliessende Einheit](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette). Analog CSAF-R2: *„der Rahmen löst nicht auf, die Grenze feuert nie"*. |
 | **CISI-R5** | Ausgangswerte sind die des geteilten Profils; erwartet werden also **WS 8** und **A 5** in **jedem** Roster. | `profile ff43-329c-048a-f374` „Vampire Lord" (`:4971-4983`, `typeId="a54a-7f00-29bf-12b1"`): `characteristic` WS `f95b-da01-0578-3bdc` = **8**, A `6b9f-c8fe-8998-27e3` = **5**. Merkmalstypen aus der `.gst` (`:15`, `:21`). |
-| **CISI-R6** | `instanceOf` ist eine **Identitätsprüfung**, kein Zahlvergleich — `value="0.0"` ist wirkungslos. | [§7.7-Tabelle](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat), Zeile `percentValue`: *„Bei `instanceOf`/`notInstanceOf` ohne Wirkung"*. Präzedenz: NMG-R7 in [`nested-modifier-group`](../nested-modifier-group/README.md). |
+| **CISI-R6** | `instanceOf` ist eine **Identitätsprüfung**, kein Zahlvergleich — `value="0.0"` ist wirkungslos. | [§7.7-Tabelle](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat), Zeile `percentValue`: *„Bei `instanceOf`/`notInstanceOf` ohne Wirkung"*. Präzedenz: NMG-R7 in [`nested-modifier-group`](../nested-modifier-group/README.md). |
 | **CISI-R7** | Die **äussere** `modifierGroup` (`:1308`) ist bedingungslos und darf ihre Kinder weder unterdrücken noch pauschal anwenden; die innere (`:1322`) trägt allein die Strigoi-Bedingung. | `:1307-1332` vollständig gelesen: Kinder der äusseren Klammer sind `<modifiers>` (`:1309-1320`) und `<modifierGroups>` (`:1321-1330`), sonst nichts — kein `<conditions>`, `<conditionGroups>`, `<repeats>`, auch nicht **hinter** den Kindern (Fallstrick §7.7). Präzedenz: NMG-R1/R3. |
-| **CISI-R8** | Die Pflicht-Gruppe „Bloodline" des Vampire Lord zählt ihre **Mitglieder**: `min 1` / `max 1`, `scope="parent"`. | `selectionEntryGroup` `01b8-338b-6b92-e37f` (`:1372`) mit `constraint … scope="parent" value="1.0" includeChildSelections="false" id="6c3a-e4ae-3667-440f" type="max"` (`:1374`) und `… id="e251-f353-704b-836a" type="min"` (`:1375`). [§7.6-Regelkasten](../../battlescribe-data-format.md#76-constraint): *„Eine Grenze an einer `selectionEntryGroup` zählt … **ihre Mitglieder**"*. Präzedenz: ERG-R1 in [`vampire-bloodlines-ergofang`](../vampire-bloodlines-ergofang/README.md) (dieselbe Gruppenform am Vampire **Count**), VBL-R2, NMG-R9. |
+| **CISI-R8** | Die Pflicht-Gruppe „Bloodline" des Vampire Lord zählt ihre **Mitglieder**: `min 1` / `max 1`, `scope="parent"`. | `selectionEntryGroup` `01b8-338b-6b92-e37f` (`:1372`) mit `constraint … scope="parent" value="1.0" includeChildSelections="false" id="6c3a-e4ae-3667-440f" type="max"` (`:1374`) und `… id="e251-f353-704b-836a" type="min"` (`:1375`). [§7.6-Regelkasten](../../battlescribe/building-blocks/constraint.md#76-constraint): *„Eine Grenze an einer `selectionEntryGroup` zählt … **ihre Mitglieder**"*. Präzedenz: ERG-R1 in [`vampire-bloodlines-ergofang`](../vampire-bloodlines-ergofang/README.md) (dieselbe Gruppenform am Vampire **Count**), VBL-R2, NMG-R9. |
 
 > **Korrektur an einem Nachbarszenario.**
 > [`vampire-bloodlines-ergofang`](../vampire-bloodlines-ergofang/README.md)
