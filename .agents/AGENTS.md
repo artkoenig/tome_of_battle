@@ -23,6 +23,19 @@ This file is a symlink target: the real file is `.agents/AGENTS.md`. Edit it the
 Where two disagree, the higher one is right and the lower is out of date: follow it
 and flag the other for correction.
 
+## Language
+
+Code is English. Function names, class names, variables, files, test names — every
+identifier is written in English. German belongs in the prose: comments, `docs/`, UI
+copy. It never belongs in a name.
+
+The exception is the domain's own vocabulary, which is not translated. A domain term
+keeps the name [`docs/glossary.md`](docs/glossary.md) decided for it, whether that is
+BattleScribe's word (`force`, `category`) or this app's (`raise`, `offer`, `slot`).
+Where the glossary lists a German word as a prose synonym, that word stays in the prose:
+it does not become an identifier, and the English name it maps to is not renamed into
+it.
+
 ## Rules
 
 `.claude/rules/*.md`, one topic per file — start with `forge.md` (how work is
