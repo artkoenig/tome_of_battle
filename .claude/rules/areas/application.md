@@ -64,10 +64,17 @@ Lauf: `forge-test --run src/tests/contexts`.
 - Eine **automatische Folge einer Editor-Änderung**, die mit ihr in **einem** Undo-Schritt landen
   muss, ist ein Anwendungsfall `(nachher, { system, previousRoster }) → Roster`, den
   `rosterCommandBindings.js` **innerhalb** desselben `setRoster(prev => …)` aufruft —
-  `unreachableSelections.js` (Issue 0203) ist das Muster. Ein nachgeschobenes `replaceRoster`
+  `unreachableSelections.js` (`settleSelectionReachability`, Issue 0203) ist das Muster: es
+  entfernt, was die Änderung versteckt **und** auf Max 0 gesetzt hat, und legt spiegelbildlich an,
+  was sie wieder sichtbar und verpflichtend gemacht hat (über `changeOptionCount`, also mit den
+  `raiseMembers` des Berichts). Ein nachgeschobenes `replaceRoster`
   wäre kein Undo-Schritt. Den Bericht des neuen Rosters holt er selbst über `evaluateAppRoster`
   (gecacht je System×Roster; unverändertes Roster-Objekt zurückgeben, sonst rechnet der Editor
-  doppelt). Der Vergleich mit `previousRoster` hält geladene Altbestände heraus.
+  doppelt). Der Vergleich mit `previousRoster` hält geladene Altbestände heraus. Eine Option
+  wird über den **Rahmen** ihrer Selektion verglichen (`childSlotsOf` durch Gruppen-Anker, nie in
+  einen `occupied`-Slot hinein) — Slot-Pfade sind Indizes und verschieben sich zwischen zwei
+  Rostern, die Selektions-Id bleibt. Die Ankerarten der Engine stehen hier als Zeichenketten,
+  weil `armylist` `ruleengine/engine` nicht importieren darf.
 - Ein Test, der den **echten** Bericht braucht, nimmt einen synthetischen XML-Ausschnitt aus
   `src/tests/test-utils/` (`woodElfNobleCatalogue.js`) — `processImportedData` plus `rawXmls`,
   ohne die `evaluateAppRoster` das leere Ergebnis liefert.

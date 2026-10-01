@@ -25,8 +25,9 @@ offers no row to remove it.
   change and the removed selection.
 - AC3: A selection that is hidden with an effective max above 0, or of effective max 0 but not
   hidden, is left in the roster; only both conditions together remove it.
-- AC4: Reversing the trigger (unticking "Battle Standard Bearer" in the example) behaves as raising
-  does today for a mandatory option: the option is offered again and its min applies.
+- AC4: Reversing the trigger (unticking 'Battle Standard Bearer' in the example) re-creates the
+  option at its min in the same undo step, as raising does; the report carries no unmet-min
+  violation for it.
 - AC5: The existing suite stays green. | verify: forge-test
 
 ## Out of scope

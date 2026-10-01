@@ -6,7 +6,7 @@ import {
 } from '../../test-utils/woodElfNobleCatalogue.js';
 
 /**
- * Issue 0203 AC2 — the removal of an option a change hid and capped at 0 belongs
+ * Issue 0203 AC2/AC4 — the removal (and the re-creation on untick) of an option a change hid and capped at 0 belongs
  * to that change: one undo restores both. Driven through the production seam
  * (`commands.*` of the state node, the real evaluation) over the synthetic Wood
  * Elf Noble slice.
@@ -54,5 +54,24 @@ describe('AC2: one undo step for the trigger and the removal', () => {
     act(() => { result.current.commands.undo(); });
 
     expect(result.current.roster.forces[0].selections).toEqual([]);
+  });
+
+  it('unticking re-creates the Long Bow; one undo of the untick re-ticks the standard and drops it again', () => {
+    const { result } = raisedNoble();
+    const tick = (delta) => act(() => {
+      const operations = result.current.commands.subSelectionOperations;
+      (delta > 0 ? operations.increaseCount : operations.decreaseCount)(nobleOf(result).id, ENTRIES.bsb);
+    });
+    tick(1);
+    tick(-1);
+
+    expect(childDefIds(result)).not.toContain(BSB_LINK_ID);
+    expect(childDefIds(result).filter(id => id === LONG_BOW_LINK_ID)).toHaveLength(1);
+    expect(result.current.report.violations.filter(v => v.anchor?.defId === LONG_BOW_LINK_ID)).toEqual([]);
+
+    act(() => { result.current.commands.undo(); });
+
+    expect(childDefIds(result)).toContain(BSB_LINK_ID);
+    expect(childDefIds(result)).not.toContain(LONG_BOW_LINK_ID);
   });
 });

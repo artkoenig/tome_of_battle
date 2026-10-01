@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { withoutUnreachableSelections } from '../../../../contexts/armylist/application/unreachableSelections.js';
+import {
+  withoutUnreachableSelections, settleSelectionReachability,
+} from '../../../../contexts/armylist/application/unreachableSelections.js';
 import { raiseUnit } from '../../../../contexts/armylist/application/raiseUnit.js';
 import { changeOptionCount } from '../../../../contexts/armylist/application/subSelectionUseCases.js';
 import { evaluateAppRoster } from '../../../../contexts/ruleengine/readmodel/index.js';
@@ -29,7 +31,7 @@ function change(roster, optionDefinition, delta) {
     unitSelectionId: nobleOf(roster).id, optionDefinition, countDelta: delta,
     system: SYSTEM, slots: slotsOf(roster),
   });
-  return withoutUnreachableSelections(changed, { system: SYSTEM, previousRoster: roster });
+  return settleSelectionReachability(changed, { system: SYSTEM, previousRoster: roster });
 }
 
 /** Ein ausgehobener Adliger mit Speer und Schild. */
@@ -94,14 +96,38 @@ describe('AC3: nur beide Bedingungen zusammen entfernen', () => {
   });
 });
 
-describe('AC4: Abwaehlen des Ausloesers', () => {
-  it('der Langbogen wird wieder angeboten und sein Min 1 greift', () => {
+describe('AC4: Abwaehlen des Ausloesers legt den Langbogen wieder an', () => {
+  it('der Langbogen entsteht wieder, genau einmal, im selben Schritt wie das Abwaehlen', () => {
     const roster = change(change(raisedNoble(), ENTRIES.bsb, 1), ENTRIES.bsb, -1);
-    const slots = slotsOf(roster);
-    const longBowSlot = slots.findDescendantSlot(slots.pathOfSelection(nobleOf(roster).id), LONG_BOW_LINK_ID);
 
     expect(childDefIds(roster)).not.toContain(BSB_LINK_ID);
-    expect(longBowSlot).toMatchObject({ isHidden: false, effectiveMin: 1, effectiveMax: 1 });
+    expect(childDefIds(roster).filter(defId => defId === LONG_BOW_LINK_ID)).toHaveLength(1);
+  });
+
+  it('der Bericht traegt keine offene Min-Verletzung fuer ihn', () => {
+    const roster = change(change(raisedNoble(), ENTRIES.bsb, 1), ENTRIES.bsb, -1);
+    const longBow = nobleOf(roster).selections.find(s => defIdOf(s) === LONG_BOW_LINK_ID);
+
+    expect(aboutDef(roster, LONG_BOW_LINK_ID)).toEqual([]);
+    expect(slotsOf(roster).slotOfSelection(longBow))
+      .toMatchObject({ isHidden: false, effectiveMin: 1, effectiveMax: 1, current: 1 });
+  });
+
+  it('ein schon vorher offenes Min (geladenes Roster) bleibt offen', () => {
+    const raised = raisedNoble();
+    const loaded = {
+      ...raised,
+      forces: [{
+        ...raised.forces[0],
+        selections: [{
+          ...nobleOf(raised),
+          selections: nobleOf(raised).selections.filter(s => defIdOf(s) !== LONG_BOW_LINK_ID),
+        }],
+      }],
+    };
+    const roster = change(loaded, ENTRIES.spear, -1);
+
+    expect(childDefIds(roster)).not.toContain(LONG_BOW_LINK_ID);
     expect(aboutDef(roster, LONG_BOW_LINK_ID).map(violation => violation.origin)).toContain('derivedLimit');
   });
 });
@@ -117,9 +143,9 @@ describe('Nur die ausloesende Aenderung zaehlt', () => {
     expect(childDefIds(roster)).toContain(LONG_BOW_LINK_ID);
   });
 
-  it('gibt dasselbe Roster-Objekt zurueck, wenn nichts unerreichbar wurde', () => {
+  it('gibt dasselbe Roster-Objekt zurueck, wenn sich an der Erreichbarkeit nichts aenderte', () => {
     const roster = raisedNoble();
-    expect(withoutUnreachableSelections(roster, { system: SYSTEM, previousRoster: roster })).toBe(roster);
+    expect(settleSelectionReachability(roster, { system: SYSTEM, previousRoster: roster })).toBe(roster);
   });
 
   it('ohne System bleibt das Roster unveraendert', () => {

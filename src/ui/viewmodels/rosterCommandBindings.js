@@ -7,9 +7,10 @@
  * result to the undoable roster writer, and it keeps the UI's own selection
  * state in step. The selection tree is rewritten in the use case, never here.
  * Every roster-changing command also hands its result through the use case
- * `withoutUnreachableSelections` (Issue 0203) **inside the same `setRoster`
- * call**, so an option the change hid and capped at 0 leaves in the same undo
- * step as the change that caused it.
+ * `settleSelectionReachability` (Issue 0203) **inside the same `setRoster`
+ * call**, so an option the change hid and capped at 0 leaves — and an option
+ * it made reachable and mandatory again comes back at its min — in the same
+ * undo step as the change that caused it.
  *
  * `useRosterState` rebuilds this bundle in every render and calls into it
  * through `currentCommandsRef`, which is what keeps the **exported** commands
@@ -25,7 +26,7 @@ import {
   removeSubSelectionInstance as removeInstanceFrom,
   changeOptionCount,
 } from '../../contexts/armylist/application/subSelectionUseCases.js';
-import { withoutUnreachableSelections } from '../../contexts/armylist/application/unreachableSelections.js';
+import { settleSelectionReachability } from '../../contexts/armylist/application/unreachableSelections.js';
 import '../../shared/rostermodel/types.js';
 
 /**
@@ -50,13 +51,13 @@ export function bindRosterCommands({
    *   Angabe das erste Kontingent des Rosters
    */
   /**
-   * The editor change `change` plus whatever it made unreachable (Issue 0203),
+   * The editor change plus whatever it made unreachable or mandatory again (Issue 0203),
    * as **one** roster for **one** undo step.
    * @param {import('../../shared/rostermodel/types.js').Roster} previousRoster
    * @param {import('../../shared/rostermodel/types.js').Roster} changedRoster
    */
   const settled = (previousRoster, changedRoster) =>
-    withoutUnreachableSelections(changedRoster, { system, previousRoster });
+    settleSelectionReachability(changedRoster, { system, previousRoster });
 
   const raiseUnit = (entry, categoryId, targetForceId = null) => {
     const { roster: nextRoster, unit } = raiseUnitIn(roster, {
