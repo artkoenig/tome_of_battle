@@ -6,6 +6,10 @@
  * of the list context (`src/contexts/armylist/application/`), it hands the
  * result to the undoable roster writer, and it keeps the UI's own selection
  * state in step. The selection tree is rewritten in the use case, never here.
+ * Every roster-changing command also hands its result through the use case
+ * `withoutUnreachableSelections` (Issue 0203) **inside the same `setRoster`
+ * call**, so an option the change hid and capped at 0 leaves in the same undo
+ * step as the change that caused it.
  *
  * `useRosterState` rebuilds this bundle in every render and calls into it
  * through `currentCommandsRef`, which is what keeps the **exported** commands
@@ -21,6 +25,7 @@ import {
   removeSubSelectionInstance as removeInstanceFrom,
   changeOptionCount,
 } from '../../contexts/armylist/application/subSelectionUseCases.js';
+import { withoutUnreachableSelections } from '../../contexts/armylist/application/unreachableSelections.js';
 import '../../shared/rostermodel/types.js';
 
 /**
@@ -44,36 +49,49 @@ export function bindRosterCommands({
    * @param {string|null} [targetForceId] Kontingent der aktiven Ansicht; ohne
    *   Angabe das erste Kontingent des Rosters
    */
+  /**
+   * The editor change `change` plus whatever it made unreachable (Issue 0203),
+   * as **one** roster for **one** undo step.
+   * @param {import('../../shared/rostermodel/types.js').Roster} previousRoster
+   * @param {import('../../shared/rostermodel/types.js').Roster} changedRoster
+   */
+  const settled = (previousRoster, changedRoster) =>
+    withoutUnreachableSelections(changedRoster, { system, previousRoster });
+
   const raiseUnit = (entry, categoryId, targetForceId = null) => {
     const { roster: nextRoster, unit } = raiseUnitIn(roster, {
       entry, categoryId, targetForceId, system, slots,
     });
     if (!unit) return;
 
-    setRoster(nextRoster);
+    setRoster(settled(roster, nextRoster));
     setSelectedSelectionId(unit.id);
   };
 
   const removeUnit = (selectionId) => {
-    setRoster(prev => removeUnitFrom(prev, selectionId));
+    setRoster(prev => settled(prev, removeUnitFrom(prev, selectionId)));
 
     if (selectedSelectionId === selectionId) {
       setSelectedSelectionId(null);
     }
   };
 
-  const copyUnit = (selectionId) => setRoster(prev => copyUnitIn(prev, selectionId));
+  const copyUnit = (selectionId) => setRoster(prev => settled(prev, copyUnitIn(prev, selectionId)));
 
   const addSubSelectionInstance = (unitSelectionId, optionDefinition) =>
-    setRoster(prev => addInstanceTo(prev, { unitSelectionId, optionDefinition, system, slots }));
+    setRoster(prev => settled(
+      prev, addInstanceTo(prev, { unitSelectionId, optionDefinition, system, slots })
+    ));
 
   const removeSubSelectionInstance = (unitSelectionId, instanceSelectionId) =>
-    setRoster(prev => removeInstanceFrom(prev, { unitSelectionId, instanceSelectionId }));
+    setRoster(prev => settled(
+      prev, removeInstanceFrom(prev, { unitSelectionId, instanceSelectionId })
+    ));
 
   const changeSubSelectionCount = (unitSelectionId, optionDefinition, countDelta) =>
-    setRoster(prev => changeOptionCount(
+    setRoster(prev => settled(prev, changeOptionCount(
       prev, { unitSelectionId, optionDefinition, countDelta, system, slots }
-    ));
+    )));
 
   const updateRosterName = (newName) => setRoster(prev => renameRoster(prev, newName));
 

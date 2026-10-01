@@ -61,6 +61,16 @@ Lauf: `forge-test --run src/tests/contexts`.
   `.ros`-Import in `useRosterList.js`, Editor-Sitzung über `useMandatoryListRuleAutoAdd.js`). Das
   Frisch-Tor ist Verhalten (kein Gerüst) und bleibt ein ausdrückliches Argument; die Erkennung
   (`findMissingMandatoryListRules`) bleibt Projektion des Lesemodells.
+- Eine **automatische Folge einer Editor-Änderung**, die mit ihr in **einem** Undo-Schritt landen
+  muss, ist ein Anwendungsfall `(nachher, { system, previousRoster }) → Roster`, den
+  `rosterCommandBindings.js` **innerhalb** desselben `setRoster(prev => …)` aufruft —
+  `unreachableSelections.js` (Issue 0203) ist das Muster. Ein nachgeschobenes `replaceRoster`
+  wäre kein Undo-Schritt. Den Bericht des neuen Rosters holt er selbst über `evaluateAppRoster`
+  (gecacht je System×Roster; unverändertes Roster-Objekt zurückgeben, sonst rechnet der Editor
+  doppelt). Der Vergleich mit `previousRoster` hält geladene Altbestände heraus.
+- Ein Test, der den **echten** Bericht braucht, nimmt einen synthetischen XML-Ausschnitt aus
+  `src/tests/test-utils/` (`woodElfNobleCatalogue.js`) — `processImportedData` plus `rawXmls`,
+  ohne die `evaluateAppRoster` das leere Ergebnis liefert.
 - Ein Anwendungsfall darf das Lesemodell **nur über seine eine Tür** nennen
   (`ruleengine/readmodel/index.js`, `allowed`-Ausnahme `lesemodell-die-eine-tuer`); jeder andere
   Pfad dorthin fällt unter `roster-keine-evaluator-abhaengigkeit` und bricht `forge-lint`.
