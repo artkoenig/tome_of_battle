@@ -677,6 +677,12 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     primaryCategoryId: effective.primaryCategoryIdOf(node),
     effectiveMin: minResult === null ? null : minResult.bound,
     effectiveMax,
+    // The **declared** value of the same counting max, as the catalogue writes it
+    // before any modifier (Issue 0204). The UI keeps a single-choice option (declared
+    // max 1) a checkbox when a modifier lowers `effectiveMax` to 0, instead of turning
+    // it into a dead stepper — and it must not re-read the catalogue for that
+    // (ADR-0034). `null` wherever `effectiveMax` is `null`.
+    declaredMax: maxResult === null ? null : maxResult.limit.value,
     // Das **Wahlverhalten** der Gruppe hinter einem Gruppen-Anker
     // (`groupBehavior.js`, Issue 0156): echte Einzelwahl ist sie, sobald ihr
     // effektives Max hoechstens 1 ist UND kein Modifikator dieses Max ueber 1

@@ -34,6 +34,7 @@ export function buildStandaloneSection({ frameSelection, path, capability, optio
   const maxLimit = capability.effectiveMax ?? Infinity;
   const { isMandatory, isMandatoryMet, isBinary } = classifyStandaloneOption({
     minLimit, maxLimit, isMandatoryUnmet: capability.isMandatoryUnmet === true,
+    declaredMax: capability.declaredMax ?? null,
   });
 
   // Auflösung nur noch als Beiwerk (Detail-/Regeltexte) — Zustand, Grenzen,

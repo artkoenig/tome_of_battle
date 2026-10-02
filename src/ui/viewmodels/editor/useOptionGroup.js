@@ -149,6 +149,7 @@ export function useOptionGroup({ group, selection, selectionPath = null, hasSele
           isRepeatableByGroupModifier,
           groupSingleChoice,
           isMandatoryUnmet: capability.isMandatoryUnmet === true,
+          declaredMax: capability.declaredMax ?? null,
         });
 
         // Gruppen-Klammer beim Hinzufügen: ein ausgeschöpfter Gruppen-Anker

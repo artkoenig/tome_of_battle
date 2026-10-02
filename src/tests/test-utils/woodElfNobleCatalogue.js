@@ -13,6 +13,10 @@
  * "Spear" is only hidden (its max stays 1), "Shield" is only capped at 0 (it
  * stays visible).
  *
+ * Issue 0204 adds "General" — the real entryLink `e043-f314-a7f1-fd2b` with its
+ * max 1 `82b3-e3c5-d43c-5975`, which a modifier sets to 0 once the Noble holds
+ * "Battle Standard Bearer" `e9ad-f1ce-aebf-6d23`. The row must stay a checkbox.
+ *
  * There is no Wood Elves catalogue in the fixtures, hence the slice.
  */
 
@@ -32,6 +36,9 @@ export const LONG_BOW_LINK_ID = '218f-067f-2488-2fc4';
 export const LONG_BOW_ENTRY_ID = 'entry-long-bow';
 export const SPEAR_ID = 'entry-noble-spear';
 export const SHIELD_ID = 'entry-noble-shield';
+export const GENERAL_LINK_ID = 'e043-f314-a7f1-fd2b';
+export const GENERAL_MAX_ID = '82b3-e3c5-d43c-5975';
+export const GENERAL_ENTRY_ID = 'entry-general';
 
 const WHEN_BSB = `<conditions>
   <condition type="atLeast" value="1" field="selections" scope="unit" childId="${BSB_CATEGORY_ID}" shared="true" includeChildSelections="true"/>
@@ -95,11 +102,26 @@ const CATALOGUE_XML = `<?xml version="1.0" encoding="utf-8"?>
               <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="c-long-bow-max" includeChildSelections="false"/>
             </constraints>
           </entryLink>
+          <entryLink import="true" name="General" hidden="false" id="${GENERAL_LINK_ID}" collective="false" targetId="${GENERAL_ENTRY_ID}" type="selectionEntry">
+            <modifiers>
+              <modifier type="set" value="0" field="${GENERAL_MAX_ID}">
+                <conditions>
+                  <condition type="atLeast" value="1" field="selections" scope="parent" childId="${BSB_ENTRY_ID}" shared="true" includeChildSelections="false"/>
+                </conditions>
+              </modifier>
+            </modifiers>
+            <constraints>
+              <constraint type="max" value="1" field="selections" scope="parent" shared="true" id="${GENERAL_MAX_ID}" includeChildSelections="false"/>
+            </constraints>
+          </entryLink>
         </entryLinks>
       </selectionEntry>
     </selectionEntries>
     <sharedSelectionEntries>
       <selectionEntry id="${LONG_BOW_ENTRY_ID}" name="Long Bow" hidden="false" collective="false" import="true" type="upgrade">
+        <costs><cost name="pts" typeId="${PTS_ID}" value="0"/></costs>
+      </selectionEntry>
+      <selectionEntry id="${GENERAL_ENTRY_ID}" name="General" hidden="false" collective="false" import="true" type="upgrade">
         <costs><cost name="pts" typeId="${PTS_ID}" value="0"/></costs>
       </selectionEntry>
     </sharedSelectionEntries>
@@ -131,6 +153,7 @@ export function nobleEntriesOf(system) {
   return {
     noble,
     bsb: noble.entryLinks.find(link => link.id === BSB_LINK_ID),
+    general: noble.entryLinks.find(link => link.id === GENERAL_LINK_ID),
     spear: noble.selectionEntries.find(entry => entry.id === SPEAR_ID),
     shield: noble.selectionEntries.find(entry => entry.id === SHIELD_ID),
   };

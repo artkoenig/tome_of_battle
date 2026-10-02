@@ -22,7 +22,7 @@ const slot = (overrides) => ({
   anchorKind: 'offerAnchor',
   isIndependentSubUnit: false,
   primaryCategoryId: null, defId: null, targetDefId: null,
-  costs: {}, effectiveMin: null, effectiveMax: null, current: 0,
+  costs: {}, effectiveMin: null, effectiveMax: null, declaredMax: null, current: 0,
   isMandatoryUnmet: false, isBlocked: false, isHidden: false,
   isSingleChoice: false, isMaxRaisable: false, isRepeatableWithinGroup: false,
   sortIndex: null, infoElements: [],
@@ -101,6 +101,19 @@ describe('useOptionGroup', () => {
 
     expect(renderGroupModel({ group: WEAPONS, capabilities: single }).result.current.rows.every(r => r.isRadio)).toBe(true);
     expect(renderGroupModel({ group: WEAPONS, capabilities: raisable }).result.current.rows.some(r => r.isRadio)).toBe(false);
+  });
+
+  it('keeps an option a modifier caps at 0 from a declared max of 1 a disabled checkbox (Issue 0204, AC2/AC3)', () => {
+    const capabilities = capabilitiesOf([
+      { defId: 'grp-weapons', anchorKind: 'groupAnchor', isHidden: false, isIndependentSubUnit: false, primaryCategoryId: null, name: 'Waffen', effectiveMax: 3, current: 0 },
+      { defId: 'opt-sword', name: 'Schwert', effectiveMax: 0, declaredMax: 1, isBlocked: true },
+      { defId: 'opt-axe', name: 'Axt', effectiveMax: 3, declaredMax: 3 },
+    ]);
+
+    const [sword, axe] = renderGroupModel({ group: WEAPONS, capabilities }).result.current.rows;
+
+    expect(sword).toMatchObject({ isBinary: true, isRadio: false, isSelectDisabled: true, isUnavailable: true });
+    expect(axe.isBinary).toBe(false);
   });
 
   it('meldet den Gruppen-Fehler des Ankers', () => {

@@ -50,11 +50,12 @@ import '../../../shared/rostermodel/types.js';
  * @param {boolean} args.isRepeatableByGroupModifier ob ein Gruppen-Modifier diese Zeile wiederholbar macht.
  * @param {boolean} args.groupSingleChoice          ob die Gruppe echte Einzelwahl ist (Max ≤ 1, nicht hebbar).
  * @param {boolean} [args.isMandatoryUnmet]         ob der Bericht die Pflicht als offen meldet.
+ * @param {number|null} [args.declaredMax]         deklariertes Options-Max vor Modifikatoren (`null`, wenn keins).
  * @returns {{isMandatory: boolean, isMandatoryMet: boolean, isRadio: boolean, hasQuantitySignal: boolean, isExplicitlyMulti: boolean, isBinary: boolean}}
  */
 export function classifyGroupItem({
   minLimit, maxLimit, hasMaxConstraint, isCollective, isRepeatableByGroupModifier, groupSingleChoice,
-  isMandatoryUnmet = false
+  isMandatoryUnmet = false, declaredMax = null
 }) {
   const isMandatory = minLimit > 0 && minLimit === maxLimit;
   const isMandatoryMet = isMandatoryUnmet !== true;
@@ -68,13 +69,15 @@ export function classifyGroupItem({
   const isExplicitlyMulti = (hasMaxConstraint && maxLimit > 1) ||
     isRepeatableByGroupModifier ||
     (!hasMaxConstraint && !isRadio && hasQuantitySignal);
-  const isBinary = !isExplicitlyMulti && ((hasMaxConstraint && maxLimit === 1) || isRadio || !hasMaxConstraint);
+  const isBinary = !isExplicitlyMulti &&
+    ((hasMaxConstraint && isSingleChoiceMax(maxLimit, declaredMax)) || isRadio || !hasMaxConstraint);
   return { isMandatory, isMandatoryMet, isRadio, hasQuantitySignal, isExplicitlyMulti, isBinary };
 }
 
 /**
  * Verhaltensklasse einer eigenständigen (gruppenlosen) Options-Zeile im
- * Auswahl-Konfigurator: Pflicht (min>0 und min===max) und binär (max===1).
+ * Auswahl-Konfigurator: Pflicht (min>0 und min===max) und binär (max===1, oder
+ * ein deklariertes Max 1, das ein Modifikator auf 0 senkt — Issue 0204).
  *
  * Zur Unterscheidung von `isMandatory` (Katalog-Lesart) und `isMandatoryMet`
  * (eingelöste Pflicht) siehe {@link classifyGroupItem} — beide Pfade lesen
@@ -84,12 +87,27 @@ export function classifyGroupItem({
  * @param {number} args.minLimit  effektives Min (0, wenn keins).
  * @param {number} args.maxLimit  effektives Max (`Infinity`, wenn keins).
  * @param {boolean} [args.isMandatoryUnmet]  ob der Bericht die Pflicht als offen meldet.
+ * @param {number|null} [args.declaredMax]   deklariertes Max vor Modifikatoren (`null`, wenn keins).
  * @returns {{isMandatory: boolean, isMandatoryMet: boolean, isBinary: boolean}}
  */
-export function classifyStandaloneOption({ minLimit, maxLimit, isMandatoryUnmet = false }) {
+export function classifyStandaloneOption({ minLimit, maxLimit, isMandatoryUnmet = false, declaredMax = null }) {
   const isMandatory = minLimit > 0 && minLimit === maxLimit;
   const isMandatoryMet = isMandatoryUnmet !== true;
-  const isBinary = maxLimit === 1;
+  const isBinary = isSingleChoiceMax(maxLimit, declaredMax);
   return { isMandatory, isMandatoryMet, isBinary };
+}
+
+/**
+ * Whether a max makes its option a single choice (checkbox): an effective max of 1,
+ * or an effective max a modifier lowered to 0 from a declared max of 1 (Issue 0204) —
+ * the option is then shown as a disabled checkbox, not as a stepper with both buttons
+ * dead. A declared max of 0 (unlocked only by a modifier) is deliberately not covered.
+ *
+ * @param {number} maxLimit                effective max (`Infinity` when none).
+ * @param {number|null|undefined} declaredMax declared max before modifiers.
+ * @returns {boolean}
+ */
+function isSingleChoiceMax(maxLimit, declaredMax) {
+  return maxLimit === 1 || (maxLimit === 0 && declaredMax === 1);
 }
 

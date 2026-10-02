@@ -122,3 +122,31 @@ describe('classifyStandaloneOption', () => {
   });
 });
 
+describe('a single-choice option a modifier caps at zero (Issue 0204)', () => {
+  const groupBase = {
+    minLimit: 0, hasMaxConstraint: true,
+    isCollective: false, isRepeatableByGroupModifier: false, groupSingleChoice: false
+  };
+
+  it('AC1: a standalone option with declared max 1 and effective max 0 stays binary', () => {
+    expect(classifyStandaloneOption({ minLimit: 0, maxLimit: 0, declaredMax: 1 }).isBinary).toBe(true);
+  });
+
+  it('AC2: a group option with declared max 1 and effective max 0 stays binary, not a stepper', () => {
+    const result = classifyGroupItem({ ...groupBase, maxLimit: 0, declaredMax: 1 });
+    expect(result.isBinary).toBe(true);
+    expect(result.isExplicitlyMulti).toBe(false);
+  });
+
+  it('an option whose declared max is already 0 keeps today\'s classification', () => {
+    expect(classifyStandaloneOption({ minLimit: 0, maxLimit: 0, declaredMax: 0 }).isBinary).toBe(false);
+    expect(classifyGroupItem({ ...groupBase, maxLimit: 0, declaredMax: 0 }).isBinary).toBe(false);
+  });
+
+  it('AC3: an effective max above 1 is still a stepper and an effective max of 1 still a checkbox', () => {
+    expect(classifyStandaloneOption({ minLimit: 0, maxLimit: 3, declaredMax: 1 }).isBinary).toBe(false);
+    expect(classifyStandaloneOption({ minLimit: 0, maxLimit: 1, declaredMax: 3 }).isBinary).toBe(true);
+    expect(classifyGroupItem({ ...groupBase, maxLimit: 3, declaredMax: 1 }).isBinary).toBe(false);
+    expect(classifyGroupItem({ ...groupBase, maxLimit: 1, declaredMax: 3 }).isBinary).toBe(true);
+  });
+});

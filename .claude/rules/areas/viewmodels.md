@@ -232,6 +232,10 @@ of ADR-0037 — a ViewModel may never import a component. Run it with
   pure and takes only values the report already measured — it re-reads no catalogue. The
   catalogue-side twin of those questions lives once, in the report
   (`src/contexts/ruleengine/engine/groupBehavior.js`); a second reading here would drift from it.
+  "Binary" reads `capability.declaredMax` (the counting max before modifiers) next to
+  `effectiveMax`: an effective max of 1, or 0 lowered from a declared 1, is a checkbox. A fact
+  about the catalogue value the classifier needs goes into the report (`toCapability` in
+  `engine/report.js`, where a constraint result carries its `limit` definition), never a re-read here.
 - `strictNullChecks` is on (Issue 0185), and in a hook it bites at the state seam:
   `useState(null)` types the state `null`, `useState([])` types it `never[]`, and the setter then
   rejects every real value. Give the initial value a **module-level constant with a `@type`
