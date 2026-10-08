@@ -46,7 +46,7 @@ drei Mitglieder haben keine).
 
 Das ist die genaue Entsprechung zur Zaehlregel des Formats: eine Grenze an einer
 Gruppe zaehlt **ihre Mitglieder**, nicht die Gruppe
-([§7.6](../../battlescribe-data-format.md#76-constraint) — *„which entity should
+([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint) — *„which entity should
 sum up all `field`'s values of descendant selections of this constraint's parent
 entry"*). Die Gruppe belegt das an sich selbst: ihre eigene Grenze
 `c36b-249d-d86e-b3f2` (`max 1`, `field="selections"`, `scope="parent"`, Z. 3033)
@@ -110,10 +110,10 @@ Zeilenumbruch (Dark-Elves-`.cat` Z. 3201/3202). Die Datei verwendet reines LF
 
 1. XML normalisiert in **Attributwerten** jedes `#xD`/`#xA`/`#x9` zu einem
    **Leerzeichen** (XML 1.0, *Attribute-Value Normalization*). Alle Dateien des
-   Formats sind XML ([§1](../../battlescribe-data-format.md#1-überblick-was-ist-bsdata)).
+   Formats sind XML ([§1](../../battlescribe/overview.md#1-überblick-was-ist-bsdata)).
 2. Die Formatdoku bestaetigt das indirekt: eine `rule` ist *„die **einzige**
    mehrzeilige Textentitaet — Zeilenumbrueche im `<description>` bleiben
-   erhalten"* ([§7.4](../../battlescribe-data-format.md#74-rule)). Ein
+   erhalten"* ([§7.4](../../battlescribe/building-blocks/profile-and-rule.md#74-rule)). Ein
    Attributwert ist keine solche Entitaet.
 
 Erwarteter Wortlaut nach Aufloesung von `&quot;` und des Tokens:
@@ -171,7 +171,7 @@ oder unter `absent`:
 | Grenze | Deklaration | 01 | 02 | 03 | 04 | 05 |
 |--------|-------------|----|----|----|----|----|
 | `a3ce-55af-2de8-23be` — Einheit „War Hydra" | `max 1`, `selections`, `scope=parent` (Z. 2988) | Ist 1 → still | 1 | 1 | 1 | 1 |
-| `f210-5b8b-86c7-9466` — Punktebudget der Einheit | `max -1` (= unbegrenzt, [§7.6](../../battlescribe-data-format.md#76-constraint)), `field=pts`, `scope=parent` (Z. 2989); der `set 125`-Modifikator ist auf „Border Patrols rules" gated und greift nicht | still | still | still | still | still |
+| `f210-5b8b-86c7-9466` — Punktebudget der Einheit | `max -1` (= unbegrenzt, [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)), `field=pts`, `scope=parent` (Z. 2989); der `set 125`-Modifikator ist auf „Border Patrols rules" gated und greift nicht | still | still | still | still | still |
 | `547a-41b7-dff9-d382` / `656d-017e-a719-4a57` — Pflicht-Upgrade „War Hydra" | `min 1` / `max 1`, `scope=parent` (Z. 3219/3220) | Ist 1 → beide still | 1 | 1 | 1 | 1 |
 | `c36b-249d-d86e-b3f2` — Gruppe „War Hydras of Naggaroth" | `max 1`, `scope=parent` (Z. 3033) | Ist 1 → still | 0 | 0 | 1 | **Ist 2 → feuert (Grenze 1)** |
 | `cf55-5fd5-ebc5-f6fd` / `24c5-418f-a665-89ca` — Veteran / Royal, je `max 1` `scope=parent` (Z. 3132/3038) | | Ist 1 → still | 0 | 0 | 1 | je 1 → still |

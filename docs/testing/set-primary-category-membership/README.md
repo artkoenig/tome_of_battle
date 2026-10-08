@@ -41,7 +41,7 @@ Nähme man an, der Modifier schalte nur ein `primary`-Flag an einem bereits
 vorhandenen Link, wäre er wirkungslos — Kathleen führt keinen Link auf
 `ee09-…`, hätte also eine Primärkategorie, der sie nicht angehört, und damit
 überhaupt keinen Anzeige-Bucket. Die BSData-Doku
-([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)) hält genau
+([§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)) hält genau
 das fest und benennt **diesen** Eintrag als Beleg: *„**`set-primary` sichert
 dabei zugleich die Mitgliedschaft**: die benannte Kategorie wird Teil der
 effektiven Kategorien, auch wenn der Eintrag sie nicht per `categoryLink`

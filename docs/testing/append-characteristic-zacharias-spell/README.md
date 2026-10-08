@@ -28,7 +28,7 @@ verschachtelte `selections` mit `number`) nachgebildet.
 
 ## Was die Formatspezifikation ueber `append` + `join` sagt
 
-Woertlich aus [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat),
+Woertlich aus [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat),
 Tabelle *`modifier`-Attribut*:
 
 - `type="append"` ist eine **Text**-Operation; `value` ist „der anzufuegende Text".
@@ -41,7 +41,7 @@ Tabelle *`modifier`-Attribut*:
 - Ein Modifikator greift nur, wenn seine `<conditions>` halten.
 
 Dazu §7.7, Kasten
-[`scope="unit"`/`scope="ancestor"`](../../battlescribe-data-format.md#scope-unit-ancestor):
+[`scope="unit"`/`scope="ancestor"`](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette):
 `unit` ist der **naechste Vorfahre mit `type="unit"`** — den Traeger der Query
 eingeschlossen; Gruppen und Verweise unterbrechen die Suche nicht. `instanceOf`
 ist eine **Pruefung**, keine Zaehlung; die Zaehl-Flags (`shared`,

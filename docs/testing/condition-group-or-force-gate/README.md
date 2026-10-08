@@ -26,7 +26,7 @@ nachgebildet.
 
 ## Was eine `or`-Gruppe laut Format tut
 
-Aus [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+Aus [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 („`conditionGroup` — Verknüpfung mehrerer Bedingungen") und §8 der Formatreferenz,
 wörtlich abgeleitet:
 

@@ -24,7 +24,7 @@ abgeleitet. Die Roster-Form ist an den bestehenden Szenarien verifiziert
 
 Eine `<conditionGroup type="and">` hält genau dann, wenn **alle** ihre
 Mitglieder halten — Bedingungen wie Untergruppen gleichermaßen
-([§7.7](../../battlescribe-data-format.md#conditiongroup--verknüpfung-mehrerer-bedingungen)).
+([§7.7](../../battlescribe/building-blocks/modifier.md#conditiongroup--verknüpfung-mehrerer-bedingungen)).
 Ein **einziges falsches Mitglied besiegt die Gruppe**, und der von ihr bewachte
 Modifikator greift nicht — egal, wie viele der übrigen Mitglieder halten.
 
@@ -55,7 +55,7 @@ Darauf sitzt eine Leiter aus `set`-Modifikatoren (`.gst:376-431`):
 | `set 5` / `set 6` *(4000–4999 / 5000–5999 pts)* | gleiche Form für die höheren Brackets | `:407-418` / `:419-430` |
 
 `limit::ecfa-8486-4f6c-c249` liest das **eingestellte Punktebudget** der Roster
-(`costType` „pts", `.gst:13`; [§7.7, Condition-Tabelle](../../battlescribe-data-format.md#condition--eine-voraussetzung)) —
+(`costType` „pts", `.gst:13`; [§7.7, Condition-Tabelle](../../battlescribe/building-blocks/modifier.md#condition--eine-voraussetzung)) —
 im Roster gesetzt über `<costLimits><costLimit typeId="ecfa-8486-4f6c-c249" …/></costLimits>`.
 
 ---
@@ -65,9 +65,9 @@ im Roster gesetzt über `<costLimits><costLimit typeId="ecfa-8486-4f6c-c249" …
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
 | **CGA-R1** | Basis der Core-Pflicht ist **`min 2`** Auswahlen je Kontingent (`scope="force"`, `field="selections"`, `includeChildSelections="true"`). `bound` ist der wirksame `value`, `actual` die Zahl der Core-Auswahlen im Kontingent. | `.gst:374`, constraint **`35c2-d478-392a-aeb1`**. |
-| **CGA-R2** | Jeder Bracket-`set` greift **nur**, wenn seine `and`-Gruppe hält, also **alle drei** Mitglieder: BP < 1 **und** `atLeast <unten>` **und** `lessThan <oben>`. Ein einziges falsches Mitglied genügt, um den `set` abzuschalten. | `.gst:385-393` (set 3), `:397-405` (set 4); [§7.7](../../battlescribe-data-format.md#conditiongroup--verknüpfung-mehrerer-bedingungen): *„Eine `and`-Gruppe hält, wenn **alle** ihre Mitglieder … halten."* |
+| **CGA-R2** | Jeder Bracket-`set` greift **nur**, wenn seine `and`-Gruppe hält, also **alle drei** Mitglieder: BP < 1 **und** `atLeast <unten>` **und** `lessThan <oben>`. Ein einziges falsches Mitglied genügt, um den `set` abzuschalten. | `.gst:385-393` (set 3), `:397-405` (set 4); [§7.7](../../battlescribe/building-blocks/modifier.md#conditiongroup--verknüpfung-mehrerer-bedingungen): *„Eine `and`-Gruppe hält, wenn **alle** ihre Mitglieder … halten."* |
 | **CGA-R3** | Das Border-Patrols-Mitglied (`lessThan 1` auf `4e15-0353-165f-5528`, `scope="roster"`) hält in **allen** Rostern dieses Szenarios: keiner wählt die (per Basis versteckte) Regel-Auswahl. Es ist das konstante **wahre** Mitglied jeder Gruppe. | `.gst:388` u. a.; die Auswahl selbst: `.gst:17584` (`selectionEntry` „Border Patrols rules", `hidden="true"`). |
-| **CGA-R4** | Die Bracket-Grenzen sind **halboffen**: `atLeast` ist einschließend (≥), `lessThan` ausschließend (<). Bei Budget **genau 3000** scheitert die 2000er-Gruppe an `lessThan 3000`, während die 3000er-Gruppe an `atLeast 3000` gerade noch hält. | `condition`-Typen laut [§7.7, Condition-Tabelle](../../battlescribe-data-format.md#condition--eine-voraussetzung) / §13.1; Werte `.gst:389-390`, `:401-402`. |
+| **CGA-R4** | Die Bracket-Grenzen sind **halboffen**: `atLeast` ist einschließend (≥), `lessThan` ausschließend (<). Bei Budget **genau 3000** scheitert die 2000er-Gruppe an `lessThan 3000`, während die 3000er-Gruppe an `atLeast 3000` gerade noch hält. | `condition`-Typen laut [§7.7, Condition-Tabelle](../../battlescribe/building-blocks/modifier.md#condition--eine-voraussetzung) / §13.1; Werte `.gst:389-390`, `:401-402`. |
 | **CGA-R5** | Effektive Grenze ohne Border Patrols: Budget **1000** → beide Bracket-Gruppen falsch → **2** (Basis). Budget **2500** → 2000er-Gruppe vollständig wahr → **3**. Budget **3000** → 2000er-Gruppe von *einem* Mitglied besiegt, 3000er-Gruppe vollständig wahr → **4**. | CGA-R1–R4 kombiniert; Wahrheitstafel unten. |
 | **CGA-R6** | Das Kontingent „Standard (VC-AB)" verweist auf Core über einen **nackten** `categoryLink` (keine eigenen Grenzen, keine Modifikatoren) — die `.gst`-Leiter gilt dort unverändert. | `Vampire Counts (…).cat:29305` (`categoryLink` `6940-bf72-caa7-537f`, `targetId="64bf-efb4-9978-26df"`). Kontrast: der „Vampire Coast"-Force trägt einen eigenen `increment`-Modifikator auf derselben Grenze (`:29486-29494`) — er wird hier bewusst **nicht** benutzt. |
 

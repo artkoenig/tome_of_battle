@@ -29,7 +29,7 @@ nachgebildet.
 ## Was §7.7 über die beiden Kodierungen sagt
 
 Aus dem Kasten
-[„`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+[„`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen"](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 und der `condition`-Attributtabelle derselben Sektion, wörtlich abgeleitet:
 
 - **Selbst-gegattert:** die `forceEntry`-Id steht direkt in `scope`

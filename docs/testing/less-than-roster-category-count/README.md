@@ -62,8 +62,8 @@ Datensatz (Z. 204, 518, 1191, 1491, 1777, 1975, 2164, 7384, 7608, 7987, 8268,
 
 ## Was eine `lessThan`-Bedingung mit `scope="roster"` und Kategorie-`childId` laut Format tut
 
-Aus [§7.6](../../battlescribe-data-format.md#76-constraint) /
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+Aus [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint) /
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 der Formatreferenz, wörtlich abgeleitet:
 
 - `type="lessThan"` hält genau dann, wenn der im Bezugsrahmen gezählte Wert
