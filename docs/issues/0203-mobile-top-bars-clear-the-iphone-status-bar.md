@@ -1,7 +1,7 @@
 ---
-status: backlog
-branch:
-pr:
+status: done
+branch: claude/kind-archimedes-byizuq
+pr: https://github.com/artkoenig/tome_of_battle/pull/277
 ---
 
 # Keep the mobile builder and play top bars clear of the iPhone status bar
