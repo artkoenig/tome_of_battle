@@ -47,7 +47,12 @@ Um den begrenzten Platz auf Bildschirmen optimal zu nutzen, werden Detailinforma
 
 ### 5. Mobile Viewport-Höhe & Safe-Area
 Mobile In-App-Browser (u. a. DuckDuckGo) berechnen `100vh`/`100dvh` bei ein-/ausblendender Browser-Chrome unzuverlässig, was in Kombination mit `overflow: hidden` zu abgeschnittenem Inhalt führt (Header oben, `.mobile-bottom-nav` unten). Verbindlich für vollflächige Mobile-Layout-Container (aktuell `#root`, `.empty-state-wrapper`):
-- `viewport-fit=cover` ist im Viewport-Meta-Tag (`index.html`) gesetzt, damit `env(safe-area-inset-*)` greift; `.app-header` polstert `padding-top` entsprechend mit `env(safe-area-inset-top)`.
+- `viewport-fit=cover` ist im Viewport-Meta-Tag (`index.html`) gesetzt, damit `env(safe-area-inset-*)` greift. Jedes Element, das am oberen Bildschirmrand steht, polstert `padding-top` mit seinem eigenen Abstand plus `env(safe-area-inset-top, 0px)` — sonst verdeckt die Statusleiste des iPhones (installierte PWA, `black-translucent`) seinen Inhalt. Das sind genau drei:
+  - `.app-header` (`05-app-shell.css`, mobil `21-mobile-shell.css`),
+  - `.builder-top-bar`, die Kopfleiste des Roster-Builders (mobil `28-builder-top-bar.css`),
+  - `.play-header`, die Kopfzeile des Spielmodus (mobil `13-play-unit-card.css`).
+
+  Wo der Inset 0 ist (Desktop, Android, Headless-Browser), bleibt der Abstand unverändert. Der Test `src/tests/ui/styles/safe-area-top-bars.test.js` hält die beiden Leisten fest; ein neues Element am oberen Rand gehört in diese Liste und in diesen Test.
 - Die Höhenquelle folgt einer aufsteigenden Fallback-Kette in CSS-Deklarationsreihenfolge: statisches `100vh` (älteste Browser) → `100dvh` (dynamische Viewport-Einheit) → `var(--app-vh, 100dvh)`, wobei `--app-vh` von einem `visualViewport`-Listener (`src/ui/viewmodels/useViewportHeight.js`) laufend mit der tatsächlich sichtbaren Höhe synchron gehalten wird. Spätere gültige Deklarationen gewinnen, sodass der JS-getriebene Wert primär ist, sobald er gesetzt ist, mit den CSS-Einheiten als Fallback davor bzw. ohne `visualViewport`-Unterstützung.
 
 ### 6. Aufbau des globalen Stylesheets

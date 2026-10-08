@@ -72,6 +72,12 @@ paths:
 - Styling is 33 numbered CSS layer files under `src/ui/styles/`, loaded in cascade order (ADR 0004
   §6). Put a rule in the layer its number describes; a component-local style that fights the
   cascade is the usual cause of a "mysteriously overridden" property.
+- Every element at the top screen edge (`.app-header`, and on mobile `.builder-top-bar` and
+  `.play-header`) sets `padding-top: calc(<spacing> + env(safe-area-inset-top, 0px))` **after**
+  its `padding` shorthand, which would otherwise reset it (ADR 0004 §5). Headless Chrome reports
+  the inset as 0, so Puppeteer cannot see a regression; `src/tests/ui/styles/safe-area-top-bars.test.js`
+  reads the stylesheets in `src/index.css` import order instead. A new top-edge bar goes into that
+  test and the ADR list.
 - Text never appears literally in a component: it goes through `src/ui/i18n/` (own solution, no
   library, ADR 0026) with entries in both `locales/de.json` and `locales/en.json`. A missing `en`
   key does not fail a test — it fails silently for the user.
