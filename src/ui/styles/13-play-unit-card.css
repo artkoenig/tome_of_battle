@@ -151,6 +151,9 @@
     /* Break out of .play-layout's side padding so the sticky header spans the full width and sits flush at the top */
     margin: 0 -12px 12px -12px;
     padding: 10px 12px;
+    /* Reserve the top safe-area inset like .app-header (ADR 0004 §5): on an
+       iPhone PWA the status bar would otherwise cover the back button. */
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
     position: sticky;
     top: 0;
     z-index: 100;

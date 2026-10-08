@@ -92,6 +92,9 @@
 @media (max-width: 900px) {
   .builder-top-bar {
     padding: 8px 12px;
+    /* Reserve the top safe-area inset like .app-header (ADR 0004 §5): on an
+       iPhone PWA the status bar would otherwise cover the back button. */
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
     gap: 8px;
   }
   .builder-top-bar-title {
