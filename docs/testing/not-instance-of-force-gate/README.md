@@ -47,7 +47,7 @@ Bedingungszelle, nicht die Katalog-Eigentümerschaft.
 ## Was die Formatspezifikation über die Zelle sagt
 
 Aus dem Kasten
-[„`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+[„`instanceOf`/`notInstanceOf` gegen eine `forceEntry` — zwei Kodierungen"](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 sowie §7.6/§7.7 und §5.6/§8, wörtlich abgeleitet:
 
 - **Kanonische Kodierung:** `scope` trägt das Literal-Keyword `force`, die

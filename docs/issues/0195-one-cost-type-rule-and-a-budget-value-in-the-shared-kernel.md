@@ -100,7 +100,7 @@ defect nobody can currently see.
 - AC11: Types hold under `strictNullChecks` and `strictFunctionTypes`, with no suppression added. | verify: `bash -c 'forge-typecheck && test "$(grep -rn "@ts-ignore\|@ts-expect-error\|@ts-nocheck" src/ | wc -l)" -eq 0'`
 - AC12: No dead export left behind by the two barrels. | verify: `npm run knip`
 - AC13: `docs/glossary.md` carries `costType`, `costLimitType`, `costLimit` and `budget` rows, and no row names a deleted function. | verify: `bash -c 'grep -q "| .costType." docs/glossary.md && grep -q "| .costLimitType." docs/glossary.md && grep -q "| .budget." docs/glossary.md'`
-- AC14: `docs/battlescribe-data-format.md:170` no longer claims cost types are `.gst`/library only — `Catalogue.xsd:720` and the Lizardmen book disprove it, and that document outranks every other. | verify: `bash -c '! grep -n "costTypes" docs/battlescribe-data-format.md | head -1 | grep -q "nur .gst"'`
+- AC14: `docs/battlescribe/overview.md` (§4, Objektmodell-Baum) no longer claims cost types are `.gst`/library only — `Catalogue.xsd:720` and the Lizardmen book disprove it, and that document outranks every other. | verify: `bash -c '! grep -n "costTypes" docs/battlescribe/overview.md | head -1 | grep -q "nur .gst"'`
 - AC15: The browser E2E still drives the editor. | verify: `node e2e/ui.test.js`
 
 ## Out of scope

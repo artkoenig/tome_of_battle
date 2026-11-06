@@ -94,7 +94,7 @@ No code change. No version bump — documentation is neither a fix nor a feature
 - Splitting any engine file, including `evalTree.js`. The note says when, not now.
 - `docs/glossary.md:12-13` mis-attributing "`ui` is a bounded context" to ADR-0042 — that is issue
   0196 (AC10), which needs the context map to point at.
-- `docs/battlescribe-data-format.md:170` claiming cost types are `.gst`/library only — issue 0195
+- `docs/battlescribe/overview.md` (§4, Objektmodell-Baum) claiming cost types are `.gst`/library only — issue 0195
   (AC14), where the evidence lives.
 - Any ADR decision, status or content beyond the one stale path in ADR-0002.
 - Rewriting historic issue files under `docs/issues/`. They are a record.

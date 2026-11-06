@@ -43,7 +43,7 @@ Aus `Ogre Kingdoms (6th definitive edition).cat`, `selectionEntry` **„Hunter"*
 </selectionEntryGroup>
 ```
 
-Lesart der Attribute (Format-Doku [§7.6](../../battlescribe-data-format.md#76-constraint)):
+Lesart der Attribute (Format-Doku [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)):
 
 - **`field="ecfa-8486-4f6c-c249"`** ist **keine** der Zähl-Felder `selections`/`forces`,
   sondern die **pts-Kostenart** der `.gst` (`<costType id="ecfa-8486-4f6c-c249" name="pts"/>`).
@@ -114,7 +114,7 @@ verschachtelte Ebene. Rechnet eine Auswertung nur die direkten Gruppenmitglieder
 sie 0 Punkte. Genau daran hängen die Roster 04/05.
 
 Stückzahl-Rechnung: `number="3"` auf der Kind-Selektion bedeutet 3 Steine zu je 15 pts
-= **45 pts** (Format-Doku [§7.5](../../battlescribe-data-format.md#75-cost--cost-type),
+= **45 pts** (Format-Doku [§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type),
 Rechenregel `child.number * parent.number`; der Hunter hat `number="1"`). Dieselbe Form
 ist im Szenario [`unit-scope-per-model-cost`](../unit-scope-per-model-cost/README.md)
 (`number="5"` × 19 pts) verifiziert.
