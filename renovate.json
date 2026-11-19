@@ -1,6 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "helpers:pinGitHubActionDigestsToSemver"],
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigestsToSemver"
+  ],
   "timezone": "Europe/Berlin",
   "prConcurrentLimit": 1,
   "minimumReleaseAge": "3 days",
@@ -10,8 +13,17 @@
   "packageRules": [
     {
       "description": "One PR with every update (all managers, all update types)",
-      "matchPackageNames": ["*"],
+      "matchPackageNames": [
+        "*"
+      ],
       "groupName": "all dependencies"
+    },
+    {
+      "description": "Hold TypeScript below 7: the native compiler reads JSDoc types more strictly and breaks forge-typecheck; migrate in its own issue",
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<7"
     }
   ]
 }
