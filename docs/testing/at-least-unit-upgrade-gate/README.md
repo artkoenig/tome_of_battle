@@ -16,7 +16,7 @@ orientiert (direktes `entryId`, `entryLinkId` für verlinkte Aufwertungen,
 `condition type="atLeast"` mit `scope="unit"` und einer Eintrags-Id in `childId`
 zählt die Selektionen dieses Eintrags **innerhalb der umschließenden Einheit**:
 des nächsten Vorfahren mit `type="unit"`, den Träger der Query eingeschlossen
-(Formatdoku [§7.7, Kasten „`scope=unit` und `scope=ancestor`"](../../battlescribe-data-format.md#scope-unit-ancestor)).
+(Formatdoku [§7.7, Kasten „`scope=unit` und `scope=ancestor`"](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette)).
 Der damit gegatete Modifier wirkt genau **ab** dem Schwellwert (`value`).
 
 ## Die Struktur im Katalog (wichtig)

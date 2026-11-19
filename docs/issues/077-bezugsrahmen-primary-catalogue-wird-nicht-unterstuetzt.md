@@ -120,7 +120,7 @@ und `ancestor` weiter diagnostiziert werden (Issue 0086, Kriterium 4).
      childName="Tomb Kings"`. Auch die übrigen `childName` sind
      Armeebuch-Namen.
   Die Format-Doku im Repo führt den Rahmen bisher nur als Lücke
-  (`docs/battlescribe-data-format.md:1266`); das Upstream-Wiki nennt ihn
+  (`docs/battlescribe/patterns/common-patterns.md`, §9.7); das Upstream-Wiki nennt ihn
   gar nicht (dessen Aufzählung endet bei `primary category`). Die XSD typt
   `scope` als nackten String (`Catalogue.xsd:426`) und entscheidet nichts.
 

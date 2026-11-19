@@ -26,7 +26,7 @@ bei einem `entryLink`, verschachtelte `selections` mit `number`,
 ## Worum es geht
 
 Ein `modifier` **ändert** laut
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 „eine Eigenschaft des Elternelements oder den Wert eines Constraints". Sein
 `field` darf genau eines von neun Dingen benennen:
 
@@ -67,11 +67,11 @@ Es gibt damit nichts, was diese Modifikatoren ändern könnten: **kein Zielwert,
 kein Effekt.** Die Regel ist aus den erlaubten Quellen vollständig herleitbar,
 ohne zu raten: Die Wirkung eines Modifikators ist im Format ausschließlich als
 *Änderung eines benannten Ziels* definiert
-([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)).
+([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)).
 Existiert das Ziel nicht, existiert auch die Änderung nicht — es gibt im Format
 keinen zweiten, zielfreien Wirkungspfad, und ein `modifier` legt insbesondere
 **nie** eine Grenze an: Grenzen entstehen ausschließlich aus `constraint`-Elementen
-([§7.6](../../battlescribe-data-format.md#76-constraint)).
+([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)).
 
 Dieses Szenario ist das Schwester-Szenario zu
 [`../modifier-unresolved-target-inert/`](../modifier-unresolved-target-inert/README.md)
@@ -108,13 +108,13 @@ Datensatz sind ihre eigenen zwei Verweise.
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **SUTIL-R1** | Ein `set`-Modifikator, dessen `field` eine im Datensatz nirgends definierte Id nennt, **erzeugt keine Grenze dieser Id**. Im Verletzungsbericht darf `a59d-2ddb-429c-1aca` nie erscheinen. | Grenzen entstehen ausschließlich aus `constraint`-Elementen ([§7.6](../../battlescribe-data-format.md#76-constraint)); ein `modifier` ändert nur ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)). Zu `a59d-2ddb-429c-1aca` existiert kein `constraint` (Suchbeleg oben). Im Manifest in **jedem** Roster als `absent`. |
-| **SUTIL-R2** | Er ist **unbedingt** und damit in jedem Roster dieses Szenarios aktiv — das Fehlen des Ziels ist das Einzige, was ihn wirkungslos machen kann. | `:29449` und `:29479`: das `<modifier>`-Element ist in beiden Fällen leer (`/>`), trägt also weder `<conditions>` noch `<conditionGroups>` noch `<repeats>`. Es steht direkt in `<modifiers>`, nicht in einer `modifierGroup` (Fallstrick-Kasten [§7.7](../../battlescribe-data-format.md#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier)). |
-| **SUTIL-R3** | Er **stört die Auswertung seines Trägers nicht**: die echte Grenze desselben `categoryLink` verhält sich exakt wie geschrieben — `min 1` auf die Zahl der Lord-Auswahlen im Kontingent. Ohne Lord feuert sie mit Ist **0** / Grenze **1**, mit genau einer Lord-Auswahl schweigt sie. | Lichemaster: `:29452` `constraint type="min" value="1" field="selections" scope="parent" shared="true" id="760d-2352-9fac-0e46"`. Vampire Coast: `:29482` dieselbe Grenze als `8471-437a-59d6-bc3d`. Träger ist der `categoryLink` auf die Kategorie „Lord" `d024-d25b-a9b4-73b6`; gezählt werden die Auswahlen dieser Kategorie im Kontingent ([§7.6](../../battlescribe-data-format.md#76-constraint), Regelkasten „gezählt werden die Auswahlen *unterhalb* des Trägers"; Ziel-Typ-Regel für Kategorie-Ziele, ADR 0029). Roster 01/03 gegen 02/04. |
+| **SUTIL-R1** | Ein `set`-Modifikator, dessen `field` eine im Datensatz nirgends definierte Id nennt, **erzeugt keine Grenze dieser Id**. Im Verletzungsbericht darf `a59d-2ddb-429c-1aca` nie erscheinen. | Grenzen entstehen ausschließlich aus `constraint`-Elementen ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)); ein `modifier` ändert nur ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)). Zu `a59d-2ddb-429c-1aca` existiert kein `constraint` (Suchbeleg oben). Im Manifest in **jedem** Roster als `absent`. |
+| **SUTIL-R2** | Er ist **unbedingt** und damit in jedem Roster dieses Szenarios aktiv — das Fehlen des Ziels ist das Einzige, was ihn wirkungslos machen kann. | `:29449` und `:29479`: das `<modifier>`-Element ist in beiden Fällen leer (`/>`), trägt also weder `<conditions>` noch `<conditionGroups>` noch `<repeats>`. Es steht direkt in `<modifiers>`, nicht in einer `modifierGroup` (Fallstrick-Kasten [§7.7](../../battlescribe/building-blocks/modifier.md#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier)). |
+| **SUTIL-R3** | Er **stört die Auswertung seines Trägers nicht**: die echte Grenze desselben `categoryLink` verhält sich exakt wie geschrieben — `min 1` auf die Zahl der Lord-Auswahlen im Kontingent. Ohne Lord feuert sie mit Ist **0** / Grenze **1**, mit genau einer Lord-Auswahl schweigt sie. | Lichemaster: `:29452` `constraint type="min" value="1" field="selections" scope="parent" shared="true" id="760d-2352-9fac-0e46"`. Vampire Coast: `:29482` dieselbe Grenze als `8471-437a-59d6-bc3d`. Träger ist der `categoryLink` auf die Kategorie „Lord" `d024-d25b-a9b4-73b6`; gezählt werden die Auswahlen dieser Kategorie im Kontingent ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint), Regelkasten „gezählt werden die Auswahlen *unterhalb* des Trägers"; Ziel-Typ-Regel für Kategorie-Ziele, ADR 0029). Roster 01/03 gegen 02/04. |
 | **SUTIL-R4** | Er **verschiebt keine fremde Grenze**. Die Grenzen im selben Rahmen behalten genau die Werte, die die Katalogdaten ihnen geben — insbesondere bleibt die Core-Untergrenze auf ihrem `.gst`-Klassenwert **4** (Budget 3000–3999) statt auf **1**. | `.gst:374` `constraint type="min" value="2" field="selections" scope="force" shared="true" id="35c2-d478-392a-aeb1"` an der `categoryEntry` „Core" `64bf-efb4-9978-26df`, per `.gst:395` `modifier set value="4"` für 3000–3999 pts. Im Manifest als `firing`-Grenzwert und als `capabilities.effectiveMin`. |
-| **SUTIL-R5** | Er **stört seine Nachbarn nicht**: der Heroes-`categoryLink` desselben Kontingents bleibt grenzenlos, wie die Daten es sagen. | Lichemaster `:29455` / Vampire Coast `:29485`: `categoryLink "Heroes"` **ohne** `<constraints>`; die `.gst`-`categoryEntry` „Heroes" `c16b-f319-2c62-2c12` trägt nur `max -1` (`.gst:368`, `7fca-63fb-63d2-9dad`) = unbegrenzt ([§7.6](../../battlescribe-data-format.md#76-constraint), Sentinel-Kasten). Erwartet als `effectiveMin: null` / `effectiveMax: null`. |
+| **SUTIL-R5** | Er **stört seine Nachbarn nicht**: der Heroes-`categoryLink` desselben Kontingents bleibt grenzenlos, wie die Daten es sagen. | Lichemaster `:29455` / Vampire Coast `:29485`: `categoryLink "Heroes"` **ohne** `<constraints>`; die `.gst`-`categoryEntry` „Heroes" `c16b-f319-2c62-2c12` trägt nur `max -1` (`.gst:368`, `7fca-63fb-63d2-9dad`) = unbegrenzt ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint), Sentinel-Kasten). Erwartet als `effectiveMin: null` / `effectiveMax: null`. |
 | **SUTIL-R6** | **Gegenprobe (Lebendigkeit):** Ein **echter** Modifikator an einem **Nachbar-`categoryLink` desselben Kontingents** verschiebt seine Grenze nachweislich: die Core-Untergrenze des Vampire-Coast-Kontingents steigt um **+1 je „Bloated Corpse"** im Kontingent, also von 4 auf 5. | `:29486-29494`: `categoryLink "Core"` `4292-f5de-24ff-93a7` mit `<modifier type="increment" value="1" field="35c2-d478-392a-aeb1">` und `<repeat value="1" repeats="1" field="selections" scope="force" childId="8b63-3344-e972-cd0d" shared="true" roundUp="false" includeChildSelections="true"/>`. „Bloated Corpse" `8b63-3344-e972-cd0d` (`:13218`, 30 pts, Kategorie „Core" `2abb-389b-b6ab-6179`) ist im Vampire-Coast-Kontingent aufgedeckt (`:13236`). Roster 05. |
-| **SUTIL-R7** | **Sichtbarkeit:** Die Kategorie „Lord" ist bei Budget ≥ 2000 **nicht** versteckt, ihre Mindestgrenze ist also zu validieren. | `.gst:220-227`: `categoryEntry "Lord"` mit `modifier set hidden="true"`, Bedingung `lessThan 2000` auf `limit::ecfa-8486-4f6c-c249` (`scope="roster"`). Alle Roster setzen `costLimit` **3000**. [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit) / Issue 0088: Min-Grenzen einer effektiv versteckten Entität werden **nicht** validiert — hier ist sie nicht versteckt (`capabilities.isHidden: false`). |
+| **SUTIL-R7** | **Sichtbarkeit:** Die Kategorie „Lord" ist bei Budget ≥ 2000 **nicht** versteckt, ihre Mindestgrenze ist also zu validieren. | `.gst:220-227`: `categoryEntry "Lord"` mit `modifier set hidden="true"`, Bedingung `lessThan 2000` auf `limit::ecfa-8486-4f6c-c249` (`scope="roster"`). Alle Roster setzen `costLimit` **3000**. [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit) / Issue 0088: Min-Grenzen einer effektiv versteckten Entität werden **nicht** validiert — hier ist sie nicht versteckt (`capabilities.isHidden: false`). |
 | **SUTIL-R8** | Die Grenze des **einen** Sonderheeres darf im **anderen** nicht auftauchen. `760d-…` gehört dem Lichemaster-, `8471-…` dem Vampire-Coast-Kontingent; jede steht im jeweils anderen Roster als `absent`. | Beide Grenzen hängen am `categoryLink` **innerhalb** ihres `forceEntry` (`:29452` bzw. `:29482`). Ein Roster wählt genau ein Kontingent. |
 
 ### Was in beiden Kontingenten sonst noch Pflicht ist — und wie dieses Szenario damit umgeht
@@ -147,7 +147,7 @@ Drei Gründe, alle aus den Daten:
    `constraint min 0 field="limit::ecfa-8486-4f6c-c249" scope="roster"
    id="8f3f-ffa8-387b-0bf9"`, per `:29464` auf `2000` gesetzt, wenn das
    Kontingent `f37a…` ist; wortgleich `f3aa-b530-9b6c-0995` (`:29499`/`:29502`)
-   für `bf46…` ([§5.6](../../battlescribe-data-format.md#56-force-entries-detachments)).
+   für `bf46…` ([§5.6](../../battlescribe/files/game-system.md#56-force-entries-detachments)).
    Mit `limit::pts = 3000` ist diese Forderung erfüllt.
 3. **Der Lord-Höchstwert der `.gst` liegt bei 3000–3999 auf 2** (`.gst:264`,
    `fda5-91c2-e17f-774c`, Basis `max 1`) — eine Lord-Auswahl je Roster kann ihn
@@ -176,7 +176,7 @@ Drei Gründe, alle aus den Daten:
 
 Jede Auswahl trägt `number="1"`; verschachtelt ist nur der „General"-Verweis unter
 seinem Charakter. Damit ist die in
-[§7.5](../../battlescribe-data-format.md#75-cost--cost-type) benannte Lücke
+[§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) benannte Lücke
 („ist `.ros`-`number` per-Eltern-relativ oder absolut?") für dieses Szenario
 **folgenlos**: `1 × 1 = 1` in beiden Lesarten. Die Punktesummen bleiben weit unter
 dem Budget (Roster 02: Kemmler 550 + Krell 190 = 740; Roster 04: Luthor 260;
@@ -273,7 +273,7 @@ Herkunft der Force-**Definition**.
 
 | Facette | Warum |
 |---------|-------|
-| **Die Eigengrenzen der Kontingente auf `limit::pts`** (`8f3f-ffa8-387b-0bf9`, `f3aa-b530-9b6c-0995`; Basis `min 0`, per Modifikator auf `2000` gesetzt) | Ihr `actual` müsste über die Messgröße des Budgets hergeleitet werden, die die Formatspezifikation für den Bericht nicht festlegt (dieselbe Zurückhaltung wie in [`../condition-group-not/`](../condition-group-not/README.md)). Das Budget **3000** erfüllt die Forderung unter der Lesart „`limit::` = das eingestellte Kostenlimit der Roster" ([§7.7, Condition-Tabelle](../../battlescribe-data-format.md#condition--eine-voraussetzung)); asseriert wird sie trotzdem nicht. |
+| **Die Eigengrenzen der Kontingente auf `limit::pts`** (`8f3f-ffa8-387b-0bf9`, `f3aa-b530-9b6c-0995`; Basis `min 0`, per Modifikator auf `2000` gesetzt) | Ihr `actual` müsste über die Messgröße des Budgets hergeleitet werden, die die Formatspezifikation für den Bericht nicht festlegt (dieselbe Zurückhaltung wie in [`../condition-group-not/`](../condition-group-not/README.md)). Das Budget **3000** erfüllt die Forderung unter der Lesart „`limit::` = das eingestellte Kostenlimit der Roster" ([§7.7, Condition-Tabelle](../../battlescribe/building-blocks/modifier.md#condition--eine-voraussetzung)); asseriert wird sie trotzdem nicht. |
 | **Der Lord-Höchstwert `fda5-91c2-e17f-774c`** (`.gst:363`, `max 1`, `scope="parent"` an der `categoryEntry`, per Klasse auf 2 gehoben) | `scope="parent"` an einer `categoryEntry` ist von der Formatspezifikation nicht eindeutig bestimmt, und mit höchstens **einer** Lord-Auswahl je Roster unterscheidet die Grenze ohnehin keine Lesart. Deshalb weder in `firing` noch in `absent` noch als `effectiveMax`. |
 | **Ob die Engine eine Diagnose meldet**, wenn ein `modifier`-`field` nicht auflöst | Weder die Format-Doku noch die XSD sagen, ob ein solcher Verweis ein Datenfehler mit Meldepflicht oder eine stille No-op ist. Dieses Szenario pinnt allein die **Wirkung** (keine), nicht die **Meldung** — `diagnostics` bleibt unbesetzt. |
 | **Ein dritter Träger derselben Konstruktion** | Im Korpus nicht vorhanden: die Id kommt genau zweimal vor. Beide Vorkommen sind hier abgedeckt — je ein Paar „ohne Lord / mit Lord" pro Kontingent, wie es die Daten hergeben (beide Sonderheere haben eine erreichbare, im Kontingent aufgedeckte Lord-Einheit: Kemmler bzw. Luthor Harkon, beide obendrein dort Pflicht). |

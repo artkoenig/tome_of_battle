@@ -19,7 +19,7 @@ in bestehenden Szenarien verifizierten Form (direktes `entryId`, leeres
 
 ## Worum es geht
 
-Ein `modifier` **aendert** laut [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+Ein `modifier` **aendert** laut [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 „eine Eigenschaft des Elternelements oder den Wert eines Constraints". Sein `field`
 darf genau eines von sieben Dingen benennen:
 
@@ -37,7 +37,7 @@ raten: Die Wirkung eines Modifikators ist im Format ausschliesslich als
 *Aenderung eines benannten Ziels* definiert. Existiert das Ziel nicht, existiert
 auch die Aenderung nicht — es gibt im Format keinen zweiten, zielfreien
 Wirkungspfad, und ein `modifier` legt insbesondere **nie** eine Grenze an
-(Grenzen entstehen nur aus `constraint`-Elementen, [§7.6](../../battlescribe-data-format.md#76-constraint)).
+(Grenzen entstehen nur aus `constraint`-Elementen, [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)).
 
 ### Wie das Fehlen des Ziels geprueft wurde
 
@@ -76,7 +76,7 @@ gesamten Datensatz sind ihre eigenen vier Verweise.
 ```
 
 Die Klammer traegt **keine** `<conditions>`, `<conditionGroups>` und `<repeats>` —
-nach [§7.7](../../battlescribe-data-format.md#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier)
+nach [§7.7](../../battlescribe/building-blocks/modifier.md#modifiergroup--eine-bedingte-klammer-um-mehrere-modifier)
 (und dem Szenario [`../unconditional-modifier-group/`](../unconditional-modifier-group/README.md))
 ist sie eine blosse Klammer und gattert nichts. Der Modifikator ist also **immer**
 aktiv, sobald ein Fanatics-Slot existiert. Das ist der schaerfste Fall: nichts
@@ -98,7 +98,7 @@ haelt ihn zurueck, allein das fehlende Ziel kann ihn wirkungslos machen.
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **MUTI-R1** | Ein `modifier`, dessen `field` eine im Datensatz nirgends definierte Id nennt, **erzeugt keine Grenze dieser Id**. Im Verletzungsbericht darf `ce6e-afde-2ed1-aac2` nie erscheinen. | Grenzen entstehen ausschliesslich aus `constraint`-Elementen ([§7.6](../../battlescribe-data-format.md#76-constraint)); ein `modifier` aendert nur ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)). Zu `ce6e-afde-2ed1-aac2` existiert kein `constraint` (Suchbeleg oben). Im Manifest jedes Rosters als `absent`. |
+| **MUTI-R1** | Ein `modifier`, dessen `field` eine im Datensatz nirgends definierte Id nennt, **erzeugt keine Grenze dieser Id**. Im Verletzungsbericht darf `ce6e-afde-2ed1-aac2` nie erscheinen. | Grenzen entstehen ausschliesslich aus `constraint`-Elementen ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)); ein `modifier` aendert nur ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)). Zu `ce6e-afde-2ed1-aac2` existiert kein `constraint` (Suchbeleg oben). Im Manifest jedes Rosters als `absent`. |
 | **MUTI-R2** | Er **verschiebt keine fremde Grenze**. Die Grenzen im selben Rahmen behalten genau die Werte, die die Katalogdaten ihnen geben: Fanatics `max 3`, Night-Goblin-Modell `min 20`, Netters `max 0 + floor(Modelle/4)`. | O&G-`.cat`: `0368-ef7f-01c5-924a` (`type=max value=3 field=selections scope=parent shared=true includeChildSelections=false`), `8cb2-bd82-3725-569e` (`type=min value=20 field=selections scope=parent shared=false`), `445e-c0e4-6784-9097` (`type=max value=0 field=selections scope=parent shared=true`) mit `<modifier type="increment" value="1" field="445e-c0e4-6784-9097">` + `<repeat value="4" repeats="1" field="selections" scope="parent" childId="7b95-cfde-8c59-78c3" shared="true" roundUp="false"/>`. Im Manifest als `capabilities.effectiveMin`/`effectiveMax`. |
 | **MUTI-R3** | Er **stoert die Auswertung seines Traegers nicht**. Die Fanatics-Obergrenze feuert normal, wenn sie ueberschritten wird — obwohl derselbe Eintrag den unbedingten haltlosen `decrement 100` traegt. | Constraint `0368-ef7f-01c5-924a` (`max 3`, `scope=parent`) am selben `selectionEntry` `18f4-ad33-69ca-e327`, das die haltlose `modifierGroup` traegt. Roster 02/03/05: Ist 15 bzw. 45 gegen Grenze 3. |
 | **MUTI-R4** | Er **stoert die Auswertung seiner Nachbarn nicht**. Die Netters-Grenze und die Modell-Mindeststaerke derselben Einheit verhalten sich unveraendert, gleichgueltig ob 0, 1 oder 3 der bedingten haltlosen Modifikatoren aktiv sind. | Vergleich der Roster 01 (kein bedingter aktiv), 02 (einer aktiv) und 03 (alle drei aktiv): dieselbe Einheit, dieselbe Modell- und Netterszahl, dieselben `effectiveMin`/`effectiveMax`. |
@@ -135,7 +135,7 @@ Netters sind dann still.
 
 Jede „Night Goblins"-Auswahl traegt `number="1"`, die Kinder tragen ihre volle
 Stueckzahl (`number="20"`, `number="15"` usw.). Damit ist die in
-[§7.5](../../battlescribe-data-format.md#75-cost--cost-type) benannte Luecke
+[§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) benannte Luecke
 („ist `.ros`-`number` per-Eltern-relativ oder absolut?") fuer dieses Szenario
 **folgenlos**: `n x 1 = n` in beiden Lesarten.
 
@@ -174,7 +174,7 @@ eindeutig bleibt.
   `expect.absent`; das ist die eine Haelfte der Aussage „wirkungslos".
 - **Die unbegrenzte Obergrenze des Modells** `8036-c81f-c00c-c4c5`
   (`max -1`, `shared=true`) darf nie feuern: der Rohwert `-1` heisst „unbegrenzt"
-  ([§7.6](../../battlescribe-data-format.md#76-constraint), Sentinel-Kasten), und
+  ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint), Sentinel-Kasten), und
   der zugehoerige `set 25`-Modifikator haengt an „Border Patrols rules"
   `4e15-0353-165f-5528`, das in **keinem** Roster gewaehlt ist. Als
   `capabilities.effectiveMax: null` gespiegelt.

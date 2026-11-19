@@ -61,13 +61,13 @@ das Gegenteil:
 
 - **RSMC-R6 (ausgeblendet):** „Die Min-Grenzen einer effektiv versteckten Entität
   werden **nicht** validiert" — die Regel aus
-  [`docs/battlescribe-data-format.md` §5.6/§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)
+  [`docs/battlescribe-data-format.md` §5.6/§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)
   (Projektentscheidung Issue 0088, verallgemeinert auf **jede** Ankerart), begründet
   damit, dass ein Verstoß über etwas, das gar nicht angeboten wird, für den Nutzer
   unbehebbar wäre. Die „Savage Orc Boar Chariot" ist im Kontingent „Standard" genau
   das.
 - **RSMC-R7 (nicht verlinkt):** Ein `sharedSelectionEntry` ist laut
-  [§7.2](../../battlescribe-data-format.md#72-entry-link-info-link-category-link)
+  [§7.2](../../battlescribe/building-blocks/links.md#72-entry-link-info-link-category-link)
   **ausschließlich** über einen `entryLink` erreichbar. Ohne einen einzigen Verweis
   im Korpus existiert für diesen Eintrag in keinem Kontingent ein Angebot — dieselbe
   Unbehebbarkeit wie oben, nur noch strenger. Der Eintrag ist ein Dublettenrest der
@@ -105,7 +105,7 @@ nutzen die Force „Standard (OG-AB)" `2bfa-e64a-7123-895f` und ein Punktelimit 
 als **zwei getrennte Geschwister-Selektionen** mit je `number="1"` in der Liste,
 nicht als eine Selektion mit `number="2"`. Damit hängt das Szenario nicht an der
 Frage, ob `number` als absolute Stückzahl oder als Multiplikator je Eltern-Instanz
-gelesen wird ([§7.5, „Zahlenbasis"](../../battlescribe-data-format.md#75-cost--cost-type)
+gelesen wird ([§7.5, „Zahlenbasis"](../../battlescribe/building-blocks/cost.md#75-cost--cost-type)
 — eine dokumentierte Lücke der Quelle). Ebenso trägt jede Einheit „Orc Boar Chariot"
 ihr pflichtiges Modell „Orc Chariot" `29ae-542a-a624-a552` (`min 1`, scope=parent,
 constraint `0662-8289-4527-fea0`), damit die Rosters für sich genommen vollständig
