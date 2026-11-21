@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (vollstaendige Historie)
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Der Issue-Teil liest den Tracker ueber mehrere Branches -- ein flacher
           # Checkout genuegt nicht.
@@ -54,9 +54,9 @@ jobs:
         run: git fetch --prune --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
 
       - name: Node einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
           cache: npm
 
       - name: Abhaengigkeiten installieren
@@ -71,11 +71,11 @@ jobs:
           echo "$RUNNER_TEMP/ai-blacksmith/plugins/cast/bin" >> "$GITHUB_PATH"
 
       - name: Pages konfigurieren
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Bestehenden docs/-Inhalt mit Jekyll bauen
         # Erhaelt die heute erreichbaren ADR-Adressen; Ausgabe nach ./_site.
-        uses: actions/jekyll-build-pages@v1
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
         with:
           source: ./docs
           destination: ./_site
@@ -89,7 +89,7 @@ jobs:
           node scripts/project-state/generate.js ./_site/status/index.html
 
       - name: Pages-Artefakt hochladen
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: ./_site
 
@@ -102,4 +102,4 @@ jobs:
     steps:
       - name: Auf GitHub Pages deployen
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
