@@ -58,10 +58,14 @@ const mockZipFile = vi.fn();
 const mockZipGenerateAsync = vi.fn().mockResolvedValue(new Blob(['mock zip content'], { type: 'application/zip' }));
 vi.mock('jszip', () => {
   return {
-    default: vi.fn().mockImplementation(() => ({
-      file: mockZipFile,
-      generateAsync: mockZipGenerateAsync
-    }))
+    // A `function`, not an arrow: the component calls `new JSZip()`, and since Vitest 4 a
+    // mock is constructed with its implementation, which an arrow function cannot be.
+    default: vi.fn().mockImplementation(function () {
+      return {
+        file: mockZipFile,
+        generateAsync: mockZipGenerateAsync
+      };
+    })
   };
 });
 
