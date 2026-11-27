@@ -80,6 +80,27 @@ Meldungs- und Namens-Modifikatoren haengen. Dasselbe Muster nutzen die Roster
 von [`primary-catalogue-scope`](../primary-catalogue-scope/README.md) fuer
 Mercenaries-Einheiten in fremden Armeebuechern.
 
+### Der Regiment-of-Renown-Schalter steht in allen drei Rostern
+
+Die Primaer-Kategorie der Priesterin ist **„Regiment of Renown"**
+(`ee09-9a50-ad78-9c32`, Mercenaries-`.cat` Z. 39). Diese Kategorie traegt ein
+eigenes `set hidden="true"`, das u. a. haelt, solange **„Allow Regiments of
+Renown"** (`3d35-6b18-262f-6503`) im Kontingent fehlt (`lessThan 1`,
+`scope="force"`, `includeChildSelections="true"`, Z. 53). Ein Eintrag, dessen
+effektive Primaer-Kategorie versteckt ist, ist selbst versteckt
+([Format-Doku §8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit),
+Issue 0204; gepinnt in
+[`hidden-primary-category-lord-points-gate`](../hidden-primary-category-lord-points-gate/README.md)).
+Damit dieses Szenario weiter **nur** die Meldungs-Gatter isoliert, steht in
+jedem Roster dieselbe Schalter-Auswahl: der `.gst`-Eintrag **„Mercenaries and
+Regiments of Renown"** (`6a7d-7d85-8d7e-cbce`, Z. 2345; Wurzel-`entryLink`
+`78e9-26f1-e3da-5a01` im Orcs-Katalog, leer) mit seinem Kind „Allow Regiments
+of Renown" (`3d35-6b18-262f-6503`, Z. 2347). Beide sind kostenlos (keine
+`<costs>`), ihre Obergrenzen (`fae4-595f-7b39-1909`/`993f-eb11-5986-8b3e` je
+`max 1`, `b536-105e-b1da-d5c5` `max 1`) sind mit je einer Auswahl genau
+erfuellt, und **kein** Modifikator und **keine** Bedingung der Priesterin nennt
+eine dieser Ids — Meldungen, Name, Grenze `f706-…` bleiben unberuehrt.
+
 ---
 
 ## Abgeleitete Regeln (mit Beleg aus den Katalogdaten)
@@ -93,7 +114,7 @@ Mercenaries-Einheiten in fremden Armeebuechern.
 | **AIW-R5** | **`{this}` wird durch den wirksamen Anzeigenamen des tragenden Eintrags ersetzt.** In der `info`-Meldung (Klammer haelt nicht) also durch `0-1 Amazon Serpent Priestess`, in der `warning`-Meldung (Klammer haelt) durch `0-1 Amazon Serpent Priestess*`. Die rohe Fassung mit `{this}` darf **nie** erscheinen. | Beide `value`-Attribute enthalten das Token (Mercenaries-`.cat` Z. 4784 / 4819). Die Aufloesungsstufe ist **nicht** aus den Katalogdaten ableitbar; sie folgt dem Manifest-Vertrag — siehe [„Entscheidung: wirksamer Name"](#entscheidung-wirksamer-name-im-token). |
 | **AIW-R6** | **Der `error`-Modifikator desselben Eintrags ist ein dritter, unabhaengiger Schalter.** Er haengt an `lessThan 1` des `.gst`-Schalters „Allow special characters?" (`8923-5946-7b10-8957`, `scope="force"`). Ist der Schalter gewaehlt, schweigt er — deshalb steht er in Roster 01/02 im Kontingent. Sein Text traegt **kein** Token und bleibt woertlich. | Mercenaries-`.cat` Z. 4779–4783: `<modifier type="add" value="Please enable &quot;Allow special characters?&quot;" field="error">` mit `<condition type="lessThan" value="1" field="selections" scope="force" childId="8923-5946-7b10-8957" shared="true" includeChildSelections="true"/>`. Schalter-Definition: `.gst` Z. 1935, Wurzel-`selectionEntry`, `hidden="false"`. |
 | **AIW-R7** | **Derselbe Schalter hebt die einzige zaehlende Grenze des Eintrags.** Die Priesterin traegt `max 0` (`scope="force"`), das per `set 1` auf 1 gehoben wird, sobald „Allow special characters?" im Kontingent steht. Mit Schalter ist **eine** Priesterin zulaessig (Ist 1, Grenze 1 — feuert nicht), ohne Schalter nicht (Ist 1, Grenze 0 — feuert). | Mercenaries-`.cat` Z. 4770–4772: `<constraint type="max" value="0" field="selections" scope="force" shared="true" id="f706-5d39-7bf7-5f7b" includeChildSelections="false"/>`; Z. 4774–4778: `<modifier type="set" value="1" field="f706-5d39-7bf7-5f7b">` mit `<condition type="atLeast" value="1" … childId="8923-5946-7b10-8957"/>`. |
-| **AIW-R8** | **Der Eintrag ist in diesen Rostern nicht versteckt.** Sein Basiswert ist `hidden="false"`; der einzige `field="hidden"`-Modifikator setzt `true`, sobald „Border Patrols rules" (`4e15-0353-165f-5528`) **im Roster** steht. Diese Auswahl kommt in keinem der drei Roster vor. | Mercenaries-`.cat` Z. 4808–4812: `<modifier type="set" value="true" field="hidden">` mit `<condition type="atLeast" value="1" … scope="roster" childId="4e15-0353-165f-5528" … childName="Border Patrols rules"/>`. Da direkt an die Definition gebunden wird, gibt es keinen `entryLink`, dessen `hidden` sich per ODER dazumischen koennte ([Format-Doku §8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). |
+| **AIW-R8** | **Der Eintrag ist in diesen Rostern nicht versteckt.** Sein Basiswert ist `hidden="false"`; der einzige eigene `field="hidden"`-Modifikator setzt `true`, sobald „Border Patrols rules" (`4e15-0353-165f-5528`) **im Roster** steht — in keinem der drei Roster der Fall. Seine **Primaer-Kategorie** „Regiment of Renown" ist ebenfalls sichtbar: ihr `set hidden="true"` haelt nur, wenn „Allow Regiments of Renown" im Kontingent fehlt **oder** Border Patrols gewaehlt und das Armeebuch nicht Dogs of War ist — der Schalter steht in allen drei Rostern, Border Patrols in keinem. | Eintrag: Mercenaries-`.cat` Z. 4808–4812 (`<modifier type="set" value="true" field="hidden">` mit `<condition type="atLeast" value="1" … scope="roster" childId="4e15-0353-165f-5528" …/>`). Kategorie: Z. 39–57 (`conditionGroup type="or"` aus `and(atLeast 1 4e15-… roster, notInstanceOf fa9c-… primary-catalogue)` und `lessThan 1 3d35-6b18-262f-6503 scope=force`). Direkte Bindung, also kein `entryLink`, dessen `hidden` sich per ODER dazumischen koennte ([Format-Doku §8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). |
 
 ### Byte-Genauigkeit der behaupteten Texte
 
@@ -174,7 +195,8 @@ Beobachtung.
   Meldungs-Gatter isoliert zeigen.
 - **Sichtbarkeit als Verletzung.** `hidden` (AIW-R8) gehoert nicht in den
   Verletzungsbericht; die Aussage steht als `isHidden` am
-  Faehigkeits-Datensatz, **nicht** als feuernde Grenze.
+  Faehigkeits-Datensatz, **nicht** als feuernde Grenze. Den versteckten Fall
+  (Regiment of Renown **ohne** Schalter) pinnt dieses Szenario nicht.
 - **Weitere Armeeaufbau-Diagnosen.** General-/Core-Pflicht des Orcs-Kontingents
   und aehnliche Grenzen treten zusaetzlich auf und sind hier ohne Belang.
 
@@ -184,16 +206,18 @@ Beobachtung.
 
 Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle drei laufen
 gegen `.gst` + Orcs-`.cat` + Mercenaries-`.cat`; es gibt keinen
-Dataset-Override.
+Dataset-Override. Jedes Roster enthaelt zusaetzlich den kostenlosen
+Regiment-of-Renown-Schalter („Mercenaries and Regiments of Renown" → „Allow
+Regiments of Renown"), damit die Priesterin sichtbar bleibt (AIW-R8).
 
 > **Assertion-Fokus:** die beiden Meldungen, der Slot-Name und die Grenze
 > `f706-5d39-7bf7-5f7b`. Andere Diagnosen treten zusaetzlich auf.
 
 | # | Testtitel | Roster-Zustand | Erwartetes Ergebnis des Evaluators (nicht-technisch) | Fixture |
 |---|-----------|----------------|-------------------------------------------------------|---------|
-| 01 | Kampagne gewaehlt → `info` | OG-Kontingent mit Schalter „Allow special characters?", Kampagneneintrag und **einer** Priesterin. | **AIW-R1/R3/R5:** An der Priesterin liegt genau die **`info`**-Meldung an, `{this}` durch **„0-1 Amazon Serpent Priestess"** ersetzt. Die **`warning`** liegt **nicht** an — weder gesternt noch ungesternt noch roh. Der Slot heisst schlicht „0-1 Amazon Serpent Priestess" (**AIW-R4**), die Force-Grenze feuert nicht (**AIW-R7**), die `error`-Meldung schweigt (**AIW-R6**). | [`01-campaign-selected-info-fires.ros`](rosters/01-campaign-selected-info-fires.ros) |
+| 01 | Kampagne gewaehlt → `info` | OG-Kontingent mit RoR-Schalter, Schalter „Allow special characters?", Kampagneneintrag und **einer** Priesterin. | **AIW-R1/R3/R5:** An der Priesterin liegt genau die **`info`**-Meldung an, `{this}` durch **„0-1 Amazon Serpent Priestess"** ersetzt. Die **`warning`** liegt **nicht** an — weder gesternt noch ungesternt noch roh. Der Slot heisst schlicht „0-1 Amazon Serpent Priestess" (**AIW-R4**), die Force-Grenze feuert nicht (**AIW-R7**), die `error`-Meldung schweigt (**AIW-R6**). | [`01-campaign-selected-info-fires.ros`](rosters/01-campaign-selected-info-fires.ros) |
 | 02 | Kampagne nicht gewaehlt → `warning` | **Dasselbe** Kontingent, **nur** ohne den Kampagneneintrag. | **AIW-R2/R3/R4/R5:** An der Priesterin liegt genau die **`warning`**-Meldung an, `{this}` durch **„0-1 Amazon Serpent Priestess\*"** ersetzt; der Slot-Name traegt dasselbe `*`. Die **`info`** liegt **nicht** an. Force-Grenze und `error` verhalten sich wie in 01. | [`02-campaign-absent-warning-fires.ros`](rosters/02-campaign-absent-warning-fires.ros) |
-| 03 | Kontrolle: `error` + `warning` zugleich | Nur die Priesterin — weder Kampagneneintrag noch Schalter. | **AIW-R6/R7:** Am selben Slot liegen **zwei** Meldungen an: die blockierende **`error`**-Meldung (woertlich, ohne Token) **und** die informative **`warning`**. Zusaetzlich feuert die Force-Obergrenze `f706-5d39-7bf7-5f7b` mit **Ist 1 / Grenze 0**, weil der hebende `set 1` denselben Schalter verlangt. Die **`info`** schweigt. | [`03-no-toggle-error-and-warning.ros`](rosters/03-no-toggle-error-and-warning.ros) |
+| 03 | Kontrolle: `error` + `warning` zugleich | RoR-Schalter und Priesterin — weder Kampagneneintrag noch „Allow special characters?". | **AIW-R6/R7:** Am selben Slot liegen **zwei** Meldungen an: die blockierende **`error`**-Meldung (woertlich, ohne Token) **und** die informative **`warning`**. Zusaetzlich feuert die Force-Obergrenze `f706-5d39-7bf7-5f7b` mit **Ist 1 / Grenze 0**, weil der hebende `set 1` denselben Schalter verlangt. Die **`info`** schweigt. | [`03-no-toggle-error-and-warning.ros`](rosters/03-no-toggle-error-and-warning.ros) |
 
 ### Herleitung je Roster
 
@@ -201,6 +225,7 @@ Die Tabelle ist die Begruendung der Erwartung, nicht selbst eine Assertion:
 
 | Roster | Gatter | Bedingung (aus den Katalogdaten) | Zaehlung im Roster | haelt? | Wirkung |
 |--------|--------|----------------------------------|--------------------|--------|---------|
+| 01–03 | `set hidden=true` an „Regiment of Renown" | `or(` `and(Border Patrols ≥ 1, notInstanceOf DoW)`, `lessThan 1` auf `3d35-…` `scope=force` `)` | Border Patrols 0, `3d35-…` 1 | **nein** | Kategorie sichtbar, Priesterin sichtbar |
 | 01 | `add info` | `atLeast 1` `selections` `scope=force` `childId=7d87-7436-5341-bbc0` | 1 | **ja** | `info`-Meldung, `{this}` → „0-1 Amazon Serpent Priestess" |
 | 01 | `modifierGroup` (`append`/`set 0`/`add warning`) | `and(` `lessThan 1` auf `7d87…`, `or(7× instanceOf primary-catalogue)` `)` | 1 bzw. Armeebuch `4049…` | **nein** (erste Haelfte faellt) | kein `*`, keine `warning`, Kosten bleiben 235 |
 | 01 | `add error` | `lessThan 1` `scope=force` `childId=8923-5946-7b10-8957` | 1 | nein | keine `error`-Meldung |
@@ -239,6 +264,10 @@ die Instanzen **dieses Eintrags** im Kontingent (vgl.
 | Dessen eigene Obergrenzen (nicht verletzt) | `1dce-916d-88c8-bada` (`max 1`, `scope=parent`) / `c654-8498-0ed5-e41a` (`max 1`, `scope=force`) | `.gst` Z. 2315–2316 |
 | Schalter „Allow special characters?" (Wurzel-Eintrag, `hidden="false"`) | `8923-5946-7b10-8957` | `.gst` → Wurzel-`<selectionEntries>` (Z. 1935) |
 | Dessen Roster-Obergrenze (nicht verletzt) | `5036-e10c-2fd8-f135` (`max 1`, `scope=roster`) | `.gst` Z. 1937 |
+| Kategorie „Regiment of Renown" (Primaer-Kategorie der Priesterin; `set hidden=true`-Gatter) | `ee09-9a50-ad78-9c32` | Mercenaries-`.cat` Z. 39–67 (Schalter-Bedingung Z. 53) |
+| „Mercenaries and Regiments of Renown" (Container, kostenlos, in allen Rostern) | `6a7d-7d85-8d7e-cbce` — Grenzen `fae4-595f-7b39-1909` (`max 1` parent), `993f-eb11-5986-8b3e` (`max 1` force) | `.gst` Z. 2345, 2390–2391 |
+| — Wurzel-`entryLink` im Orcs-Katalog (leer; **nicht** gebunden) | `78e9-26f1-e3da-5a01` → `6a7d-7d85-8d7e-cbce` | Orcs-`.cat` Z. 14912 |
+| „Allow Regiments of Renown" (Kind, kostenlos, in allen Rostern) | `3d35-6b18-262f-6503` — Grenze `b536-105e-b1da-d5c5` (`max 1` parent) | `.gst` Z. 2347–2349 |
 | „Border Patrols rules" (Schalter des `hidden`-Modifikators; in keinem Roster gewaehlt) | `4e15-0353-165f-5528` | Mercenaries-`.cat` Z. 4810 (`childName="Border Patrols rules"`) |
 | Wurzel-`entryLink` der Priesterin im Orcs-Katalog (leer; **nicht** gebunden) | `338f-d678-568d-8d6b` → `9ddd-69c8-644d-abc2` | Orcs-`.cat` → `<entryLinks>` (Z. 14849) |
 | Nicht behauptet: Pflicht-`entryLink` „Magic Level 3" unter der Priesterin | `66e3-7fc6-9f78-5535`, Grenze `e1a9-04b4-cd05-0ca5` (`min 1`, `scope=parent`) | Mercenaries-`.cat` Z. 4716–4723 |

@@ -163,6 +163,7 @@ aktualisiert im selben Schritt diesen Katalog.
 | [`unit-model-repeat-shield-markup`](testing/unit-model-repeat-shield-markup/) | Definitive O&G + Mercenaries | 6 |
 | [`equal-to-force-points-limit-border-patrol`](testing/equal-to-force-points-limit-border-patrol/) | Definitive O&G + Mercenaries | 4 |
 | [`equal-to-force-toggle-count-gotrek`](testing/equal-to-force-toggle-count-gotrek/) | Definitive O&G + Mercenaries | 3 |
+| [`hidden-primary-category-lord-points-gate`](testing/hidden-primary-category-lord-points-gate/) | Definitive VC + Mercenaries | 5 |
 | [`equal-to-ancestor-id-scope-mount-gate`](testing/equal-to-ancestor-id-scope-mount-gate/) | Definitive O&G + Mercenaries | 6 |
 | [`border-patrols-rules-unit-count-gate`](testing/border-patrols-rules-unit-count-gate/) | Definitive VC + Mercenaries | 6 |
 | [`greater-than-roster-casting-dice-sum`](testing/greater-than-roster-casting-dice-sum/) | Definitive O&G + Mercenaries | 5 |
@@ -2624,3 +2625,9 @@ ihr eigener Rahmen. Beleg: das Modell „Reaper Bolt Thrower team"
 > nicht gegen `false` trennbar — der gezählte Eintrag kommt im Fixture-Satz genau
 > einmal vor und kann unterhalb desselben Rahmens nicht tiefer verschachtelt
 > auftreten.
+
+## `hidden-primary-category-lord-points-gate`
+
+Issue 0204: Die Kategorie „Lord" ist unter 2000 Punkten versteckt; ein Eintrag mit dieser
+Primärkategorie ist damit ebenfalls versteckt und meldet gewählt `hiddenSelection`. Details im
+[Szenario-README](testing/hidden-primary-category-lord-points-gate/README.md).

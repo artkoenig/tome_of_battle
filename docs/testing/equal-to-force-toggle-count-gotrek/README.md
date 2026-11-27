@@ -82,6 +82,27 @@ drei Roster vor — die `atLeast`-Seite pinnen
 und [`at-least-force-toggle-gate`](../at-least-force-toggle-gate/README.md)
 (dort an Greasus Goldtooth).
 
+### Der Regiment-of-Renown-Schalter steht in allen drei Rostern
+
+Gotreks **Primaer-Kategorie** ist „Regiment of Renown" (`ee09-9a50-ad78-9c32`,
+Mercenaries-`.cat` `:39`). Sie trägt ein `set hidden="true"`, das u. a. hält,
+solange **„Allow Regiments of Renown"** (`3d35-6b18-262f-6503`) im Kontingent
+fehlt (`lessThan 1`, `scope="force"`, `includeChildSelections="true"`, `:53`).
+Ein Eintrag, dessen effektive Primaer-Kategorie versteckt ist, ist selbst
+versteckt ([§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit),
+Issue 0204; gepinnt in
+[`hidden-primary-category-lord-points-gate`](../hidden-primary-category-lord-points-gate/README.md)).
+Damit dieses Szenario weiter **nur** die `equalTo`-Zelle isoliert, enthält
+jedes Roster denselben kostenlosen Schalter: den `.gst`-Eintrag
+**„Mercenaries and Regiments of Renown"** (`6a7d-7d85-8d7e-cbce`, `.gst:2345`)
+mit seinem Kind „Allow Regiments of Renown" (`.gst:2347`). Er wird **nicht**
+von einer der hier gezählten Bedingungen erfasst (seine Id ist nicht
+`8923-…`), trägt keine `<costs>`, seine eigenen Obergrenzen
+(`fae4-595f-7b39-1909`, `993f-eb11-5986-8b3e`, `b536-105e-b1da-d5c5`, je
+`max 1`) sind mit je einer Auswahl genau erfüllt, und er erscheint in keiner
+Bedingung Gotreks. Alle Zählungen und Erwartungen unten bleiben dadurch
+unverändert.
+
 ### Wie zwei Schalter-Selektionen in eine `.ros` geschrieben werden
 
 Beide Kodierungen sind schreibbar; gewählt ist die **zweite Geschwister-
@@ -111,7 +132,7 @@ verdeckte Nebenwirkung.
 | **EFTC-R5** | **Die Autor-Meldung hat ein eigenes, anderes Gatter.** `modifier type="add" field="error"` trägt den Text `Please enable "Allow special characters?"` und hängt an `lessThan 1` auf **dasselbe** `childId` im **selben** Rahmen. Sie liegt daher **nur** bei Zählung 0 an — bei 1 **und** bei 2 nicht. | Mercenaries-`.cat` `:5541-5545` — `modifier type="add" value="Please enable &quot;Allow special characters?&quot;" field="error"` mit `condition type="lessThan" value="1" field="selections" scope="force" childId="8923-5946-7b10-8957" shared="true" includeChildSelections="true"`. `field="error"` trägt keinen Feldwert, sondern den Meldungstext: [§7.7, Kasten „Klartext-Hinweise an den Spieler"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat). |
 | **EFTC-R6** | **Das Trennkriterium.** Bei Zählung 2 fallen beide Gatter zugleich: die Grenze feuert **wieder** (Ist 1 / Grenze 0) **und** die Meldung bleibt **stumm**. Genau diese Kombination ist unter `atLeast 1` unmöglich — dort hielte das erste Gatter (2 ≥ 1) und die Grenze bliebe still. | Kombination aus EFTC-R2 und EFTC-R5; Gegenform am Schwester-Eintrag `9ddd-69c8-644d-abc2`: `constraint f706-5d39-7bf7-5f7b` (`:4771`) mit `modifier set 1` und `condition type="atLeast" value="1" … childId="8923-5946-7b10-8957"` (`:4774-4776`). |
 | **EFTC-R7** | Der Schalter selbst trägt **max 1** im **Roster**-Rahmen. Eine Selektion ist zulässig, **zwei** verletzen diese Grenze mit **Ist 2 / Grenze 1**. Seine beiden `min 0`-Grenzen sind No-ops (Grenze 0, nie unterschritten); die zwei `set 0`-Modifikatoren darauf schreiben 0 auf 0 und sind zusätzlich auf die Kategorie „Special Characters" (`0644-bfcd-32c2-21dc`) gegatet, die Gotrek **nicht** führt. | `.gst:1937` (`5036-e10c-2fd8-f135`, `type="max" value="1" scope="roster" includeChildSelections="true" includeChildForces="true"`), `:1938`/`:1939` (`3d91-4deb-faa0-9996`, `77da-4055-647c-6978`, je `type="min" value="0"`), `:1953-1962` (die beiden `set 0`). Gotreks `categoryLinks`: `:5373-5374` — nur `Rare` `e94b-6a54-8779-cd60` und `Regiment of Renown` `ee09-9a50-ad78-9c32`. |
-| **EFTC-R8** | Gotrek ist in allen drei Rostern **sichtbar**. Sein Basiswert ist `hidden="false"`, und an der Definition hängt **kein** `field="hidden"`-Modifikator und **keine** `modifierGroup` — die einzigen zwei Modifikatoren sind der `set` aus EFTC-R2 und die Meldung aus EFTC-R5. Da direkt an die Definition gebunden wird, gibt es auch keinen `entryLink`, dessen `hidden` sich per ODER dazumischen könnte. | Mercenaries-`.cat` `:5371` (`hidden="false"`) und `:5535-5546` (vollständige `<modifiers>`-Liste des Eintrags). ODER-Komposition von Link und Ziel: [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit). |
+| **EFTC-R8** | Gotrek ist in allen drei Rostern **sichtbar**. Sein Basiswert ist `hidden="false"`, und an der Definition hängt **kein** `field="hidden"`-Modifikator und **keine** `modifierGroup` — die einzigen zwei Modifikatoren sind der `set` aus EFTC-R2 und die Meldung aus EFTC-R5. Da direkt an die Definition gebunden wird, gibt es auch keinen `entryLink`, dessen `hidden` sich per ODER dazumischen könnte. Seine **Primaer-Kategorie** „Regiment of Renown" ist ebenfalls sichtbar: ihr `set hidden="true"` hält nur ohne „Allow Regiments of Renown" im Kontingent **oder** mit Border Patrols außerhalb von Dogs of War — der Schalter steht in allen drei Rostern, Border Patrols (`4e15-0353-165f-5528`) in keinem. | Mercenaries-`.cat` `:5371` (`hidden="false"`) und `:5535-5546` (vollständige `<modifiers>`-Liste des Eintrags); Kategorie `:39-67` (Schalter-Bedingung `:53`). ODER-Komposition von Link und Ziel: [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit). |
 | **EFTC-R9** | Der **effektive Anzeigename** bleibt der Basisname **„Gotrek Gurnisson & Felix Jaeger"**: an `ef9d-ae15-cc43-f2d6` hängt kein `field="name"`-Modifikator, und der Meldungstext trägt **kein** `{this}`-Token. | Mercenaries-`.cat` `:5371` (`name="Gotrek Gurnisson &amp; Felix Jaeger"`, XML-Entity `&amp;` → `&`; im Fixture-Satz genau **einmal** vorhanden) und `:5535-5546`. |
 | **EFTC-R10** | Die Bindung erfolgt **direkt an die geteilte Definition** (`entryId="ef9d-ae15-cc43-f2d6"`, leeres `entryLinkId`). Im **ganzen** Fixture-Satz existiert **kein** `entryLink` auf diese Id — die direkte Bindung ist damit nicht nur zulässig, sondern der einzige Weg, und es geht kein Link-eigener `constraint`/`cost`/`modifier` verloren. | Verifiziert: die Id `ef9d-ae15-cc43-f2d6` kommt im Fixture-Satz **genau einmal** vor — als `id` der Definition (`:5371`). Muster der Direktbindung wie in [`add-info-and-warning-campaign-gate`](../add-info-and-warning-campaign-gate/README.md) und [`primary-catalogue-scope`](../primary-catalogue-scope/README.md). |
 
@@ -133,7 +154,8 @@ zählen für diese Grenze nicht mit. Daraus: Roster 01 und 03 feuern mit
   zählende Grenzen, nicht Verfügbarkeit oder Profilwerte (gleiche Abgrenzung
   wie VBL-R4/R5 in [`vampire-bloodlines`](../vampire-bloodlines/README.md)).
   Dasselbe gilt für die Kategorie „Special Characters" (`0644-bfcd-32c2-21dc`),
-  die derselbe Schalter per `hidden`-Gatter steuert.
+  die derselbe Schalter per `hidden`-Gatter steuert, und für den versteckten
+  Fall „Regiment of Renown ohne Schalter", den dieses Szenario nicht pinnt.
 - **Gotreks Pflicht-Kinder bleiben unbesetzt.** Die beiden Modelle
   „Gotrek Gurnisson" (`ce6a-5110-45de-637f`, `min 1` `fde7-bf8e-f148-e4cf`) und
   „Felix Jaeger" (`b1e5-1930-8b3e-fd0c`, `min 1` `9e0d-73c0-dda4-873e`) samt
@@ -168,7 +190,9 @@ zählen für diese Grenze nicht mit. Daraus: Roster 01 und 03 feuern mit
 Fertige Roster als Engine-Eingabe unter [`rosters/`](rosters/). Alle drei laufen
 gegen **denselben** Datensatz (`.gst` + Orcs-and-Goblins-`.cat` +
 Mercenaries-`.cat`) und benutzen dasselbe Kontingent „Standard (OG-AB)"
-`2bfa-e64a-7123-895f` mit **genau einem** Gotrek. Die Roster unterscheiden sich
+`2bfa-e64a-7123-895f` mit **genau einem** Gotrek und **genau einem**
+Regiment-of-Renown-Schalter („Mercenaries and Regiments of Renown" →
+„Allow Regiments of Renown"). Die Roster unterscheiden sich
 **ausschließlich** in der Zahl der „Allow special characters?"-Selektionen.
 
 > **Assertion-Fokus:** die Grenze `e3c5-278b-09bc-84cf` (feuert / feuert nicht,
@@ -179,7 +203,7 @@ Mercenaries-`.cat`) und benutzen dasselbe Kontingent „Standard (OG-AB)"
 
 | # | Testtitel | Roster-Zustand | Erwartetes Ergebnis des Evaluators (nicht-technisch) | Fixture |
 |---|-----------|----------------|-------------------------------------------------------|---------|
-| 01 | **Kein** Schalter → Bedingung fällt, max 0 feuert, Meldung liegt an | Kontingent „Standard (OG-AB)", 1× Gotrek, **keine** „Allow special characters?"-Selektion. | **EFTC-R1/R5:** Die Zählung ist 0 — `equalTo 1` fällt, der `set 1` wirkt nicht, die Grenze `e3c5-…` bleibt bei **0** und feuert mit **Ist 1 / Grenze 0**; der Slot meldet `effectiveMax=0`, `effectiveMin=null`, `isHidden=false`. Zugleich hält `lessThan 1`: am selben Slot liegt die **`error`**-Meldung `Please enable "Allow special characters?"` an. Die Schalter-Obergrenze `5036-…` kann mangels Selektion nicht feuern. | [`01-gotrek-no-toggle-max0.ros`](rosters/01-gotrek-no-toggle-max0.ros) |
+| 01 | **Kein** Schalter → Bedingung fällt, max 0 feuert, Meldung liegt an | Kontingent „Standard (OG-AB)", RoR-Schalter, 1× Gotrek, **keine** „Allow special characters?"-Selektion. | **EFTC-R1/R5:** Die Zählung ist 0 — `equalTo 1` fällt, der `set 1` wirkt nicht, die Grenze `e3c5-…` bleibt bei **0** und feuert mit **Ist 1 / Grenze 0**; der Slot meldet `effectiveMax=0`, `effectiveMin=null`, `isHidden=false`. Zugleich hält `lessThan 1`: am selben Slot liegt die **`error`**-Meldung `Please enable "Allow special characters?"` an. Die Schalter-Obergrenze `5036-…` kann mangels Selektion nicht feuern. | [`01-gotrek-no-toggle-max0.ros`](rosters/01-gotrek-no-toggle-max0.ros) |
 | 02 | **Genau ein** Schalter → Bedingung hält, max 1, alles still | **Identischer** Aufbau, zusätzlich **1×** „Allow special characters?" (`number="1"`). | **EFTC-R2:** Die Zählung ist 1 und trifft den `value` exakt — der `set 1` wirkt, der Slot meldet `effectiveMax=1` (Spielraum 0, ausgeschöpft), **keine** Verletzung von `e3c5-…`. `lessThan 1` fällt: die Meldung ist **weg**. Die Schalter-Obergrenze (max 1) ist mit einer Selektion genau erfüllt. | [`02-gotrek-one-toggle-max1.ros`](rosters/02-gotrek-one-toggle-max1.ros) |
 | 03 | **Zwei** Schalter → Bedingung fällt **wieder** (das Trennkriterium) | **Identischer** Aufbau, aber **2×** „Allow special characters?" als zwei Geschwister-`<selection>`, je `number="1"`. | **EFTC-R6:** Die Zählung ist 2 — `equalTo 1` hält **nicht**, die Grenze fällt auf **0** zurück und feuert **erneut** mit **Ist 1 / Grenze 0**, der Slot meldet wieder `effectiveMax=0`. Die Meldung bleibt **abwesend**, denn `lessThan 1` ist bei 2 ebenfalls falsch. Zusätzlich feuert die Schalter-Obergrenze `5036-…` mit **Ist 2 / Grenze 1**. Unter `atLeast 1` sähe dieser Roster aus wie 02. | [`03-gotrek-two-toggles-max0.ros`](rosters/03-gotrek-two-toggles-max0.ros) |
 
@@ -190,6 +214,10 @@ Mercenaries-`.cat`) und benutzen dasselbe Kontingent „Standard (OG-AB)"
 | 01 | 0 | **nein** (0 ≠ 1) | **0** (Basis) | 1 | **ja** (1 > 0) | **ja** (0 < 1) | **liegt an** (`error`) |
 | 02 | 1 | **ja** (1 = 1) | **1** (`set`) | 1 | nein (1 ≤ 1) | nein (1 ≮ 1) | abwesend |
 | 03 | 2 | **nein** (2 ≠ 1) | **0** (Basis) | 1 | **ja** (1 > 0) | nein (2 ≮ 1) | abwesend |
+
+In allen drei Rostern zählt „Allow Regiments of Renown" `3d35-…` **1** — das
+`lessThan 1`-Gatter der Kategorie „Regiment of Renown" hält nicht, Gotrek
+bleibt sichtbar (EFTC-R8).
 
 Zum Vergleich die **Gegenprobe**, die dieses Szenario ausschließt: wäre die
 Bedingung ein `atLeast 1` (die Form am Schwester-Eintrag), stünde in Zeile 03
@@ -227,6 +255,9 @@ Rostern nur Gotrek vorkommt — die Meldungs-Assertion nennt deshalb zusätzlich
 | — `set 1` auf diese Id mit **der gepinnten `equalTo`-Zelle** | `childId=8923-5946-7b10-8957`, `scope="force"`, `value=1`, `ics=false`, `icf=false` | Mercenaries-`.cat` `:5536-5539` (Condition `:5538`) |
 | — `add error` „Please enable \"Allow special characters?\"" mit `lessThan 1` auf dieselbe `childId` | — (Modifikatoren tragen keine Id) | Mercenaries-`.cat` `:5541-5545` (Condition `:5543`) |
 | — Kategorien (im Roster gespiegelt) | `ee09-9a50-ad78-9c32` (primär, „Regiment of Renown"), `e94b-6a54-8779-cd60` („Rare") | Mercenaries-`.cat` `:5373-5374` |
+| Kategorie „Regiment of Renown" — `set hidden=true` bei fehlendem RoR-Schalter | `ee09-9a50-ad78-9c32` | Mercenaries-`.cat` `:39-67` (Bedingung `:53`) |
+| „Mercenaries and Regiments of Renown" (Container, kostenlos, in allen Rostern) | `6a7d-7d85-8d7e-cbce` — Grenzen `fae4-595f-7b39-1909` / `993f-eb11-5986-8b3e` (je `max 1`) | `.gst` `:2345`, `:2390-2391`; Orcs-Wurzel-`entryLink` `78e9-26f1-e3da-5a01` (`:14912`, leer, nicht gebunden) |
+| „Allow Regiments of Renown" (Kind, kostenlos, in allen Rostern) | `3d35-6b18-262f-6503` — Grenze `b536-105e-b1da-d5c5` (`max 1`) | `.gst` `:2347-2349` |
 | — Pflicht-Kinder (in allen Rostern unbesetzt, **nicht** assertiert) | Modell `ce6a-5110-45de-637f` (min `fde7-bf8e-f148-e4cf`, max `3417-f56f-58b1-2448`), Modell `b1e5-1930-8b3e-fd0c` (min `9e0d-73c0-dda4-873e`, max `231e-5d8b-738f-1b47`) | Mercenaries-`.cat` `:5377-5381`, `:5466-5470` |
 | **SelectionEntry „Allow special characters?"** (`type="upgrade"`, `hidden="false"`, `collective="false"`, Wurzel-Eintrag) — das gezählte Ziel | **`8923-5946-7b10-8957`** | `.gst` `:1935` |
 | — **eigene Roster-Obergrenze** `max 1` (in Roster 03 verletzt) | **`5036-e10c-2fd8-f135`** | `.gst` `:1937` |

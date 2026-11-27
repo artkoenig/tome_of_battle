@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "name": "hidden-primary-category-lord-points-gate",
+  "description": "Ein Eintrag, dessen effektive PRIMAER-Kategorie in seinem Kontingent effektiv versteckt ist, ist selbst versteckt (Issue 0204, Format-Doku 8). Beleg: die .gst-Kategorie 'Lord' (d024-d25b-a9b4-73b6) traegt set hidden=true unter der Bedingung lessThan 2000 auf field=limit::ecfa-8486-4f6c-c249 (die eingestellte Punktegrenze des Rosters). Der 'Master Necromancer' (4ee2-ac3a-3cc6-11af, Wurzel-Eintrag des Vampire-Counts-Buchs) fuehrt 'Lord' als primary=true und ist im Kontingent 'Standard (VC-AB)' (e989-15b8-7eb6-9668) selbst nicht versteckt. Unter 2000 Punkten ist daher sein Angebot versteckt, und ein trotzdem gewaehlter Necromancer meldet isHidden und eine hiddenSelection-Verletzung (error); ab 2000 Punkten verschwinden beide. Die Lord-Obergrenze fda5-91c2-e17f-774c (max, scope=parent, Basis 1) steht bei 1000 und 2000 Punkten auf 1 (bei 1000 greift keiner ihrer set-Modifikatoren, bei 2000 der set 1 des Bands 2000-2999) und bei 3000 Punkten per set 2 auf 2.",
+  "dataset": {
+    "gameSystem": "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Warhammer Fantasy Battles (6th definitive edition).gst",
+    "catalogues": [
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Vampire Counts (6th definitive edition).cat",
+      "src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/Mercenaries (6th definitive edition).cat"
+    ]
+  },
+  "rosters": [
+    {
+      "file": "rosters/01-1000pts-master-necromancer-hidden.ros",
+      "description": "Punktegrenze 1000, Kontingent 'Standard (VC-AB)' mit genau einem Master Necromancer (Handweapon, Wizard level 3). lessThan 2000 haelt: 'Lord' ist versteckt, also auch der Necromancer - sein belegter Slot meldet isHidden true und es liegt genau eine hiddenSelection-Verletzung (error) an ihm. Die Lord-Obergrenze bleibt beim Basiswert max 1 (keiner der set-Modifikatoren greift bei 1000) und feuert bei Ist 1 nicht - Hoechstgrenzen gelten unabhaengig von der Sichtbarkeit, und hier ist sie schlicht erfuellt.",
+      "expect": {
+        "firing": [],
+        "absent": ["fda5-91c2-e17f-774c"],
+        "capabilities": [
+          {
+            "defId": "4ee2-ac3a-3cc6-11af",
+            "anchorKind": "occupied",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "name": "Master Necromancer",
+            "current": 1,
+            "isHidden": true
+          },
+          {
+            "defId": "d321-a893-b7b7-5eae",
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": true
+          }
+        ],
+        "messages": [
+          {
+            "origin": "hiddenSelection",
+            "anchorDefId": "4ee2-ac3a-3cc6-11af",
+            "count": 1,
+            "severity": "error",
+            "anchorKind": "occupied",
+            "anchorName": "Master Necromancer"
+          }
+        ]
+      }
+    },
+    {
+      "file": "rosters/02-1000pts-empty-offer-hidden.ros",
+      "description": "Punktegrenze 1000, leeres Kontingent 'Standard (VC-AB)'. Der Master Necromancer steht nur als Angebot da; weil seine Primaer-Kategorie 'Lord' versteckt ist, ist das Angebot versteckt (isHidden true), bleibt aber als markierter Slot vorhanden. Ein Angebot traegt nie eine Meldung: keine hiddenSelection.",
+      "expect": {
+        "firing": [],
+        "absent": ["fda5-91c2-e17f-774c"],
+        "capabilities": [
+          {
+            "defId": "4ee2-ac3a-3cc6-11af",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 0,
+            "isHidden": true
+          }
+        ],
+        "messages": [
+          { "origin": "hiddenSelection", "count": 0 }
+        ]
+      }
+    },
+    {
+      "file": "rosters/03-2000pts-master-necromancer-visible.ros",
+      "description": "Derselbe Aufbau wie Roster 01, aber Punktegrenze 2000. lessThan 2000 haelt nicht mehr: 'Lord' ist sichtbar, der Necromancer meldet isHidden false, keine hiddenSelection-Verletzung. Der set 1 des Bands 2000-2999 (atLeast 2000 UND lessThan 3000 UND keine Border Patrols) setzt fda5-91c2-e17f-774c auf 1: die Lord-Kategorie zeigt effectiveMax 1, Ist 1, Spielraum 0; die Grenze feuert nicht.",
+      "expect": {
+        "firing": [],
+        "absent": ["fda5-91c2-e17f-774c"],
+        "capabilities": [
+          {
+            "defId": "4ee2-ac3a-3cc6-11af",
+            "anchorKind": "occupied",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "name": "Master Necromancer",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "d321-a893-b7b7-5eae",
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 1,
+            "effectiveMax": 1,
+            "headroom": 0,
+            "isHidden": false,
+            "isBlocked": true
+          }
+        ],
+        "messages": [
+          { "origin": "hiddenSelection", "count": 0 }
+        ]
+      }
+    },
+    {
+      "file": "rosters/04-2000pts-empty-offer-visible.ros",
+      "description": "Punktegrenze 2000, leeres Kontingent. Die Lord-Kategorie ist sichtbar, das Angebot des Master Necromancer meldet isHidden false. Die Lord-Kategorie steht auf effectiveMax 1 bei Ist 0.",
+      "expect": {
+        "firing": [],
+        "absent": ["fda5-91c2-e17f-774c"],
+        "capabilities": [
+          {
+            "defId": "4ee2-ac3a-3cc6-11af",
+            "anchorKind": "offerAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 0,
+            "isHidden": false
+          },
+          {
+            "defId": "d321-a893-b7b7-5eae",
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 0,
+            "effectiveMax": 1,
+            "headroom": 1,
+            "isHidden": false
+          }
+        ],
+        "messages": [
+          { "origin": "hiddenSelection", "count": 0 }
+        ]
+      }
+    },
+    {
+      "file": "rosters/05-3000pts-master-necromancer-max2.ros",
+      "description": "Derselbe Aufbau wie Roster 01/03, Punktegrenze 3000. 'Lord' ist sichtbar (keine hiddenSelection), und der set 2 des Bands 3000-3999 hebt fda5-91c2-e17f-774c auf 2: die Lord-Kategorie meldet effectiveMax 2, Ist 1, Spielraum 1, nicht blockiert.",
+      "expect": {
+        "firing": [],
+        "absent": ["fda5-91c2-e17f-774c"],
+        "capabilities": [
+          {
+            "defId": "4ee2-ac3a-3cc6-11af",
+            "anchorKind": "occupied",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 1,
+            "isHidden": false
+          },
+          {
+            "defId": "d321-a893-b7b7-5eae",
+            "targetDefId": "d024-d25b-a9b4-73b6",
+            "anchorKind": "categoryAnchor",
+            "frameDefId": "e989-15b8-7eb6-9668",
+            "current": 1,
+            "effectiveMax": 2,
+            "headroom": 1,
+            "isHidden": false,
+            "isBlocked": false
+          }
+        ],
+        "messages": [
+          { "origin": "hiddenSelection", "count": 0 }
+        ]
+      }
+    }
+  ]
+}
