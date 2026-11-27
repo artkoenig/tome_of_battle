@@ -3,6 +3,14 @@
   <forces>
     <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
       <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-special-list-rules-ror" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
         <selection id="sel-allow-special-a" name="Allow special characters?" entryId="8923-5946-7b10-8957" entryLinkId="" number="1" type="upgrade" collective="false">
           <categories>
             <category id="cat-special-list-rules-a" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>

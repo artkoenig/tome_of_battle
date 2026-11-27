@@ -3,6 +3,14 @@
   <forces>
     <force id="force-1" name="Standard (OG-AB)" entryId="2bfa-e64a-7123-895f" catalogueId="4049-c46d-7f80-44fb" catalogueRevision="1" catalogueName="Orcs and Goblins">
       <selections>
+        <selection id="sel-merc-ror" name="Mercenaries and Regiments of Renown" entryId="6a7d-7d85-8d7e-cbce" entryLinkId="" number="1" type="upgrade" collective="false">
+          <categories>
+            <category id="cat-special-list-rules-ror" name="Special list rules" entryId="32f1-197f-d719-a393" primary="true"/>
+          </categories>
+          <selections>
+            <selection id="sel-allow-ror" name="Allow Regiments of Renown" entryId="3d35-6b18-262f-6503" entryLinkId="" number="1" type="upgrade" collective="false"/>
+          </selections>
+        </selection>
         <selection id="sel-priestess" name="0-1 Amazon Serpent Priestess" entryId="9ddd-69c8-644d-abc2" entryLinkId="" number="1" type="unit" collective="false">
           <categories>
             <category id="cat-regiment-of-renown" name="Regiment of Renown" entryId="ee09-9a50-ad78-9c32" primary="true"/>

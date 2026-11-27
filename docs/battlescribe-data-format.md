@@ -1120,6 +1120,14 @@ das `isHidden` des Berichts).
   einer effektiv versteckten Entität werden **nicht** validiert — die §5.6-Regel, per
   Projektentscheidung (Issue 0088) verallgemeinert auf alle Ankerarten; wird die Entität per
   Modifier wieder sichtbar, greifen sie wieder. Max-Grenzen gelten unabhängig von der Sichtbarkeit.
+- **Eine versteckte Kategorie versteckt, was sie als Primärkategorie trägt** (Projektentscheidung,
+  Issue 0204 — das Wiki regelt die Wirkung auf die Einträge nicht, [§15](#15-lücken-der-quelle)).
+  Ist der Kategorie-Anker eines Kontingents effektiv versteckt, gilt jeder Eintrag direkt in diesem
+  Kontingent, dessen effektive Primärkategorie das ist, ebenfalls als versteckt: er wird nicht
+  angeboten, und gewählt meldet er `hiddenSelection`. Beleg: das Definitive-`.gst` sperrt Lords
+  unter 2000 Punkten allein per `set hidden=true` an `categoryEntry` „Lord" (`d024-d25b-a9b4-73b6`),
+  dessen Max-Grenze darunter beim Grundwert 1 bleibt; ebenso „Regiment of Renown" (Mercenaries)
+  ohne den Schalter „Allow Regiments of Renown".
 - **Eine versteckte Entität, die trotzdem im Roster liegt, ist ein Fehler.** Das ist die
   Gegenrichtung zur Zeile darüber und steht wörtlich in der Quelle: eine versteckte Entität ist dem
   Nutzer nicht sichtbar, „and any already selected entries will cause error showing up in error list
