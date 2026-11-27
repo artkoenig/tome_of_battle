@@ -192,6 +192,23 @@ function hiddenSelectionViolationsOf(slots, context) {
 }
 
 /**
+ * True when a slot directly inside a contingent has an effective primary
+ * category whose category anchor in that contingent is effectively hidden
+ * (Issue 0204, `docs/battlescribe-data-format.md` §8): a hidden category is
+ * not offered, and neither is what it buckets. The WHFB6 Definitive game
+ * system gates Lords below 2000 points this way alone.
+ */
+function isHiddenByPrimaryCategory(node, effective) {
+  const force = node.parent;
+  if (!force?.isForce || node.anchorKind === AnchorKind.CATEGORY_ANCHOR) return false;
+  const primaryCategoryId = effective.primaryCategoryIdOf(node);
+  if (primaryCategoryId === null) return false;
+  return force.children.some(child => child.anchorKind === AnchorKind.CATEGORY_ANCHOR
+    && child.def.targetId === primaryCategoryId
+    && effective.isHidden(child));
+}
+
+/**
  * True, wenn das Ergebnis an einem **synthetischen Kategorie-Anker** haengt:
  * einem Kategorie-Anker (verlinkt wie unverlinkt) oder dem Pflicht-Phantom
  * einer Kategorie-Definition. Nur diese Anker-Familie faellt unter die
@@ -734,7 +751,7 @@ function toCapability(node, { resultsByAnchor, effective, unstableNodes, profile
     // Zahlen daneben sind auf die zaehlenden Grenzen beschraenkt.
     isMandatoryUnmet: resultsOfKind(resultsByAnchor, node, ConstraintKind.MIN).some(r => !r.satisfied),
     isBlocked: resultsOfKind(resultsByAnchor, node, ConstraintKind.MAX).some(r => r.actual >= r.bound),
-    isHidden: effective.isHidden(node),
+    isHidden: effective.isHidden(node) || isHiddenByPrimaryCategory(node, effective),
     isValueUnstable: unstableNodes.has(node),
     authorMessages: renderedAuthorMessagesOf(node, effective),
     infoElements: infoElementsOf(node, effective, profileTypeRegistry, publicationRegistry, namedRuleRegistry),
