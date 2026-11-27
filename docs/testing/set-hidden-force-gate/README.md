@@ -27,8 +27,8 @@ nachgebildet.
 
 ## Was ein `field="hidden"`-Modifikator laut Format tut
 
-Aus [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
-und [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit) der
+Aus [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
+und [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit) der
 Formatreferenz, wörtlich abgeleitet:
 
 - `hidden` blendet eine Entität aus; per Modifier `field="hidden"` wird die

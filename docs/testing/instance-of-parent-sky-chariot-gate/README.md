@@ -32,22 +32,22 @@ statt sie zu wiederholen, und zitiert sie unten in der Beiwerk-Tabelle.
 ## Worum es geht
 
 Eine `condition` ist laut
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)
 ein Vergleich über einen Bezugsrahmen. Für die Typen `instanceOf`/`notInstanceOf`
 ist sie aber **keine Zählung, sondern eine Identitäts-/Mitgliedschaftsprüfung** —
 so ausdrücklich für `scope="primary-catalogue"`
-([Kasten in §7.6](../../battlescribe-data-format.md#scope-primary-catalogue):
+([Kasten in §7.6](../../battlescribe/building-blocks/constraint.md#scopeprimary-catalogue--das-armeebuch-kein-zählrahmen):
 „Die Frage lautet nicht ‚wie viele?', sondern ‚ist es dieses?'") und für
 `scope="ancestor"`
-([Kasten in §7.7](../../battlescribe-data-format.md#scope-unit-ancestor):
+([Kasten in §7.7](../../battlescribe/building-blocks/modifier.md#scopeunit-und-scopeancestor--die-umschließende-einheit-und-die-vorfahrenkette):
 „`ancestor` ist kein Zählrahmen, sondern — wie `primary-catalogue` — eine
 Prüfung"); `percentValue` ist bei `instanceOf` laut derselben Tabelle „ohne
 Wirkung". Für `scope="parent"` heißt das: die Bedingung hält genau dann, wenn der
 **Eltern-Rahmen** — die Auswahl, unter der der Träger hängt — auf die in `childId`
 genannte Definition auflöst. `scope="parent"` vergleicht dabei **aufgelöste
 Ziel-IDs**, nicht `entryLinkId`s
-([§3.4](../../battlescribe-data-format.md#34-kontext-threading) /
-[§7.6](../../battlescribe-data-format.md#76-constraint)).
+([§3.4](../../battlescribe/overview.md#34-kontext-threading) /
+[§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)).
 
 Der eingefrorene Korpus enthält **genau ein** Vorkommen dieser Konstruktion
 (Volltextsuche über alle fünf Dateien nach `type="instanceOf" … scope="parent"`
@@ -115,7 +115,7 @@ im ganzen Datensatz nur unter genau diesen zwei Einheiten hängen — unter eine
 davon deckt ihn die `and`-Gruppe auf, unter der anderen nicht. Beide Wege führen
 **ausschließlich über `selectionEntryGroup`s** (Unit → „Magic Items" → „Enchanted
 Items (Lichemaster)" → Verweis); Gruppen erzeugen keine Selektion in der Roster
-([§4](../../battlescribe-data-format.md#4-das-objektmodell-im-überblick)), der
+([§4](../../battlescribe/overview.md#4-das-objektmodell-im-überblick)), der
 Eltern-**Rahmen** der Bedingung ist also unmittelbar die Einheit.
 
 ### Ist der Tomb Prince außerhalb des Lichemaster-Kontingents erreichbar?
@@ -152,14 +152,14 @@ einen Verweis hängt — mit Folgen für die Adressierung des Slots, siehe
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **IOPSC-R1** | `instanceOf` mit `scope="parent"` prüft die **Identität des Eltern-Rahmens**, nicht eine Anzahl. Sie hält genau dann, wenn die Auswahl, unter der der Träger hängt, auf `childId` auflöst. | `:20469`: `type="instanceOf" value="1" field="selections" scope="parent" childId="0b24e6f4-…" childName="Tomb Prince [KHEMRI]"`. Semantik aus [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat) (Condition-Tabelle: `percentValue` bei `instanceOf` „ohne Wirkung") und den beiden Prüf-Kästen zu `primary-catalogue` / `ancestor`. Roster 01/03 (hält) gegen 02/04 (hält nicht). |
-| **IOPSC-R2** | Die **`and`-Gruppe** verlangt beide Hälften. Fällt die **parent**-Hälfte, bleibt der Basiswert `hidden="true"` stehen — auch wenn das Kontingent stimmt. | `:20466-20473`: eine `conditionGroup type="and"` mit genau zwei `condition`s; eine `and`-Gruppe hält, wenn **alle** Mitglieder halten ([§7.7](../../battlescribe-data-format.md#conditiongroup--verknüpfung-mehrerer-bedingungen)). Roster 02/04: Kontingent `f37a`, Träger Necromancer ⇒ `isHidden true`. |
+| **IOPSC-R1** | `instanceOf` mit `scope="parent"` prüft die **Identität des Eltern-Rahmens**, nicht eine Anzahl. Sie hält genau dann, wenn die Auswahl, unter der der Träger hängt, auf `childId` auflöst. | `:20469`: `type="instanceOf" value="1" field="selections" scope="parent" childId="0b24e6f4-…" childName="Tomb Prince [KHEMRI]"`. Semantik aus [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat) (Condition-Tabelle: `percentValue` bei `instanceOf` „ohne Wirkung") und den beiden Prüf-Kästen zu `primary-catalogue` / `ancestor`. Roster 01/03 (hält) gegen 02/04 (hält nicht). |
+| **IOPSC-R2** | Die **`and`-Gruppe** verlangt beide Hälften. Fällt die **parent**-Hälfte, bleibt der Basiswert `hidden="true"` stehen — auch wenn das Kontingent stimmt. | `:20466-20473`: eine `conditionGroup type="and"` mit genau zwei `condition`s; eine `and`-Gruppe hält, wenn **alle** Mitglieder halten ([§7.7](../../battlescribe/building-blocks/modifier.md#conditiongroup--verknüpfung-mehrerer-bedingungen)). Roster 02/04: Kontingent `f37a`, Träger Necromancer ⇒ `isHidden true`. |
 | **IOPSC-R3** | Fällt die **force**-Hälfte, gilt dasselbe — auch wenn der Träger stimmt. | Roster 05: Träger ist derselbe Tomb Prince, Kontingent ist `2102-34f1-c876-98c5`. Die zweite Bedingung (`scope="force" childId="f37a-a93e-fa22-61a8"`, `:20470`) hält nicht ⇒ `isHidden true`. |
-| **IOPSC-R4** | Hält die Gruppe, **ersetzt** der Modifikator `hidden` exakt durch `false` — der Slot ist sichtbar. | `:20465` `type="set" value="false" field="hidden"`; `set` überschreibt ([§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)). Roster 01/03/06 ⇒ `isHidden false`. |
+| **IOPSC-R4** | Hält die Gruppe, **ersetzt** der Modifikator `hidden` exakt durch `false` — der Slot ist sichtbar. | `:20465` `type="set" value="false" field="hidden"`; `set` überschreibt ([§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)). Roster 01/03/06 ⇒ `isHidden false`. |
 | **IOPSC-R5** | Das Gatter ist eine Aussage über **diesen Slot**, nicht über den Rahmen. Der ungegatete Nachbar **„Charm of Defiance"** derselben Gruppe ist in **jedem** dieser Rahmen sichtbar. | `:23821` `entryLink 7014-1ec5-46b7-36e5 → 94d1-a517-f236-7812`; das Ziel (`:20489`) ist `hidden="false"` und trägt **keinen** Modifikator. Roster 01/02/06 als `capabilities.isHidden: false`. |
-| **IOPSC-R6** | Die Sichtbarkeit erzeugt **keine Grenze**. Weder der Verweis noch der Zieleintrag trägt ein `constraint`; der Sky Chariot kann deshalb **nie** als `limitId` im Verletzungsbericht stehen. | `:23822` (`entryLink` ohne `<constraints>`) und `:20454-20476` (der `selectionEntry` enthält nur `infoLinks`, `costs`, `modifiers`). Erwartet als `effectiveMin: null` / `effectiveMax: null`. Grenzen entstehen ausschließlich aus `constraint`-Elementen ([§7.6](../../battlescribe-data-format.md#76-constraint)). |
-| **IOPSC-R7** | Ein verborgener Slot bleibt **wählbar**: der Katalog verbietet die Wahl nicht zählend, sondern nur über die Verfügbarkeit. Eine trotzdem getroffene Wahl erscheint im Bericht — als belegter Slot mit `isHidden true`. | Es gibt keine Grenze am Slot (IOPSC-R6) und keine, die ihn von außen deckelt (die Gruppengrenze `7ef4-…` ist ein `max 1` und bei einem Mitglied erfüllt). [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit) / Issue 0088 kennt nur die Umkehrung: **Min**-Grenzen einer versteckten Entität werden nicht validiert. Roster 04/05. |
-| **IOPSC-R8** | **Gegenprobe (Lebendigkeit):** Der Rahmen wird tatsächlich ausgewertet und der Sky-Chariot-Slot zählt in ihm mit — zwei Mitglieder derselben Gruppe reißen deren echte Grenze. | `:23828` `constraint type="max" value="1" field="selections" scope="parent" shared="true" id="7ef4-7ce1-e1da-22ea"`; eine Grenze an einer Gruppe zählt **ihre Mitglieder** ([§7.6](../../battlescribe-data-format.md#76-constraint), Regelkasten). Roster 06: Ist **2** / Grenze **1**. |
+| **IOPSC-R6** | Die Sichtbarkeit erzeugt **keine Grenze**. Weder der Verweis noch der Zieleintrag trägt ein `constraint`; der Sky Chariot kann deshalb **nie** als `limitId` im Verletzungsbericht stehen. | `:23822` (`entryLink` ohne `<constraints>`) und `:20454-20476` (der `selectionEntry` enthält nur `infoLinks`, `costs`, `modifiers`). Erwartet als `effectiveMin: null` / `effectiveMax: null`. Grenzen entstehen ausschließlich aus `constraint`-Elementen ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)). |
+| **IOPSC-R7** | Ein verborgener Slot bleibt **wählbar**: der Katalog verbietet die Wahl nicht zählend, sondern nur über die Verfügbarkeit. Eine trotzdem getroffene Wahl erscheint im Bericht — als belegter Slot mit `isHidden true`. | Es gibt keine Grenze am Slot (IOPSC-R6) und keine, die ihn von außen deckelt (die Gruppengrenze `7ef4-…` ist ein `max 1` und bei einem Mitglied erfüllt). [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit) / Issue 0088 kennt nur die Umkehrung: **Min**-Grenzen einer versteckten Entität werden nicht validiert. Roster 04/05. |
+| **IOPSC-R8** | **Gegenprobe (Lebendigkeit):** Der Rahmen wird tatsächlich ausgewertet und der Sky-Chariot-Slot zählt in ihm mit — zwei Mitglieder derselben Gruppe reißen deren echte Grenze. | `:23828` `constraint type="max" value="1" field="selections" scope="parent" shared="true" id="7ef4-7ce1-e1da-22ea"`; eine Grenze an einer Gruppe zählt **ihre Mitglieder** ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint), Regelkasten). Roster 06: Ist **2** / Grenze **1**. |
 | **IOPSC-R9** | Der Tomb Prince ist im Lichemaster-Kontingent **Pflicht**; steht er nicht darin, feuert seine eigene Grenze. Das ist zugleich der Zeuge dafür, dass die Engine seine Anwesenheit registriert. | `:12253` `constraint type="min" value="0" field="selections" scope="force" shared="true" id="3d9d-764e-6661-91ed"`, per `:12262` `set 1` in der auf `f37a` gegateten `modifierGroup`. Roster 02/04: **feuert** 0/1. Roster 01/03/06: still (Ist 1). Roster 05 (Clan Lahmia): der `set` greift nicht, die Grenze bleibt `min 0` und ist nie verletzbar ⇒ `absent`. |
 
 ### Was in beiden Kontingenten sonst noch Pflicht ist — und wie dieses Szenario damit umgeht
@@ -178,7 +178,7 @@ einen Verweis hängt — mit Folgen für die Adressierung des Slots, siehe
 1. **Das Lichemaster-Heer fordert selbst mindestens 2000 Punkte**: `:29461`
    `constraint min 0 field="limit::ecfa-8486-4f6c-c249" scope="roster"
    id="8f3f-ffa8-387b-0bf9"`, per `:29464` auf `2000` gesetzt, wenn das Kontingent
-   `f37a` ist ([§5.6](../../battlescribe-data-format.md#56-force-entries-detachments)).
+   `f37a` ist ([§5.6](../../battlescribe/files/game-system.md#56-force-entries-detachments)).
 2. **Die Core-Untergrenze ist damit eindeutig 4** (`.gst:395`, Klasse 3000–3999) —
    dieselbe Klasse für **alle** sechs Roster, auch das Clan-Lahmia-Roster, damit
    der deklarierte `bound` überall derselbe ist.
@@ -188,7 +188,7 @@ einen Verweis hängt — mit Folgen für die Adressierung des Slots, siehe
 ### Zahlenbasis der Roster
 
 Jede Auswahl trägt `number="1"`. Damit ist die in
-[§7.5](../../battlescribe-data-format.md#75-cost--cost-type) benannte Lücke
+[§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) benannte Lücke
 („ist `.ros`-`number` per-Eltern-relativ oder absolut?") für dieses Szenario
 **folgenlos**: `1 × 1 = 1` in beiden Lesarten.
 
@@ -197,7 +197,7 @@ Jede Auswahl trägt `number="1"`. Damit ist die in
 | Fehl-Lesart | Wo sie auffällt |
 |---|---|
 | `instanceOf scope="parent"` wird als **Zählung** gelesen („mindestens `value`=1 Tomb Princes im Eltern-Rahmen") | Roster 02/04: unter dem Necromancer stünde 0 — zufällig dasselbe Ergebnis. Roster 05 dagegen trennt: dort zählte der Rahmen den Tomb Prince **nicht** (die Bedingung zählt Nachkommen des Rahmens, der Tomb Prince **ist** der Rahmen) — eine zählende Lesart machte den Slot dort erst recht verborgen, aber auch in **01/03/06**, wo er sichtbar sein muss. |
-| Der Eltern-Rahmen wird an der **`entryLinkId`** statt an der aufgelösten **Ziel-Id** festgemacht | Roster 05: dort kommt der Tomb Prince über den Verweis `c7e0-a4dc-65a2-7fd0`, in 01/03/06 direkt — die parent-Hälfte muss in beiden Fällen halten ([§3.4](../../battlescribe-data-format.md#34-kontext-threading)). |
+| Der Eltern-Rahmen wird an der **`entryLinkId`** statt an der aufgelösten **Ziel-Id** festgemacht | Roster 05: dort kommt der Tomb Prince über den Verweis `c7e0-a4dc-65a2-7fd0`, in 01/03/06 direkt — die parent-Hälfte muss in beiden Fällen halten ([§3.4](../../battlescribe/overview.md#34-kontext-threading)). |
 | Als Eltern-Rahmen wird die **tragende Gruppe** (`81c5-…` oder `7611-…`) genommen statt der umschließenden Auswahl | Dann hielte die parent-Hälfte **nirgends** ⇒ Roster 01/03/06 meldeten `isHidden true`. |
 | Die `and`-Gruppe wird als `or` gelesen | Roster 02/04 (Kontingent stimmt) und Roster 05 (Träger stimmt) meldeten fälschlich `isHidden false`. |
 | Das `hidden`-Gatter wird als **Grenze** modelliert | Der Sky Chariot erschiene mit `effectiveMin`/`effectiveMax` ≠ `null` — beide Slots sind im Katalog grenzenlos (IOPSC-R6). |
@@ -241,7 +241,7 @@ Herkunft der Force-**Definition**.
   `hidden="true"` (`:20454`) gegen den einen `set hidden=false`-Modifikator
   (`:20465`) unter seiner `and`-Gruppe. Der Verweis `472e-…` trägt — wie jeder
   `entryLink` der Kataloge — `hidden="false"`; nach
-  [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit) (Verweis
+  [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit) (Verweis
   **oder** Ziel versteckt ⇒ Vorkommen versteckt) entscheidet damit das Ziel.
 - **`effectiveMin`/`effectiveMax` = `null`** folgt daraus, dass es zu diesem Slot
   überhaupt keine Grenze gibt (IOPSC-R6) — dieselbe Lesart wie beim
@@ -300,10 +300,10 @@ und `path` an. Dieses Szenario nutzt:
 | Facette | Warum |
 |---------|-------|
 | **Die Rahmen-Koordinate (`frameDefId`) des Sky-Chariot-Slots in Roster 05** | Roster 05 ist der einzige, dessen **Träger selbst über einen Verweis** hängt: der Tomb Prince kommt dort als `entryLink c7e0-a4dc-65a2-7fd0` unter der Einheit „Swain" `b920-b398-dc26-7f4d`, in 01–04/06 dagegen als Wurzel-Auswahl. Ob ein so erreichter Rahmen mit der **Verweis-Id** (`c7e0-…`) oder mit der **Ziel-Id** (`0b24e6f4-…`) adressiert wird, ist aus den erlaubten Quellen **nicht** zu entscheiden: der Manifest-Vertrag trifft die Unterscheidung „bei einem Verweis-Slot der VERWEIS" ausdrücklich nur für das **`defId` des Slots selbst** und beschreibt `frameDefId` bloß als „Kontingent bzw. Eltern-Auswahl"; und **alle** `frameDefId`-Werte im gesamten Bestand unter `docs/testing/` benennen entweder ein `forceEntry` oder ein schlichtes, nicht über einen Verweis erreichtes `selectionEntry` (geprüft: `729f-…`, `febe-…`, `8933-…`, `aa57-…`, `0767-…`, `79af-…`, `3f40-…`, `3c0f-…`, `115c-…`, `41a3-…`, `4ee2-…`, `9ac2-…` — kein einziger ist eine `entryLink`-Id). Statt zu raten, adressiert Roster 05 den Slot ohne `frameDefId`: `defId` + `targetDefId` + `anchorKind: "occupied"` treffen ihn eindeutig, weil der Sky Chariot in diesem Roster **genau einmal** vorkommt und gewählt ist (der zweite mögliche Träger, der Necromancer, steht nicht darin, und ein gewählter Verweis erzeugt kein zusätzliches Angebot). Die Aussage von Roster 05 — die force-Hälfte allein — bleibt davon unberührt. |
-| **Die 50 Punkte des Sky Chariot als zweiter Zeuge** | Der einzige erreichbare zählende Zeuge wäre das Punktebudget der tragenden „Magic Items"-Gruppe (`a385-781e-1d25-66e5` am Tomb Prince, `dee4-3354-e125-5b8b` am Necromancer; je `max 50`, `field=ecfa-8486-4f6c-c249`, `scope=parent`, **ohne** `includeChildSelections`, also XSD-Vorgabewert `false`, `Catalogue.xsd:430`). Die Gegenstände hängen aber **zwei** Gruppenebenen tiefer (`7611-…` → `81c5-…` → Verweis), und was `includeChildSelections="false"` („just `scope`'s `field`", [§7.6](../../battlescribe-data-format.md#76-constraint)) über diese Verschachtelung sagt, legt die Formatspezifikation nicht eindeutig fest. Deshalb wird weder in `firing` noch in `absent` etwas dazu behauptet — dieselbe Zurückhaltung wie bei den `limit::pts`-Eigengrenzen in [`../set-unresolved-target-inert-lord-slot/`](../set-unresolved-target-inert-lord-slot/README.md). Der Preis ist dennoch belegt: mit genau 50 Punkten in der Gruppe (Roster 03/04) ist das Budget punktgenau eingehalten, mit 65 (Roster 06) überschritten. |
-| **Ob „doppelt verborgen" von „einfach verborgen" unterscheidbar ist** | In Roster 05 ist der Slot aus **zwei** unabhängigen Gründen verborgen: die force-Hälfte der `and`-Gruppe fällt, **und** die tragende Gruppe „Magic Items" `7611-df97-0864-39a3` bleibt außerhalb des Lichemaster-Kontingents `hidden="true"` (eine versteckte Gruppe versteckt, was sie hält, [§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit)). Die Daten bieten keinen Weg, den Tomb Prince außerhalb `f37a` mit **aufgedeckter** Magic-Items-Gruppe zu stellen — die Gruppe kennt nur diesen einen Aufdeck-Modifikator (`:12225`). Roster 05 behauptet deshalb nur `isHidden true`, nicht *welche* der beiden Ursachen greift; die **isolierte** Aussage über die parent-Hälfte tragen Roster 02/04, wo die Gruppe nachweislich aufgedeckt ist. |
+| **Die 50 Punkte des Sky Chariot als zweiter Zeuge** | Der einzige erreichbare zählende Zeuge wäre das Punktebudget der tragenden „Magic Items"-Gruppe (`a385-781e-1d25-66e5` am Tomb Prince, `dee4-3354-e125-5b8b` am Necromancer; je `max 50`, `field=ecfa-8486-4f6c-c249`, `scope=parent`, **ohne** `includeChildSelections`, also XSD-Vorgabewert `false`, `Catalogue.xsd:430`). Die Gegenstände hängen aber **zwei** Gruppenebenen tiefer (`7611-…` → `81c5-…` → Verweis), und was `includeChildSelections="false"` („just `scope`'s `field`", [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint)) über diese Verschachtelung sagt, legt die Formatspezifikation nicht eindeutig fest. Deshalb wird weder in `firing` noch in `absent` etwas dazu behauptet — dieselbe Zurückhaltung wie bei den `limit::pts`-Eigengrenzen in [`../set-unresolved-target-inert-lord-slot/`](../set-unresolved-target-inert-lord-slot/README.md). Der Preis ist dennoch belegt: mit genau 50 Punkten in der Gruppe (Roster 03/04) ist das Budget punktgenau eingehalten, mit 65 (Roster 06) überschritten. |
+| **Ob „doppelt verborgen" von „einfach verborgen" unterscheidbar ist** | In Roster 05 ist der Slot aus **zwei** unabhängigen Gründen verborgen: die force-Hälfte der `and`-Gruppe fällt, **und** die tragende Gruppe „Magic Items" `7611-df97-0864-39a3` bleibt außerhalb des Lichemaster-Kontingents `hidden="true"` (eine versteckte Gruppe versteckt, was sie hält, [§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit)). Die Daten bieten keinen Weg, den Tomb Prince außerhalb `f37a` mit **aufgedeckter** Magic-Items-Gruppe zu stellen — die Gruppe kennt nur diesen einen Aufdeck-Modifikator (`:12225`). Roster 05 behauptet deshalb nur `isHidden true`, nicht *welche* der beiden Ursachen greift; die **isolierte** Aussage über die parent-Hälfte tragen Roster 02/04, wo die Gruppe nachweislich aufgedeckt ist. |
 | **Ob die Engine für einen verborgenen Slot überhaupt ein Angebot ausweist** | Roster 01/02 setzen (wie [`../set-hidden-force-gate/`](../set-hidden-force-gate/README.md) und [`../greater-than-parent-upgrade-gate/`](../greater-than-parent-upgrade-gate/README.md)) voraus, dass ein nicht gewählter Verweis als `offerAnchor` im Bericht steht. Weil das eine Berichts-Eigenschaft und keine Katalogaussage ist, tragen die Roster 03–06 dieselbe Regel zusätzlich über **belegte** Slots — bricht nur 01/02, ist die Frage das Angebots-Modell, nicht das Gatter. |
-| **Der `value="1"` der Bedingung** | Bei `instanceOf` ist der Vergleichswert bedeutungslos (dieselbe Wirkungslosigkeit wie bei `percentValue`, [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)). Das Szenario behauptet dazu nichts; es gibt im Korpus kein `instanceOf` mit einem anderen `value`, an dem sich eine Aussage prüfen ließe. |
+| **Der `value="1"` der Bedingung** | Bei `instanceOf` ist der Vergleichswert bedeutungslos (dieselbe Wirkungslosigkeit wie bei `percentValue`, [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)). Das Szenario behauptet dazu nichts; es gibt im Korpus kein `instanceOf` mit einem anderen `value`, an dem sich eine Aussage prüfen ließe. |
 
 ---
 

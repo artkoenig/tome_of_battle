@@ -31,8 +31,8 @@ genau dieser Einheit bereits verifizierten Gestalt (direktes `entryId`,
 
 Ein `<modifier type="decrement" …>` kann als `field` — wie sein Zwilling `set`
 — eine **Kostenart-Id** tragen
-([§7.5](../../battlescribe-data-format.md#75-cost--cost-type) /
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)).
+([§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) /
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)).
 Dann **senkt** er die Kosten **seines Trägers** in genau dieser Kostenart um
 seinen `value`, solange seine Bedingung hält. Hält sie nicht, bleibt der
 **hingeschriebene** `<cost>`-Wert stehen. Anders als `set` (dort gepinnt:
@@ -81,7 +81,7 @@ entscheidbar, und die Antwort ist **ja**. Die Begründung, Schritt für Schritt:
 
 1. **Der Rahmen ist eine Auswahl, keine Gruppe.** Eine `.ros` kennt nur
    `force → selection → selection …`
-   ([§4](../../battlescribe-data-format.md#4-das-objektmodell-im-überblick):
+   ([§4](../../battlescribe/overview.md#4-das-objektmodell-im-überblick):
    *„In einer Roster spiegelt sich das als `Roster → Force[] → Selection[]`
    (rekursiv) wider"*). Ein `selectionEntryGroup` hat im Roster-Baum **kein**
    Gegenstück — die gewählte Option hängt direkt unter der Einheit (so schreiben
@@ -89,7 +89,7 @@ entscheidbar, und die Antwort ist **ja**. Die Begründung, Schritt für Schritt:
    des Trägers „Wizard level 2" ist deshalb der **Vampire Lord**.
 2. **Der Zähler steigt zu allen Nachfahren des Rahmens ab.**
    `includeChildSelections="true"` heisst laut
-   [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat):
+   [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat):
    *„werden auch **unterhalb** des Scope-Ziels verschachtelte Auswahlen
    mitgezählt, nicht nur dessen direkte Kinder"*. Die Blutlinie ist ein
    **direktes Kind** des Vampirs und damit erst recht erfasst.
@@ -127,10 +127,10 @@ Frage, richtig herum kodiert, wirkt — und zwar auf die Kosten.
 
 | ID | Regel | Beleg (Datei / Element) |
 |----|-------|--------------------------|
-| **DCB-R1** | **`decrement` auf eine Kostenart senkt um `value`.** Hält die Bedingung, ist die Kostenart des Trägers *geschriebener Wert − `value`*. „Wizard level 2" kostet dann **1** statt 2 Casting Dice. | VC-`.cat` → `selectionEntry "Wizard level 2"` **`42d9-cebe-18d5-cdbd`** (`:1875`, `type="upgrade"`): `<cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>` (`:1888`) und `<modifier type="decrement" field="fcec-2340-6368-a2ba" value="1.0">` (`:1877`). Semantik von `decrement` auf ein numerisches Feld: [§7.7-Tabelle](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat). |
-| **DCB-R2** | **Das Gate ist „hat *dieser* Vampir die Blutlinie Blood Dragon?"** — `scope="parent"` (die Elternauswahl = die Einheit), `includeChildSelections="true"` (Nachfahren zählen mit), `childId="4cae-a20e-8374-b6cb"` (Kategorie-Ziel), `type="greaterThan" value="0"`. | `condition` in `:1879`. Kategorie `4cae-a20e-8374-b6cb` = `categoryEntry` „Blood Dragon" (`:12`); getragen wird sie vom Blutlinien-Upgrade `0158-ed16-cbbf-6a78` (`:1602`) per `categoryLink` `85db-e156-f433-69e1` (`:1604`). Herleitung des Rahmens: Abschnitt oben, [§4](../../battlescribe-data-format.md#4-das-objektmodell-im-überblick) + [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat); Präzedenz CISI-R1…R4. |
+| **DCB-R1** | **`decrement` auf eine Kostenart senkt um `value`.** Hält die Bedingung, ist die Kostenart des Trägers *geschriebener Wert − `value`*. „Wizard level 2" kostet dann **1** statt 2 Casting Dice. | VC-`.cat` → `selectionEntry "Wizard level 2"` **`42d9-cebe-18d5-cdbd`** (`:1875`, `type="upgrade"`): `<cost name="Casting Dice" typeId="fcec-2340-6368-a2ba" value="2.0"/>` (`:1888`) und `<modifier type="decrement" field="fcec-2340-6368-a2ba" value="1.0">` (`:1877`). Semantik von `decrement` auf ein numerisches Feld: [§7.7-Tabelle](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat). |
+| **DCB-R2** | **Das Gate ist „hat *dieser* Vampir die Blutlinie Blood Dragon?"** — `scope="parent"` (die Elternauswahl = die Einheit), `includeChildSelections="true"` (Nachfahren zählen mit), `childId="4cae-a20e-8374-b6cb"` (Kategorie-Ziel), `type="greaterThan" value="0"`. | `condition` in `:1879`. Kategorie `4cae-a20e-8374-b6cb` = `categoryEntry` „Blood Dragon" (`:12`); getragen wird sie vom Blutlinien-Upgrade `0158-ed16-cbbf-6a78` (`:1602`) per `categoryLink` `85db-e156-f433-69e1` (`:1604`). Herleitung des Rahmens: Abschnitt oben, [§4](../../battlescribe/overview.md#4-das-objektmodell-im-überblick) + [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat); Präzedenz CISI-R1…R4. |
 | **DCB-R3** | **Hält das Gate nicht, bleibt der geschriebene Wert unangetastet.** Unter jeder anderen Blutlinie — hier **Strigoi** `ef7a-5896-8856-076b` (Kategorie `bf30-4ff0-a4d8-3909`, `:1765`) — kostet „Wizard level 2" die geschriebenen **2** Casting Dice. Es gibt keine zweite Quelle: der Eintrag trägt **genau einen** Modifikator, und der ist dieser. | `:1876-1882` vollständig gelesen: `<modifiers>` enthält genau ein `<modifier>`; danach folgen `<constraints>` (`5c3a-0288-a6ed-6884`, `max 1 scope=parent`) und `<costs>`. Strigoi trägt **nur** `bf30…`, nie `4cae…` (`:1763-1766`). |
-| **DCB-R4** | **Der Abzug wird nicht vervielfacht.** Beide Kosten-`decrement` tragen **kein** `<repeats>`; der Betrag ist fest 1, unabhängig von der Zahl der Blood-Dragon-Auswahlen unter dem Vampir. | `:1876-1882` und `:1893-1899`: Kind des Modifikators ist ausschliesslich `<conditions>`. [§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat) (`repeat`: *„bewirkt, dass der Modifier **mehrfach** angewendet wird"*) — ohne `repeat` also einmal. |
+| **DCB-R4** | **Der Abzug wird nicht vervielfacht.** Beide Kosten-`decrement` tragen **kein** `<repeats>`; der Betrag ist fest 1, unabhängig von der Zahl der Blood-Dragon-Auswahlen unter dem Vampir. | `:1876-1882` und `:1893-1899`: Kind des Modifikators ist ausschliesslich `<conditions>`. [§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat) (`repeat`: *„bewirkt, dass der Modifier **mehrfach** angewendet wird"*) — ohne `repeat` also einmal. |
 | **DCB-R5** | **Zweiter Zeuge, anderer Ausgangswert.** „Wizard level 3" `649a-8bc1-fb66-ed73` trägt den **wortgleichen** Modifikator bei geschriebenen **3** Casting Dice → **2** unter Blood Dragon. Das trennt „senke um 1" von „setze auf 1". | VC-`.cat` `:1892-1908`: `<cost name="Casting Dice" … value="3.0"/>` (`:1905`), `<modifier type="decrement" field="fcec-2340-6368-a2ba" value="1.0">` (`:1894`) mit zeichengleicher `condition` (`:1896`). |
 | **DCB-R6** | **Dritter Zeuge, andere Einheit:** dieselbe Bauform steht in der Wizard-Level-Gruppe des **Vampire Count** — „Wizard level 1" `3c1a-3350-04ae-7a3f` (geschrieben **1** Casting Die → **0** unter Blood Dragon) und „Wizard level 2" `c2b8-e61d-9a73-0b21` (geschrieben 2). *Korrektur zur Aufgabenstellung:* `3c1a…` hängt **nicht** unter dem Vampire Lord, sondern unter dem Vampire Count. | VC-`.cat` `:2302-2342`: Gruppe „Wizard Level" `7ab1-d9dc-6124-443f` (`defaultSelectionEntryId="3c1a-3350-04ae-7a3f"`, `min 1` `19ba-de18-6ad7-2825` / `max 1` `436d-44fa-86cf-bf42`) innerhalb von `selectionEntry "Vampire Count"` `6822-0110-a7c9-cbb0` (`:1921-2353`). Modifikatoren `:2310` und `:2327`, zeichengleich zu `:1877`. |
 | **DCB-R7** | **Der gesenkte Wert ist es, mit dem weitergerechnet wird.** Jede Summe über die Kostenart benutzt die gesenkten Kosten. Beobachtbar ist das an der **engine-eigenen Budget-Regel** `budget::fcec-2340-6368-a2ba`; die Grenze ist der `<costLimit>`-Wert der Roster. | Messgröße `rosterBudget` und Grenz-Id `budget::<costType-Id>` sind aus den Daten festgenagelt in [`violation-classification`](../violation-classification/README.md) (VCC-R6) und [`set-cost-value-force-gate`](../set-cost-value-force-gate/README.md) (SCV-R5). Kostenart: `.gst:8` → `costType id="fcec-2340-6368-a2ba" name=" Casting Dice"`. |
@@ -175,7 +175,7 @@ Casting-Dice-Summe aus DCB-R1/R3/R5/R6/R9.
   Mit Roster 03 (Budget 0) ist die Summe **exakt 1** — der Abzug ist also genau
   1 und nicht 2. Ein `costLimit` von `0` ist eine gewöhnliche Grenze; der
   Sentinel für „unbegrenzt" wäre `-1`
-  ([§7.6, Sentinel-Kasten](../../battlescribe-data-format.md#76-constraint):
+  ([§7.6, Sentinel-Kasten](../../battlescribe/building-blocks/constraint.md#76-constraint):
   `-1` gilt u. a. *„am eingestellten Roster-`costLimit`"*).
 - **Dieselbe Klammer ohne jede Null (04/05/06):** Summe > 1 und ≤ 2, also exakt
   2. Der zweite Zeuge trägt die Kernaussage damit **ohne** die Null-Grenze —
@@ -226,7 +226,7 @@ Verletzung machte und das Bild mit sachfremden Meldungen zustellte. Bei genau
 2000 greift dieser `set` nicht (er verlangt `lessThan 2000`), und die Grenze
 bleibt auf ihrem Basiswert `-1` = unbegrenzt (`.gst:84`; Arithmetik auf einer
 unbegrenzten Grenze lässt sie unbegrenzt,
-[§7.6-Sentinel-Kasten](../../battlescribe-data-format.md#76-constraint)).
+[§7.6-Sentinel-Kasten](../../battlescribe/building-blocks/constraint.md#76-constraint)).
 Zugleich bindet das pts-Budget nie: die teuerste Liste kostet 490 pts
 (Lord 285 + Count 205; „Wizard level 3" schlägt in 04–06 mit 50 pts zu Buche,
 Summe 335). Damit ist die **Casting-Dice-Grenze die einzige Variable**.

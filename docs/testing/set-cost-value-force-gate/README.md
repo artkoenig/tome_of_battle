@@ -19,8 +19,8 @@ das Eingabeformat der Roster folgt den bereits verifizierten Fixtures
 
 Ein `<modifier type="set" …>` kann als `field` nicht nur ein Attribut oder eine
 Constraint-Id tragen, sondern auch eine **Kostenart-Id**
-([§7.5](../../battlescribe-data-format.md#75-cost--cost-type) /
-[§7.7](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)).
+([§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type) /
+[§7.7](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)).
 Dann ersetzt er die Kosten **seines Trägers** in genau dieser Kostenart durch
 seinen `value` — solange seine Bedingung hält. Hält sie nicht, bleibt der
 **hingeschriebene** `<cost>`-Wert stehen; der Modifikator ist kein Zuschlag,

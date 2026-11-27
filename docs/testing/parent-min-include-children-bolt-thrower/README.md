@@ -50,7 +50,7 @@ selectionEntry "Reaper Bolt Thrower" (a757-462a-11d5-9636, type=unit, Rare)   �
 Der **Bezugsrahmen** (`scope="parent"`) ist damit die **Eltern-Auswahl** des
 Trägers, also die einzelne Einheiten-Instanz; gezählt wird `field="selections"`
 mit dem Träger als Bezug — die Zahl der Team-Instanzen in genau diesem Rahmen
-([§7.6](../../battlescribe-data-format.md#76-constraint): *„`scope="parent"`
+([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint): *„`scope="parent"`
 vergleicht aufgelöste Ziel-IDs"*, und der `scope` benennt die Entität, die
 summiert). Die Crew-Grenzen eine Ebene tiefer haben denselben `scope="parent"`,
 aber einen **anderen Rahmen**: dort ist die Eltern-Auswahl das Team.
@@ -63,7 +63,7 @@ Die Einheit `a757-462a-11d5-9636` trägt zwei Kontingent-abhängige Klammern:
   `condition instanceOf … scope="force" childId="ff5e-f712-03ce-bb85"`
   („Watchtower Patrol (WD#259-UK)", Z. 3755–3761). Nur dort wäre die Einheit
   versteckt — und die Min-Grenzen einer effektiv versteckten Entität werden
-  **nicht** validiert ([§5.6/§8](../../battlescribe-data-format.md#8-kategorien--sichtbarkeit),
+  **nicht** validiert ([§5.6/§8](../../battlescribe/building-blocks/category-and-visibility.md#8-kategorien--sichtbarkeit),
   Issue 0088). Im Standard-Kontingent greift der Modifikator nicht.
 - eine `modifierGroup` (Z. 3737–3754), die die Einheit in den Kontingenten
   „City Garrison (AN-02)" `77cd-dafb-16af-93c0` und „The Raiding Army (DE-AB)"
@@ -85,8 +85,8 @@ wirksame Anzeigename des Trägers ist sein Katalog-`name`.
 | **PMICB-R3** | Die **Nachbar-Obergrenze** desselben Trägers erlaubt bis zu **zwei** Teams je Rahmen. Sie ist die obere Klammer um dieselbe Zählung. | Ebd. → constraint **`ccf9-fefc-71c8-bd73`** (`type=max value=2`, sonst identische Flags, Z. 3622). |
 | **PMICB-R4** | Die **Randlagen** des Paars: 0 verletzt die Untergrenze, 1 und 2 halten beide Grenzen ein, 3 verletzt die Obergrenze. Kein Wert dazwischen ist strittig, weil beide Grenzen ganzzahlige Selektionszählungen sind. | `value="1"` (min) bzw. `value="2"` (max) an denselben zwei Elementen; Roster 01/02/03/04 bilden genau die vier Fälle ab. |
 | **PMICB-R5** | Der Rahmen ist die **Eltern-Auswahl**, nicht das Kontingent und nicht das Roster: ein Team in einer **anderen** Reaper-Bolt-Thrower-Einheit desselben Kontingents erfüllt die Pflicht der leeren Einheit **nicht**. Die Grenze feuert dann **genau einmal**. | Ebd. (`scope="parent"`). Roster 05: Einheit A mit Team (Ist 1), Einheit B ohne (Ist 0). Vergleichsfall derselben Konstruktion mit `shared="false"`: [`parent-min-unshared-unit-size`](../parent-min-unshared-unit-size/README.md). |
-| **PMICB-R6** | `shared="true"` verengt den Rahmen **nicht** zu einer Verweis-Instanz — es weitet die Summe auf **alle** Auswahlen des Eintrags **innerhalb** des Rahmens. Der Rahmen bleibt der von `scope` benannte. | Attribut `shared="true"` an beiden Grenzen ([§7.6](../../battlescribe-data-format.md#76-constraint): *„die Summe umfasst **alle** Auswahlen dieses shared entry"*). Roster 03/04 notieren 2 bzw. 3 Teams als getrennte Geschwister-Selektionen; ihre Summe je Rahmen ist 2 bzw. 3. |
-| **PMICB-R7** | `includeChildSelections="true"`: der Rahmen umfasst **auch tiefer geschachtelte** Auswahlen. Gezählt werden darin weiterhin **nur Kopien des Trägers** — andere tiefe Auswahlen erhöhen `actual` **nicht**. | Attribut an beiden Grenzen ([§7.6/§7.7](../../battlescribe-data-format.md#76-constraint)). Roster 02: der Rahmen hält 1 Team + 2 Crew + 2 Hand Weapon + 2 Light Armour + 1 Reaper = 8 Auswahlen bis Tiefe 3, und `ccf9` (max 2) bleibt **still** — bei einer Zählung „alle Auswahlen im Rahmen" müsste sie feuern. Roster 04: `actual=3` (Träger-Instanzen), nicht 24 (alle Auswahlen). |
+| **PMICB-R6** | `shared="true"` verengt den Rahmen **nicht** zu einer Verweis-Instanz — es weitet die Summe auf **alle** Auswahlen des Eintrags **innerhalb** des Rahmens. Der Rahmen bleibt der von `scope` benannte. | Attribut `shared="true"` an beiden Grenzen ([§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint): *„die Summe umfasst **alle** Auswahlen dieses shared entry"*). Roster 03/04 notieren 2 bzw. 3 Teams als getrennte Geschwister-Selektionen; ihre Summe je Rahmen ist 2 bzw. 3. |
+| **PMICB-R7** | `includeChildSelections="true"`: der Rahmen umfasst **auch tiefer geschachtelte** Auswahlen. Gezählt werden darin weiterhin **nur Kopien des Trägers** — andere tiefe Auswahlen erhöhen `actual` **nicht**. | Attribut an beiden Grenzen ([§7.6/§7.7](../../battlescribe/building-blocks/constraint.md#76-constraint)). Roster 02: der Rahmen hält 1 Team + 2 Crew + 2 Hand Weapon + 2 Light Armour + 1 Reaper = 8 Auswahlen bis Tiefe 3, und `ccf9` (max 2) bleibt **still** — bei einer Zählung „alle Auswahlen im Rahmen" müsste sie feuern. Roster 04: `actual=3` (Träger-Instanzen), nicht 24 (alle Auswahlen). |
 | **PMICB-R8** | Beide Grenzen behalten ihren **geschriebenen** Wert — im gesamten Fixture-Datensatz adressiert **kein** `modifier` die Ids `41ec-bee5-0865-0448` oder `ccf9-fefc-71c8-bd73`. Dasselbe gilt für alle übrigen hier behaupteten Ids (`aa66…`, `d242…`, `56a0…`, `bf18…`, `d779…`, `f7bb…`, `bdc0…`, `07a8…`, `6652…`, `6f1a…`). | Verifiziert über alle Dateien in `src/contexts/ruleengine/engine/__fixtures__/whfb6-definitive/`: jede dieser Ids kommt ausschließlich als `constraint id` vor, nie als `modifier field`. |
 | **PMICB-R9** | Die **Pflichtgrenzen des Teilbaums** unterhalb eines Teams sind ein eigener Rahmen je Team: Crew `min 2`/`max 2` (Rahmen = das Team), Reaper `min 1`/`max 1` (Rahmen = das Team), Gruppe „Weapons and Armour" `min 2`/`max 2` sowie Hand Weapon `min 1`/`max 1` und Light Armour `min 1` (Verweis) / `max 1` (Ziel) (Rahmen = die jeweilige Crew). Jedes Team der Roster 02–05 erfüllt sie exakt. | Dark-Elves-`.cat` Z. 3628/3629 (Crew), 3710/3711 (Reaper), 3678/3679 (Gruppe), 3672/3673 (Hand Weapon), 3660 (Verweis Light Armour); `.gst` Z. 953 (Ziel Light Armour). |
 
@@ -106,7 +106,7 @@ Grenzen am Träger hängen und keine sie verändert; `headroom` ist
 Exemplare stehen als **Geschwister-Selektionen** nebeneinander. Das ist Absicht:
 diese Notation ist unabhängig davon, ob `number` als absolute Gesamtstückzahl
 oder als „Anzahl je Eltern-Instanz" zu lesen ist — eine offene Frage des Formats
-([§7.5](../../battlescribe-data-format.md#75-cost--cost-type),
+([§7.5](../../battlescribe/building-blocks/cost.md#75-cost--cost-type),
 [§15](../../battlescribe-data-format.md)). Ein Team mit `number="3"` und zwei
 Crew darunter wäre in den Crew-Grenzen mehrdeutig (2 oder 6); die
 Geschwister-Notation ist es nicht.

@@ -80,7 +80,7 @@ Sechsmal steht sie hier an einem `repeat`, an jeder der sechs Optionen der Grupp
 ## Was die Formatspezifikation über die Zelle sagt
 
 - **Der `scope` darf eine Eintrags-Id sein — auch am `repeat`.** Die Aufzählung
-  in [§7.6](../../battlescribe-data-format.md#76-constraint) ist keine
+  in [§7.6](../../battlescribe/building-blocks/constraint.md#76-constraint) ist keine
   abschließende Liste von Literalen: die Quelle zählt neben
   `parent|roster|force|primary category` ausdrücklich **Vorfahren-Ids** mit, und
   die XSD typt `scope` als nackten String (`Catalogue.xsd:426`, `QueryBase` —
@@ -90,13 +90,13 @@ Sechsmal steht sie hier an einem `repeat`, an jeder der sechs Optionen der Grupp
   `repeat` also genau, was er an einer `condition` bedeutet.
 - **Der Rahmen sagt nur, *wo* summiert wird.** Gezählt werden „`field`'s values
   of descendant selections"
-  ([§7.6-Regelkasten](../../battlescribe-data-format.md#76-constraint)) — hier
+  ([§7.6-Regelkasten](../../battlescribe/building-blocks/constraint.md#76-constraint)) — hier
   also die Auswahlen **unterhalb** der benannten Einheit, die auf die `childId`
   passen. Der Träger des Modifikators liegt selbst **tiefer** als der Rahmen;
   der Rahmen ist sein **Vorfahre**, nicht sein Kind.
 - **`includeChildSelections="false"` zählt „just `scope`'s `field`"** — also nur,
   was direkt im Rahmen steht, nicht was tiefer darunter hängt
-  ([§7.6-Tabelle](../../battlescribe-data-format.md#76-constraint)); *nicht*
+  ([§7.6-Tabelle](../../battlescribe/building-blocks/constraint.md#76-constraint)); *nicht*
   „gar nichts".
 - **Ein `repeat` wendet den Modifikator mehrfach an.** §7.7: „bewirkt, dass der
   Modifier **mehrfach** angewendet wird (z. B. ‚+1 Slot je 1000 Punkte')";
@@ -104,7 +104,7 @@ Sechsmal steht sie hier an einem `repeat`, an jeder der sechs Optionen der Grupp
   (die Schrittweite `value` als Prozentsatz). Der Faktor **vervielfacht** die
   Wirkung von `increment`/`decrement`/`multiply` — im Unterschied zu `set`, das
   auch wiederholt denselben Wert schreibt
-  ([§7.7-Kasten „Ein wiederholter `set` wächst nicht"](../../battlescribe-data-format.md#77-modifier-condition-condition-group-repeat)).
+  ([§7.7-Kasten „Ein wiederholter `set` wächst nicht"](../../battlescribe/building-blocks/modifier.md#77-modifier-condition-condition-group-repeat)).
   Hier ist der Modifikator ein `increment`: der Faktor wirkt.
 - **`shared="true"` verbreitert keinen Rahmen.** Das Flag entscheidet, ob über
   alle **Verweis-Instanzen** eines geteilten Eintrags summiert wird
