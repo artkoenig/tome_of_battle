@@ -1,7 +1,7 @@
 ---
 status: done
 branch: ccr-7ce343a0-iptau5
-pr:
+pr: 290
 ---
 
 # Lords sind unter 2000 Punkten wählbar (Definitive-Daten, versteckte Kategorie sperrt nicht)
